@@ -9,13 +9,12 @@ class MyGymApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Gym Companion',
       // Dark Mode Theme
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color.fromARGB(255, 81, 81, 81),
+        scaffoldBackgroundColor: const Color.fromARGB(255, 33, 3, 65),
         primaryColor: Colors.blueAccent,
       ),
       home: const HomePage(),
@@ -47,7 +46,10 @@ class HomePage extends StatelessWidget {
                 border: Border.all(color: Colors.white10),
               ),
               child: const Center(
-                child: Text("Radar Chart Goes Here", style: TextStyle(color: Colors.grey)),
+                child: Text(
+                  "Radar Chart Goes Here",
+                  style: TextStyle(color: Colors.grey),
+                ),
               ),
             ),
             const SizedBox(height: 20),
