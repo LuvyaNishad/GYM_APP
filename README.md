@@ -1,4 +1,4 @@
-# gym_app
+# leon
 
 A new Flutter project.
 

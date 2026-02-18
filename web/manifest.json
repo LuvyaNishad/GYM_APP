@@ -1,6 +1,6 @@
 {
-    "name": "gym_app",
-    "short_name": "gym_app",
+    "name": "leon",
+    "short_name": "leon",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
