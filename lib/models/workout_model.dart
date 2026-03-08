@@ -84,12 +84,25 @@ class WorkoutExercise {
     required this.exerciseName,
     required this.muscleGroup,
     this.sets = const [],
+    // ── New fields ──────────────────────────────────────────────────────
+    this.supersetGroupId,
+    this.rpe,
+    this.isWarmup = false,
   });
 
   final String exerciseId;
   final String exerciseName;
   final String muscleGroup;
   final List<WorkoutSet> sets;
+
+  /// Links this exercise to a superset group within this workout.
+  final String? supersetGroupId;
+
+  /// Rate of Perceived Exertion logged for this exercise (1–10).
+  final int? rpe;
+
+  /// Whether this exercise entry was performed as a warm-up.
+  final bool isWarmup;
 
   factory WorkoutExercise.fromJson(Map<String, dynamic> json) =>
       WorkoutExercise(
@@ -100,6 +113,9 @@ class WorkoutExercise {
                 ?.map((e) => WorkoutSet.fromJson(e as Map<String, dynamic>))
                 .toList() ??
             [],
+        supersetGroupId: json['superset_group_id'] as String?,
+        rpe: json['rpe'] as int?,
+        isWarmup: (json['is_warmup'] as bool?) ?? false,
       );
 
   Map<String, dynamic> toJson() => {
@@ -107,7 +123,29 @@ class WorkoutExercise {
         'exercise_name': exerciseName,
         'muscle_group': muscleGroup,
         'sets': sets.map((s) => s.toJson()).toList(),
+        'superset_group_id': supersetGroupId,
+        'rpe': rpe,
+        'is_warmup': isWarmup,
       };
+
+  WorkoutExercise copyWith({
+    String? exerciseId,
+    String? exerciseName,
+    String? muscleGroup,
+    List<WorkoutSet>? sets,
+    String? supersetGroupId,
+    int? rpe,
+    bool? isWarmup,
+  }) =>
+      WorkoutExercise(
+        exerciseId: exerciseId ?? this.exerciseId,
+        exerciseName: exerciseName ?? this.exerciseName,
+        muscleGroup: muscleGroup ?? this.muscleGroup,
+        sets: sets ?? this.sets,
+        supersetGroupId: supersetGroupId ?? this.supersetGroupId,
+        rpe: rpe ?? this.rpe,
+        isWarmup: isWarmup ?? this.isWarmup,
+      );
 }
 
 /// A single set within a [WorkoutExercise].

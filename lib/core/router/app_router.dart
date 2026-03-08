@@ -9,6 +9,10 @@ import '../../features/workout_session/screens/workout_session_screen.dart';
 import '../../features/recovery/screens/recovery_screen.dart';
 import '../../features/analytics/screens/analytics_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
+// ── New features ──────────────────────────────────────────────────────────────
+import '../../features/onboarding/screens/onboarding_screen.dart';
+import '../../features/exercise_library/screens/exercise_library_screen.dart';
+import '../../features/health_tracking/screens/health_tracking_screen.dart';
 import '../constants/app_constants.dart';
 
 /// Central [GoRouter] configuration for LEON.
@@ -72,6 +76,26 @@ final class AppRouter {
         name: 'profile',
         builder: (BuildContext context, GoRouterState state) =>
             const ProfileScreen(),
+      ),
+
+      // ── New Features ────────────────────────────────────────────────────
+      GoRoute(
+        path: AppConstants.routeOnboarding,
+        name: 'onboarding',
+        builder: (BuildContext context, GoRouterState state) =>
+            const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeExerciseLibrary,
+        name: 'exercise-library',
+        builder: (BuildContext context, GoRouterState state) =>
+            const ExerciseLibraryScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeHealthTracking,
+        name: 'health-tracking',
+        builder: (BuildContext context, GoRouterState state) =>
+            const HealthTrackingScreen(),
       ),
     ],
 

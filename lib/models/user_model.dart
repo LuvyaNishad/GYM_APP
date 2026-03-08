@@ -1,7 +1,7 @@
 /// LEON user profile data model.
 ///
 /// Plain Dart class — JSON serialisation via toJson/fromJson.
-/// Freezed code-gen will be added in the backend phase.
+/// TODO(freezed): Annotate with @freezed when the backend phase is activated.
 class UserModel {
   const UserModel({
     required this.id,
@@ -13,6 +13,10 @@ class UserModel {
     this.totalVolumeKg = 0,
     this.createdAt,
     this.lastActiveAt,
+    // ── New fields ──────────────────────────────────────────────────────
+    this.currentWeight,
+    this.targetWeight,
+    this.preferredSplit,
   });
 
   final String id;
@@ -24,6 +28,15 @@ class UserModel {
   final int totalVolumeKg;
   final DateTime? createdAt;
   final DateTime? lastActiveAt;
+
+  /// Current body weight in the user's preferred [weightUnit].
+  final double? currentWeight;
+
+  /// Goal body weight in the user's preferred [weightUnit].
+  final double? targetWeight;
+
+  /// User's preferred training split — e.g. `'PPL'`, `'Upper/Lower'`, `'Full Body'`.
+  final String? preferredSplit;
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
         id: json['id'] as String,
@@ -39,6 +52,9 @@ class UserModel {
         lastActiveAt: json['last_active_at'] != null
             ? DateTime.parse(json['last_active_at'] as String)
             : null,
+        currentWeight: (json['current_weight'] as num?)?.toDouble(),
+        targetWeight: (json['target_weight'] as num?)?.toDouble(),
+        preferredSplit: json['preferred_split'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -51,6 +67,9 @@ class UserModel {
         'total_volume_kg': totalVolumeKg,
         'created_at': createdAt?.toIso8601String(),
         'last_active_at': lastActiveAt?.toIso8601String(),
+        'current_weight': currentWeight,
+        'target_weight': targetWeight,
+        'preferred_split': preferredSplit,
       };
 
   UserModel copyWith({
@@ -63,6 +82,9 @@ class UserModel {
     int? totalVolumeKg,
     DateTime? createdAt,
     DateTime? lastActiveAt,
+    double? currentWeight,
+    double? targetWeight,
+    String? preferredSplit,
   }) =>
       UserModel(
         id: id ?? this.id,
@@ -74,5 +96,8 @@ class UserModel {
         totalVolumeKg: totalVolumeKg ?? this.totalVolumeKg,
         createdAt: createdAt ?? this.createdAt,
         lastActiveAt: lastActiveAt ?? this.lastActiveAt,
+        currentWeight: currentWeight ?? this.currentWeight,
+        targetWeight: targetWeight ?? this.targetWeight,
+        preferredSplit: preferredSplit ?? this.preferredSplit,
       );
 }

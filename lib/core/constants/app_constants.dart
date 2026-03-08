@@ -16,6 +16,11 @@ abstract final class AppConstants {
   static const String routeLogin = '/login';
   static const String routeSignup = '/signup';
 
+  // ── New Feature Routes ────────────────────────────────────────────────────
+  static const String routeOnboarding = '/onboarding';
+  static const String routeExerciseLibrary = '/exercise-library';
+  static const String routeHealthTracking = '/health-tracking';
+
   // ── Workout Defaults ──────────────────────────────────────────────────────
   static const int defaultRestSeconds = 90;
   static const int maxSetsPerExercise = 10;
