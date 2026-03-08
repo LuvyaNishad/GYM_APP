@@ -1,182 +1,78 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'workout_model.freezed.dart';
+part 'workout_model.g.dart';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WorkoutModel
+// ─────────────────────────────────────────────────────────────────────────────
+
 /// A completed or planned workout entry.
 ///
-/// Plain Dart class — no code generation required.
-/// Freezed annotations will be added in the backend phase.
-class WorkoutModel {
-  const WorkoutModel({
-    required this.id,
-    required this.userId,
-    required this.name,
-    required this.date,
-    this.exercises = const [],
-    this.durationSeconds = 0,
-    this.notes,
-    this.totalVolumeKg,
-    this.averageRpe,
-  });
-
-  final String id;
-  final String userId;
-  final String name;
-  final DateTime date;
-  final List<WorkoutExercise> exercises;
-  final int durationSeconds;
-  final String? notes;
-  final double? totalVolumeKg;
-  final double? averageRpe;
-
-  factory WorkoutModel.fromJson(Map<String, dynamic> json) => WorkoutModel(
-        id: json['id'] as String,
-        userId: json['user_id'] as String,
-        name: json['name'] as String,
-        date: DateTime.parse(json['date'] as String),
-        exercises: (json['exercises'] as List<dynamic>?)
-                ?.map(
-                    (e) => WorkoutExercise.fromJson(e as Map<String, dynamic>))
-                .toList() ??
-            [],
-        durationSeconds: (json['duration_seconds'] as int?) ?? 0,
-        notes: json['notes'] as String?,
-        totalVolumeKg: (json['total_volume_kg'] as num?)?.toDouble(),
-        averageRpe: (json['average_rpe'] as num?)?.toDouble(),
-      );
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'user_id': userId,
-        'name': name,
-        'date': date.toIso8601String(),
-        'exercises': exercises.map((e) => e.toJson()).toList(),
-        'duration_seconds': durationSeconds,
-        'notes': notes,
-        'total_volume_kg': totalVolumeKg,
-        'average_rpe': averageRpe,
-      };
-
-  WorkoutModel copyWith({
-    String? id,
-    String? userId,
-    String? name,
-    DateTime? date,
-    List<WorkoutExercise>? exercises,
-    int? durationSeconds,
+/// Uses Freezed for immutability and JsonSerializable for serialisation.
+@freezed
+class WorkoutModel with _$WorkoutModel {
+  @JsonSerializable(fieldRename: FieldRename.snake)
+  const factory WorkoutModel({
+    required String id,
+    required String userId,
+    required String name,
+    required DateTime date,
+    @Default([]) List<WorkoutExercise> exercises,
+    @Default(0) int durationSeconds,
     String? notes,
     double? totalVolumeKg,
     double? averageRpe,
-  }) =>
-      WorkoutModel(
-        id: id ?? this.id,
-        userId: userId ?? this.userId,
-        name: name ?? this.name,
-        date: date ?? this.date,
-        exercises: exercises ?? this.exercises,
-        durationSeconds: durationSeconds ?? this.durationSeconds,
-        notes: notes ?? this.notes,
-        totalVolumeKg: totalVolumeKg ?? this.totalVolumeKg,
-        averageRpe: averageRpe ?? this.averageRpe,
-      );
+  }) = _WorkoutModel;
+
+  factory WorkoutModel.fromJson(Map<String, dynamic> json) =>
+      _$WorkoutModelFromJson(json);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WorkoutExercise
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// A single exercise performed within a [WorkoutModel].
-class WorkoutExercise {
-  const WorkoutExercise({
-    required this.exerciseId,
-    required this.exerciseName,
-    required this.muscleGroup,
-    this.sets = const [],
-    // ── New fields ──────────────────────────────────────────────────────
-    this.supersetGroupId,
-    this.rpe,
-    this.isWarmup = false,
-  });
+@freezed
+class WorkoutExercise with _$WorkoutExercise {
+  @JsonSerializable(fieldRename: FieldRename.snake)
+  const factory WorkoutExercise({
+    required String exerciseId,
+    required String exerciseName,
+    required String muscleGroup,
+    @Default([]) List<WorkoutSet> sets,
+    // ── New fields ────────────────────────────────────────────────────────
+    /// Links this exercise to a superset group within this workout.
+    String? supersetGroupId,
 
-  final String exerciseId;
-  final String exerciseName;
-  final String muscleGroup;
-  final List<WorkoutSet> sets;
+    /// Rate of Perceived Exertion logged for this exercise (1–10).
+    int? rpe,
 
-  /// Links this exercise to a superset group within this workout.
-  final String? supersetGroupId;
-
-  /// Rate of Perceived Exertion logged for this exercise (1–10).
-  final int? rpe;
-
-  /// Whether this exercise entry was performed as a warm-up.
-  final bool isWarmup;
+    /// Whether this exercise entry was performed as a warm-up.
+    @Default(false) bool isWarmup,
+  }) = _WorkoutExercise;
 
   factory WorkoutExercise.fromJson(Map<String, dynamic> json) =>
-      WorkoutExercise(
-        exerciseId: json['exercise_id'] as String,
-        exerciseName: json['exercise_name'] as String,
-        muscleGroup: json['muscle_group'] as String,
-        sets: (json['sets'] as List<dynamic>?)
-                ?.map((e) => WorkoutSet.fromJson(e as Map<String, dynamic>))
-                .toList() ??
-            [],
-        supersetGroupId: json['superset_group_id'] as String?,
-        rpe: json['rpe'] as int?,
-        isWarmup: (json['is_warmup'] as bool?) ?? false,
-      );
-
-  Map<String, dynamic> toJson() => {
-        'exercise_id': exerciseId,
-        'exercise_name': exerciseName,
-        'muscle_group': muscleGroup,
-        'sets': sets.map((s) => s.toJson()).toList(),
-        'superset_group_id': supersetGroupId,
-        'rpe': rpe,
-        'is_warmup': isWarmup,
-      };
-
-  WorkoutExercise copyWith({
-    String? exerciseId,
-    String? exerciseName,
-    String? muscleGroup,
-    List<WorkoutSet>? sets,
-    String? supersetGroupId,
-    int? rpe,
-    bool? isWarmup,
-  }) =>
-      WorkoutExercise(
-        exerciseId: exerciseId ?? this.exerciseId,
-        exerciseName: exerciseName ?? this.exerciseName,
-        muscleGroup: muscleGroup ?? this.muscleGroup,
-        sets: sets ?? this.sets,
-        supersetGroupId: supersetGroupId ?? this.supersetGroupId,
-        rpe: rpe ?? this.rpe,
-        isWarmup: isWarmup ?? this.isWarmup,
-      );
+      _$WorkoutExerciseFromJson(json);
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// WorkoutSet
+// ─────────────────────────────────────────────────────────────────────────────
+
 /// A single set within a [WorkoutExercise].
-class WorkoutSet {
-  const WorkoutSet({
-    required this.reps,
-    required this.weightKg,
-    this.rpe = 0.0,
-    this.isWarmup = false,
-    this.isPr = false,
-  });
+@freezed
+class WorkoutSet with _$WorkoutSet {
+  @JsonSerializable(fieldRename: FieldRename.snake)
+  const factory WorkoutSet({
+    required int reps,
+    required double weightKg,
+    @Default(0.0) double rpe,
+    @Default(false) bool isWarmup,
+    @Default(false) bool isPr,
+  }) = _WorkoutSet;
 
-  final int reps;
-  final double weightKg;
-  final double rpe;
-  final bool isWarmup;
-  final bool isPr;
-
-  factory WorkoutSet.fromJson(Map<String, dynamic> json) => WorkoutSet(
-        reps: json['reps'] as int,
-        weightKg: (json['weight_kg'] as num).toDouble(),
-        rpe: (json['rpe'] as num?)?.toDouble() ?? 0.0,
-        isWarmup: (json['is_warmup'] as bool?) ?? false,
-        isPr: (json['is_pr'] as bool?) ?? false,
-      );
-
-  Map<String, dynamic> toJson() => {
-        'reps': reps,
-        'weight_kg': weightKg,
-        'rpe': rpe,
-        'is_warmup': isWarmup,
-        'is_pr': isPr,
-      };
+  factory WorkoutSet.fromJson(Map<String, dynamic> json) =>
+      _$WorkoutSetFromJson(json);
 }

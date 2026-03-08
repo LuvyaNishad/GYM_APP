@@ -1,77 +1,42 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'health_snapshot.freezed.dart';
+part 'health_snapshot.g.dart';
+
 /// A point-in-time snapshot of a user's health metrics.
 ///
-/// All fields are nullable — a missing value means the data source
+/// All metric fields are nullable — a missing value means the data source
 /// did not return that metric for this recording period.
-class HealthSnapshot {
-  const HealthSnapshot({
-    required this.recordedAt,
-    this.steps,
-    this.heartRateBpm,
-    this.sleepHours,
-    this.activeCalories,
-  });
+///
+/// Uses Freezed for immutability and JsonSerializable for serialisation.
+@freezed
+class HealthSnapshot with _$HealthSnapshot {
+  // Private generative constructor required to add the empty() factory.
+  const HealthSnapshot._();
 
-  /// When this snapshot was recorded / last synced.
-  final DateTime recordedAt;
+  @JsonSerializable(fieldRename: FieldRename.snake)
+  const factory HealthSnapshot({
+    /// When this snapshot was recorded / last synced.
+    required DateTime recordedAt,
 
-  /// Total step count for the current day.
-  final int? steps;
-
-  /// Most recent resting/active heart rate in BPM.
-  final int? heartRateBpm;
-
-  /// Hours of sleep for the most recent sleep session.
-  final double? sleepHours;
-
-  /// Active (exercise) calories burned today.
-  final int? activeCalories;
-
-  /// Returns an empty snapshot timestamped to [now].
-  factory HealthSnapshot.empty() => HealthSnapshot(recordedAt: DateTime.now());
-
-  HealthSnapshot copyWith({
-    DateTime? recordedAt,
+    /// Total step count for the current day.
     int? steps,
+
+    /// Most recent resting/active heart rate in BPM.
     int? heartRateBpm,
+
+    /// Hours of sleep for the most recent sleep session.
     double? sleepHours,
+
+    /// Active (exercise) calories burned today.
     int? activeCalories,
-  }) =>
-      HealthSnapshot(
-        recordedAt: recordedAt ?? this.recordedAt,
-        steps: steps ?? this.steps,
-        heartRateBpm: heartRateBpm ?? this.heartRateBpm,
-        sleepHours: sleepHours ?? this.sleepHours,
-        activeCalories: activeCalories ?? this.activeCalories,
-      );
+  }) = _HealthSnapshot;
 
-  Map<String, dynamic> toJson() => {
-        'recorded_at': recordedAt.toIso8601String(),
-        'steps': steps,
-        'heart_rate_bpm': heartRateBpm,
-        'sleep_hours': sleepHours,
-        'active_calories': activeCalories,
-      };
+  factory HealthSnapshot.fromJson(Map<String, dynamic> json) =>
+      _$HealthSnapshotFromJson(json);
 
-  factory HealthSnapshot.fromJson(Map<String, dynamic> json) => HealthSnapshot(
-        recordedAt: DateTime.parse(json['recorded_at'] as String),
-        steps: json['steps'] as int?,
-        heartRateBpm: json['heart_rate_bpm'] as int?,
-        sleepHours: (json['sleep_hours'] as num?)?.toDouble(),
-        activeCalories: json['active_calories'] as int?,
-      );
+  // ── Convenience factories ──────────────────────────────────────────────────
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is HealthSnapshot &&
-          runtimeType == other.runtimeType &&
-          recordedAt == other.recordedAt &&
-          steps == other.steps &&
-          heartRateBpm == other.heartRateBpm &&
-          sleepHours == other.sleepHours &&
-          activeCalories == other.activeCalories;
-
-  @override
-  int get hashCode =>
-      Object.hash(recordedAt, steps, heartRateBpm, sleepHours, activeCalories);
+  /// Returns an empty snapshot timestamped to now.
+  static HealthSnapshot empty() => HealthSnapshot(recordedAt: DateTime.now());
 }
