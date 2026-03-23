@@ -5,6 +5,8 @@
 library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/split_model.dart';
+import '../models/user_model.dart';
 
 // ── Auth State ────────────────────────────────────────────────────────────────
 
@@ -24,3 +26,17 @@ final isCompactLayoutProvider = Provider<bool>((ref) => true);
 
 /// Currently selected bottom-navigation index.
 final bottomNavIndexProvider = StateProvider<int>((ref) => 0);
+
+// ── Training Split ────────────────────────────────────────────────────────────
+
+/// The user's currently active training split.
+/// Drives "today's workout" on the dashboard and session-start routing.
+/// Null = no split assigned yet (send user to split builder).
+final activeSplitProvider = StateProvider<SplitModel?>((ref) => null);
+
+// ── User Profile ──────────────────────────────────────────────────────────────
+
+/// The current user's profile model.
+/// Drives weight-unit toggle, profile screen display, and questionnaire data.
+/// Null = not loaded yet.
+final userProfileProvider = StateProvider<UserModel?>((ref) => null);
