@@ -1,0 +1,157 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>LEON OS - Splash</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#c3f5ff",
+                        "on-primary-container": "#00626e",
+                        "primary-fixed": "#9cf0ff",
+                        "on-error-container": "#ffdad6",
+                        "error-container": "#93000a",
+                        "secondary-fixed": "#e2e2e2",
+                        "on-surface": "#e2e2e8",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "on-tertiary": "#3e2e00",
+                        "tertiary": "#ffeac0",
+                        "tertiary-fixed": "#ffdf96",
+                        "on-error": "#690005",
+                        "surface-container-low": "#1a1c20",
+                        "on-surface-variant": "#bac9cc",
+                        "surface-container": "#1e2024",
+                        "outline": "#849396",
+                        "primary-container": "#00e5ff",
+                        "surface-variant": "#333539",
+                        "on-background": "#e2e2e8",
+                        "inverse-on-surface": "#2f3035",
+                        "inverse-surface": "#e2e2e8",
+                        "primary-fixed-dim": "#00daf3",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "secondary": "#c6c6c7",
+                        "on-primary": "#00363d",
+                        "tertiary-fixed-dim": "#f3bf26",
+                        "surface-bright": "#37393e",
+                        "on-secondary": "#2f3131",
+                        "background": "#111318",
+                        "surface": "#111318",
+                        "on-secondary-fixed-variant": "#454747",
+                        "surface-tint": "#00daf3",
+                        "outline-variant": "#3b494c",
+                        "inverse-primary": "#006875",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed": "#251a00",
+                        "on-primary-fixed": "#001f24",
+                        "secondary-container": "#454747",
+                        "surface-container-high": "#282a2e",
+                        "surface-container-lowest": "#0c0e12",
+                        "surface-dim": "#111318",
+                        "surface-container-highest": "#333539",
+                        "tertiary-container": "#fec931",
+                        "on-tertiary-container": "#6f5500",
+                        "on-primary-fixed-variant": "#004f58",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "on-secondary-container": "#b4b5b5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-gap-lg": "32px",
+                        "container-margin": "24px",
+                        "stack-gap-sm": "12px",
+                        "glass-padding": "24px",
+                        "stack-gap-md": "20px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Outfit"],
+                        "data-md": ["JetBrains Mono"],
+                        "headline-sm": ["Outfit"],
+                        "label-caps": ["JetBrains Mono"],
+                        "display-lg": ["Outfit"],
+                        "headline-md": ["Outfit"],
+                        "data-lg": ["JetBrains Mono"],
+                        "body-sm": ["Outfit"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "data-md": ["18px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "data-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .pulse-ring {
+            animation: pulse-border 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-border {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: .5;
+                transform: scale(1.1);
+            }
+        }
+    </style>
+<style>
+        body {
+            width: 100%;
+            max-width: 390px;
+            margin: 0 auto;
+            min-height: max(844px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-[#0A0C10] text-on-surface h-screen flex flex-col items-center justify-center overflow-hidden relative shadow-2xl">
+<!-- Atmospheric Radial Glow -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+<div class="w-[300px] h-[300px] bg-[rgba(0,229,255,0.04)] rounded-full blur-[80px]"></div>
+</div>
+<!-- Main Content Canvas -->
+<div class="relative z-10 flex flex-col items-center">
+<!-- Logo Text -->
+<h1 class="font-display-lg text-[34px] font-[800] text-[#00E5FF] tracking-[4px] mb-4">
+            L E O N
+        </h1>
+<!-- Subtitle -->
+<p class="font-body-sm text-[11px] font-[500] text-[#8892A4] tracking-[2px] uppercase mb-16">
+            OPERATIONAL FITNESS OS
+        </p>
+<!-- Pulsing Indicator -->
+<div class="w-[40px] h-[40px] rounded-full border-2 border-[#00E5FF] flex items-center justify-center pulse-ring shadow-[0_0_12px_rgba(0,229,255,0.6)]">
+<div class="w-2 h-2 rounded-full bg-[#00E5FF]"></div>
+</div>
+</div>
+<script>
+        // Micro-interaction for splash screen initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            const content = document.querySelector('.z-10');
+            content.style.opacity = '0';
+            content.style.transform = 'translateY(10px)';
+            content.style.transition = 'opacity 1s ease-out, transform 1s ease-out';
+            
+            setTimeout(() => {
+                content.style.opacity = '1';
+                content.style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+</body></html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Onboarding - Primary Goal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#1a1c1c",
+                      "inverse-surface": "#e2e2e8",
+                      "surface-container": "#1e2024",
+                      "surface-dim": "#111318",
+                      "on-error-container": "#ffdad6",
+                      "primary-container": "#00e5ff",
+                      "primary-fixed-dim": "#00daf3",
+                      "on-primary-fixed-variant": "#004f58",
+                      "on-surface-variant": "#bac9cc",
+                      "surface-container-highest": "#333539",
+                      "on-primary-container": "#00626e",
+                      "surface-container-lowest": "#0c0e12",
+                      "on-tertiary-fixed": "#251a00",
+                      "surface-container-high": "#282a2e",
+                      "surface-tint": "#00daf3",
+                      "on-error": "#690005",
+                      "on-secondary-container": "#b4b5b5",
+                      "primary-fixed": "#9cf0ff",
+                      "tertiary": "#ffeac0",
+                      "on-surface": "#e2e2e8",
+                      "secondary-fixed": "#e2e2e2",
+                      "inverse-on-surface": "#2f3035",
+                      "secondary-container": "#454747",
+                      "on-secondary-fixed-variant": "#454747",
+                      "primary": "#c3f5ff",
+                      "error-container": "#93000a",
+                      "surface-container-low": "#1a1c20",
+                      "on-tertiary": "#3e2e00",
+                      "error": "#ffb4ab",
+                      "on-primary": "#00363d",
+                      "on-tertiary-container": "#6f5500",
+                      "background": "#111318",
+                      "outline": "#849396",
+                      "secondary-fixed-dim": "#c6c6c7",
+                      "secondary": "#c6c6c7",
+                      "surface": "#111318",
+                      "tertiary-fixed-dim": "#f3bf26",
+                      "surface-variant": "#333539",
+                      "on-primary-fixed": "#001f24",
+                      "on-background": "#e2e2e8",
+                      "inverse-primary": "#006875",
+                      "on-tertiary-fixed-variant": "#594400",
+                      "outline-variant": "#3b494c",
+                      "tertiary-fixed": "#ffdf96",
+                      "surface-bright": "#37393e",
+                      "tertiary-container": "#fec931",
+                      "on-secondary": "#2f3131"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-gap-lg": "32px",
+                      "stack-gap-sm": "12px",
+                      "stack-gap-md": "20px",
+                      "glass-padding": "24px",
+                      "container-margin": "24px"
+              },
+              "fontFamily": {
+                      "headline-sm": [
+                              "Outfit"
+                      ],
+                      "body-lg": [
+                              "Outfit"
+                      ],
+                      "data-md": [
+                              "JetBrains Mono"
+                      ],
+                      "data-lg": [
+                              "JetBrains Mono"
+                      ],
+                      "label-caps": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-md": [
+                              "Outfit"
+                      ],
+                      "display-lg": [
+                              "Outfit"
+                      ],
+                      "body-sm": [
+                              "Outfit"
+                      ]
+              },
+              "fontSize": {
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "data-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "data-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: #0A0C10; /* Void background */
+            background-image: radial-gradient(circle at 50% -20%, rgba(0, 229, 255, 0.05) 0%, transparent 70%);
+            color: #e2e2e8;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .glass-card.selected {
+            border-color: #00E5FF;
+            background: rgba(0, 229, 255, 0.08);
+            box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.15), 0 0 15px rgba(0, 229, 255, 0.2);
+        }
+
+        .glass-card.selected .material-symbols-outlined {
+            color: #00E5FF;
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        }
+
+        .progress-bar-bg {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #00daf3 0%, #00e5ff 100%);
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+            transition: width 0.5s ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-body-lg text-body-lg overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar (Suppressed for Onboarding, replacing with simple header/progress) -->
+<header class="fixed top-0 w-full z-50 px-container-margin py-6 flex items-center justify-between">
+<button aria-label="Go Back" class="w-10 h-10 rounded-full flex items-center justify-center glass-card text-on-surface hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<div class="text-right flex flex-col items-end gap-2">
+<span class="font-data-md text-data-md text-on-surface-variant">07 / 12</span>
+<div class="w-32 h-1 rounded-full progress-bar-bg overflow-hidden">
+<div class="h-full progress-bar-fill w-[49%]"></div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col justify-center items-center px-container-margin pt-32 pb-24 max-w-4xl mx-auto w-full">
+<div class="text-center mb-stack-gap-lg w-full">
+<h1 class="font-headline-md text-headline-md text-on-surface tracking-tight uppercase mb-4 shadow-[0_0_40px_rgba(0,229,255,0.1)] inline-block">PRIMARY OBJECTIVE</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg mx-auto">Calibrate your core directive. This dictates algorithmic adaptations.</p>
+</div>
+<!-- 2x3 Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-gap-md w-full">
+<button class="glass-card rounded-xl p-glass-padding flex items-start gap-4 text-left group goal-option">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0 border border-white/10 group-hover:border-white/20 transition-colors">
+<span class="material-symbols-outlined text-[28px] text-on-surface-variant transition-colors" data-icon="fitness_center">fitness_center</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-1 group-hover:text-primary-fixed transition-colors">BUILD MUSCLE</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Hypertrophy-focused protocols to maximize lean tissue acquisition.</p>
+</div>
+</button>
+<button class="glass-card rounded-xl p-glass-padding flex items-start gap-4 text-left group goal-option">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0 border border-white/10 group-hover:border-white/20 transition-colors">
+<span class="material-symbols-outlined text-[28px] text-on-surface-variant transition-colors" data-icon="local_fire_department">local_fire_department</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-1 group-hover:text-primary-fixed transition-colors">LOSE FAT</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Metabolic conditioning and deficit tracking for targeted reduction.</p>
+</div>
+</button>
+<button class="glass-card rounded-xl p-glass-padding flex items-start gap-4 text-left group goal-option">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0 border border-white/10 group-hover:border-white/20 transition-colors">
+<span class="material-symbols-outlined text-[28px] text-on-surface-variant transition-colors" data-icon="directions_run">directions_run</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-1 group-hover:text-primary-fixed transition-colors">INCREASE STRENGTH</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Neurological adaptation and maximal force generation.</p>
+</div>
+</button>
+<button class="glass-card rounded-xl p-glass-padding flex items-start gap-4 text-left group goal-option">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0 border border-white/10 group-hover:border-white/20 transition-colors">
+<span class="material-symbols-outlined text-[28px] text-on-surface-variant transition-colors" data-icon="bolt">bolt</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-1 group-hover:text-primary-fixed transition-colors">ATHLETIC PERFORMANCE</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Agility, power output, and functional mobility enhancements.</p>
+</div>
+</button>
+<button class="glass-card rounded-xl p-glass-padding flex items-start gap-4 text-left group goal-option">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0 border border-white/10 group-hover:border-white/20 transition-colors">
+<span class="material-symbols-outlined text-[28px] text-on-surface-variant transition-colors" data-icon="sync">sync</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-1 group-hover:text-primary-fixed transition-colors">BODY RECOMPOSITION</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Simultaneous mass acquisition and adipose reduction.</p>
+</div>
+</button>
+<button class="glass-card rounded-xl p-glass-padding flex items-start gap-4 text-left group goal-option">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0 border border-white/10 group-hover:border-white/20 transition-colors">
+<span class="material-symbols-outlined text-[28px] text-on-surface-variant transition-colors" data-icon="monitoring">monitoring</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-1 group-hover:text-primary-fixed transition-colors">GENERAL FITNESS</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Holistic health markers, longevity, and baseline readiness.</p>
+</div>
+</button>
+</div>
+<div class="mt-stack-gap-lg w-full flex justify-center opacity-0 transition-opacity duration-300" id="processing-indicator">
+<div class="flex items-center gap-3 text-primary-fixed font-data-md text-data-md">
+<span class="material-symbols-outlined animate-spin text-[20px]" data-icon="progress_activity">progress_activity</span>
+<span>CALIBRATING DIRECTIVES...</span>
+</div>
+</div>
+</main>
+<!-- BottomNavBar and NavigationDrawer suppressed as per logical rules for Onboarding/Transactional screen -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const options = document.querySelectorAll('.goal-option');
+            const indicator = document.getElementById('processing-indicator');
+
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove selected from all
+                    options.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // Add selected to clicked
+                    this.classList.add('selected');
+                    
+                    // Update icon color logic for selected state via class
+                    const icon = this.querySelector('.material-symbols-outlined');
+                    if(icon) {
+                        // The CSS handles the selected color now
+                    }
+
+                    // Show processing
+                    indicator.classList.remove('opacity-0');
+
+                    // Simulate auto-advance
+                    setTimeout(() => {
+                        // In a real app, this would route to the next screen
+                        console.log('Advancing to next screen...');
+                        document.body.style.opacity = '0';
+                        document.body.style.transition = 'opacity 0.5s ease';
+                    }, 800);
+                });
+            });
+        });
+    </script>
+</body></html>

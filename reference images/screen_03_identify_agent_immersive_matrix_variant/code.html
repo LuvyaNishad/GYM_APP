@@ -1,0 +1,168 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Screen 03: Identify Agent (Immersive Matrix Variant)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#00daf3",
+                        "secondary-fixed": "#e2e2e2",
+                        "outline-variant": "#3b494c",
+                        "on-primary": "#00363d",
+                        "primary": "#c3f5ff",
+                        "surface-container-highest": "#333539",
+                        "on-background": "#e2e2e8",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "on-primary-fixed": "#001f24",
+                        "on-secondary-fixed-variant": "#454747",
+                        "surface-container-high": "#282a2e",
+                        "error": "#ffb4ab",
+                        "tertiary-container": "#fec931",
+                        "outline": "#849396",
+                        "tertiary": "#ffeac0",
+                        "primary-fixed": "#9cf0ff",
+                        "surface-container-low": "#1a1c20",
+                        "inverse-primary": "#006875",
+                        "on-error": "#690005",
+                        "secondary-container": "#454747",
+                        "primary-container": "#00e5ff",
+                        "on-tertiary-container": "#6f5500",
+                        "surface": "#111318",
+                        "on-tertiary-fixed": "#251a00",
+                        "background": "#111318",
+                        "tertiary-fixed-dim": "#f3bf26",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "tertiary-fixed": "#ffdf96",
+                        "surface-container": "#1e2024",
+                        "on-tertiary": "#3e2e00",
+                        "on-surface": "#e2e2e8",
+                        "secondary": "#c6c6c7",
+                        "on-secondary-container": "#b4b5b5",
+                        "surface-bright": "#37393e",
+                        "surface-variant": "#333539",
+                        "on-primary-fixed-variant": "#004f58",
+                        "on-secondary": "#2f3131",
+                        "inverse-surface": "#e2e2e8",
+                        "surface-container-lowest": "#0c0e12",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "on-surface-variant": "#bac9cc",
+                        "surface-dim": "#111318",
+                        "inverse-on-surface": "#2f3035",
+                        "on-primary-container": "#00626e",
+                        "on-error-container": "#ffdad6",
+                        "error-container": "#93000a",
+                        "surface-tint": "#00daf3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "glass-padding": "24px",
+                        "container-margin": "24px",
+                        "stack-gap-lg": "32px",
+                        "stack-gap-sm": "12px",
+                        "stack-gap-md": "20px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Outfit"],
+                        "body-sm": ["Outfit"],
+                        "label-caps": ["JetBrains Mono"],
+                        "headline-md": ["Outfit"],
+                        "data-md": ["JetBrains Mono"],
+                        "data-lg": ["JetBrains Mono"],
+                        "body-lg": ["Outfit"],
+                        "headline-sm": ["Outfit"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #0A0C10;
+        }
+        
+        .liquid-glass {
+            background: rgba(10, 12, 16, 0.4);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(0, 229, 255, 0.15);
+            box-shadow: inset 0 0 40px rgba(0, 229, 255, 0.05);
+        }
+        
+        .input-fill {
+            background: transparent;
+        }
+        
+        .focused-input:focus-within {
+            box-shadow: inset 0 -2px 0 0 #00E5FF, 0 10px 30px -10px rgba(0, 229, 255, 0.2);
+        }
+        
+        .btn-glow:hover {
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.8);
+            color: #00E5FF;
+        }
+        
+        input::placeholder {
+            color: rgba(74, 85, 104, 0.5);
+        }
+
+        .bg-glyph {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 400px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.02);
+            z-index: 0;
+            pointer-events: none;
+            font-family: 'Outfit', sans-serif;
+            text-shadow: 0 0 50px rgba(0, 229, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-0 m-0 w-[390px] h-[844px] overflow-hidden bg-[#0A0C10] mx-auto relative">
+<!-- Background Glyph -->
+<div class="bg-glyph select-none">A</div>
+<!-- Progress Indicator -->
+<div class="absolute top-8 w-full flex justify-between items-center px-4 mb-2 z-10">
+<span class="font-['JetBrains_Mono'] text-[12px] text-[#4A5568]">01 / 12</span>
+</div>
+<div class="absolute top-[60px] w-full px-4 z-10">
+<div class="w-full h-[2px] bg-[#1E2537] rounded-full overflow-hidden">
+<div class="h-full bg-[#00E5FF] rounded-full" style="width: 7%;"></div>
+</div>
+</div>
+<!-- Main Content Canvas -->
+<main class="w-full h-full flex flex-col justify-center px-4 animate-[fadeIn_0.5s_ease-out] z-10 relative">
+<!-- Matrix Input Area -->
+<div class="liquid-glass rounded-[24px] p-8 flex flex-col gap-6 relative overflow-hidden group">
+<!-- Header Section Integrated -->
+<header class="flex flex-col gap-2">
+<h1 class="font-['Outfit'] text-[26px] font-bold uppercase tracking-[1.5px] text-[#EAECF0] text-center">IDENTIFY AGENT</h1>
+<p class="font-['Outfit'] text-[15px] text-[#8892A4] text-center">What do we call you?</p>
+</header>
+<div class="flex flex-col items-center gap-2 mt-4 w-full">
+<label class="font-['JetBrains_Mono'] text-[10px] font-medium text-[#00E5FF] tracking-[0.2em] uppercase opacity-70" for="agent-name">DISPLAY_NAME_</label>
+<div class="input-fill w-full flex items-center border-b border-[#1E2537] transition-all duration-500 group-focus-within:border-[#00E5FF] pb-2 focused-input">
+<span class="font-['JetBrains_Mono'] text-[#00E5FF] text-[20px] mr-2 opacity-50">&gt;</span>
+<input autocomplete="off" autofocus="" class="w-full bg-transparent border-none p-0 text-center text-[#EAECF0] font-['Outfit'] text-[32px] font-light focus:ring-0 placeholder:text-[24px] placeholder:font-light" id="agent-name" placeholder="Enter name" type="text">
+<!-- Integrated Continue Action -->
+<button class="text-[#4A5568] hover:text-[#00E5FF] transition-colors duration-300 ml-2 btn-glow flex items-center justify-center group/btn" title="Continue">
+<span class="material-symbols-outlined text-[28px] group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

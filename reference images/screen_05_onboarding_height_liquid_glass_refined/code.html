@@ -1,0 +1,264 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Onboarding - Height</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary": "#c3f5ff",
+                      "on-primary-container": "#00626e",
+                      "primary-fixed": "#9cf0ff",
+                      "on-error-container": "#ffdad6",
+                      "error-container": "#93000a",
+                      "secondary-fixed": "#e2e2e2",
+                      "on-surface": "#e2e2e8",
+                      "on-tertiary-fixed-variant": "#594400",
+                      "on-tertiary": "#3e2e00",
+                      "tertiary": "#ffeac0",
+                      "tertiary-fixed": "#ffdf96",
+                      "on-error": "#690005",
+                      "surface-container-low": "#1a1c20",
+                      "on-surface-variant": "#bac9cc",
+                      "surface-container": "#1e2024",
+                      "outline": "#849396",
+                      "primary-container": "#00e5ff",
+                      "surface-variant": "#333539",
+                      "on-background": "#e2e2e8",
+                      "inverse-on-surface": "#2f3035",
+                      "inverse-surface": "#e2e2e8",
+                      "primary-fixed-dim": "#00daf3",
+                      "secondary-fixed-dim": "#c6c6c7",
+                      "secondary": "#c6c6c7",
+                      "on-primary": "#00363d",
+                      "tertiary-fixed-dim": "#f3bf26",
+                      "surface-bright": "#37393e",
+                      "on-secondary": "#2f3131",
+                      "background": "#0A0C10",
+                      "surface": "#111318",
+                      "on-secondary-fixed-variant": "#454747",
+                      "surface-tint": "#00daf3",
+                      "outline-variant": "#3b494c",
+                      "inverse-primary": "#006875",
+                      "error": "#ffb4ab",
+                      "on-tertiary-fixed": "#251a00",
+                      "on-primary-fixed": "#001f24",
+                      "secondary-container": "#454747",
+                      "surface-container-high": "#282a2e",
+                      "surface-container-lowest": "#0c0e12",
+                      "surface-dim": "#111318",
+                      "surface-container-highest": "#333539",
+                      "tertiary-container": "#fec931",
+                      "on-tertiary-container": "#6f5500",
+                      "on-primary-fixed-variant": "#004f58",
+                      "on-secondary-fixed": "#1a1c1c",
+                      "on-secondary-container": "#b4b5b5"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-gap-lg": "32px",
+                      "container-margin": "24px",
+                      "stack-gap-sm": "12px",
+                      "glass-padding": "24px",
+                      "stack-gap-md": "20px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Outfit"
+                      ],
+                      "data-md": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-sm": [
+                              "Outfit"
+                      ],
+                      "label-caps": [
+                              "JetBrains Mono"
+                      ],
+                      "display-lg": [
+                              "Outfit"
+                      ],
+                      "headline-md": [
+                              "Outfit"
+                      ],
+                      "data-lg": [
+                              "JetBrains Mono"
+                      ],
+                      "body-sm": [
+                              "Outfit"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "data-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "data-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .scroll-wheel::-webkit-scrollbar {
+            display: none;
+        }
+        .scroll-wheel {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            scroll-snap-type: y mandatory;
+        }
+        .snap-item {
+            scroll-snap-align: center;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(844px, 100dvh);
+      width: 390px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body class="bg-[#0A0C10] text-on-background relative flex flex-col justify-between p-container-margin h-screen">
+<!-- Top App Bar - Simplified for Onboarding/Transactional -->
+<header class="flex flex-col gap-stack-gap-sm pt-4 w-full max-w-md mx-auto z-10">
+<div class="flex justify-between items-center w-full">
+<button class="w-10 h-10 flex items-center justify-center rounded-full glass-card hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-on-surface">arrow_back</span>
+</button>
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-[0.2em]">03 / 12</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden mt-4">
+<div class="h-full bg-primary-container" style="width: 21%; box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);"></div>
+</div>
+<div class="mt-8 text-center flex flex-col gap-2">
+<h1 class="font-headline-md text-headline-md text-on-background uppercase tracking-wide">PHYSICAL STATS — HEIGHT</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Calibrating physical parameters for optimal performance tracking.</p>
+</div>
+</header>
+<!-- Main Content Container -->
+<main class="flex-1 flex flex-col justify-center items-center w-full max-w-md mx-auto relative z-10 my-8"><div class="relative w-full max-w-xs aspect-square glass-card rounded-full flex flex-col items-center justify-center border border-white/5 shadow-[inset_0_0_80px_rgba(0,0,0,0.8)] overflow-hidden mx-auto">
+<!-- Unit Toggle -->
+<div class="absolute top-8 flex bg-surface-container-low rounded-full p-1 z-20 border border-white/10">
+<button class="px-4 py-1 rounded-full font-label-caps text-label-caps bg-primary-container/20 text-primary-container border border-primary-container/30" id="btn-cm">CM</button>
+<button class="px-4 py-1 rounded-full font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors" id="btn-ft">FT</button>
+</div>
+<!-- Focus Indicators -->
+<div class="absolute top-1/2 left-0 w-full h-[60px] -translate-y-1/2 border-y border-primary-container/30 bg-primary-container/5 pointer-events-none z-10 flex items-center justify-between px-4">
+<div class="w-2 h-2 rounded-full bg-primary-container shadow-[0_0_8px_#00e5ff]"></div>
+<div class="w-2 h-2 rounded-full bg-primary-container shadow-[0_0_8px_#00e5ff]"></div>
+</div>
+<!-- Scroll Wheel Container -->
+<div class="scroll-wheel h-full w-full overflow-y-auto no-scrollbar flex flex-col items-center pt-[calc(50%-30px)] pb-[calc(50%-30px)]" id="height-wheel">
+<div class="h-[60px] flex items-center justify-center w-full font-data-lg text-data-lg text-primary-container">178</div>
+</div>
+<div class="absolute bottom-[20%] font-label-caps text-label-caps text-primary-container/60 z-20 pointer-events-none" id="wheel-unit-label">CM</div>
+</div></main><footer class="flex flex-col gap-4 w-full max-w-md mx-auto z-10 pb-4">
+<div class="flex gap-4">
+<button class="flex-[2] py-4 px-6 rounded-lg bg-primary-container text-on-primary-container font-label-caps text-label-caps shadow-[0_0_32px_rgba(0,229,255,0.25)] hover:bg-primary-fixed transition-all uppercase tracking-widest flex items-center justify-center gap-2 font-bold w-full">
+                CONFIRM HEIGHT
+                <span class="material-symbols-outlined text-[18px]">check</span>
+</button>
+</div>
+</footer>
+<script>
+        // Simple script to handle visual update of scroll wheel on scroll
+        const picker = document.getElementById('height-picker');
+        const items = picker.querySelectorAll('.snap-item');
+        
+        picker.addEventListener('scroll', () => {
+            const pickerCenter = picker.getBoundingClientRect().top + picker.clientHeight / 2;
+            
+            items.forEach(item => {
+                const itemCenter = item.getBoundingClientRect().top + item.clientHeight / 2;
+                const distance = Math.abs(pickerCenter - itemCenter);
+                
+                // Reset classes
+                item.className = 'snap-item h-[40px] flex items-center justify-center font-display-lg text-display-lg transition-all duration-300';
+                
+                if (distance < 30) {
+                    item.classList.add('opacity-0'); // Hide selected value as it's shown below
+                } else if (distance < 70) {
+                    item.classList.add('text-outline/70');
+                } else if (distance < 110) {
+                    item.classList.add('text-outline/50');
+                } else {
+                    item.classList.add('text-outline/30');
+                }
+            });
+        });
+    </script>
+
+
+</body></html>

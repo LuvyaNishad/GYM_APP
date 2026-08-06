@@ -1,0 +1,349 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>Onboarding - Weight</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#1a1c1c",
+                      "inverse-surface": "#e2e2e8",
+                      "surface-container": "#1e2024",
+                      "surface-dim": "#111318",
+                      "on-error-container": "#ffdad6",
+                      "primary-container": "#00e5ff",
+                      "primary-fixed-dim": "#00daf3",
+                      "on-primary-fixed-variant": "#004f58",
+                      "on-surface-variant": "#bac9cc",
+                      "surface-container-highest": "#333539",
+                      "on-primary-container": "#00626e",
+                      "surface-container-lowest": "#0c0e12",
+                      "on-tertiary-fixed": "#251a00",
+                      "surface-container-high": "#282a2e",
+                      "surface-tint": "#00daf3",
+                      "on-error": "#690005",
+                      "on-secondary-container": "#b4b5b5",
+                      "primary-fixed": "#9cf0ff",
+                      "tertiary": "#ffeac0",
+                      "on-surface": "#e2e2e8",
+                      "secondary-fixed": "#e2e2e2",
+                      "inverse-on-surface": "#2f3035",
+                      "secondary-container": "#454747",
+                      "on-secondary-fixed-variant": "#454747",
+                      "primary": "#c3f5ff",
+                      "error-container": "#93000a",
+                      "surface-container-low": "#1a1c20",
+                      "on-tertiary": "#3e2e00",
+                      "error": "#ffb4ab",
+                      "on-primary": "#00363d",
+                      "on-tertiary-container": "#6f5500",
+                      "background": "#111318",
+                      "outline": "#849396",
+                      "secondary-fixed-dim": "#c6c6c7",
+                      "secondary": "#c6c6c7",
+                      "surface": "#111318",
+                      "tertiary-fixed-dim": "#f3bf26",
+                      "surface-variant": "#333539",
+                      "on-primary-fixed": "#001f24",
+                      "on-background": "#e2e2e8",
+                      "inverse-primary": "#006875",
+                      "on-tertiary-fixed-variant": "#594400",
+                      "outline-variant": "#3b494c",
+                      "tertiary-fixed": "#ffdf96",
+                      "surface-bright": "#37393e",
+                      "tertiary-container": "#fec931",
+                      "on-secondary": "#2f3131"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-gap-lg": "32px",
+                      "stack-gap-sm": "12px",
+                      "stack-gap-md": "20px",
+                      "glass-padding": "24px",
+                      "container-margin": "24px"
+              },
+              "fontFamily": {
+                      "headline-sm": [
+                              "Outfit"
+                      ],
+                      "body-lg": [
+                              "Outfit"
+                      ],
+                      "data-md": [
+                              "JetBrains Mono"
+                      ],
+                      "data-lg": [
+                              "JetBrains Mono"
+                      ],
+                      "label-caps": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-md": [
+                              "Outfit"
+                      ],
+                      "display-lg": [
+                              "Outfit"
+                      ],
+                      "body-sm": [
+                              "Outfit"
+                      ]
+              },
+              "fontSize": {
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "data-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "data-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body {
+            background-color: #0A0C10; /* Force exact background */
+            color: #e2e2e8;
+            font-family: 'Outfit', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .primary-glow {
+            box-shadow: 0 0 32px rgba(0, 229, 255, 0.25);
+        }
+
+        .scroll-wheel-container {
+            mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+        }
+        
+        .wheel-item {
+            transition: all 0.2s ease-out;
+            opacity: 0.3;
+            transform: scale(0.85);
+        }
+        
+        .wheel-item.active {
+            opacity: 1;
+            transform: scale(1.1);
+            color: #00e5ff;
+            text-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
+        }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-[#0A0C10] text-on-background relative flex flex-col justify-between p-container-margin h-screen">
+<!-- Top Progress Section -->
+<header class="flex flex-col gap-stack-gap-sm pt-4 w-full max-w-md mx-auto z-10">
+<div class="flex justify-between items-center w-full">
+<button class="w-10 h-10 flex items-center justify-center rounded-full glass-panel hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-on-surface">arrow_back</span>
+</button>
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-[0.2em]">04 / 12</span>
+</div>
+<!-- Progress Bar -->
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden mt-4">
+<div class="h-full bg-primary-container" style="width: 28%; box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);"></div>
+</div>
+<div class="mt-8 text-center flex flex-col gap-2">
+<h1 class="font-headline-md text-headline-md text-on-background uppercase tracking-wide">PHYSICAL STATS — WEIGHT</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Calibrating physical parameters for optimal performance tracking.</p>
+</div>
+</header>
+<!-- Main Interaction Area (Scroll Wheel) -->
+<main class="flex-1 flex flex-col justify-center items-center w-full max-w-md mx-auto relative z-10 my-8">
+<div class="relative w-full max-w-xs aspect-square glass-panel rounded-full flex flex-col items-center justify-center border border-white/5 shadow-[inset_0_0_80px_rgba(0,0,0,0.8)] overflow-hidden">
+<!-- Unit Toggle -->
+<div class="absolute top-8 flex bg-surface-container-low rounded-full p-1 z-20 border border-white/10">
+<button class="px-4 py-1 rounded-full font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors" id="btn-lbs" onclick="toggleUnit('lbs')">LBS</button>
+<button class="px-4 py-1 rounded-full font-label-caps text-label-caps bg-primary-container/20 text-primary-container border border-primary-container/30" id="btn-kg" onclick="toggleUnit('kg')">KG</button>
+</div>
+<!-- Focus Indicators -->
+<div class="absolute top-1/2 left-0 w-full h-[60px] -translate-y-1/2 border-y border-primary-container/30 bg-primary-container/5 pointer-events-none z-10 flex items-center justify-between px-4">
+<div class="w-2 h-2 rounded-full bg-primary-container shadow-[0_0_8px_#00e5ff]"></div>
+<div class="w-2 h-2 rounded-full bg-primary-container shadow-[0_0_8px_#00e5ff]"></div>
+</div>
+<!-- Scroll Wheel Container -->
+<div class="scroll-wheel-container h-full w-full overflow-y-scroll no-scrollbar snap-y snap-mandatory flex flex-col items-center pt-[calc(50%-30px)] pb-[calc(50%-30px)]" id="weight-wheel">
+<!-- JavaScript will populate this -->
+</div>
+<div class="absolute bottom-[20%] font-label-caps text-label-caps text-primary-container/60 z-20 pointer-events-none" id="wheel-unit-label">KG</div>
+</div>
+</main>
+<!-- Bottom Actions -->
+<footer class="flex flex-col gap-4 w-full max-w-md mx-auto z-10 pb-4">
+<div class="flex gap-4">
+<button class="flex-[2] py-4 px-6 rounded-lg bg-primary-container text-on-primary-container font-label-caps text-label-caps primary-glow hover:bg-primary-fixed transition-all uppercase tracking-widest flex items-center justify-center gap-2 font-bold w-full">
+                CONFIRM WEIGHT
+                <span class="material-symbols-outlined text-[18px]">check</span>
+</button>
+</div>
+</footer>
+<script>
+        // State
+        let currentUnit = 'kg'; // 'kg' or 'lbs'
+        
+        // Ranges
+        const ranges = {
+            kg: { min: 40, max: 200, default: 75 },
+            lbs: { min: 90, max: 440, default: 165 }
+        };
+
+        const wheel = document.getElementById('weight-wheel');
+
+        // Initialize Wheel
+        function initWheel() {
+            wheel.innerHTML = '';
+            const range = ranges[currentUnit];
+            
+            for (let i = range.min; i <= range.max; i++) {
+                const item = document.createElement('div');
+                item.className = 'wheel-item h-[60px] flex items-center justify-center snap-center w-full font-data-lg text-data-lg';
+                item.textContent = i;
+                item.dataset.val = i;
+                wheel.appendChild(item);
+            }
+            
+            // Scroll to default
+            setTimeout(() => {
+                const defaultIndex = range.default - range.min;
+                wheel.scrollTop = defaultIndex * 60;
+                updateActiveState();
+            }, 10);
+        }
+
+        function updateActiveState() {
+            const items = wheel.querySelectorAll('.wheel-item');
+            const center = wheel.scrollTop + (wheel.clientHeight / 2);
+            
+            items.forEach(item => {
+                const itemCenter = item.offsetTop + (item.clientHeight / 2);
+                const distance = Math.abs(center - itemCenter);
+                
+                if (distance < 30) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        // Unit Toggle Logic
+        function toggleUnit(unit) {
+            if (currentUnit === unit) return;
+            currentUnit = unit;
+            
+            const btnKg = document.getElementById('btn-kg');
+            const btnLbs = document.getElementById('btn-lbs');
+            const unitLabel = document.getElementById('wheel-unit-label');
+            
+            if (unit === 'lbs') {
+                btnLbs.className = "px-4 py-1 rounded-full font-label-caps text-label-caps bg-primary-container/20 text-primary-container border border-primary-container/30";
+                btnKg.className = "px-4 py-1 rounded-full font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors";
+                unitLabel.textContent = "LBS";
+            } else {
+                btnKg.className = "px-4 py-1 rounded-full font-label-caps text-label-caps bg-primary-container/20 text-primary-container border border-primary-container/30";
+                btnLbs.className = "px-4 py-1 rounded-full font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors";
+                unitLabel.textContent = "KG";
+            }
+            
+            initWheel();
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initWheel();
+            wheel.addEventListener('scroll', updateActiveState);
+        });
+
+    </script>
+</body></html>

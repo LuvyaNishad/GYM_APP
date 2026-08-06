@@ -1,0 +1,255 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Onboarding: Programme Ready</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#251a00",
+                        "surface-container-high": "#282a2e",
+                        "primary-container": "#00e5ff",
+                        "on-surface-variant": "#bac9cc",
+                        "surface-container-low": "#1a1c20",
+                        "secondary": "#c6c6c7",
+                        "secondary-fixed": "#e2e2e2",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#00daf3",
+                        "surface-bright": "#37393e",
+                        "inverse-on-surface": "#2f3035",
+                        "inverse-surface": "#e2e2e8",
+                        "on-tertiary-container": "#6f5500",
+                        "on-secondary-fixed-variant": "#454747",
+                        "on-secondary-container": "#b4b5b5",
+                        "error-container": "#93000a",
+                        "outline": "#849396",
+                        "tertiary-container": "#fec931",
+                        "tertiary-fixed": "#ffdf96",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "surface": "#111318",
+                        "primary-fixed-dim": "#00daf3",
+                        "primary": "#c3f5ff",
+                        "background": "#111318",
+                        "on-primary": "#00363d",
+                        "on-primary-container": "#00626e",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "outline-variant": "#3b494c",
+                        "on-primary-fixed-variant": "#004f58",
+                        "on-tertiary": "#3e2e00",
+                        "inverse-primary": "#006875",
+                        "surface-container-highest": "#333539",
+                        "on-error": "#690005",
+                        "surface-dim": "#111318",
+                        "secondary-container": "#454747",
+                        "primary-fixed": "#9cf0ff",
+                        "on-error-container": "#ffdad6",
+                        "tertiary": "#ffeac0",
+                        "tertiary-fixed-dim": "#f3bf26",
+                        "on-secondary": "#2f3131",
+                        "surface-container": "#1e2024",
+                        "surface-variant": "#333539",
+                        "on-surface": "#e2e2e8",
+                        "on-background": "#e2e2e8",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "on-primary-fixed": "#001f24",
+                        "surface-container-lowest": "#0c0e12"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-margin": "24px",
+                        "stack-gap-sm": "12px",
+                        "stack-gap-lg": "32px",
+                        "glass-padding": "24px",
+                        "stack-gap-md": "20px"
+                    },
+                    "fontFamily": {
+                        "data-lg": ["JetBrains Mono"],
+                        "data-md": ["JetBrains Mono"],
+                        "headline-sm": ["Outfit"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-lg": ["Outfit"],
+                        "display-lg": ["Outfit"],
+                        "body-sm": ["Outfit"],
+                        "headline-md": ["Outfit"]
+                    },
+                    "fontSize": {
+                        "data-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "data-md": ["18px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["28px", { "lineHeight": "36px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .text-glow {
+            text-shadow: 0 0 12px rgba(0, 229, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-[#0A0C10] text-on-background font-body-lg antialiased min-h-screen flex flex-col items-center pb-24 md:pb-8 pt-8">
+<!-- Top AppBar (from JSON, modified for onboarding intent - no nav elements needed as it's transactional) -->
+<header class="w-full max-w-md mx-auto px-container-margin pt-6 pb-4 flex justify-between items-center z-50">
+<h1 class="font-display-lg text-display-lg tracking-[0.2em] text-primary dark:text-primary-fixed-dim uppercase text-glow">LEON</h1>
+</header>
+<main class="w-full max-w-md mx-auto px-container-margin flex flex-col gap-stack-gap-lg flex-1">
+<!-- Progress Bar -->
+<div class="w-full mb-4">
+<div class="flex justify-between items-end mb-2">
+<span class="font-label-caps text-label-caps text-secondary">INITIALISING PROTOCOL</span>
+<span class="font-data-md text-data-md text-primary">100%</span>
+</div>
+<div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 100%; box-shadow: 0 0 8px rgba(0, 229, 255, 0.8);"></div>
+</div>
+</div>
+<!-- Top Card: Protocol Summary -->
+<section class="glass-card rounded-xl p-glass-padding flex flex-col gap-stack-gap-md relative overflow-hidden">
+<!-- Decorative gradient behind card -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary-container rounded-full opacity-10 blur-3xl pointer-events-none"></div>
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-primary tracking-widest">RECOMMENDED PROTOCOL</span>
+<h2 class="font-headline-md text-headline-md text-white">PUSH PULL LEGS</h2>
+</div>
+<div class="flex gap-2">
+<span class="font-label-caps text-label-caps bg-surface-container-high text-on-surface px-2 py-1 rounded border border-white/10">MON</span>
+<span class="font-label-caps text-label-caps bg-primary/20 text-primary px-2 py-1 rounded border border-primary/30">TUE</span>
+<span class="font-label-caps text-label-caps bg-primary/20 text-primary px-2 py-1 rounded border border-primary/30">WED</span>
+<span class="font-label-caps text-label-caps bg-surface-container-high text-on-surface px-2 py-1 rounded border border-white/10">THU</span>
+<span class="font-label-caps text-label-caps bg-primary/20 text-primary px-2 py-1 rounded border border-primary/30">FRI</span>
+<span class="font-label-caps text-label-caps bg-surface-container-high text-on-surface px-2 py-1 rounded border border-white/10">SAT</span>
+<span class="font-label-caps text-label-caps bg-surface-container-high text-on-surface px-2 py-1 rounded border border-white/10">SUN</span>
+</div>
+<div class="flex flex-wrap gap-4 mt-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 0;">schedule</span>
+<span class="font-data-md text-data-md text-secondary">60–75 <span class="text-xs">MIN / SESSION</span></span>
+</div>
+<div class="flex items-center gap-2 bg-[#004d40]/30 px-3 py-1 rounded-full border border-[#00bfa5]/40">
+<div class="w-2 h-2 rounded-full bg-[#00bfa5] shadow-[0_0_8px_#00bfa5]"></div>
+<span class="font-label-caps text-label-caps text-[#00bfa5]">RECOVERY: OPTIMISED</span>
+</div>
+</div>
+</section>
+<!-- Middle Card: Weekly Structure -->
+<section class="glass-card rounded-xl p-glass-padding flex flex-col gap-stack-gap-md">
+<h3 class="font-label-caps text-label-caps text-secondary mb-2 border-b border-white/10 pb-2">WEEKLY STRUCTURE</h3>
+<div class="flex flex-col gap-4">
+<!-- Day 1 -->
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-4">
+<span class="font-data-md text-data-md text-secondary w-8">01</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-white">Push</span>
+<span class="font-body-sm text-body-sm text-secondary">Chest, Shoulders, Triceps</span>
+</div>
+</div>
+<div class="flex gap-1">
+<div class="w-2 h-2 rounded-full bg-blue-400"></div>
+<div class="w-2 h-2 rounded-full bg-blue-500"></div>
+<div class="w-2 h-2 rounded-full bg-blue-600"></div>
+</div>
+</div>
+<!-- Day 2 -->
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-4">
+<span class="font-data-md text-data-md text-secondary w-8">02</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-white">Pull</span>
+<span class="font-body-sm text-body-sm text-secondary">Back, Biceps, Rear Delts</span>
+</div>
+</div>
+<div class="flex gap-1">
+<div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+<div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+</div>
+</div>
+<!-- Day 3 -->
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-4">
+<span class="font-data-md text-data-md text-secondary w-8">03</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-white">Legs</span>
+<span class="font-body-sm text-body-sm text-secondary">Quads, Hamstrings, Calves</span>
+</div>
+</div>
+<div class="flex gap-1">
+<div class="w-2 h-2 rounded-full bg-amber-400"></div>
+<div class="w-2 h-2 rounded-full bg-amber-500"></div>
+<div class="w-2 h-2 rounded-full bg-amber-600"></div>
+</div>
+</div>
+<!-- Day 4 -->
+<div class="flex items-center justify-between opacity-50">
+<div class="flex items-center gap-4">
+<span class="font-data-md text-data-md text-secondary w-8">04</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-white">Active Recovery</span>
+<span class="font-body-sm text-body-sm text-secondary">Light Cardio, Mobility</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 0;">self_improvement</span>
+</div>
+<!-- Day 5 -->
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-4">
+<span class="font-data-md text-data-md text-secondary w-8">05</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-white">Upper Body</span>
+<span class="font-body-sm text-body-sm text-secondary">Compound Focus</span>
+</div>
+</div>
+<div class="flex gap-1">
+<div class="w-2 h-2 rounded-full bg-blue-400"></div>
+<div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+</div>
+</div>
+<!-- Day 6 -->
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-4">
+<span class="font-data-md text-data-md text-secondary w-8">06</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-white">Lower Body</span>
+<span class="font-body-sm text-body-sm text-secondary">Strength Focus</span>
+</div>
+</div>
+<div class="flex gap-1">
+<div class="w-2 h-2 rounded-full bg-amber-400"></div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Actions -->
+<div class="w-full max-w-md mx-auto px-container-margin mt-8 flex flex-col gap-4 sticky bottom-6 z-40">
+<button class="w-full bg-primary-container text-[#000000] font-headline-sm text-headline-sm py-4 rounded-xl shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:shadow-[0_0_30px_rgba(0,229,255,0.5)] transition-shadow duration-300 flex justify-center items-center gap-2">
+            DEPLOY PROGRAMME
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+</button>
+<button class="w-full py-2 font-label-caps text-label-caps text-primary hover:text-white transition-colors">
+            Customise first
+        </button>
+</div>
+</body></html>

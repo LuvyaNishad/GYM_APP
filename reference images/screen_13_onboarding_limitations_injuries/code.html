@@ -1,0 +1,298 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Onboarding: Limitations &amp; Injuries</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#251a00",
+                        "surface-container-high": "#282a2e",
+                        "primary-container": "#00e5ff",
+                        "on-surface-variant": "#bac9cc",
+                        "surface-container-low": "#1a1c20",
+                        "secondary": "#c6c6c7",
+                        "secondary-fixed": "#e2e2e2",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#00daf3",
+                        "surface-bright": "#37393e",
+                        "inverse-on-surface": "#2f3035",
+                        "inverse-surface": "#e2e2e8",
+                        "on-tertiary-container": "#6f5500",
+                        "on-secondary-fixed-variant": "#454747",
+                        "on-secondary-container": "#b4b5b5",
+                        "error-container": "#93000a",
+                        "outline": "#849396",
+                        "tertiary-container": "#fec931",
+                        "tertiary-fixed": "#ffdf96",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "surface": "#111318",
+                        "primary-fixed-dim": "#00daf3",
+                        "primary": "#c3f5ff",
+                        "background": "#111318",
+                        "on-primary": "#00363d",
+                        "on-primary-container": "#00626e",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "outline-variant": "#3b494c",
+                        "on-primary-fixed-variant": "#004f58",
+                        "on-tertiary": "#3e2e00",
+                        "inverse-primary": "#006875",
+                        "surface-container-highest": "#333539",
+                        "on-error": "#690005",
+                        "surface-dim": "#111318",
+                        "secondary-container": "#454747",
+                        "primary-fixed": "#9cf0ff",
+                        "on-error-container": "#ffdad6",
+                        "tertiary": "#ffeac0",
+                        "tertiary-fixed-dim": "#f3bf26",
+                        "on-secondary": "#2f3131",
+                        "surface-container": "#1e2024",
+                        "surface-variant": "#333539",
+                        "on-surface": "#e2e2e8",
+                        "on-background": "#e2e2e8",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "on-primary-fixed": "#001f24",
+                        "surface-container-lowest": "#0c0e12"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-margin": "24px",
+                        "stack-gap-sm": "12px",
+                        "stack-gap-lg": "32px",
+                        "glass-padding": "24px",
+                        "stack-gap-md": "20px"
+                    },
+                    "fontFamily": {
+                        "data-lg": ["JetBrains Mono"],
+                        "data-md": ["JetBrains Mono"],
+                        "headline-sm": ["Outfit"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-lg": ["Outfit"],
+                        "display-lg": ["Outfit"],
+                        "body-sm": ["Outfit"],
+                        "headline-md": ["Outfit"]
+                    },
+                    "fontSize": {
+                        "data-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "data-md": ["18px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["28px", { "lineHeight": "36px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #0A0C10; /* Custom dark background requested in prompt, slightly overriding theme bg for exact match */
+            color: theme('colors.on-background');
+            font-family: theme('fontFamily.body-lg');
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:active {
+            transform: scale(0.98);
+        }
+
+        .injury-card.selected {
+            border-color: theme('colors.primary-container');
+            box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.15), 0 0 15px rgba(0, 229, 255, 0.1);
+            background-color: rgba(0, 229, 255, 0.05);
+        }
+
+        .injury-card.none-selected {
+            border-color: #00C853;
+            box-shadow: inset 0 0 20px rgba(0, 200, 83, 0.15), 0 0 15px rgba(0, 200, 83, 0.1);
+            background-color: rgba(0, 200, 83, 0.05);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Progress Bar Animation */
+        .progress-fill {
+            width: 0;
+            transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start relative overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Ambient Background Light (simulating OLED void with subtle HUD glow) -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+<div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary-container opacity-[0.03] blur-[100px]"></div>
+</div>
+<!-- TopAppBar Shell Implementation (Linear Intent -> Hidden/Simplified) -->
+<!-- Content logic dictates linear onboarding flows hide main nav -->
+<header class="w-full max-w-3xl mx-auto pt-8 px-container-margin z-10 flex flex-col gap-6">
+<!-- Navigation / Back Action (Temporary Departure from main flow) -->
+<button class="w-12 h-12 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition-colors group focus:outline-none focus:ring-2 focus:ring-primary-container">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary-container transition-colors">arrow_back</span>
+</button>
+<!-- Progress Header -->
+<div class="flex flex-col gap-stack-gap-sm">
+<div class="flex justify-between items-end">
+<span class="font-label-caps text-label-caps text-primary-fixed-dim tracking-[0.2em]">11 / 12</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-[0.1em]">77%</span>
+</div>
+<!-- Progress Bar -->
+<div class="h-1 w-full bg-surface-container-high rounded-full overflow-hidden relative">
+<div class="absolute top-0 left-0 h-full bg-gradient-to-r from-primary-fixed-dim to-primary-container rounded-full progress-fill shadow-[0_0_10px_rgba(0,229,255,0.5)]" style="width: 77%;"></div>
+</div>
+</div>
+<!-- Typography Header -->
+<div class="flex flex-col gap-2 mt-4">
+<h1 class="font-display-lg text-display-lg text-on-surface">LIMITATIONS &amp; INJURIES</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">We'll adapt your programme to keep you safe.</p>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-3xl mx-auto px-container-margin pt-stack-gap-lg pb-[120px] z-10 flex-grow flex flex-col gap-stack-gap-md">
+<!-- Selection Grid / List -->
+<div class="flex flex-col gap-4">
+<!-- Injury Options -->
+<button class="injury-card glass-card w-full p-glass-padding rounded-xl flex items-center justify-between text-left group hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-primary-container" onclick="toggleSelection(this)">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-secondary-fixed">accessibility_new</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">LOWER BACK</span>
+</div>
+<div class="check-icon opacity-0 transition-opacity">
+<span class="material-symbols-outlined fill text-primary-container">check_circle</span>
+</div>
+</button>
+<button class="injury-card glass-card w-full p-glass-padding rounded-xl flex items-center justify-between text-left group hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-primary-container" onclick="toggleSelection(this)">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-secondary-fixed">fitness_center</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">SHOULDER</span>
+</div>
+<div class="check-icon opacity-0 transition-opacity">
+<span class="material-symbols-outlined fill text-primary-container">check_circle</span>
+</div>
+</button>
+<button class="injury-card glass-card w-full p-glass-padding rounded-xl flex items-center justify-between text-left group hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-primary-container" onclick="toggleSelection(this)">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-secondary-fixed">sports_gymnastics</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">KNEE</span>
+</div>
+<div class="check-icon opacity-0 transition-opacity">
+<span class="material-symbols-outlined fill text-primary-container">check_circle</span>
+</div>
+</button>
+<button class="injury-card glass-card w-full p-glass-padding rounded-xl flex items-center justify-between text-left group hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-primary-container" onclick="toggleSelection(this)">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-secondary-fixed">front_hand</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">ELBOW/WRIST</span>
+</div>
+<div class="check-icon opacity-0 transition-opacity">
+<span class="material-symbols-outlined fill text-primary-container">check_circle</span>
+</div>
+</button>
+<!-- Divider -->
+<div class="w-full h-px bg-white/10 my-2"></div>
+<!-- NONE Option (Special State) -->
+<button class="injury-card glass-card w-full p-glass-padding rounded-xl flex items-center justify-between text-left group hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-[#00C853]" id="none-option" onclick="toggleNoneSelection(this)">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-secondary-fixed">sentiment_very_satisfied</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">NONE</span>
+</div>
+<div class="none-check-icon opacity-0 transition-opacity">
+<span class="material-symbols-outlined fill text-[#00C853]">check_circle</span>
+</div>
+</button>
+</div>
+</main>
+<!-- Bottom Action Area (Fixed) -->
+<div class="fixed bottom-0 left-0 w-full bg-gradient-to-t from-background via-background/90 to-transparent pt-12 pb-8 px-container-margin z-20 flex justify-center">
+<div class="w-full max-w-3xl flex justify-end">
+<!-- Primary Button styled as requested -->
+<button class="w-full md:w-auto min-w-[200px] h-14 bg-primary-container text-on-primary font-label-caps text-label-caps tracking-[0.1em] rounded-full hover:bg-primary transition-all duration-300 shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:shadow-[0_0_30px_rgba(0,229,255,0.5)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary-container">
+                CONFIRM
+            </button>
+</div>
+</div>
+<script>
+        // Simple Interaction Logic
+        function toggleSelection(element) {
+            // If "NONE" is selected, deselect it
+            const noneOption = document.getElementById('none-option');
+            if (noneOption.classList.contains('none-selected')) {
+                noneOption.classList.remove('none-selected');
+                noneOption.querySelector('.none-check-icon').classList.replace('opacity-100', 'opacity-0');
+            }
+
+            // Toggle current element
+            element.classList.toggle('selected');
+            const checkIcon = element.querySelector('.check-icon');
+            
+            if (element.classList.contains('selected')) {
+                checkIcon.classList.replace('opacity-0', 'opacity-100');
+            } else {
+                checkIcon.classList.replace('opacity-100', 'opacity-0');
+            }
+        }
+
+        function toggleNoneSelection(element) {
+            // Deselect all others
+            const otherCards = document.querySelectorAll('.injury-card:not(#none-option)');
+            otherCards.forEach(card => {
+                card.classList.remove('selected');
+                const check = card.querySelector('.check-icon');
+                if (check) check.classList.replace('opacity-100', 'opacity-0');
+            });
+
+            // Toggle NONE
+            element.classList.toggle('none-selected');
+            const checkIcon = element.querySelector('.none-check-icon');
+            
+            if (element.classList.contains('none-selected')) {
+                checkIcon.classList.replace('opacity-0', 'opacity-100');
+            } else {
+                checkIcon.classList.replace('opacity-100', 'opacity-0');
+            }
+        }
+
+        // Trigger progress bar animation on load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                document.querySelector('.progress-fill').style.width = '77%';
+            }, 100);
+        });
+    </script>
+</body></html>

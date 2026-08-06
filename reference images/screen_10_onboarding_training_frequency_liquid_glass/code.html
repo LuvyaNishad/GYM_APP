@@ -1,0 +1,293 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Onboarding - Training Frequency</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;family=Outfit:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#1a1c1c",
+                    "inverse-surface": "#e2e2e8",
+                    "surface-container": "#1e2024",
+                    "surface-dim": "#111318",
+                    "on-error-container": "#ffdad6",
+                    "primary-container": "#00e5ff",
+                    "primary-fixed-dim": "#00daf3",
+                    "on-primary-fixed-variant": "#004f58",
+                    "on-surface-variant": "#bac9cc",
+                    "surface-container-highest": "#333539",
+                    "on-primary-container": "#00626e",
+                    "surface-container-lowest": "#0c0e12",
+                    "on-tertiary-fixed": "#251a00",
+                    "surface-container-high": "#282a2e",
+                    "surface-tint": "#00daf3",
+                    "on-error": "#690005",
+                    "on-secondary-container": "#b4b5b5",
+                    "primary-fixed": "#9cf0ff",
+                    "tertiary": "#ffeac0",
+                    "on-surface": "#e2e2e8",
+                    "secondary-fixed": "#e2e2e2",
+                    "inverse-on-surface": "#2f3035",
+                    "secondary-container": "#454747",
+                    "on-secondary-fixed-variant": "#454747",
+                    "primary": "#c3f5ff",
+                    "error-container": "#93000a",
+                    "surface-container-low": "#1a1c20",
+                    "on-tertiary": "#3e2e00",
+                    "error": "#ffb4ab",
+                    "on-primary": "#00363d",
+                    "on-tertiary-container": "#6f5500",
+                    "background": "#111318",
+                    "outline": "#849396",
+                    "secondary-fixed-dim": "#c6c6c7",
+                    "secondary": "#c6c6c7",
+                    "surface": "#111318",
+                    "tertiary-fixed-dim": "#f3bf26",
+                    "surface-variant": "#333539",
+                    "on-primary-fixed": "#001f24",
+                    "on-background": "#e2e2e8",
+                    "inverse-primary": "#006875",
+                    "on-tertiary-fixed-variant": "#594400",
+                    "outline-variant": "#3b494c",
+                    "tertiary-fixed": "#ffdf96",
+                    "surface-bright": "#37393e",
+                    "tertiary-container": "#fec931",
+                    "on-secondary": "#2f3131"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-gap-lg": "32px",
+                    "stack-gap-sm": "12px",
+                    "stack-gap-md": "20px",
+                    "glass-padding": "24px",
+                    "container-margin": "24px"
+            },
+            "fontFamily": {
+                    "headline-sm": ["Outfit"],
+                    "body-lg": ["Outfit"],
+                    "data-md": ["JetBrains Mono"],
+                    "data-lg": ["JetBrains Mono"],
+                    "label-caps": ["JetBrains Mono"],
+                    "headline-md": ["Outfit"],
+                    "display-lg": ["Outfit"],
+                    "body-sm": ["Outfit"]
+            },
+            "fontSize": {
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "data-md": ["18px", {"lineHeight": "24px", "fontWeight": "500"}],
+                    "data-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                    "headline-md": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        
+        .picker-item {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .picker-item.active {
+            font-size: 64px !important;
+            line-height: 1 !important;
+            color: #00e5ff !important;
+            filter: drop-shadow(0 0 15px rgba(0, 229, 255, 0.5));
+            opacity: 1;
+            transform: scale(1);
+        }
+        .picker-item.inactive {
+            font-size: 32px !important;
+            color: rgba(186, 201, 204, 0.3) !important; /* on-surface-variant transparent */
+            opacity: 0.5;
+            transform: scale(0.8);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-lg min-h-screen flex flex-col relative overflow-hidden selection:bg-primary-container/30 selection:text-primary-container">
+<!-- Atmospheric Glow -->
+<div class="absolute inset-0 pointer-events-none flex items-center justify-center z-0">
+<div class="w-[300px] h-[300px] bg-primary-container/5 rounded-full blur-[100px]"></div>
+</div>
+<!-- Onboarding Header (Minimal, linear flow) -->
+<header class="w-full px-container-margin pt-6 pb-4 z-10">
+<div class="flex justify-between items-center mb-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-variant/30 border border-outline/10 text-on-surface-variant hover:text-primary-container hover:border-primary-container/30 transition-colors backdrop-blur-md">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">arrow_back</span>
+</button>
+<div class="font-label-caps text-label-caps text-on-surface-variant tracking-widest">
+                08 / 12
+            </div>
+</div>
+<!-- Progress Bar -->
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-container w-[56%] rounded-full shadow-[0_0_10px_rgba(0,229,255,0.4)] relative">
+<div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-r from-transparent to-white/30"></div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col px-container-margin z-10 pt-stack-gap-lg">
+<!-- Typography Header -->
+<div class="text-center mb-stack-gap-lg">
+<h1 class="font-display-lg text-[40px] leading-[48px] font-bold text-primary-fixed tracking-tight uppercase mb-2" style="font-family: 'Outfit', sans-serif;">
+                TRAINING FREQUENCY
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                Days per week you will train
+            </p>
+</div>
+<!-- Scroll Wheel Picker -->
+<div class="relative w-full h-[320px] my-auto flex flex-col items-center justify-center">
+<!-- Glass Selector Highlight -->
+<div class="absolute inset-0 m-auto w-32 h-[100px] bg-surface-variant/20 border border-outline/20 rounded-2xl backdrop-blur-md shadow-[0_0_30px_rgba(0,229,255,0.05)] z-0 pointer-events-none flex items-center justify-center">
+<!-- Inner glow accents -->
+<div class="absolute top-0 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-primary-container/40 to-transparent"></div>
+<div class="absolute bottom-0 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-primary-container/40 to-transparent"></div>
+</div>
+<!-- Gradient Fades for depth -->
+<div class="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-background via-background/80 to-transparent z-20 pointer-events-none"></div>
+<div class="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-background via-background/80 to-transparent z-20 pointer-events-none"></div>
+<!-- Scrollable Container -->
+<div class="h-full w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar z-10 relative pt-[110px] pb-[110px]" id="pickerContainer" style="scroll-behavior: smooth;">
+<div class="picker-item snap-center h-[100px] flex items-center justify-center font-data-lg text-data-lg font-bold w-full inactive" data-value="1">1</div>
+<div class="picker-item snap-center h-[100px] flex items-center justify-center font-data-lg text-data-lg font-bold w-full inactive" data-value="2">2</div>
+<div class="picker-item snap-center h-[100px] flex items-center justify-center font-data-lg text-data-lg font-bold w-full inactive" data-value="3">3</div>
+<div class="picker-item snap-center h-[100px] flex items-center justify-center font-data-lg text-data-lg font-bold w-full inactive" data-value="4">4</div>
+<div class="picker-item snap-center h-[100px] flex items-center justify-center font-data-lg text-data-lg font-bold w-full active" data-value="5">5</div>
+<div class="picker-item snap-center h-[100px] flex items-center justify-center font-data-lg text-data-lg font-bold w-full inactive" data-value="6">6</div>
+<div class="picker-item snap-center h-[100px] flex items-center justify-center font-data-lg text-data-lg font-bold w-full inactive" data-value="7">7</div>
+</div>
+</div>
+<!-- Dynamic Feedback Label -->
+<div class="h-12 flex items-center justify-center mt-stack-gap-md mb-stack-gap-lg z-10">
+<div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary-container/10 border border-primary-container/20 backdrop-blur-sm transition-all duration-300" id="dynamicLabel" style="transform: scale(1);">
+<span class="material-symbols-outlined text-primary-container text-[18px]">info</span>
+<span class="font-label-caps text-label-caps text-primary-fixed uppercase tracking-wider">PPL or Bro Split recommended</span>
+</div>
+</div>
+</main>
+<!-- Bottom Action (Fixed) -->
+<div class="w-full px-container-margin pb-safe mb-8 z-10">
+<button class="w-full bg-primary-container hover:bg-primary-fixed-dim text-on-primary-container font-label-caps text-[14px] leading-tight tracking-[0.15em] font-bold py-5 rounded-xl shadow-[0_0_24px_rgba(0,229,255,0.15)] hover:shadow-[0_0_32px_rgba(0,229,255,0.3)] transition-all duration-200 uppercase flex items-center justify-center gap-2 group relative overflow-hidden">
+<!-- Glint effect -->
+<div class="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-20 group-hover:animate-[glint_1s_ease-in-out_forwards]"></div>
+<span>CONFIRM</span>
+<span class="material-symbols-outlined text-[20px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+</button>
+</div>
+<!-- Script for Scroll Logic -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('pickerContainer');
+            const items = document.querySelectorAll('.picker-item');
+            const dynamicLabelSpan = document.querySelector('#dynamicLabel span:last-child');
+            const itemHeight = 100; 
+
+            // Scroll to center item (5) initially
+            const initialTarget = document.querySelector('[data-value="5"]');
+            if(initialTarget) {
+                 setTimeout(() => {
+                    initialTarget.scrollIntoView({ behavior: 'auto', block: 'center' });
+                 }, 50);
+            }
+
+            const recommendations = {
+                1: "Active recovery / Maintenance",
+                2: "Active recovery / Maintenance",
+                3: "Full body or Upper/Lower split",
+                4: "Full body or Upper/Lower split",
+                5: "PPL or Bro Split recommended",
+                6: "PPL or Bro Split recommended",
+                7: "Advanced athlete / High risk of overtraining"
+            };
+
+            function updateActiveItem() {
+                const containerCenter = container.getBoundingClientRect().top + (container.clientHeight / 2);
+                
+                let closestItem = null;
+                let minDistance = Infinity;
+
+                items.forEach(item => {
+                    const rect = item.getBoundingClientRect();
+                    const itemCenter = rect.top + (rect.height / 2);
+                    const distance = Math.abs(containerCenter - itemCenter);
+
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestItem = item;
+                    }
+                });
+
+                if (closestItem) {
+                    items.forEach(i => {
+                        if (i === closestItem) {
+                            i.classList.remove('inactive');
+                            i.classList.add('active');
+                        } else {
+                            i.classList.remove('active');
+                            i.classList.add('inactive');
+                        }
+                    });
+
+                    const val = closestItem.getAttribute('data-value');
+                    dynamicLabelSpan.textContent = recommendations[val];
+                    
+                    // Add subtle haptic feedback feeling if supported (simulated by slight label pop)
+                    dynamicLabelSpan.parentElement.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        dynamicLabelSpan.parentElement.style.transform = 'scale(1)';
+                    }, 150);
+                }
+            }
+
+            container.addEventListener('scroll', () => {
+                requestAnimationFrame(updateActiveItem);
+            });
+
+            // Make clicking snap to item
+            items.forEach(item => {
+                item.addEventListener('click', () => {
+                    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+            });
+            
+            // Initial update
+            updateActiveItem();
+        });
+    </script>
+<style>
+        @keyframes glint {
+            100% { left: 200%; }
+        }
+    </style>
+</body></html>
