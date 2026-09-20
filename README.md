@@ -80,31 +80,35 @@ Inspired by tactical interfaces and the RE4 Remake HUD, LEON prioritises speed, 
 
 | Layer | Technology |
 |---|---|
-| Framework | Flutter (Dart) |
-| State Management | Riverpod |
-| Local Storage | Hive (local-first) |
-| Cloud Sync | Supabase |
-| Charts | fl_chart |
-| Navigation | go_router |
+| Framework | Flutter (Dart 3.10) |
+| State Management | Riverpod 3 (`Notifier` / `AsyncNotifier`) |
+| Local Storage | `hive_ce` (local-first, models stored as JSON) |
+| Cloud Sync | Supabase *(deferred)* |
+| Charts | Hand-written `CustomPainter` for the radar; fl_chart for line/bar |
+| Navigation | go_router (`ShellRoute` + floating glass nav pill) |
 | Models | Freezed + JsonSerializable |
-| Animations | Lottie |
+| Animations | Flutter implicit + explicit controllers |
 
 ---
 
 ## Design System
 
-**Vibe:** Cyber-Slate · Tactical · Glassmorphism · Operational
+**Vibe:** Liquid Glass Tactical · Operational · High-contrast
 
 | Token | Value |
 |---|---|
 | Background | `#0A0C10` OLED black |
 | Primary accent | `#00E5FF` cyan-neon |
+| Glass fill | `#FFFFFF0A` (`#FFFFFF1A` elevated) |
+| Glass border | `#FFFFFF33`, 1px |
 | Success | `#00C853` ECG green |
 | Danger | `#E53935` alert red |
 | Header font | Outfit |
 | Numbers font | JetBrains Mono |
 
-Cards use `BackdropFilter` with `sigmaX/Y: 10` glassmorphism throughout.
+Cards use `BackdropFilter` at `sigmaX/Y: 24`, 24dp radius, 24dp padding, and a centred cyan glow
+instead of drop shadows. Full spec — including per-screen layout and copy — lives in
+[DESIGN.md](DESIGN.md), which is the single source of truth for every visual decision.
 
 ---
 
@@ -113,7 +117,7 @@ Cards use `BackdropFilter` with `sigmaX/Y: 10` glassmorphism throughout.
 lib/
 ├── core/           # Theme, router, constants, utils, notifications
 ├── features/       # One folder per screen/feature
-│   ├── questionnaire/
+│   ├── onboarding/
 │   ├── authentication/
 │   ├── dashboard/
 │   ├── workout_session/
@@ -123,11 +127,15 @@ lib/
 │   ├── analytics/
 │   ├── recovery/
 │   ├── profile/
-│   └── health_tracking/
+│   ├── health_tracking/
+│   └── cycle/          # reserved — cycle tracking
 ├── models/         # Freezed data models
-├── services/       # Supabase, Hive, auth, analytics, PR detection
-├── shared/         # Reusable widgets
+├── services/       # Hive storage, workouts, splits, PR detection
+├── shared/         # Reusable widgets (glass card, nav pill, app shell)
 └── state/          # Global Riverpod providers
+
+docs/archive/       # Superseded design docs, kept for the record
+reference images/   # Mockups for screens 01–15
 ```
 
 ---
@@ -135,9 +143,11 @@ lib/
 ## Getting Started
 
 ### Prerequisites
-- Flutter SDK `^3.5.0`
-- Dart SDK `^3.5.0`
-- A Supabase project
+- Flutter SDK `>=3.38`
+- Dart SDK `^3.8.0`
+- **Windows only:** Developer Mode enabled (Flutter plugins need symlink support) —
+  `start ms-settings:developers`
+- A Supabase project *(optional — cloud sync is deferred; the app is local-first)*
 
 ### Setup
 ```bash
@@ -152,11 +162,18 @@ cp .env.example .env
 flutter pub get
 
 # 4. Run code generation
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build --force-jit
 
 # 5. Run the app
 flutter run
 ```
+
+> `--force-jit` is required: the AOT snapshot step fails on `objective_c`'s native build hook.
+> Use `dart analyze`, not `flutter analyze` — the latter crashes with "analysis server exited
+> with code 64" on this toolchain.
+
+**New here?** [RUNNING.md](RUNNING.md) walks through the full Antigravity + Android Studio +
+Flutter setup, including the required Windows Developer Mode step.
 
 ### Environment Variables
 ```env
@@ -168,25 +185,33 @@ SUPABASE_ANON_KEY=your_supabase_anon_key
 
 ## Roadmap
 
+**Foundation milestone**
 - [x] Project skeleton + architecture
-- [x] Design system (colors, typography, glassmorphism)
+- [x] Design system (Liquid Glass Tactical — colors, typography, glass, buttons)
 - [x] Data models (Freezed + codegen)
-- [x] Exercise library (100+ exercises)
-- [ ] Onboarding questionnaire flow
-- [ ] Authentication (Supabase)
-- [ ] Active workout session (set logger, RPE, rest timer, PR detection)
-- [ ] Split builder
-- [ ] Dashboard with real radar chart data
+- [x] Local persistence (Hive CE, JSON-encoded models — survives restart)
+- [x] Navigation shell (`ShellRoute` + floating glass nav pill)
+- [x] Guest-first routing (fresh install lands on onboarding)
+- [ ] Real radar chart (`CustomPainter`, self-drawing, weak-axis detection)
+- [ ] Pluggable recovery scoring (cycle-ready factor list)
+
+**Next**
+- [ ] Onboarding questionnaire flow (4-page stub today; 14 screens specified)
+- [ ] Exercise library seed — 100+ exercises (6 hardcoded today; search + filters built)
+- [ ] Active workout session (set logger, RPE, rest timer, plate calculator, PR detection)
+- [ ] Split builder + rules-based program generator
 - [ ] Analytics + GitHub-style heatmap
-- [ ] Recovery scoring
-- [ ] Supabase cloud sync
+- [ ] Authentication + Supabase cloud sync
 - [ ] Push notifications
+- [ ] Cycle tracking
 
 ---
 
 ## Status
 
-> Early development — skeleton complete, feature implementation in progress.
+> Foundation milestone largely complete — persistence, navigation shell, and the Liquid Glass
+> design system are in place. Feature implementation in progress. Nothing above is "feature
+> complete"; check the roadmap checkboxes for the real state.
 
 ---
 

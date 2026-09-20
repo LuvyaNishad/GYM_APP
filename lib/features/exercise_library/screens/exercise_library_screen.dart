@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/widgets/app_shell.dart';
 import '../providers/exercise_library_provider.dart';
 import '../widgets/exercise_card_widget.dart';
 
@@ -76,7 +77,13 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                 ),
               )
             : ListView.builder(
-                padding: const EdgeInsets.all(16),
+                // Extra bottom padding clears the floating nav pill.
+                padding: const EdgeInsets.fromLTRB(
+                  16,
+                  16,
+                  16,
+                  16 + AppShell.reservedBottomSpace,
+                ),
                 itemCount: exercises.length,
                 itemBuilder: (context, index) =>
                     ExerciseCardWidget(exercise: exercises[index]),

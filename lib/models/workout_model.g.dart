@@ -6,13 +6,14 @@ part of 'workout_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$WorkoutModelImpl _$$WorkoutModelImplFromJson(Map<String, dynamic> json) =>
-    _$WorkoutModelImpl(
+_WorkoutModel _$WorkoutModelFromJson(Map<String, dynamic> json) =>
+    _WorkoutModel(
       id: json['id'] as String,
       userId: json['user_id'] as String,
       name: json['name'] as String,
       date: DateTime.parse(json['date'] as String),
-      exercises: (json['exercises'] as List<dynamic>?)
+      exercises:
+          (json['exercises'] as List<dynamic>?)
               ?.map((e) => WorkoutExercise.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
@@ -22,7 +23,7 @@ _$WorkoutModelImpl _$$WorkoutModelImplFromJson(Map<String, dynamic> json) =>
       averageRpe: (json['average_rpe'] as num?)?.toDouble(),
     );
 
-Map<String, dynamic> _$$WorkoutModelImplToJson(_$WorkoutModelImpl instance) =>
+Map<String, dynamic> _$WorkoutModelToJson(_WorkoutModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'user_id': instance.userId,
@@ -35,13 +36,13 @@ Map<String, dynamic> _$$WorkoutModelImplToJson(_$WorkoutModelImpl instance) =>
       'average_rpe': instance.averageRpe,
     };
 
-_$WorkoutExerciseImpl _$$WorkoutExerciseImplFromJson(
-        Map<String, dynamic> json) =>
-    _$WorkoutExerciseImpl(
+_WorkoutExercise _$WorkoutExerciseFromJson(Map<String, dynamic> json) =>
+    _WorkoutExercise(
       exerciseId: json['exercise_id'] as String,
       exerciseName: json['exercise_name'] as String,
       muscleGroup: json['muscle_group'] as String,
-      sets: (json['sets'] as List<dynamic>?)
+      sets:
+          (json['sets'] as List<dynamic>?)
               ?.map((e) => WorkoutSet.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
@@ -50,8 +51,7 @@ _$WorkoutExerciseImpl _$$WorkoutExerciseImplFromJson(
       isWarmup: json['is_warmup'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$$WorkoutExerciseImplToJson(
-        _$WorkoutExerciseImpl instance) =>
+Map<String, dynamic> _$WorkoutExerciseToJson(_WorkoutExercise instance) =>
     <String, dynamic>{
       'exercise_id': instance.exerciseId,
       'exercise_name': instance.exerciseName,
@@ -62,16 +62,15 @@ Map<String, dynamic> _$$WorkoutExerciseImplToJson(
       'is_warmup': instance.isWarmup,
     };
 
-_$WorkoutSetImpl _$$WorkoutSetImplFromJson(Map<String, dynamic> json) =>
-    _$WorkoutSetImpl(
-      reps: (json['reps'] as num).toInt(),
-      weightKg: (json['weight_kg'] as num).toDouble(),
-      rpe: (json['rpe'] as num?)?.toDouble() ?? 0.0,
-      isWarmup: json['is_warmup'] as bool? ?? false,
-      isPr: json['is_pr'] as bool? ?? false,
-    );
+_WorkoutSet _$WorkoutSetFromJson(Map<String, dynamic> json) => _WorkoutSet(
+  reps: (json['reps'] as num).toInt(),
+  weightKg: (json['weight_kg'] as num).toDouble(),
+  rpe: (json['rpe'] as num?)?.toDouble() ?? 0.0,
+  isWarmup: json['is_warmup'] as bool? ?? false,
+  isPr: json['is_pr'] as bool? ?? false,
+);
 
-Map<String, dynamic> _$$WorkoutSetImplToJson(_$WorkoutSetImpl instance) =>
+Map<String, dynamic> _$WorkoutSetToJson(_WorkoutSet instance) =>
     <String, dynamic>{
       'reps': instance.reps,
       'weight_kg': instance.weightKg,

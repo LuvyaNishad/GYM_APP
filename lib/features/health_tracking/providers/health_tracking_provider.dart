@@ -3,29 +3,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/health_sync_service.dart';
 import '../models/health_snapshot.dart';
 
-/// Manages fetching and caching [HealthSnapshot] data from [HealthSyncService].
-class HealthTrackingNotifier extends StateNotifier<AsyncValue<HealthSnapshot>> {
-  HealthTrackingNotifier(this._service) : super(const AsyncValue.loading()) {
-    refresh();
+/// Fetches and caches [HealthSnapshot] data from [HealthSyncService].
+///
+/// Injected with [NoOpHealthSyncService] until a real wearable integration is
+/// configured; swapping in a live service means changing
+/// [healthSyncServiceProvider] only.
+class HealthTrackingNotifier extends AsyncNotifier<HealthSnapshot> {
+  @override
+  Future<HealthSnapshot> build() {
+    final service = ref.watch(healthSyncServiceProvider);
+    return service.fetchLatestSnapshot();
   }
-
-  final HealthSyncService _service;
 
   /// Fetch fresh health data from the wearable / health platform.
-  Future<void> refresh() async {
-    state = const AsyncValue.loading();
-    try {
-      final snapshot = await _service.fetchLatestSnapshot();
-      state = AsyncValue.data(snapshot);
-    } catch (err, stack) {
-      state = AsyncValue.error(err, stack);
-    }
-  }
+  void refresh() => ref.invalidateSelf();
 }
 
-/// Global provider for Health Tracking, injecting [NoOpHealthSyncService]
-/// until a real wearable integration is configured.
+/// Global provider for Health Tracking.
 final healthTrackingProvider =
-    StateNotifierProvider<HealthTrackingNotifier, AsyncValue<HealthSnapshot>>(
-  (ref) => HealthTrackingNotifier(const NoOpHealthSyncService()),
+    AsyncNotifierProvider<HealthTrackingNotifier, HealthSnapshot>(
+  HealthTrackingNotifier.new,
 );

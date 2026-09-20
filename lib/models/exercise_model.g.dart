@@ -6,12 +6,13 @@ part of 'exercise_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$ExerciseModelImpl _$$ExerciseModelImplFromJson(Map<String, dynamic> json) =>
-    _$ExerciseModelImpl(
+_ExerciseModel _$ExerciseModelFromJson(Map<String, dynamic> json) =>
+    _ExerciseModel(
       id: json['id'] as String,
       name: json['name'] as String,
       primaryMuscleGroup: json['primary_muscle_group'] as String,
-      secondaryMuscleGroups: (json['secondary_muscle_groups'] as List<dynamic>?)
+      secondaryMuscleGroups:
+          (json['secondary_muscle_groups'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const [],
@@ -25,7 +26,7 @@ _$ExerciseModelImpl _$$ExerciseModelImplFromJson(Map<String, dynamic> json) =>
       isWarmup: json['is_warmup'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$$ExerciseModelImplToJson(_$ExerciseModelImpl instance) =>
+Map<String, dynamic> _$ExerciseModelToJson(_ExerciseModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,

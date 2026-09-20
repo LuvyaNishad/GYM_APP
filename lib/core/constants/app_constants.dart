@@ -37,6 +37,17 @@ abstract final class AppConstants {
   static const String hiveBoxUser = 'user';
   static const String hiveBoxSettings = 'settings';
   static const String hiveBoxProgress = 'progress';
+  static const String hiveBoxSplits = 'splits';
+
+  /// Key the single on-device profile is stored under in [hiveBoxUser].
+  /// LEON is local-first and guest-first, so there is exactly one local
+  /// profile whether or not it is backed by a Supabase account.
+  static const String hiveKeyLocalProfile = 'local';
+
+  // ── Settings Keys (primitives in the settings box) ────────────────────────
+  static const String settingOnboardingComplete = 'onboarding_complete';
+  static const String settingWeightUnit = 'weight_unit';
+  static const String settingActiveSplitId = 'active_split_id';
 
   // ── Animation Durations ───────────────────────────────────────────────────
   static const Duration animFast = Duration(milliseconds: 150);

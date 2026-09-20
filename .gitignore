@@ -59,3 +59,7 @@ macos/Flutter/GeneratedPluginRegistrant.swift
 # ── Symbolication / Obfuscation ───────────────────────────────────────────────
 app.*.symbols
 app.*.map.json
+
+# ── Editor / tooling junk ─────────────────────────────────────────────────────
+.idea_backup/
+devtools_options.yaml

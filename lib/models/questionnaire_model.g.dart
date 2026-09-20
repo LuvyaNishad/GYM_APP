@@ -6,13 +6,13 @@ part of 'questionnaire_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$QuestionnaireModelImpl _$$QuestionnaireModelImplFromJson(
-        Map<String, dynamic> json) =>
-    _$QuestionnaireModelImpl(
+_QuestionnaireModel _$QuestionnaireModelFromJson(Map<String, dynamic> json) =>
+    _QuestionnaireModel(
       userId: json['userId'] as String,
       fitnessGoal: json['fitnessGoal'] as String,
       experienceLevel: json['experienceLevel'] as String,
-      availableEquipmentIds: (json['availableEquipmentIds'] as List<dynamic>?)
+      availableEquipmentIds:
+          (json['availableEquipmentIds'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const [],
@@ -23,8 +23,7 @@ _$QuestionnaireModelImpl _$$QuestionnaireModelImplFromJson(
       injuryNotes: json['injuryNotes'] as String?,
     );
 
-Map<String, dynamic> _$$QuestionnaireModelImplToJson(
-        _$QuestionnaireModelImpl instance) =>
+Map<String, dynamic> _$QuestionnaireModelToJson(_QuestionnaireModel instance) =>
     <String, dynamic>{
       'userId': instance.userId,
       'fitnessGoal': instance.fitnessGoal,

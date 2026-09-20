@@ -11,7 +11,7 @@ part 'workout_model.g.dart';
 ///
 /// Uses Freezed for immutability and JsonSerializable for serialisation.
 @freezed
-class WorkoutModel with _$WorkoutModel {
+abstract class WorkoutModel with _$WorkoutModel {
   @JsonSerializable(fieldRename: FieldRename.snake)
   const factory WorkoutModel({
     required String id,
@@ -35,7 +35,7 @@ class WorkoutModel with _$WorkoutModel {
 
 /// A single exercise performed within a [WorkoutModel].
 @freezed
-class WorkoutExercise with _$WorkoutExercise {
+abstract class WorkoutExercise with _$WorkoutExercise {
   @JsonSerializable(fieldRename: FieldRename.snake)
   const factory WorkoutExercise({
     required String exerciseId,
@@ -63,7 +63,7 @@ class WorkoutExercise with _$WorkoutExercise {
 
 /// A single set within a [WorkoutExercise].
 @freezed
-class WorkoutSet with _$WorkoutSet {
+abstract class WorkoutSet with _$WorkoutSet {
   @JsonSerializable(fieldRename: FieldRename.snake)
   const factory WorkoutSet({
     required int reps,

@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,889 +9,869 @@ part of 'workout_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-WorkoutModel _$WorkoutModelFromJson(Map<String, dynamic> json) {
-  return _WorkoutModel.fromJson(json);
-}
 
 /// @nodoc
 mixin _$WorkoutModel {
-  String get id => throw _privateConstructorUsedError;
-  String get userId => throw _privateConstructorUsedError;
-  String get name => throw _privateConstructorUsedError;
-  DateTime get date => throw _privateConstructorUsedError;
-  List<WorkoutExercise> get exercises => throw _privateConstructorUsedError;
-  int get durationSeconds => throw _privateConstructorUsedError;
-  String? get notes => throw _privateConstructorUsedError;
-  double? get totalVolumeKg => throw _privateConstructorUsedError;
-  double? get averageRpe => throw _privateConstructorUsedError;
+
+ String get id; String get userId; String get name; DateTime get date; List<WorkoutExercise> get exercises; int get durationSeconds; String? get notes; double? get totalVolumeKg; double? get averageRpe;
+/// Create a copy of WorkoutModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$WorkoutModelCopyWith<WorkoutModel> get copyWith => _$WorkoutModelCopyWithImpl<WorkoutModel>(this as WorkoutModel, _$identity);
 
   /// Serializes this WorkoutModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of WorkoutModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $WorkoutModelCopyWith<WorkoutModel> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkoutModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.date, date) || other.date == date)&&const DeepCollectionEquality().equals(other.exercises, exercises)&&(identical(other.durationSeconds, durationSeconds) || other.durationSeconds == durationSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.totalVolumeKg, totalVolumeKg) || other.totalVolumeKg == totalVolumeKg)&&(identical(other.averageRpe, averageRpe) || other.averageRpe == averageRpe));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,userId,name,date,const DeepCollectionEquality().hash(exercises),durationSeconds,notes,totalVolumeKg,averageRpe);
+
+@override
+String toString() {
+  return 'WorkoutModel(id: $id, userId: $userId, name: $name, date: $date, exercises: $exercises, durationSeconds: $durationSeconds, notes: $notes, totalVolumeKg: $totalVolumeKg, averageRpe: $averageRpe)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $WorkoutModelCopyWith<$Res> {
-  factory $WorkoutModelCopyWith(
-          WorkoutModel value, $Res Function(WorkoutModel) then) =
-      _$WorkoutModelCopyWithImpl<$Res, WorkoutModel>;
-  @useResult
-  $Res call(
-      {String id,
-      String userId,
-      String name,
-      DateTime date,
-      List<WorkoutExercise> exercises,
-      int durationSeconds,
-      String? notes,
-      double? totalVolumeKg,
-      double? averageRpe});
-}
+abstract mixin class $WorkoutModelCopyWith<$Res>  {
+  factory $WorkoutModelCopyWith(WorkoutModel value, $Res Function(WorkoutModel) _then) = _$WorkoutModelCopyWithImpl;
+@useResult
+$Res call({
+ String id, String userId, String name, DateTime date, List<WorkoutExercise> exercises, int durationSeconds, String? notes, double? totalVolumeKg, double? averageRpe
+});
 
+
+
+
+}
 /// @nodoc
-class _$WorkoutModelCopyWithImpl<$Res, $Val extends WorkoutModel>
+class _$WorkoutModelCopyWithImpl<$Res>
     implements $WorkoutModelCopyWith<$Res> {
-  _$WorkoutModelCopyWithImpl(this._value, this._then);
+  _$WorkoutModelCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final WorkoutModel _self;
+  final $Res Function(WorkoutModel) _then;
 
-  /// Create a copy of WorkoutModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? userId = null,
-    Object? name = null,
-    Object? date = null,
-    Object? exercises = null,
-    Object? durationSeconds = null,
-    Object? notes = freezed,
-    Object? totalVolumeKg = freezed,
-    Object? averageRpe = freezed,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      date: null == date
-          ? _value.date
-          : date // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      exercises: null == exercises
-          ? _value.exercises
-          : exercises // ignore: cast_nullable_to_non_nullable
-              as List<WorkoutExercise>,
-      durationSeconds: null == durationSeconds
-          ? _value.durationSeconds
-          : durationSeconds // ignore: cast_nullable_to_non_nullable
-              as int,
-      notes: freezed == notes
-          ? _value.notes
-          : notes // ignore: cast_nullable_to_non_nullable
-              as String?,
-      totalVolumeKg: freezed == totalVolumeKg
-          ? _value.totalVolumeKg
-          : totalVolumeKg // ignore: cast_nullable_to_non_nullable
-              as double?,
-      averageRpe: freezed == averageRpe
-          ? _value.averageRpe
-          : averageRpe // ignore: cast_nullable_to_non_nullable
-              as double?,
-    ) as $Val);
-  }
+/// Create a copy of WorkoutModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? date = null,Object? exercises = null,Object? durationSeconds = null,Object? notes = freezed,Object? totalVolumeKg = freezed,Object? averageRpe = freezed,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
+as DateTime,exercises: null == exercises ? _self.exercises : exercises // ignore: cast_nullable_to_non_nullable
+as List<WorkoutExercise>,durationSeconds: null == durationSeconds ? _self.durationSeconds : durationSeconds // ignore: cast_nullable_to_non_nullable
+as int,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
+as String?,totalVolumeKg: freezed == totalVolumeKg ? _self.totalVolumeKg : totalVolumeKg // ignore: cast_nullable_to_non_nullable
+as double?,averageRpe: freezed == averageRpe ? _self.averageRpe : averageRpe // ignore: cast_nullable_to_non_nullable
+as double?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$WorkoutModelImplCopyWith<$Res>
-    implements $WorkoutModelCopyWith<$Res> {
-  factory _$$WorkoutModelImplCopyWith(
-          _$WorkoutModelImpl value, $Res Function(_$WorkoutModelImpl) then) =
-      __$$WorkoutModelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String id,
-      String userId,
-      String name,
-      DateTime date,
-      List<WorkoutExercise> exercises,
-      int durationSeconds,
-      String? notes,
-      double? totalVolumeKg,
-      double? averageRpe});
 }
 
-/// @nodoc
-class __$$WorkoutModelImplCopyWithImpl<$Res>
-    extends _$WorkoutModelCopyWithImpl<$Res, _$WorkoutModelImpl>
-    implements _$$WorkoutModelImplCopyWith<$Res> {
-  __$$WorkoutModelImplCopyWithImpl(
-      _$WorkoutModelImpl _value, $Res Function(_$WorkoutModelImpl) _then)
-      : super(_value, _then);
 
-  /// Create a copy of WorkoutModel
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? userId = null,
-    Object? name = null,
-    Object? date = null,
-    Object? exercises = null,
-    Object? durationSeconds = null,
-    Object? notes = freezed,
-    Object? totalVolumeKg = freezed,
-    Object? averageRpe = freezed,
-  }) {
-    return _then(_$WorkoutModelImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      date: null == date
-          ? _value.date
-          : date // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      exercises: null == exercises
-          ? _value._exercises
-          : exercises // ignore: cast_nullable_to_non_nullable
-              as List<WorkoutExercise>,
-      durationSeconds: null == durationSeconds
-          ? _value.durationSeconds
-          : durationSeconds // ignore: cast_nullable_to_non_nullable
-              as int,
-      notes: freezed == notes
-          ? _value.notes
-          : notes // ignore: cast_nullable_to_non_nullable
-              as String?,
-      totalVolumeKg: freezed == totalVolumeKg
-          ? _value.totalVolumeKg
-          : totalVolumeKg // ignore: cast_nullable_to_non_nullable
-              as double?,
-      averageRpe: freezed == averageRpe
-          ? _value.averageRpe
-          : averageRpe // ignore: cast_nullable_to_non_nullable
-              as double?,
-    ));
-  }
+/// Adds pattern-matching-related methods to [WorkoutModel].
+extension WorkoutModelPatterns on WorkoutModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _WorkoutModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _WorkoutModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _WorkoutModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _WorkoutModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _WorkoutModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _WorkoutModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  DateTime date,  List<WorkoutExercise> exercises,  int durationSeconds,  String? notes,  double? totalVolumeKg,  double? averageRpe)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _WorkoutModel() when $default != null:
+return $default(_that.id,_that.userId,_that.name,_that.date,_that.exercises,_that.durationSeconds,_that.notes,_that.totalVolumeKg,_that.averageRpe);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  DateTime date,  List<WorkoutExercise> exercises,  int durationSeconds,  String? notes,  double? totalVolumeKg,  double? averageRpe)  $default,) {final _that = this;
+switch (_that) {
+case _WorkoutModel():
+return $default(_that.id,_that.userId,_that.name,_that.date,_that.exercises,_that.durationSeconds,_that.notes,_that.totalVolumeKg,_that.averageRpe);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String name,  DateTime date,  List<WorkoutExercise> exercises,  int durationSeconds,  String? notes,  double? totalVolumeKg,  double? averageRpe)?  $default,) {final _that = this;
+switch (_that) {
+case _WorkoutModel() when $default != null:
+return $default(_that.id,_that.userId,_that.name,_that.date,_that.exercises,_that.durationSeconds,_that.notes,_that.totalVolumeKg,_that.averageRpe);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class _$WorkoutModelImpl implements _WorkoutModel {
-  const _$WorkoutModelImpl(
-      {required this.id,
-      required this.userId,
-      required this.name,
-      required this.date,
-      final List<WorkoutExercise> exercises = const [],
-      this.durationSeconds = 0,
-      this.notes,
-      this.totalVolumeKg,
-      this.averageRpe})
-      : _exercises = exercises;
+class _WorkoutModel implements WorkoutModel {
+  const _WorkoutModel({required this.id, required this.userId, required this.name, required this.date, final  List<WorkoutExercise> exercises = const [], this.durationSeconds = 0, this.notes, this.totalVolumeKg, this.averageRpe}): _exercises = exercises;
+  factory _WorkoutModel.fromJson(Map<String, dynamic> json) => _$WorkoutModelFromJson(json);
 
-  factory _$WorkoutModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$WorkoutModelImplFromJson(json);
-
-  @override
-  final String id;
-  @override
-  final String userId;
-  @override
-  final String name;
-  @override
-  final DateTime date;
-  final List<WorkoutExercise> _exercises;
-  @override
-  @JsonKey()
-  List<WorkoutExercise> get exercises {
-    if (_exercises is EqualUnmodifiableListView) return _exercises;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_exercises);
-  }
-
-  @override
-  @JsonKey()
-  final int durationSeconds;
-  @override
-  final String? notes;
-  @override
-  final double? totalVolumeKg;
-  @override
-  final double? averageRpe;
-
-  @override
-  String toString() {
-    return 'WorkoutModel(id: $id, userId: $userId, name: $name, date: $date, exercises: $exercises, durationSeconds: $durationSeconds, notes: $notes, totalVolumeKg: $totalVolumeKg, averageRpe: $averageRpe)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$WorkoutModelImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.userId, userId) || other.userId == userId) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.date, date) || other.date == date) &&
-            const DeepCollectionEquality()
-                .equals(other._exercises, _exercises) &&
-            (identical(other.durationSeconds, durationSeconds) ||
-                other.durationSeconds == durationSeconds) &&
-            (identical(other.notes, notes) || other.notes == notes) &&
-            (identical(other.totalVolumeKg, totalVolumeKg) ||
-                other.totalVolumeKg == totalVolumeKg) &&
-            (identical(other.averageRpe, averageRpe) ||
-                other.averageRpe == averageRpe));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      userId,
-      name,
-      date,
-      const DeepCollectionEquality().hash(_exercises),
-      durationSeconds,
-      notes,
-      totalVolumeKg,
-      averageRpe);
-
-  /// Create a copy of WorkoutModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$WorkoutModelImplCopyWith<_$WorkoutModelImpl> get copyWith =>
-      __$$WorkoutModelImplCopyWithImpl<_$WorkoutModelImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$WorkoutModelImplToJson(
-      this,
-    );
-  }
+@override final  String id;
+@override final  String userId;
+@override final  String name;
+@override final  DateTime date;
+ final  List<WorkoutExercise> _exercises;
+@override@JsonKey() List<WorkoutExercise> get exercises {
+  if (_exercises is EqualUnmodifiableListView) return _exercises;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_exercises);
 }
 
-abstract class _WorkoutModel implements WorkoutModel {
-  const factory _WorkoutModel(
-      {required final String id,
-      required final String userId,
-      required final String name,
-      required final DateTime date,
-      final List<WorkoutExercise> exercises,
-      final int durationSeconds,
-      final String? notes,
-      final double? totalVolumeKg,
-      final double? averageRpe}) = _$WorkoutModelImpl;
+@override@JsonKey() final  int durationSeconds;
+@override final  String? notes;
+@override final  double? totalVolumeKg;
+@override final  double? averageRpe;
 
-  factory _WorkoutModel.fromJson(Map<String, dynamic> json) =
-      _$WorkoutModelImpl.fromJson;
+/// Create a copy of WorkoutModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$WorkoutModelCopyWith<_WorkoutModel> get copyWith => __$WorkoutModelCopyWithImpl<_WorkoutModel>(this, _$identity);
 
-  @override
-  String get id;
-  @override
-  String get userId;
-  @override
-  String get name;
-  @override
-  DateTime get date;
-  @override
-  List<WorkoutExercise> get exercises;
-  @override
-  int get durationSeconds;
-  @override
-  String? get notes;
-  @override
-  double? get totalVolumeKg;
-  @override
-  double? get averageRpe;
-
-  /// Create a copy of WorkoutModel
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$WorkoutModelImplCopyWith<_$WorkoutModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+Map<String, dynamic> toJson() {
+  return _$WorkoutModelToJson(this, );
 }
 
-WorkoutExercise _$WorkoutExerciseFromJson(Map<String, dynamic> json) {
-  return _WorkoutExercise.fromJson(json);
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkoutModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.date, date) || other.date == date)&&const DeepCollectionEquality().equals(other._exercises, _exercises)&&(identical(other.durationSeconds, durationSeconds) || other.durationSeconds == durationSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.totalVolumeKg, totalVolumeKg) || other.totalVolumeKg == totalVolumeKg)&&(identical(other.averageRpe, averageRpe) || other.averageRpe == averageRpe));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,userId,name,date,const DeepCollectionEquality().hash(_exercises),durationSeconds,notes,totalVolumeKg,averageRpe);
+
+@override
+String toString() {
+  return 'WorkoutModel(id: $id, userId: $userId, name: $name, date: $date, exercises: $exercises, durationSeconds: $durationSeconds, notes: $notes, totalVolumeKg: $totalVolumeKg, averageRpe: $averageRpe)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$WorkoutModelCopyWith<$Res> implements $WorkoutModelCopyWith<$Res> {
+  factory _$WorkoutModelCopyWith(_WorkoutModel value, $Res Function(_WorkoutModel) _then) = __$WorkoutModelCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String userId, String name, DateTime date, List<WorkoutExercise> exercises, int durationSeconds, String? notes, double? totalVolumeKg, double? averageRpe
+});
+
+
+
+
+}
+/// @nodoc
+class __$WorkoutModelCopyWithImpl<$Res>
+    implements _$WorkoutModelCopyWith<$Res> {
+  __$WorkoutModelCopyWithImpl(this._self, this._then);
+
+  final _WorkoutModel _self;
+  final $Res Function(_WorkoutModel) _then;
+
+/// Create a copy of WorkoutModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? date = null,Object? exercises = null,Object? durationSeconds = null,Object? notes = freezed,Object? totalVolumeKg = freezed,Object? averageRpe = freezed,}) {
+  return _then(_WorkoutModel(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
+as DateTime,exercises: null == exercises ? _self._exercises : exercises // ignore: cast_nullable_to_non_nullable
+as List<WorkoutExercise>,durationSeconds: null == durationSeconds ? _self.durationSeconds : durationSeconds // ignore: cast_nullable_to_non_nullable
+as int,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
+as String?,totalVolumeKg: freezed == totalVolumeKg ? _self.totalVolumeKg : totalVolumeKg // ignore: cast_nullable_to_non_nullable
+as double?,averageRpe: freezed == averageRpe ? _self.averageRpe : averageRpe // ignore: cast_nullable_to_non_nullable
+as double?,
+  ));
+}
+
+
+}
+
 
 /// @nodoc
 mixin _$WorkoutExercise {
-  String get exerciseId => throw _privateConstructorUsedError;
-  String get exerciseName => throw _privateConstructorUsedError;
-  String get muscleGroup => throw _privateConstructorUsedError;
-  List<WorkoutSet> get sets =>
-      throw _privateConstructorUsedError; // ── New fields ────────────────────────────────────────────────────────
-  /// Links this exercise to a superset group within this workout.
-  String? get supersetGroupId => throw _privateConstructorUsedError;
 
-  /// Rate of Perceived Exertion logged for this exercise (1–10).
-  int? get rpe => throw _privateConstructorUsedError;
-
-  /// Whether this exercise entry was performed as a warm-up.
-  bool get isWarmup => throw _privateConstructorUsedError;
+ String get exerciseId; String get exerciseName; String get muscleGroup; List<WorkoutSet> get sets;// ── New fields ────────────────────────────────────────────────────────
+/// Links this exercise to a superset group within this workout.
+ String? get supersetGroupId;/// Rate of Perceived Exertion logged for this exercise (1–10).
+ int? get rpe;/// Whether this exercise entry was performed as a warm-up.
+ bool get isWarmup;
+/// Create a copy of WorkoutExercise
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$WorkoutExerciseCopyWith<WorkoutExercise> get copyWith => _$WorkoutExerciseCopyWithImpl<WorkoutExercise>(this as WorkoutExercise, _$identity);
 
   /// Serializes this WorkoutExercise to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of WorkoutExercise
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $WorkoutExerciseCopyWith<WorkoutExercise> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkoutExercise&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.exerciseName, exerciseName) || other.exerciseName == exerciseName)&&(identical(other.muscleGroup, muscleGroup) || other.muscleGroup == muscleGroup)&&const DeepCollectionEquality().equals(other.sets, sets)&&(identical(other.supersetGroupId, supersetGroupId) || other.supersetGroupId == supersetGroupId)&&(identical(other.rpe, rpe) || other.rpe == rpe)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,exerciseId,exerciseName,muscleGroup,const DeepCollectionEquality().hash(sets),supersetGroupId,rpe,isWarmup);
+
+@override
+String toString() {
+  return 'WorkoutExercise(exerciseId: $exerciseId, exerciseName: $exerciseName, muscleGroup: $muscleGroup, sets: $sets, supersetGroupId: $supersetGroupId, rpe: $rpe, isWarmup: $isWarmup)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $WorkoutExerciseCopyWith<$Res> {
-  factory $WorkoutExerciseCopyWith(
-          WorkoutExercise value, $Res Function(WorkoutExercise) then) =
-      _$WorkoutExerciseCopyWithImpl<$Res, WorkoutExercise>;
-  @useResult
-  $Res call(
-      {String exerciseId,
-      String exerciseName,
-      String muscleGroup,
-      List<WorkoutSet> sets,
-      String? supersetGroupId,
-      int? rpe,
-      bool isWarmup});
-}
+abstract mixin class $WorkoutExerciseCopyWith<$Res>  {
+  factory $WorkoutExerciseCopyWith(WorkoutExercise value, $Res Function(WorkoutExercise) _then) = _$WorkoutExerciseCopyWithImpl;
+@useResult
+$Res call({
+ String exerciseId, String exerciseName, String muscleGroup, List<WorkoutSet> sets, String? supersetGroupId, int? rpe, bool isWarmup
+});
 
+
+
+
+}
 /// @nodoc
-class _$WorkoutExerciseCopyWithImpl<$Res, $Val extends WorkoutExercise>
+class _$WorkoutExerciseCopyWithImpl<$Res>
     implements $WorkoutExerciseCopyWith<$Res> {
-  _$WorkoutExerciseCopyWithImpl(this._value, this._then);
+  _$WorkoutExerciseCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final WorkoutExercise _self;
+  final $Res Function(WorkoutExercise) _then;
 
-  /// Create a copy of WorkoutExercise
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? exerciseId = null,
-    Object? exerciseName = null,
-    Object? muscleGroup = null,
-    Object? sets = null,
-    Object? supersetGroupId = freezed,
-    Object? rpe = freezed,
-    Object? isWarmup = null,
-  }) {
-    return _then(_value.copyWith(
-      exerciseId: null == exerciseId
-          ? _value.exerciseId
-          : exerciseId // ignore: cast_nullable_to_non_nullable
-              as String,
-      exerciseName: null == exerciseName
-          ? _value.exerciseName
-          : exerciseName // ignore: cast_nullable_to_non_nullable
-              as String,
-      muscleGroup: null == muscleGroup
-          ? _value.muscleGroup
-          : muscleGroup // ignore: cast_nullable_to_non_nullable
-              as String,
-      sets: null == sets
-          ? _value.sets
-          : sets // ignore: cast_nullable_to_non_nullable
-              as List<WorkoutSet>,
-      supersetGroupId: freezed == supersetGroupId
-          ? _value.supersetGroupId
-          : supersetGroupId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      rpe: freezed == rpe
-          ? _value.rpe
-          : rpe // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isWarmup: null == isWarmup
-          ? _value.isWarmup
-          : isWarmup // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ) as $Val);
-  }
+/// Create a copy of WorkoutExercise
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? exerciseId = null,Object? exerciseName = null,Object? muscleGroup = null,Object? sets = null,Object? supersetGroupId = freezed,Object? rpe = freezed,Object? isWarmup = null,}) {
+  return _then(_self.copyWith(
+exerciseId: null == exerciseId ? _self.exerciseId : exerciseId // ignore: cast_nullable_to_non_nullable
+as String,exerciseName: null == exerciseName ? _self.exerciseName : exerciseName // ignore: cast_nullable_to_non_nullable
+as String,muscleGroup: null == muscleGroup ? _self.muscleGroup : muscleGroup // ignore: cast_nullable_to_non_nullable
+as String,sets: null == sets ? _self.sets : sets // ignore: cast_nullable_to_non_nullable
+as List<WorkoutSet>,supersetGroupId: freezed == supersetGroupId ? _self.supersetGroupId : supersetGroupId // ignore: cast_nullable_to_non_nullable
+as String?,rpe: freezed == rpe ? _self.rpe : rpe // ignore: cast_nullable_to_non_nullable
+as int?,isWarmup: null == isWarmup ? _self.isWarmup : isWarmup // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
 }
 
-/// @nodoc
-abstract class _$$WorkoutExerciseImplCopyWith<$Res>
-    implements $WorkoutExerciseCopyWith<$Res> {
-  factory _$$WorkoutExerciseImplCopyWith(_$WorkoutExerciseImpl value,
-          $Res Function(_$WorkoutExerciseImpl) then) =
-      __$$WorkoutExerciseImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String exerciseId,
-      String exerciseName,
-      String muscleGroup,
-      List<WorkoutSet> sets,
-      String? supersetGroupId,
-      int? rpe,
-      bool isWarmup});
 }
 
-/// @nodoc
-class __$$WorkoutExerciseImplCopyWithImpl<$Res>
-    extends _$WorkoutExerciseCopyWithImpl<$Res, _$WorkoutExerciseImpl>
-    implements _$$WorkoutExerciseImplCopyWith<$Res> {
-  __$$WorkoutExerciseImplCopyWithImpl(
-      _$WorkoutExerciseImpl _value, $Res Function(_$WorkoutExerciseImpl) _then)
-      : super(_value, _then);
 
-  /// Create a copy of WorkoutExercise
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? exerciseId = null,
-    Object? exerciseName = null,
-    Object? muscleGroup = null,
-    Object? sets = null,
-    Object? supersetGroupId = freezed,
-    Object? rpe = freezed,
-    Object? isWarmup = null,
-  }) {
-    return _then(_$WorkoutExerciseImpl(
-      exerciseId: null == exerciseId
-          ? _value.exerciseId
-          : exerciseId // ignore: cast_nullable_to_non_nullable
-              as String,
-      exerciseName: null == exerciseName
-          ? _value.exerciseName
-          : exerciseName // ignore: cast_nullable_to_non_nullable
-              as String,
-      muscleGroup: null == muscleGroup
-          ? _value.muscleGroup
-          : muscleGroup // ignore: cast_nullable_to_non_nullable
-              as String,
-      sets: null == sets
-          ? _value._sets
-          : sets // ignore: cast_nullable_to_non_nullable
-              as List<WorkoutSet>,
-      supersetGroupId: freezed == supersetGroupId
-          ? _value.supersetGroupId
-          : supersetGroupId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      rpe: freezed == rpe
-          ? _value.rpe
-          : rpe // ignore: cast_nullable_to_non_nullable
-              as int?,
-      isWarmup: null == isWarmup
-          ? _value.isWarmup
-          : isWarmup // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
-  }
+/// Adds pattern-matching-related methods to [WorkoutExercise].
+extension WorkoutExercisePatterns on WorkoutExercise {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _WorkoutExercise value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _WorkoutExercise() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _WorkoutExercise value)  $default,){
+final _that = this;
+switch (_that) {
+case _WorkoutExercise():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _WorkoutExercise value)?  $default,){
+final _that = this;
+switch (_that) {
+case _WorkoutExercise() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String exerciseId,  String exerciseName,  String muscleGroup,  List<WorkoutSet> sets,  String? supersetGroupId,  int? rpe,  bool isWarmup)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _WorkoutExercise() when $default != null:
+return $default(_that.exerciseId,_that.exerciseName,_that.muscleGroup,_that.sets,_that.supersetGroupId,_that.rpe,_that.isWarmup);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String exerciseId,  String exerciseName,  String muscleGroup,  List<WorkoutSet> sets,  String? supersetGroupId,  int? rpe,  bool isWarmup)  $default,) {final _that = this;
+switch (_that) {
+case _WorkoutExercise():
+return $default(_that.exerciseId,_that.exerciseName,_that.muscleGroup,_that.sets,_that.supersetGroupId,_that.rpe,_that.isWarmup);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String exerciseId,  String exerciseName,  String muscleGroup,  List<WorkoutSet> sets,  String? supersetGroupId,  int? rpe,  bool isWarmup)?  $default,) {final _that = this;
+switch (_that) {
+case _WorkoutExercise() when $default != null:
+return $default(_that.exerciseId,_that.exerciseName,_that.muscleGroup,_that.sets,_that.supersetGroupId,_that.rpe,_that.isWarmup);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class _$WorkoutExerciseImpl implements _WorkoutExercise {
-  const _$WorkoutExerciseImpl(
-      {required this.exerciseId,
-      required this.exerciseName,
-      required this.muscleGroup,
-      final List<WorkoutSet> sets = const [],
-      this.supersetGroupId,
-      this.rpe,
-      this.isWarmup = false})
-      : _sets = sets;
+class _WorkoutExercise implements WorkoutExercise {
+  const _WorkoutExercise({required this.exerciseId, required this.exerciseName, required this.muscleGroup, final  List<WorkoutSet> sets = const [], this.supersetGroupId, this.rpe, this.isWarmup = false}): _sets = sets;
+  factory _WorkoutExercise.fromJson(Map<String, dynamic> json) => _$WorkoutExerciseFromJson(json);
 
-  factory _$WorkoutExerciseImpl.fromJson(Map<String, dynamic> json) =>
-      _$$WorkoutExerciseImplFromJson(json);
-
-  @override
-  final String exerciseId;
-  @override
-  final String exerciseName;
-  @override
-  final String muscleGroup;
-  final List<WorkoutSet> _sets;
-  @override
-  @JsonKey()
-  List<WorkoutSet> get sets {
-    if (_sets is EqualUnmodifiableListView) return _sets;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_sets);
-  }
+@override final  String exerciseId;
+@override final  String exerciseName;
+@override final  String muscleGroup;
+ final  List<WorkoutSet> _sets;
+@override@JsonKey() List<WorkoutSet> get sets {
+  if (_sets is EqualUnmodifiableListView) return _sets;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_sets);
+}
 
 // ── New fields ────────────────────────────────────────────────────────
-  /// Links this exercise to a superset group within this workout.
-  @override
-  final String? supersetGroupId;
+/// Links this exercise to a superset group within this workout.
+@override final  String? supersetGroupId;
+/// Rate of Perceived Exertion logged for this exercise (1–10).
+@override final  int? rpe;
+/// Whether this exercise entry was performed as a warm-up.
+@override@JsonKey() final  bool isWarmup;
 
-  /// Rate of Perceived Exertion logged for this exercise (1–10).
-  @override
-  final int? rpe;
+/// Create a copy of WorkoutExercise
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$WorkoutExerciseCopyWith<_WorkoutExercise> get copyWith => __$WorkoutExerciseCopyWithImpl<_WorkoutExercise>(this, _$identity);
 
-  /// Whether this exercise entry was performed as a warm-up.
-  @override
-  @JsonKey()
-  final bool isWarmup;
-
-  @override
-  String toString() {
-    return 'WorkoutExercise(exerciseId: $exerciseId, exerciseName: $exerciseName, muscleGroup: $muscleGroup, sets: $sets, supersetGroupId: $supersetGroupId, rpe: $rpe, isWarmup: $isWarmup)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$WorkoutExerciseImpl &&
-            (identical(other.exerciseId, exerciseId) ||
-                other.exerciseId == exerciseId) &&
-            (identical(other.exerciseName, exerciseName) ||
-                other.exerciseName == exerciseName) &&
-            (identical(other.muscleGroup, muscleGroup) ||
-                other.muscleGroup == muscleGroup) &&
-            const DeepCollectionEquality().equals(other._sets, _sets) &&
-            (identical(other.supersetGroupId, supersetGroupId) ||
-                other.supersetGroupId == supersetGroupId) &&
-            (identical(other.rpe, rpe) || other.rpe == rpe) &&
-            (identical(other.isWarmup, isWarmup) ||
-                other.isWarmup == isWarmup));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      exerciseId,
-      exerciseName,
-      muscleGroup,
-      const DeepCollectionEquality().hash(_sets),
-      supersetGroupId,
-      rpe,
-      isWarmup);
-
-  /// Create a copy of WorkoutExercise
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$WorkoutExerciseImplCopyWith<_$WorkoutExerciseImpl> get copyWith =>
-      __$$WorkoutExerciseImplCopyWithImpl<_$WorkoutExerciseImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$WorkoutExerciseImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$WorkoutExerciseToJson(this, );
 }
 
-abstract class _WorkoutExercise implements WorkoutExercise {
-  const factory _WorkoutExercise(
-      {required final String exerciseId,
-      required final String exerciseName,
-      required final String muscleGroup,
-      final List<WorkoutSet> sets,
-      final String? supersetGroupId,
-      final int? rpe,
-      final bool isWarmup}) = _$WorkoutExerciseImpl;
-
-  factory _WorkoutExercise.fromJson(Map<String, dynamic> json) =
-      _$WorkoutExerciseImpl.fromJson;
-
-  @override
-  String get exerciseId;
-  @override
-  String get exerciseName;
-  @override
-  String get muscleGroup;
-  @override
-  List<WorkoutSet>
-      get sets; // ── New fields ────────────────────────────────────────────────────────
-  /// Links this exercise to a superset group within this workout.
-  @override
-  String? get supersetGroupId;
-
-  /// Rate of Perceived Exertion logged for this exercise (1–10).
-  @override
-  int? get rpe;
-
-  /// Whether this exercise entry was performed as a warm-up.
-  @override
-  bool get isWarmup;
-
-  /// Create a copy of WorkoutExercise
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$WorkoutExerciseImplCopyWith<_$WorkoutExerciseImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkoutExercise&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.exerciseName, exerciseName) || other.exerciseName == exerciseName)&&(identical(other.muscleGroup, muscleGroup) || other.muscleGroup == muscleGroup)&&const DeepCollectionEquality().equals(other._sets, _sets)&&(identical(other.supersetGroupId, supersetGroupId) || other.supersetGroupId == supersetGroupId)&&(identical(other.rpe, rpe) || other.rpe == rpe)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup));
 }
 
-WorkoutSet _$WorkoutSetFromJson(Map<String, dynamic> json) {
-  return _WorkoutSet.fromJson(json);
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,exerciseId,exerciseName,muscleGroup,const DeepCollectionEquality().hash(_sets),supersetGroupId,rpe,isWarmup);
+
+@override
+String toString() {
+  return 'WorkoutExercise(exerciseId: $exerciseId, exerciseName: $exerciseName, muscleGroup: $muscleGroup, sets: $sets, supersetGroupId: $supersetGroupId, rpe: $rpe, isWarmup: $isWarmup)';
 }
+
+
+}
+
+/// @nodoc
+abstract mixin class _$WorkoutExerciseCopyWith<$Res> implements $WorkoutExerciseCopyWith<$Res> {
+  factory _$WorkoutExerciseCopyWith(_WorkoutExercise value, $Res Function(_WorkoutExercise) _then) = __$WorkoutExerciseCopyWithImpl;
+@override @useResult
+$Res call({
+ String exerciseId, String exerciseName, String muscleGroup, List<WorkoutSet> sets, String? supersetGroupId, int? rpe, bool isWarmup
+});
+
+
+
+
+}
+/// @nodoc
+class __$WorkoutExerciseCopyWithImpl<$Res>
+    implements _$WorkoutExerciseCopyWith<$Res> {
+  __$WorkoutExerciseCopyWithImpl(this._self, this._then);
+
+  final _WorkoutExercise _self;
+  final $Res Function(_WorkoutExercise) _then;
+
+/// Create a copy of WorkoutExercise
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? exerciseId = null,Object? exerciseName = null,Object? muscleGroup = null,Object? sets = null,Object? supersetGroupId = freezed,Object? rpe = freezed,Object? isWarmup = null,}) {
+  return _then(_WorkoutExercise(
+exerciseId: null == exerciseId ? _self.exerciseId : exerciseId // ignore: cast_nullable_to_non_nullable
+as String,exerciseName: null == exerciseName ? _self.exerciseName : exerciseName // ignore: cast_nullable_to_non_nullable
+as String,muscleGroup: null == muscleGroup ? _self.muscleGroup : muscleGroup // ignore: cast_nullable_to_non_nullable
+as String,sets: null == sets ? _self._sets : sets // ignore: cast_nullable_to_non_nullable
+as List<WorkoutSet>,supersetGroupId: freezed == supersetGroupId ? _self.supersetGroupId : supersetGroupId // ignore: cast_nullable_to_non_nullable
+as String?,rpe: freezed == rpe ? _self.rpe : rpe // ignore: cast_nullable_to_non_nullable
+as int?,isWarmup: null == isWarmup ? _self.isWarmup : isWarmup // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
+
 
 /// @nodoc
 mixin _$WorkoutSet {
-  int get reps => throw _privateConstructorUsedError;
-  double get weightKg => throw _privateConstructorUsedError;
-  double get rpe => throw _privateConstructorUsedError;
-  bool get isWarmup => throw _privateConstructorUsedError;
-  bool get isPr => throw _privateConstructorUsedError;
+
+ int get reps; double get weightKg; double get rpe; bool get isWarmup; bool get isPr;
+/// Create a copy of WorkoutSet
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$WorkoutSetCopyWith<WorkoutSet> get copyWith => _$WorkoutSetCopyWithImpl<WorkoutSet>(this as WorkoutSet, _$identity);
 
   /// Serializes this WorkoutSet to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of WorkoutSet
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $WorkoutSetCopyWith<WorkoutSet> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkoutSet&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.rpe, rpe) || other.rpe == rpe)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.isPr, isPr) || other.isPr == isPr));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,reps,weightKg,rpe,isWarmup,isPr);
+
+@override
+String toString() {
+  return 'WorkoutSet(reps: $reps, weightKg: $weightKg, rpe: $rpe, isWarmup: $isWarmup, isPr: $isPr)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $WorkoutSetCopyWith<$Res> {
-  factory $WorkoutSetCopyWith(
-          WorkoutSet value, $Res Function(WorkoutSet) then) =
-      _$WorkoutSetCopyWithImpl<$Res, WorkoutSet>;
-  @useResult
-  $Res call({int reps, double weightKg, double rpe, bool isWarmup, bool isPr});
-}
+abstract mixin class $WorkoutSetCopyWith<$Res>  {
+  factory $WorkoutSetCopyWith(WorkoutSet value, $Res Function(WorkoutSet) _then) = _$WorkoutSetCopyWithImpl;
+@useResult
+$Res call({
+ int reps, double weightKg, double rpe, bool isWarmup, bool isPr
+});
 
+
+
+
+}
 /// @nodoc
-class _$WorkoutSetCopyWithImpl<$Res, $Val extends WorkoutSet>
+class _$WorkoutSetCopyWithImpl<$Res>
     implements $WorkoutSetCopyWith<$Res> {
-  _$WorkoutSetCopyWithImpl(this._value, this._then);
+  _$WorkoutSetCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final WorkoutSet _self;
+  final $Res Function(WorkoutSet) _then;
 
-  /// Create a copy of WorkoutSet
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? reps = null,
-    Object? weightKg = null,
-    Object? rpe = null,
-    Object? isWarmup = null,
-    Object? isPr = null,
-  }) {
-    return _then(_value.copyWith(
-      reps: null == reps
-          ? _value.reps
-          : reps // ignore: cast_nullable_to_non_nullable
-              as int,
-      weightKg: null == weightKg
-          ? _value.weightKg
-          : weightKg // ignore: cast_nullable_to_non_nullable
-              as double,
-      rpe: null == rpe
-          ? _value.rpe
-          : rpe // ignore: cast_nullable_to_non_nullable
-              as double,
-      isWarmup: null == isWarmup
-          ? _value.isWarmup
-          : isWarmup // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isPr: null == isPr
-          ? _value.isPr
-          : isPr // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ) as $Val);
-  }
+/// Create a copy of WorkoutSet
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? reps = null,Object? weightKg = null,Object? rpe = null,Object? isWarmup = null,Object? isPr = null,}) {
+  return _then(_self.copyWith(
+reps: null == reps ? _self.reps : reps // ignore: cast_nullable_to_non_nullable
+as int,weightKg: null == weightKg ? _self.weightKg : weightKg // ignore: cast_nullable_to_non_nullable
+as double,rpe: null == rpe ? _self.rpe : rpe // ignore: cast_nullable_to_non_nullable
+as double,isWarmup: null == isWarmup ? _self.isWarmup : isWarmup // ignore: cast_nullable_to_non_nullable
+as bool,isPr: null == isPr ? _self.isPr : isPr // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
 }
 
-/// @nodoc
-abstract class _$$WorkoutSetImplCopyWith<$Res>
-    implements $WorkoutSetCopyWith<$Res> {
-  factory _$$WorkoutSetImplCopyWith(
-          _$WorkoutSetImpl value, $Res Function(_$WorkoutSetImpl) then) =
-      __$$WorkoutSetImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({int reps, double weightKg, double rpe, bool isWarmup, bool isPr});
 }
 
-/// @nodoc
-class __$$WorkoutSetImplCopyWithImpl<$Res>
-    extends _$WorkoutSetCopyWithImpl<$Res, _$WorkoutSetImpl>
-    implements _$$WorkoutSetImplCopyWith<$Res> {
-  __$$WorkoutSetImplCopyWithImpl(
-      _$WorkoutSetImpl _value, $Res Function(_$WorkoutSetImpl) _then)
-      : super(_value, _then);
 
-  /// Create a copy of WorkoutSet
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? reps = null,
-    Object? weightKg = null,
-    Object? rpe = null,
-    Object? isWarmup = null,
-    Object? isPr = null,
-  }) {
-    return _then(_$WorkoutSetImpl(
-      reps: null == reps
-          ? _value.reps
-          : reps // ignore: cast_nullable_to_non_nullable
-              as int,
-      weightKg: null == weightKg
-          ? _value.weightKg
-          : weightKg // ignore: cast_nullable_to_non_nullable
-              as double,
-      rpe: null == rpe
-          ? _value.rpe
-          : rpe // ignore: cast_nullable_to_non_nullable
-              as double,
-      isWarmup: null == isWarmup
-          ? _value.isWarmup
-          : isWarmup // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isPr: null == isPr
-          ? _value.isPr
-          : isPr // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
-  }
+/// Adds pattern-matching-related methods to [WorkoutSet].
+extension WorkoutSetPatterns on WorkoutSet {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _WorkoutSet value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _WorkoutSet() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _WorkoutSet value)  $default,){
+final _that = this;
+switch (_that) {
+case _WorkoutSet():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _WorkoutSet value)?  $default,){
+final _that = this;
+switch (_that) {
+case _WorkoutSet() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int reps,  double weightKg,  double rpe,  bool isWarmup,  bool isPr)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _WorkoutSet() when $default != null:
+return $default(_that.reps,_that.weightKg,_that.rpe,_that.isWarmup,_that.isPr);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int reps,  double weightKg,  double rpe,  bool isWarmup,  bool isPr)  $default,) {final _that = this;
+switch (_that) {
+case _WorkoutSet():
+return $default(_that.reps,_that.weightKg,_that.rpe,_that.isWarmup,_that.isPr);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int reps,  double weightKg,  double rpe,  bool isWarmup,  bool isPr)?  $default,) {final _that = this;
+switch (_that) {
+case _WorkoutSet() when $default != null:
+return $default(_that.reps,_that.weightKg,_that.rpe,_that.isWarmup,_that.isPr);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class _$WorkoutSetImpl implements _WorkoutSet {
-  const _$WorkoutSetImpl(
-      {required this.reps,
-      required this.weightKg,
-      this.rpe = 0.0,
-      this.isWarmup = false,
-      this.isPr = false});
+class _WorkoutSet implements WorkoutSet {
+  const _WorkoutSet({required this.reps, required this.weightKg, this.rpe = 0.0, this.isWarmup = false, this.isPr = false});
+  factory _WorkoutSet.fromJson(Map<String, dynamic> json) => _$WorkoutSetFromJson(json);
 
-  factory _$WorkoutSetImpl.fromJson(Map<String, dynamic> json) =>
-      _$$WorkoutSetImplFromJson(json);
+@override final  int reps;
+@override final  double weightKg;
+@override@JsonKey() final  double rpe;
+@override@JsonKey() final  bool isWarmup;
+@override@JsonKey() final  bool isPr;
 
-  @override
-  final int reps;
-  @override
-  final double weightKg;
-  @override
-  @JsonKey()
-  final double rpe;
-  @override
-  @JsonKey()
-  final bool isWarmup;
-  @override
-  @JsonKey()
-  final bool isPr;
+/// Create a copy of WorkoutSet
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$WorkoutSetCopyWith<_WorkoutSet> get copyWith => __$WorkoutSetCopyWithImpl<_WorkoutSet>(this, _$identity);
 
-  @override
-  String toString() {
-    return 'WorkoutSet(reps: $reps, weightKg: $weightKg, rpe: $rpe, isWarmup: $isWarmup, isPr: $isPr)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$WorkoutSetImpl &&
-            (identical(other.reps, reps) || other.reps == reps) &&
-            (identical(other.weightKg, weightKg) ||
-                other.weightKg == weightKg) &&
-            (identical(other.rpe, rpe) || other.rpe == rpe) &&
-            (identical(other.isWarmup, isWarmup) ||
-                other.isWarmup == isWarmup) &&
-            (identical(other.isPr, isPr) || other.isPr == isPr));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, reps, weightKg, rpe, isWarmup, isPr);
-
-  /// Create a copy of WorkoutSet
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$WorkoutSetImplCopyWith<_$WorkoutSetImpl> get copyWith =>
-      __$$WorkoutSetImplCopyWithImpl<_$WorkoutSetImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$WorkoutSetImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$WorkoutSetToJson(this, );
 }
 
-abstract class _WorkoutSet implements WorkoutSet {
-  const factory _WorkoutSet(
-      {required final int reps,
-      required final double weightKg,
-      final double rpe,
-      final bool isWarmup,
-      final bool isPr}) = _$WorkoutSetImpl;
-
-  factory _WorkoutSet.fromJson(Map<String, dynamic> json) =
-      _$WorkoutSetImpl.fromJson;
-
-  @override
-  int get reps;
-  @override
-  double get weightKg;
-  @override
-  double get rpe;
-  @override
-  bool get isWarmup;
-  @override
-  bool get isPr;
-
-  /// Create a copy of WorkoutSet
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$WorkoutSetImplCopyWith<_$WorkoutSetImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkoutSet&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.rpe, rpe) || other.rpe == rpe)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.isPr, isPr) || other.isPr == isPr));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,reps,weightKg,rpe,isWarmup,isPr);
+
+@override
+String toString() {
+  return 'WorkoutSet(reps: $reps, weightKg: $weightKg, rpe: $rpe, isWarmup: $isWarmup, isPr: $isPr)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$WorkoutSetCopyWith<$Res> implements $WorkoutSetCopyWith<$Res> {
+  factory _$WorkoutSetCopyWith(_WorkoutSet value, $Res Function(_WorkoutSet) _then) = __$WorkoutSetCopyWithImpl;
+@override @useResult
+$Res call({
+ int reps, double weightKg, double rpe, bool isWarmup, bool isPr
+});
+
+
+
+
+}
+/// @nodoc
+class __$WorkoutSetCopyWithImpl<$Res>
+    implements _$WorkoutSetCopyWith<$Res> {
+  __$WorkoutSetCopyWithImpl(this._self, this._then);
+
+  final _WorkoutSet _self;
+  final $Res Function(_WorkoutSet) _then;
+
+/// Create a copy of WorkoutSet
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? reps = null,Object? weightKg = null,Object? rpe = null,Object? isWarmup = null,Object? isPr = null,}) {
+  return _then(_WorkoutSet(
+reps: null == reps ? _self.reps : reps // ignore: cast_nullable_to_non_nullable
+as int,weightKg: null == weightKg ? _self.weightKg : weightKg // ignore: cast_nullable_to_non_nullable
+as double,rpe: null == rpe ? _self.rpe : rpe // ignore: cast_nullable_to_non_nullable
+as double,isWarmup: null == isWarmup ? _self.isWarmup : isWarmup // ignore: cast_nullable_to_non_nullable
+as bool,isPr: null == isPr ? _self.isPr : isPr // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
+
+// dart format on

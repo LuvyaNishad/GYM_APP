@@ -8,7 +8,7 @@ part 'exercise_filter_model.g.dart';
 /// All fields are optional — null means "no filter applied" for that dimension.
 /// Uses Freezed for immutability and JsonSerializable for potential persistence.
 @freezed
-class ExerciseFilterModel with _$ExerciseFilterModel {
+abstract class ExerciseFilterModel with _$ExerciseFilterModel {
   // Private generative constructor for the isEmpty getter.
   const ExerciseFilterModel._();
 

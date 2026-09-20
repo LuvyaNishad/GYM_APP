@@ -56,13 +56,8 @@ final class AppTheme {
       ),
 
       // ── Bottom Nav ────────────────────────────────────────────────────────
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textMuted,
-        type: BottomNavigationBarType.fixed,
-        elevation: 0,
-      ),
+      // Intentionally unthemed: LEON's bottom navigation is the custom
+      // floating GlassNavPill, not a Material BottomNavigationBar.
 
       // ── Input ─────────────────────────────────────────────────────────────
       inputDecorationTheme: InputDecorationTheme(

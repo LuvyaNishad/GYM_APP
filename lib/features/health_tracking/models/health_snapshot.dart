@@ -10,7 +10,7 @@ part 'health_snapshot.g.dart';
 ///
 /// Uses Freezed for immutability and JsonSerializable for serialisation.
 @freezed
-class HealthSnapshot with _$HealthSnapshot {
+abstract class HealthSnapshot with _$HealthSnapshot {
   // Private generative constructor required to add the empty() factory.
   const HealthSnapshot._();
 

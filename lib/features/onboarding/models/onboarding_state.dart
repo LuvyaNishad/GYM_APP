@@ -7,7 +7,7 @@ part 'onboarding_state.g.dart';
 ///
 /// Uses Freezed for codegen and JsonSerializable for persistence.
 @freezed
-class OnboardingState with _$OnboardingState {
+abstract class OnboardingState with _$OnboardingState {
   // Private generative constructor required to add getters/methods.
   const OnboardingState._();
 

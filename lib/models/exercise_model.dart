@@ -7,7 +7,7 @@ part 'exercise_model.g.dart';
 ///
 /// Uses Freezed for immutability and JsonSerializable for serialisation.
 @freezed
-class ExerciseModel with _$ExerciseModel {
+abstract class ExerciseModel with _$ExerciseModel {
   @JsonSerializable(fieldRename: FieldRename.snake)
   const factory ExerciseModel({
     required String id,

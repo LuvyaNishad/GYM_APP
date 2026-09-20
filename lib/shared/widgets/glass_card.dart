@@ -2,19 +2,24 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 
-/// A glassmorphism card widget consistent with LEON's "Cyber-Slate" aesthetic.
+/// A glassmorphism card widget, the base surface of LEON's Liquid Glass
+/// Tactical system.
 ///
-/// Wraps [child] with a frosted-glass effect using [BackdropFilter].
+/// Wraps [child] with a frosted-glass effect using [BackdropFilter]. Defaults
+/// come straight from the spec: 24px blur, 24px radius, 24px padding, a 1px
+/// 20 %-white border, and a very faint fill. **No inner shadows** — refraction
+/// does the depth work, so a shadow only muddies it.
 class GlassCard extends StatelessWidget {
   const GlassCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(16),
-    this.borderRadius = 16,
-    this.sigmaBlur = 10.0,
+    this.padding = const EdgeInsets.all(24),
+    this.borderRadius = 24,
+    this.sigmaBlur = 24.0,
     this.backgroundColor = AppColors.glassWhite,
     this.borderColor = AppColors.glassBorder,
     this.border = true,
+    this.borderWidth = 1.0,
   });
 
   final Widget child;
@@ -24,6 +29,7 @@ class GlassCard extends StatelessWidget {
   final Color backgroundColor;
   final Color borderColor;
   final bool border;
+  final double borderWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +42,9 @@ class GlassCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: backgroundColor,
             borderRadius: BorderRadius.circular(borderRadius),
-            border: border ? Border.all(color: borderColor, width: 0.8) : null,
+            border: border
+                ? Border.all(color: borderColor, width: borderWidth)
+                : null,
           ),
           child: child,
         ),

@@ -1,2 +1,0 @@
-// Placeholder — implementation pending.
-library;

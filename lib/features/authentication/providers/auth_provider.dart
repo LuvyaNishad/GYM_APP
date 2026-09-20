@@ -10,10 +10,14 @@ class AuthState {
   final String? error;
 }
 
-/// Authentication StateNotifier.
+/// Authentication notifier.
 /// TODO(auth): Wire to AuthService for real sign-in / sign-up flows.
-class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(const AuthState());
+class AuthNotifier extends Notifier<AuthState> {
+  @override
+  AuthState build() {
+    ref.keepAlive();
+    return const AuthState();
+  }
 
   Future<void> signIn(String email, String password) async {
     // TODO(auth): implement
@@ -30,6 +34,4 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 }
 
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
-  (ref) => AuthNotifier(),
-);
+final authProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);

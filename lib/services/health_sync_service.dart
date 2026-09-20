@@ -1,4 +1,14 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../features/health_tracking/models/health_snapshot.dart';
+
+/// Exposes the active [HealthSyncService] implementation.
+///
+/// Override this provider to swap in a real platform integration; nothing
+/// downstream needs to change.
+final healthSyncServiceProvider = Provider<HealthSyncService>(
+  (ref) => const NoOpHealthSyncService(),
+);
 
 /// Contract for fetching health & wearable data in LEON.
 ///

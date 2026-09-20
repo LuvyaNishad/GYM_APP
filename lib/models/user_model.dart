@@ -7,7 +7,7 @@ part 'user_model.g.dart';
 ///
 /// Uses Freezed for immutability and JsonSerializable for serialisation.
 @freezed
-class UserModel with _$UserModel {
+abstract class UserModel with _$UserModel {
   @JsonSerializable(fieldRename: FieldRename.snake)
   const factory UserModel({
     required String id,
@@ -28,6 +28,14 @@ class UserModel with _$UserModel {
 
     /// User's preferred training split — e.g. `'PPL'`, `'Upper/Lower'`.
     String? preferredSplit,
+
+    /// Biological sex, used to unlock cycle-aware recovery. One of
+    /// `'male'`, `'female'`, or null (unset / prefer not to say).
+    String? sex,
+
+    /// Whether the user has opted into menstrual-cycle tracking. Gates the
+    /// cycle module and the `CyclePhaseFactor` in recovery scoring.
+    @Default(false) bool cyclesEnabled,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>

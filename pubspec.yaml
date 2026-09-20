@@ -5,25 +5,38 @@ publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.0
+  # json_serializable 6.11+ requires ^3.8.0. Freezed 4.x / riverpod_generator
+  # 4.0.6+ / go_router 18.x would need >=3.12, which is ahead of the toolchain
+  # this project is pinned to.
+  sdk: ^3.8.0
 
 dependencies:
   flutter:
     sdk: flutter
 
   # ── State Management ──────────────────────────────────────────────────────
-  flutter_riverpod: ^2.6.1
-  riverpod_annotation: ^2.3.5
+  # Riverpod 3: `StateNotifier`/`StateProvider` are legacy; use
+  # `Notifier`/`AsyncNotifier`. Auto-dispose is the default — anything that
+  # must survive navigation needs an explicit `keepAlive`.
+  flutter_riverpod: ^3.1.0
+  riverpod_annotation: ^4.0.0
 
   # ── Navigation ────────────────────────────────────────────────────────────
-  go_router: ^14.6.2
+  go_router: ^17.5.0
 
   # ── Data / Serialisation ──────────────────────────────────────────────────
-  freezed_annotation: ^2.4.4
+  # Freezed 3+ requires model classes to be `abstract` (single constructor)
+  # or `sealed` (unions).
+  freezed_annotation: ^3.1.0
   json_annotation: ^4.9.0
 
   # ── Local Storage ─────────────────────────────────────────────────────────
-  hive_flutter: ^1.1.0
+  # `hive`/`hive_flutter` are abandoned and `hive_generator` is Dart-3
+  # incompatible. `hive_ce` is the maintained community fork. We store models
+  # as JSON maps via their Freezed `toJson`/`fromJson`, so no adapters and no
+  # generator are needed.
+  hive_ce: ^2.19.3
+  hive_ce_flutter: ^2.3.4
 
   # ── Backend / Auth ────────────────────────────────────────────────────────
   supabase_flutter: ^2.8.4
@@ -35,7 +48,10 @@ dependencies:
   lottie: ^3.3.1
 
   # ── Charts ────────────────────────────────────────────────────────────────
-  fl_chart: ^0.69.0
+  # Retained for line/bar charts. The muscle-balance radar is a hand-written
+  # CustomPainter — fl_chart's radar can't do the staggered draw-on animation
+  # or per-axis weak-point colouring.
+  fl_chart: ^1.2.0
 
   # ── UI Utilities ──────────────────────────────────────────────────────────
   cupertino_icons: ^1.0.8
@@ -45,10 +61,12 @@ dev_dependencies:
     sdk: flutter
 
   # ── Code Generation ───────────────────────────────────────────────────────
-  build_runner: ^2.4.13
-  freezed: ^2.5.7
-  json_serializable: ^6.8.0
-  riverpod_generator: ^2.4.3
+  # freezed 4.x and riverpod_generator 4.0.6+ require Dart >=3.12; this
+  # project is on 3.10.7, so these are the newest compatible majors.
+  build_runner: ^2.15.1
+  freezed: ^3.2.3
+  json_serializable: ^6.11.2
+  riverpod_generator: ^4.0.0
 
   # ── Linting ───────────────────────────────────────────────────────────────
   flutter_lints: ^5.0.0
@@ -65,7 +83,6 @@ flutter:
   assets:
     - assets/images/
     - assets/fonts/
-    - assets/lottie/
 
   fonts:
     - family: Outfit

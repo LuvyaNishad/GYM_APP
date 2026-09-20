@@ -83,9 +83,12 @@ class OnboardingScreen extends ConsumerWidget {
                   else
                     const SizedBox.shrink(),
                   FilledButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (state.isLastPage) {
-                        notifier.complete();
+                        // Await the write so a force-quit right after tapping
+                        // can't lose the completion flag and re-onboard.
+                        await notifier.complete();
+                        if (!context.mounted) return;
                         context.go(AppConstants.routeDashboard);
                       } else {
                         notifier.nextPage();

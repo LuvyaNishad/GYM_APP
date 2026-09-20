@@ -3,54 +3,31 @@ import '../../../models/progress_model.dart';
 import '../../../services/analytics_service.dart';
 import '../../../state/app_providers.dart';
 
-/// Dashboard state — holds the radar snapshot for the current week.
-class DashboardState {
-  const DashboardState({this.radar, this.isLoading = false, this.error});
+/// Drives the dashboard radar chart and summary stats.
+///
+/// The hand-rolled `DashboardState` this replaced carried its own
+/// `isLoading`/`error` fields; `AsyncValue` models those states already, so
+/// the state class and its `copyWith` are gone.
+///
+/// `build` watches [currentUserIdProvider], so signing in or out re-runs it
+/// automatically. A null user yields null radar data rather than an error —
+/// a guest simply has nothing logged yet.
+class DashboardNotifier extends AsyncNotifier<RadarSnapshot?> {
+  @override
+  Future<RadarSnapshot?> build() async {
+    final userId = ref.watch(currentUserIdProvider);
+    if (userId == null) return null;
 
-  final RadarSnapshot? radar;
-  final bool isLoading;
-  final String? error;
-
-  DashboardState copyWith({
-    RadarSnapshot? radar,
-    bool? isLoading,
-    String? error,
-  }) =>
-      DashboardState(
-        radar: radar ?? this.radar,
-        isLoading: isLoading ?? this.isLoading,
-        error: error ?? this.error,
-      );
-}
-
-/// Notifier that drives the dashboard radar chart and summary stats.
-class DashboardNotifier extends StateNotifier<DashboardState> {
-  DashboardNotifier(this._analytics, this._userId)
-      : super(const DashboardState()) {
-    _load();
+    final analytics = ref.watch(analyticsServiceProvider);
+    return analytics.getCurrentWeekRadar(userId);
   }
 
-  final AnalyticsService _analytics;
-  final String? _userId;
-
-  Future<void> _load() async {
-    if (_userId == null) return;
-    state = state.copyWith(isLoading: true);
-    try {
-      final snapshot = await _analytics.getCurrentWeekRadar(_userId);
-      state = state.copyWith(radar: snapshot, isLoading: false);
-    } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
-    }
-  }
-
-  void refresh() => _load();
+  /// Re-run [build], picking up any dependency changes.
+  void refresh() => ref.invalidateSelf();
 }
 
 /// Provides [DashboardNotifier], scoped to the current user.
 final dashboardProvider =
-    StateNotifierProvider<DashboardNotifier, DashboardState>((ref) {
-  final analytics = ref.watch(analyticsServiceProvider);
-  final userId = ref.watch(currentUserIdProvider);
-  return DashboardNotifier(analytics, userId);
-});
+    AsyncNotifierProvider<DashboardNotifier, RadarSnapshot?>(
+  DashboardNotifier.new,
+);

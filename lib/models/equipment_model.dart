@@ -5,7 +5,7 @@ part 'equipment_model.g.dart';
 
 /// Gym equipment available used to filter exercises.
 @freezed
-class EquipmentModel with _$EquipmentModel {
+abstract class EquipmentModel with _$EquipmentModel {
   const factory EquipmentModel({
     required String id,
     required String name,

@@ -5,7 +5,7 @@ part 'session_log_model.g.dart';
 
 /// A completed workout session log entry.
 @freezed
-class SessionLogModel with _$SessionLogModel {
+abstract class SessionLogModel with _$SessionLogModel {
   const factory SessionLogModel({
     required String id,
     required String userId,

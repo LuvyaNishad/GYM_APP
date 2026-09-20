@@ -5,7 +5,7 @@ part 'questionnaire_model.g.dart';
 
 /// User onboarding questionnaire answers.
 @freezed
-class QuestionnaireModel with _$QuestionnaireModel {
+abstract class QuestionnaireModel with _$QuestionnaireModel {
   const factory QuestionnaireModel({
     required String userId,
     required String fitnessGoal,

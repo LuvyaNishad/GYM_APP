@@ -4,6 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/glass_card.dart';
+import '../../../shared/widgets/app_shell.dart';
 import '../widgets/radar_chart_widget.dart';
 import '../widgets/recovery_status_widget.dart';
 
@@ -52,7 +53,13 @@ class DashboardScreen extends ConsumerWidget {
 
           // ── Body ─────────────────────────────────────────────────────────
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            // Extra bottom padding clears the floating nav pill.
+            padding: const EdgeInsets.fromLTRB(
+              20,
+              8,
+              20,
+              8 + AppShell.reservedBottomSpace,
+            ),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 // Recovery Status

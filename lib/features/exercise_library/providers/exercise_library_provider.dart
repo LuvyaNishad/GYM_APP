@@ -2,25 +2,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../models/exercise_model.dart';
 
-/// A [StateNotifier] that owns the full exercise catalogue and exposes
-/// a filtered + searched view of it.
+/// Owns the full exercise catalogue and exposes a filtered + searched view.
 ///
-/// Data source will be replaced with Isar/Supabase in the backend phase.
-class ExerciseLibraryNotifier
-    extends StateNotifier<AsyncValue<List<ExerciseModel>>> {
-  ExerciseLibraryNotifier() : super(const AsyncValue.loading()) {
-    _loadExercises();
-  }
-
-  List<ExerciseModel> _allExercises = [];
+/// The seed list below is a placeholder. Loading the real 100+ exercise
+/// catalogue from a bundled JSON asset is a later milestone; the public
+/// surface of this notifier (`search`, `refresh`) will not change when it
+/// lands, only [_loadExercises].
+class ExerciseLibraryNotifier extends AsyncNotifier<List<ExerciseModel>> {
+  List<ExerciseModel> _allExercises = const [];
   String _searchQuery = '';
 
-  /// Seed data — replace with a real DB/API call in the backend phase.
-  Future<void> _loadExercises() async {
+  @override
+  Future<List<ExerciseModel>> build() async {
+    ref.keepAlive();
+    _allExercises = await _loadExercises();
+    return _filtered();
+  }
+
+  /// Seed data — replace with a bundled JSON catalogue.
+  Future<List<ExerciseModel>> _loadExercises() async {
     // Simulate async load.
     await Future.delayed(const Duration(milliseconds: 200));
 
-    _allExercises = const [
+    return const [
       ExerciseModel(
         id: 'ex_squat',
         name: 'Barbell Back Squat',
@@ -71,37 +75,37 @@ class ExerciseLibraryNotifier
         rpe: 5,
       ),
     ];
-
-    _applyFilters();
   }
 
-  void _applyFilters() {
-    final filtered = _allExercises.where((ex) {
-      if (_searchQuery.isEmpty) return true;
-      return ex.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          ex.primaryMuscleGroup
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase());
-    }).toList();
-
-    state = AsyncValue.data(filtered);
+  /// Apply the current search query to the cached catalogue.
+  List<ExerciseModel> _filtered() {
+    if (_searchQuery.isEmpty) return _allExercises;
+    final query = _searchQuery.toLowerCase();
+    return _allExercises
+        .where((ex) =>
+            ex.name.toLowerCase().contains(query) ||
+            ex.primaryMuscleGroup.toLowerCase().contains(query))
+        .toList();
   }
 
-  /// Update the search query and re-filter.
+  /// Update the search query and re-filter. Filters in memory — no reload.
   void search(String query) {
     _searchQuery = query;
-    _applyFilters();
+    state = AsyncValue.data(_filtered());
   }
 
-  /// Refresh from the backing data source.
+  /// Refresh from the backing data source, preserving the active query.
   Future<void> refresh() async {
     state = const AsyncValue.loading();
-    await _loadExercises();
+    state = await AsyncValue.guard(() async {
+      _allExercises = await _loadExercises();
+      return _filtered();
+    });
   }
 }
 
 /// Global provider for the Exercise Library.
-final exerciseLibraryProvider = StateNotifierProvider<ExerciseLibraryNotifier,
-    AsyncValue<List<ExerciseModel>>>(
-  (_) => ExerciseLibraryNotifier(),
+final exerciseLibraryProvider =
+    AsyncNotifierProvider<ExerciseLibraryNotifier, List<ExerciseModel>>(
+  ExerciseLibraryNotifier.new,
 );
