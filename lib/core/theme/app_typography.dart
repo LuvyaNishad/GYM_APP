@@ -5,7 +5,7 @@ import 'app_colors.dart';
 /// Headers → Outfit (tactical / bold).
 /// Numbers  → JetBrains Mono (HUD-style).
 abstract final class AppTypography {
-  // ── Outfit (headings) ─────────────────────────────────────────────────────
+  // ── Outfit (headings & body) ───────────────────────────────────────────────
   static const TextStyle displayLarge = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 34,
@@ -38,6 +38,14 @@ abstract final class AppTypography {
     color: AppColors.textPrimary,
   );
 
+  static const TextStyle headlineSmall = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 1.2,
+    color: AppColors.textPrimary,
+  );
+
   static const TextStyle titleLarge = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 16,
@@ -54,6 +62,14 @@ abstract final class AppTypography {
     color: AppColors.textSecondary,
   );
 
+  static const TextStyle bodySmall = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0.2,
+    color: AppColors.textSecondary,
+  );
+
   static const TextStyle labelSmall = TextStyle(
     fontFamily: 'Outfit',
     fontSize: 11,
@@ -62,7 +78,7 @@ abstract final class AppTypography {
     color: AppColors.textMuted,
   );
 
-  // ── JetBrains Mono (HUD numbers) ─────────────────────────────────────────
+  // ── JetBrains Mono (HUD numbers & data) ────────────────────────────────────
   static const TextStyle monoLarge = TextStyle(
     fontFamily: 'JetBrainsMono',
     fontSize: 32,
@@ -86,4 +102,9 @@ abstract final class AppTypography {
     letterSpacing: 0.8,
     color: AppColors.textSecondary,
   );
+
+  // Aliases for Stitch / Liquid Glass tokens
+  static const TextStyle dataLarge = monoLarge;
+  static const TextStyle dataMedium = monoMedium;
+  static const TextStyle dataSmall = monoSmall;
 }
