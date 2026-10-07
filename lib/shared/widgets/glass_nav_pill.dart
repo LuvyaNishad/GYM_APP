@@ -112,26 +112,29 @@ class GlassNavPill extends ConsumerWidget {
             borderRadius: radius,
             border: Border.all(color: AppColors.glassBorder),
           ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              if (activeIndex >= 0) _ActiveGlow(index: activeIndex),
-              Row(
-                children: [
-                  for (var i = 0; i < kNavPillTabs.length; i++)
-                    Expanded(
-                      child: _NavPillButton(
-                        tab: kNavPillTabs[i],
-                        isActive: i == activeIndex,
-                        onTap: () {
-                          ref.read(bottomNavIndexProvider.notifier).select(i);
-                          onTabSelected(i);
-                        },
+          child: Material(
+            type: MaterialType.transparency,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                if (activeIndex >= 0) _ActiveGlow(index: activeIndex),
+                Row(
+                  children: [
+                    for (var i = 0; i < kNavPillTabs.length; i++)
+                      Expanded(
+                        child: _NavPillButton(
+                          tab: kNavPillTabs[i],
+                          isActive: i == activeIndex,
+                          onTap: () {
+                            ref.read(bottomNavIndexProvider.notifier).select(i);
+                            onTabSelected(i);
+                          },
+                        ),
                       ),
-                    ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
