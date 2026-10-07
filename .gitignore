@@ -36,6 +36,14 @@ migrate_working_dir/
 .env
 *.env
 !.env.example
+.agents/
+.mcp.json
+
+# ── Design and Scratch Assets ────────────────────────────────────────────────
+stitch_screens/
+/*.png
+*.ps1
+
 
 # ── pubspec.lock ──────────────────────────────────────────────────────────────
 # Solo project — uncomment the line below if you want to ignore it
