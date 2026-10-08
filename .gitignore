@@ -43,6 +43,8 @@ migrate_working_dir/
 stitch_screens/
 /*.png
 *.ps1
+*.bat
+*.cmd
 
 
 # ── pubspec.lock ──────────────────────────────────────────────────────────────
