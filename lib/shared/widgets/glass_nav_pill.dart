@@ -114,7 +114,7 @@ class GlassNavPill extends ConsumerWidget {
       blurSigma: 26,
       borderWidth: 1.2,
       showGlow: true,
-      glowColor: AppColors.primary.withValues(alpha: 0.16),
+      glowColor: AppColors.primary.withValues(alpha: 0.05),
       padding: EdgeInsets.zero,
       child: Material(
         type: MaterialType.transparency,
@@ -168,34 +168,34 @@ class _ActiveLiquidIndicator extends StatelessWidget {
       curve: Curves.easeOutCubic,
       child: IgnorePointer(
         child: Container(
-          width: 54,
-          height: 48,
+          width: 58,
+          height: 52,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(26),
             // Glowing neon liquid aura
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.35),
-                blurRadius: 18,
+                color: AppColors.primary.withValues(alpha: 0.28),
+                blurRadius: 16,
                 spreadRadius: 1,
               ),
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.15),
-                blurRadius: 32,
-                spreadRadius: 4,
+                color: AppColors.primary.withValues(alpha: 0.12),
+                blurRadius: 28,
+                spreadRadius: 2,
               ),
             ],
             // Liquid active pod fill
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+            gradient: RadialGradient(
+              center: Alignment.center,
+              radius: 0.85,
               colors: [
                 AppColors.primary.withValues(alpha: 0.22),
-                AppColors.primary.withValues(alpha: 0.08),
+                AppColors.primary.withValues(alpha: 0.05),
               ],
             ),
             border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.55),
+              color: AppColors.primary.withValues(alpha: 0.35),
               width: 1.0,
             ),
           ),
