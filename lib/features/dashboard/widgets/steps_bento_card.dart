@@ -34,7 +34,7 @@ class StepsBentoCard extends StatefulWidget {
 }
 
 class _StepsBentoCardState extends State<StepsBentoCard> {
-  static const Color _limeAccent = Color(0xFFCCFF00);
+  static const Color _cyanAccent = AppColors.primary;
   static const Color _cardBg = Color(0xFF161A23);
   int? _hoveredIndex;
 
@@ -101,17 +101,17 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                     width: 28,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: _limeAccent.withValues(alpha: 0.16),
+                      color: _cyanAccent.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(9),
                       border: Border.all(
-                        color: _limeAccent.withValues(alpha: 0.35),
+                        color: _cyanAccent.withValues(alpha: 0.35),
                         width: 1.0,
                       ),
                     ),
                     child: const Center(
                       child: Icon(
                         Icons.directions_walk_rounded,
-                        color: _limeAccent,
+                        color: _cyanAccent,
                         size: 16,
                       ),
                     ),
@@ -121,7 +121,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                     'FOOTSTEPS',
                     style: AppTypography.labelSmall.copyWith(
                       fontFamily: 'JetBrains Mono',
-                      fontSize: 10.5,
+                      fontSize: 11.0,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.4,
                       color: AppColors.textSecondary,
@@ -146,15 +146,15 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                   children: [
                     const Icon(
                       Icons.near_me_outlined,
-                      size: 10,
-                      color: _limeAccent,
+                      size: 11,
+                      color: _cyanAccent,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       '+${t.distanceKm.toStringAsFixed(2)} km',
                       style: const TextStyle(
                         fontFamily: 'JetBrains Mono',
-                        fontSize: 10,
+                        fontSize: 11.0,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
                         letterSpacing: 0.4,
@@ -189,7 +189,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                 'Steps',
                 style: AppTypography.titleLarge.copyWith(
                   fontFamily: 'Outfit',
-                  fontSize: 12,
+                  fontSize: 12.0,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
                 ),
@@ -197,18 +197,18 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
               const Spacer(),
               // Target completion badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: _limeAccent.withValues(alpha: 0.12),
+                  color: _cyanAccent.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   '$progressPct% OF GOAL',
                   style: const TextStyle(
                     fontFamily: 'JetBrains Mono',
-                    fontSize: 9,
+                    fontSize: 11.0,
                     fontWeight: FontWeight.w700,
-                    color: _limeAccent,
+                    color: _cyanAccent,
                     letterSpacing: 0.6,
                   ),
                 ),
@@ -220,7 +220,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
 
           // ── Compact Hourly Activity Bar Chart with Clean Tooltip ───────────
           SizedBox(
-            height: 62,
+            height: 68,
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final barCount = t.hourlySteps.length;
@@ -236,7 +236,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                     Positioned(
                       left: 0,
                       right: 0,
-                      bottom: 14,
+                      bottom: 18,
                       height: chartBarAreaHeight,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -272,7 +272,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                         stepValue: t.hourlySteps[activeIndex],
                       ),
 
-                    // Timeline X-Axis Labels (08:00 - 20:00)
+                    // Timeline X-Axis Labels (08:00 - 20:00) with Apple HIG floor & contrast
                     const Positioned(
                       left: 0,
                       right: 0,
@@ -320,7 +320,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
         height: normalizedHeight,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(4),
-          color: isActive ? _limeAccent : _limeAccent.withValues(alpha: 0.25),
+          color: isActive ? _cyanAccent : _cyanAccent.withValues(alpha: 0.25),
         ),
       ),
     );
@@ -338,23 +338,23 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
     final double barCenterX =
         (activeIndex * (barWidth + spacing)) + (barWidth / 2);
 
-    const double tooltipWidth = 44.0;
+    const double tooltipWidth = 52.0;
     final double tooltipLeft = (barCenterX - (tooltipWidth / 2))
         .clamp(0.0, totalWidth - tooltipWidth);
 
     return Positioned(
       left: tooltipLeft,
-      bottom: 14 + barHeight + 3,
+      bottom: 18 + barHeight + 3,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.0),
             decoration: BoxDecoration(
               color: const Color(0xFF0F1218),
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(6),
               border: Border.all(
-                color: _limeAccent,
+                color: _cyanAccent,
                 width: 1.0,
               ),
             ),
@@ -362,17 +362,17 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
               _formatNumber(stepValue),
               style: const TextStyle(
                 fontFamily: 'JetBrains Mono',
-                fontSize: 8.5,
-                fontWeight: FontWeight.w800,
-                color: _limeAccent,
+                fontSize: 11.0,
+                fontWeight: FontWeight.w700,
+                color: _cyanAccent,
                 letterSpacing: 0.3,
               ),
             ),
           ),
           // Downward pointer caret
           CustomPaint(
-            size: const Size(5, 3),
-            painter: _CaretPainter(color: _limeAccent),
+            size: const Size(6, 3.5),
+            painter: _CaretPainter(color: _cyanAccent),
           ),
         ],
       ),
@@ -390,8 +390,8 @@ class _TimeLabel extends StatelessWidget {
       text,
       style: const TextStyle(
         fontFamily: 'JetBrains Mono',
-        fontSize: 8.5,
-        color: AppColors.textMuted,
+        fontSize: 11.0,
+        color: AppColors.textSecondary,
         fontWeight: FontWeight.w500,
       ),
     );

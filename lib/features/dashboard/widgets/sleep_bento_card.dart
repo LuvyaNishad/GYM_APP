@@ -27,8 +27,8 @@ class SleepBentoCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   static const Color _cardBg = Color(0xFF161A23);
-  static const Color _purpleAccent = Color(0xFF9D84FF);
-  static const Color _purpleBg = Color(0xFF7B61FF);
+  static const Color _sleepAccent = Color(0xFFCBD5E1); // Luminous silver-slate
+  static const Color _sleepBg = Color(0xFF334155);
 
   @override
   Widget build(BuildContext context) {
@@ -63,17 +63,17 @@ class SleepBentoCard extends StatelessWidget {
                     width: 22,
                     height: 22,
                     decoration: BoxDecoration(
-                      color: _purpleBg.withValues(alpha: 0.18),
+                      color: _sleepBg.withValues(alpha: 0.35),
                       borderRadius: BorderRadius.circular(7),
                       border: Border.all(
-                        color: _purpleAccent.withValues(alpha: 0.35),
+                        color: _sleepAccent.withValues(alpha: 0.35),
                         width: 1,
                       ),
                     ),
                     child: const Center(
                       child: Icon(
                         Icons.bedtime_rounded,
-                        color: _purpleAccent,
+                        color: _sleepAccent,
                         size: 13,
                       ),
                     ),
@@ -83,7 +83,7 @@ class SleepBentoCard extends StatelessWidget {
                     'SLEEP',
                     style: AppTypography.labelSmall.copyWith(
                       fontFamily: 'JetBrains Mono',
-                      fontSize: 9.5,
+                      fontSize: 11.0,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.1,
                       color: AppColors.textSecondary,
@@ -102,7 +102,7 @@ class SleepBentoCard extends StatelessWidget {
                     hoursStr,
                     style: const TextStyle(
                       fontFamily: 'JetBrains Mono',
-                      fontSize: 14,
+                      fontSize: 15,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
                       height: 1.0,
@@ -113,9 +113,9 @@ class SleepBentoCard extends StatelessWidget {
                     'hrs',
                     style: TextStyle(
                       fontFamily: 'Outfit',
-                      fontSize: 9.5,
+                      fontSize: 11.0,
                       fontWeight: FontWeight.w600,
-                      color: _purpleAccent,
+                      color: _sleepAccent,
                     ),
                   ),
                 ],
@@ -129,11 +129,11 @@ class SleepBentoCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(3),
             child: SizedBox(
-              height: 4,
+              height: 5,
               child: LinearProgressIndicator(
                 value: progress,
                 backgroundColor: Colors.white.withValues(alpha: 0.08),
-                valueColor: const AlwaysStoppedAnimation<Color>(_purpleAccent),
+                valueColor: const AlwaysStoppedAnimation<Color>(_sleepAccent),
               ),
             ),
           ),
@@ -148,9 +148,9 @@ class SleepBentoCard extends StatelessWidget {
                 '$hoursStr / $goalHoursStr hrs',
                 style: const TextStyle(
                   fontFamily: 'JetBrains Mono',
-                  fontSize: 8.5,
+                  fontSize: 11.0,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textMuted,
+                  color: AppColors.textSecondary,
                   letterSpacing: 0.4,
                 ),
               ),
@@ -158,9 +158,9 @@ class SleepBentoCard extends StatelessWidget {
                 '$progressPct%',
                 style: const TextStyle(
                   fontFamily: 'JetBrains Mono',
-                  fontSize: 8.5,
+                  fontSize: 11.0,
                   fontWeight: FontWeight.w700,
-                  color: _purpleAccent,
+                  color: _sleepAccent,
                 ),
               ),
             ],

@@ -30,8 +30,9 @@ abstract final class AppColors {
 
   // ── Text ──────────────────────────────────────────────────────────────────
   static const Color textPrimary = Color(0xFFEAECF0);
-  static const Color textSecondary = Color(0xFF8892A4);
-  static const Color textMuted = Color(0xFF4A5568);
+  /// High-contrast secondary text meeting Apple HIG 4.5:1 minimum on dark surfaces.
+  static const Color textSecondary = Color(0xFF94A3B8); // Slate-400 (~5.4:1 contrast)
+  static const Color textMuted = Color(0xFF64748B); // Slate-500
 
   // ── Chart Palette ─────────────────────────────────────────────────────────
   static const Color chartPush = Color(0xFF00E5FF);

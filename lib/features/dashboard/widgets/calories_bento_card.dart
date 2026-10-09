@@ -86,7 +86,7 @@ class CaloriesBentoCard extends StatelessWidget {
                   'CALORIES',
                   style: AppTypography.labelSmall.copyWith(
                     fontFamily: 'JetBrains Mono',
-                    fontSize: 10,
+                    fontSize: 11.0,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.2,
                     color: AppColors.textSecondary,
@@ -120,7 +120,7 @@ class CaloriesBentoCard extends StatelessWidget {
                 'Kcal',
                 style: TextStyle(
                   fontFamily: 'Outfit',
-                  fontSize: 10.5,
+                  fontSize: 11.0,
                   fontWeight: FontWeight.w600,
                   color: _amberLight,
                 ),
@@ -133,13 +133,13 @@ class CaloriesBentoCard extends StatelessWidget {
           // ── Donut Progress Ring (Clean, No Glow Blur) ─────────────────────
           Center(
             child: SizedBox(
-              width: 68,
-              height: 68,
+              width: 72,
+              height: 72,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
                   CustomPaint(
-                    size: const Size(68, 68),
+                    size: const Size(72, 72),
                     painter: _DonutProgressPainter(
                       progress: progress,
                       trackColor: _amberOrange.withValues(alpha: 0.15),
@@ -156,7 +156,7 @@ class CaloriesBentoCard extends StatelessWidget {
                         '$progressPct%',
                         style: const TextStyle(
                           fontFamily: 'JetBrains Mono',
-                          fontSize: 12,
+                          fontSize: 13,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
                         ),
@@ -165,9 +165,9 @@ class CaloriesBentoCard extends StatelessWidget {
                         'BURNED',
                         style: TextStyle(
                           fontFamily: 'JetBrains Mono',
-                          fontSize: 6.5,
+                          fontSize: 11.0,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textMuted,
+                          color: AppColors.textSecondary,
                           letterSpacing: 0.4,
                         ),
                       ),
@@ -186,9 +186,9 @@ class CaloriesBentoCard extends StatelessWidget {
               'GOAL: ${_formatNumber(telemetry.caloriesGoal)} KCAL',
               style: const TextStyle(
                 fontFamily: 'JetBrains Mono',
-                fontSize: 8.5,
+                fontSize: 11.0,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textMuted,
+                color: AppColors.textSecondary,
                 letterSpacing: 0.6,
               ),
             ),

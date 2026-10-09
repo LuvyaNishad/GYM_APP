@@ -70,12 +70,15 @@ abstract final class AppTypography {
     color: AppColors.textSecondary,
   );
 
+  /// Apple HIG minimum type floor for mobile readability.
+  static const double minTypeFloor = 11.0;
+
   static const TextStyle labelSmall = TextStyle(
     fontFamily: 'Outfit',
-    fontSize: 11,
-    fontWeight: FontWeight.w500,
-    letterSpacing: 1.0,
-    color: AppColors.textMuted,
+    fontSize: minTypeFloor,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.8,
+    color: AppColors.textSecondary,
   );
 
   // ── JetBrains Mono (HUD numbers & data) ────────────────────────────────────

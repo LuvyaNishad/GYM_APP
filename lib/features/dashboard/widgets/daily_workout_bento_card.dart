@@ -105,7 +105,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                       'ACTIVE PROTOCOL',
                       style: AppTypography.labelSmall.copyWith(
                         fontFamily: 'JetBrains Mono',
-                        fontSize: 9,
+                        fontSize: 11.0,
                         color: AppColors.primary,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.0,
@@ -119,8 +119,8 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                 'TARGET RPE ${widget.targetRpe}',
                 style: const TextStyle(
                   fontFamily: 'JetBrains Mono',
-                  fontSize: 10,
-                  color: AppColors.textMuted,
+                  fontSize: 11.0,
+                  color: AppColors.textSecondary,
                   letterSpacing: 0.6,
                   fontWeight: FontWeight.w600,
                 ),
@@ -176,7 +176,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                         muscle.toUpperCase(),
                         style: const TextStyle(
                           fontFamily: 'JetBrains Mono',
-                          fontSize: 9.5,
+                          fontSize: 11.0,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                           letterSpacing: 0.6,
@@ -304,7 +304,7 @@ class _SessionMetricItem extends StatelessWidget {
       children: [
         Icon(
           icon,
-          size: 11,
+          size: 13,
           color: AppColors.primary,
         ),
         const SizedBox(width: 4),
@@ -312,7 +312,7 @@ class _SessionMetricItem extends StatelessWidget {
           label,
           style: const TextStyle(
             fontFamily: 'JetBrains Mono',
-            fontSize: 9,
+            fontSize: 11.0,
             fontWeight: FontWeight.w600,
             color: AppColors.textSecondary,
             letterSpacing: 0.5,

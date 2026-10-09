@@ -450,7 +450,8 @@ class _NavPillButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const activeColor = Colors.white;
-    final inactiveColor = Colors.white.withValues(alpha: 0.45);
+    // Apple HIG Contrast: min 4.5:1 on dark glass surface (60% white yields ~5.4:1)
+    final inactiveColor = Colors.white.withValues(alpha: 0.60);
 
     return Semantics(
       button: true,
@@ -480,14 +481,15 @@ class _NavPillButton extends StatelessWidget {
                   color: isActive ? activeColor : inactiveColor,
                 ),
               ),
-              const SizedBox(height: 3.0),
+              const SizedBox(height: 2.5),
               AnimatedDefaultTextStyle(
                 duration: AppConstants.animFast,
                 style: TextStyle(
                   fontFamily: 'Outfit',
-                  fontSize: 9.0,
+                  // Apple HIG Minimum Typography Floor: 11.0 pt
+                  fontSize: 11.0,
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                  letterSpacing: 1.0,
+                  letterSpacing: 0.6,
                   color: isActive ? activeColor : inactiveColor,
                 ),
                 child: Text(tab.label.toUpperCase()),

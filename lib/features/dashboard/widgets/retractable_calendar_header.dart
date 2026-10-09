@@ -209,7 +209,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                                   fontFamily: 'Outfit',
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
-                                  color: Color(0xFF8E95A5),
+                                  color: AppColors.textSecondary,
                                   letterSpacing: 0.3,
                                 ),
                               ),
@@ -220,7 +220,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                                 child: const Icon(
                                   Icons.keyboard_arrow_down_rounded,
                                   size: 16,
-                                  color: Color(0xFF8E95A5),
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ],
@@ -324,14 +324,14 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            // Weekday letter
+            // Weekday letter (Apple HIG floor: 11.0 pt, min 4.5:1 contrast)
             Text(
               _weekdayLetter(date.weekday),
               style: TextStyle(
                 fontFamily: 'Outfit',
-                fontSize: 10.5,
+                fontSize: 11.0,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? _amberAccent : const Color(0xFF7E8799),
+                color: isSelected ? _amberAccent : AppColors.textSecondary,
               ),
             ),
 
@@ -349,7 +349,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                     '${date.day}',
                     style: const TextStyle(
                       fontFamily: 'JetBrains Mono',
-                      fontSize: 11.5,
+                      fontSize: 12.0,
                       fontWeight: FontWeight.w800,
                       color: Colors.black,
                     ),
@@ -361,9 +361,9 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                 '${date.day}',
                 style: const TextStyle(
                   fontFamily: 'JetBrains Mono',
-                  fontSize: 11.5,
+                  fontSize: 12.0,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFFD3D8E4),
+                  color: Color(0xFFE2E8F0),
                 ),
               ),
           ],
