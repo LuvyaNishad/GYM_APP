@@ -1,20 +1,19 @@
 /// Hydration / Water Bento Card for the LEON Dashboard.
 ///
-/// Features:
+/// Clean, minimal, non-sloppy design without outer blur glows:
 /// - Daily water intake stat in milliliters (ml)
-/// - Custom-painted glowing fluid wave curve chart with subtle gradient underfill
+/// - Custom-painted clean fluid wave curve chart with subtle gradient underfill
 /// - Daily milestone completion readout
-/// - Tactical cyan liquid glassmorphism aesthetics
+/// - Tactical cyan styling
 library;
 
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../shared/widgets/liquid_glass.dart';
 import '../models/daily_telemetry_model.dart';
 
-/// Bento grid card displaying daily water intake with a fluid wave curve.
+/// Bento grid card displaying daily water intake with a clean wave curve.
 class WaterBentoCard extends StatelessWidget {
   const WaterBentoCard({
     super.key,
@@ -27,6 +26,8 @@ class WaterBentoCard extends StatelessWidget {
 
   /// Optional tap handler.
   final VoidCallback? onTap;
+
+  static const Color _cardBg = Color(0xFF161A23);
 
   String _formatNumber(int number) {
     return number.toString().replaceAllMapped(
@@ -42,52 +43,51 @@ class WaterBentoCard extends StatelessWidget {
     final liters = (telemetry.waterMl / 1000).toStringAsFixed(2);
     final goalLiters = (telemetry.waterGoalMl / 1000).toStringAsFixed(1);
 
-    return LiquidGlassContainer(
-      borderRadius: 22,
-      blurSigma: 24,
-      glowColor: AppColors.primary.withValues(alpha: 0.14),
-      padding: const EdgeInsets.all(16),
-      borderWidth: 1.1,
+    return Container(
+      decoration: BoxDecoration(
+        color: _cardBg,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+          width: 1.0,
+        ),
+      ),
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // ── Header: Water Drop Icon & Title ───────────────────────────────
           Row(
             children: [
               Container(
-                width: 32,
-                height: 32,
+                width: 26,
+                height: 26,
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.4),
+                    color: AppColors.primary.withValues(alpha: 0.35),
                     width: 1,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.25),
-                      blurRadius: 8,
-                    ),
-                  ],
                 ),
                 child: const Center(
                   child: Icon(
                     Icons.water_drop_rounded,
                     color: AppColors.primary,
-                    size: 18,
+                    size: 15,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   'HYDRATION',
                   style: AppTypography.labelSmall.copyWith(
                     fontFamily: 'JetBrains Mono',
-                    fontSize: 10.5,
+                    fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: 1.4,
+                    letterSpacing: 1.2,
                     color: AppColors.textSecondary,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -96,7 +96,7 @@ class WaterBentoCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
 
           // ── Stat Numbers: 2,750 ml ────────────────────────────────────────
           Row(
@@ -107,19 +107,19 @@ class WaterBentoCard extends StatelessWidget {
                 _formatNumber(telemetry.waterMl),
                 style: const TextStyle(
                   fontFamily: 'JetBrains Mono',
-                  fontSize: 22,
+                  fontSize: 19,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
-                  letterSpacing: 0.3,
+                  letterSpacing: 0.2,
                   height: 1.0,
                 ),
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 3),
               const Text(
                 'ml',
                 style: TextStyle(
                   fontFamily: 'Outfit',
-                  fontSize: 11,
+                  fontSize: 10.5,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
                 ),
@@ -127,17 +127,17 @@ class WaterBentoCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
 
-          // ── Fluid Wave Curve Chart ────────────────────────────────────────
+          // ── Fluid Wave Curve Chart (Clean, No Glow Blur) ──────────────────
           Center(
             child: SizedBox(
               width: double.infinity,
-              height: 88,
+              height: 68,
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(10),
                 child: CustomPaint(
-                  size: const Size(double.infinity, 88),
+                  size: const Size(double.infinity, 68),
                   painter: _FluidWaveCurvePainter(
                     progress: progress,
                     waveColor: AppColors.primary,
@@ -147,7 +147,7 @@ class WaterBentoCard extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
           // ── Goal Milestone ────────────────────────────────────────────────
           Center(
@@ -155,10 +155,10 @@ class WaterBentoCard extends StatelessWidget {
               '$liters / $goalLiters L ($progressPct%)',
               style: const TextStyle(
                 fontFamily: 'JetBrains Mono',
-                fontSize: 9,
+                fontSize: 8.5,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textMuted,
-                letterSpacing: 0.8,
+                letterSpacing: 0.6,
               ),
             ),
           ),
@@ -168,7 +168,7 @@ class WaterBentoCard extends StatelessWidget {
   }
 }
 
-/// Custom painter for rendering a fluid hydrodynamic wave curve with glowing crest.
+/// Custom painter for rendering a fluid hydrodynamic wave curve without blur glow.
 class _FluidWaveCurvePainter extends CustomPainter {
   const _FluidWaveCurvePainter({
     required this.progress,
@@ -183,28 +183,26 @@ class _FluidWaveCurvePainter extends CustomPainter {
     final width = size.width;
     final height = size.height;
 
-    // Baseline wave height mapped to progress
-    final baseHeight = height - (height * 0.65 * progress.clamp(0.1, 1.0));
+    final baseHeight = height - (height * 0.60 * progress.clamp(0.1, 1.0));
 
     final wavePath = Path();
-    wavePath.moveTo(0, baseHeight + 8);
+    wavePath.moveTo(0, baseHeight + 6);
 
-    // Dynamic wave control points creating a natural liquid ripple
     wavePath.cubicTo(
       width * 0.25,
-      baseHeight - 14,
+      baseHeight - 10,
       width * 0.45,
-      baseHeight + 16,
+      baseHeight + 12,
       width * 0.70,
-      baseHeight - 6,
+      baseHeight - 4,
     );
     wavePath.cubicTo(
       width * 0.85,
-      baseHeight - 18,
+      baseHeight - 14,
       width * 0.95,
       baseHeight - 2,
       width,
-      baseHeight - 8,
+      baseHeight - 6,
     );
 
     // Gradient fill beneath the wave
@@ -218,48 +216,30 @@ class _FluidWaveCurvePainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          waveColor.withValues(alpha: 0.32),
-          waveColor.withValues(alpha: 0.12),
-          waveColor.withValues(alpha: 0.02),
+          waveColor.withValues(alpha: 0.22),
+          waveColor.withValues(alpha: 0.08),
+          Colors.transparent,
         ],
       ).createShader(Rect.fromLTWH(0, 0, width, height))
       ..style = PaintingStyle.fill;
 
     canvas.drawPath(fillPath, fillPaint);
 
-    // Glowing wave crest line
+    // Clean wave crest line (no maskFilter blur)
     final crestPaint = Paint()
       ..color = waveColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.4
+      ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
 
-    final glowCrestPaint = Paint()
-      ..color = waveColor.withValues(alpha: 0.5)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 5.0
-      ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-
-    canvas.drawPath(wavePath, glowCrestPaint);
     canvas.drawPath(wavePath, crestPaint);
 
-    // Luminous beacon dot at the wave crest
+    // Clean beacon dot at wave crest
     final dotX = width * 0.70;
-    final dotY = baseHeight - 6;
+    final dotY = baseHeight - 4;
 
-    final dotHaloPaint = Paint()
-      ..color = waveColor.withValues(alpha: 0.45)
-      ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
-
-    final dotPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-
-    canvas.drawCircle(Offset(dotX, dotY), 6, dotHaloPaint);
     canvas.drawCircle(Offset(dotX, dotY), 3.5, Paint()..color = waveColor);
-    canvas.drawCircle(Offset(dotX, dotY), 1.8, dotPaint);
+    canvas.drawCircle(Offset(dotX, dotY), 1.6, Paint()..color = Colors.white);
   }
 
   @override

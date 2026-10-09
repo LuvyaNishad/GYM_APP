@@ -1,11 +1,11 @@
 /// Footsteps Bento Card for the LEON Dashboard.
 ///
-/// Displays:
+/// Clean, minimal, non-sloppy design without outer glow bleeds:
 /// - Daily step telemetry with formatted count and distance traveled
 /// - Goal percentage milestone indicator
-/// - 12-hour activity bar chart with rounded pill bars
-/// - Dynamic peak indicator with floating high-contrast tooltip badge
-/// - Tactical neon lime glassmorphism aesthetics
+/// - Compact 12-hour activity bar chart with rounded pill bars
+/// - Crisp peak indicator with floating high-contrast tooltip badge
+/// - Tactical clean dark aesthetic
 library;
 
 import 'package:flutter/material.dart';
@@ -13,10 +13,9 @@ import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../shared/widgets/liquid_glass.dart';
 import '../models/daily_telemetry_model.dart';
 
-/// Footsteps bento tracker card with interactive hourly activity bars.
+/// Footsteps bento tracker card with clean hourly activity bars.
 class StepsBentoCard extends StatefulWidget {
   const StepsBentoCard({
     super.key,
@@ -36,12 +35,12 @@ class StepsBentoCard extends StatefulWidget {
 
 class _StepsBentoCardState extends State<StepsBentoCard> {
   static const Color _limeAccent = Color(0xFFCCFF00);
+  static const Color _cardBg = Color(0xFF161A23);
   int? _hoveredIndex;
 
   @override
   void initState() {
     super.initState();
-    // Default selection to the peak hourly step index
     _hoveredIndex = _calculatePeakIndex();
   }
 
@@ -77,14 +76,19 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
 
     final progressPct = (t.stepsProgress * 100).toInt();
 
-    return LiquidGlassContainer(
-      borderRadius: 22,
-      blurSigma: 24,
-      glowColor: _limeAccent.withValues(alpha: 0.14),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-      borderWidth: 1.1,
+    return Container(
+      decoration: BoxDecoration(
+        color: _cardBg,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+          width: 1.0,
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // ── Header Row: Footsteps Icon + Title + Distance Badge ───────────
           Row(
@@ -94,38 +98,32 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
               Row(
                 children: [
                   Container(
-                    width: 36,
-                    height: 36,
+                    width: 28,
+                    height: 28,
                     decoration: BoxDecoration(
                       color: _limeAccent.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(9),
                       border: Border.all(
-                        color: _limeAccent.withValues(alpha: 0.4),
+                        color: _limeAccent.withValues(alpha: 0.35),
                         width: 1.0,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _limeAccent.withValues(alpha: 0.2),
-                          blurRadius: 8,
-                        ),
-                      ],
                     ),
                     child: const Center(
                       child: Icon(
                         Icons.directions_walk_rounded,
                         color: _limeAccent,
-                        size: 20,
+                        size: 16,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   Text(
                     'FOOTSTEPS',
                     style: AppTypography.labelSmall.copyWith(
                       fontFamily: 'JetBrains Mono',
-                      fontSize: 11.5,
+                      fontSize: 10.5,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: 1.6,
+                      letterSpacing: 1.4,
                       color: AppColors.textSecondary,
                     ),
                   ),
@@ -134,10 +132,10 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
 
               // Distance pill badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.12),
                     width: 1,
@@ -148,7 +146,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                   children: [
                     const Icon(
                       Icons.near_me_outlined,
-                      size: 11,
+                      size: 10,
                       color: _limeAccent,
                     ),
                     const SizedBox(width: 4),
@@ -156,10 +154,10 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                       '+${t.distanceKm.toStringAsFixed(2)} km',
                       style: const TextStyle(
                         fontFamily: 'JetBrains Mono',
-                        fontSize: 11,
+                        fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
-                        letterSpacing: 0.5,
+                        letterSpacing: 0.4,
                       ),
                     ),
                   ],
@@ -168,7 +166,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
             ],
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 8),
 
           // ── Stat Numbers Row: 8,420 Steps ──────────────────────────────────
           Row(
@@ -179,19 +177,19 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                 _formatNumber(t.steps),
                 style: const TextStyle(
                   fontFamily: 'JetBrains Mono',
-                  fontSize: 32,
+                  fontSize: 24,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
-                  letterSpacing: 0.5,
+                  letterSpacing: 0.4,
                   height: 1.0,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Text(
                 'Steps',
                 style: AppTypography.titleLarge.copyWith(
                   fontFamily: 'Outfit',
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
                 ),
@@ -199,37 +197,37 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
               const Spacer(),
               // Target completion badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
                   color: _limeAccent.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   '$progressPct% OF GOAL',
                   style: const TextStyle(
                     fontFamily: 'JetBrains Mono',
-                    fontSize: 10,
+                    fontSize: 9,
                     fontWeight: FontWeight.w700,
                     color: _limeAccent,
-                    letterSpacing: 0.8,
+                    letterSpacing: 0.6,
                   ),
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
 
-          // ── Hourly Activity Bar Chart with Floating Peak Badge ────────────
+          // ── Compact Hourly Activity Bar Chart with Clean Tooltip ───────────
           SizedBox(
-            height: 110,
+            height: 62,
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final barCount = t.hourlySteps.length;
-                const double chartBarAreaHeight = 72;
+                const double chartBarAreaHeight = 44;
                 final double barWidth =
-                    ((constraints.maxWidth - ((barCount - 1) * 8)) / barCount)
-                        .clamp(8.0, 22.0);
+                    ((constraints.maxWidth - ((barCount - 1) * 7)) / barCount)
+                        .clamp(6.0, 18.0);
 
                 return Stack(
                   clipBehavior: Clip.none,
@@ -238,7 +236,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                     Positioned(
                       left: 0,
                       right: 0,
-                      bottom: 22,
+                      bottom: 14,
                       height: chartBarAreaHeight,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -261,16 +259,16 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                       ),
                     ),
 
-                    // Floating Tooltip Badge above active bar
+                    // Clean Tooltip Badge above active bar (NO blurry glow)
                     if (activeIndex >= 0 && activeIndex < barCount)
-                      _buildFloatingTooltip(
+                      _buildCleanTooltip(
                         activeIndex: activeIndex,
                         barCount: barCount,
                         totalWidth: constraints.maxWidth,
                         barWidth: barWidth,
                         barHeight: ((t.hourlySteps[activeIndex] / maxStepsInHour) *
-                                (chartBarAreaHeight - 16)) +
-                            12,
+                                (chartBarAreaHeight - 12)) +
+                            8,
                         stepValue: t.hourlySteps[activeIndex],
                       ),
 
@@ -310,46 +308,25 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
     required VoidCallback onTap,
   }) {
     final double normalizedHeight =
-        ((value / maxValue) * (maxHeight - 16)) + 10;
+        ((value / maxValue) * (maxHeight - 12)) + 7;
 
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
+        duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
         width: width,
         height: normalizedHeight,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(6),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: isActive
-                ? [
-                    _limeAccent,
-                    _limeAccent.withValues(alpha: 0.85),
-                  ]
-                : [
-                    _limeAccent.withValues(alpha: 0.35),
-                    _limeAccent.withValues(alpha: 0.12),
-                  ],
-          ),
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: _limeAccent.withValues(alpha: 0.5),
-                    blurRadius: 10,
-                    spreadRadius: 1,
-                  ),
-                ]
-              : null,
+          borderRadius: BorderRadius.circular(4),
+          color: isActive ? _limeAccent : _limeAccent.withValues(alpha: 0.25),
         ),
       ),
     );
   }
 
-  Widget _buildFloatingTooltip({
+  Widget _buildCleanTooltip({
     required int activeIndex,
     required int barCount,
     required double totalWidth,
@@ -357,51 +334,44 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
     required double barHeight,
     required int stepValue,
   }) {
-    // Calculate horizontal center coordinate of the active bar
     final double spacing = (totalWidth - (barCount * barWidth)) / (barCount - 1);
     final double barCenterX =
         (activeIndex * (barWidth + spacing)) + (barWidth / 2);
 
-    const double tooltipWidth = 48.0;
+    const double tooltipWidth = 44.0;
     final double tooltipLeft = (barCenterX - (tooltipWidth / 2))
         .clamp(0.0, totalWidth - tooltipWidth);
 
     return Positioned(
       left: tooltipLeft,
-      bottom: 22 + barHeight + 5,
+      bottom: 14 + barHeight + 3,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
             decoration: BoxDecoration(
-              color: const Color(0xFF0C1014),
-              borderRadius: BorderRadius.circular(6),
+              color: const Color(0xFF0F1218),
+              borderRadius: BorderRadius.circular(5),
               border: Border.all(
                 color: _limeAccent,
                 width: 1.0,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: _limeAccent.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                ),
-              ],
             ),
             child: Text(
               _formatNumber(stepValue),
               style: const TextStyle(
                 fontFamily: 'JetBrains Mono',
-                fontSize: 9.5,
+                fontSize: 8.5,
                 fontWeight: FontWeight.w800,
                 color: _limeAccent,
-                letterSpacing: 0.4,
+                letterSpacing: 0.3,
               ),
             ),
           ),
           // Downward pointer caret
           CustomPaint(
-            size: const Size(6, 4),
+            size: const Size(5, 3),
             painter: _CaretPainter(color: _limeAccent),
           ),
         ],
@@ -420,7 +390,7 @@ class _TimeLabel extends StatelessWidget {
       text,
       style: const TextStyle(
         fontFamily: 'JetBrains Mono',
-        fontSize: 9.5,
+        fontSize: 8.5,
         color: AppColors.textMuted,
         fontWeight: FontWeight.w500,
       ),

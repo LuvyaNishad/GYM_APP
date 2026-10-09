@@ -1,11 +1,11 @@
 /// Daily Workout / Start Workout Bento Card for the LEON Dashboard.
 ///
-/// Features:
+/// Clean, minimal, non-sloppy design without outer blur glows:
 /// - Operation/Protocol briefing banner with active status indicator
-/// - Daily targeted muscle groups display with tactical glass tags
+/// - Daily targeted muscle groups display with tactical tags
 /// - Workout session telemetry preview (exercise count, estimated time, target RPE)
-/// - Prominent glass "COMMENCE OPERATION" initiation action button
-/// - Cyber-Slate glassmorphic design language
+/// - Prominent clean initiation action button
+/// - Compact height ensuring full-screen visibility without mandatory scroll
 library;
 
 import 'package:flutter/material.dart';
@@ -16,10 +16,9 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../models/split_model.dart';
-import '../../../shared/widgets/liquid_glass.dart';
 
 /// Full-width Bento card for reviewing today's workout protocol and launching the session.
-class DailyWorkoutBentoCard extends StatelessWidget {
+class DailyWorkoutBentoCard extends StatefulWidget {
   const DailyWorkoutBentoCard({
     super.key,
     this.activeSplit,
@@ -49,18 +48,31 @@ class DailyWorkoutBentoCard extends StatelessWidget {
   final VoidCallback? onStartWorkout;
 
   @override
+  State<DailyWorkoutBentoCard> createState() => _DailyWorkoutBentoCardState();
+}
+
+class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
+  static const Color _cardBg = Color(0xFF161A23);
+  bool _isPressed = false;
+
+  @override
   Widget build(BuildContext context) {
     final splitTitle =
-        activeSplit?.name.toUpperCase() ?? 'TACTICAL PUSH // PROTOCOL A';
+        widget.activeSplit?.name.toUpperCase() ?? 'TACTICAL PUSH // PROTOCOL A';
 
-    return LiquidGlassContainer(
-      borderRadius: 22,
-      blurSigma: 24,
-      glowColor: AppColors.primary.withValues(alpha: 0.16),
-      padding: const EdgeInsets.all(20),
-      borderWidth: 1.1,
+    return Container(
+      decoration: BoxDecoration(
+        color: _cardBg,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+          width: 1.0,
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // ── Header: Active Status + Target RPE ────────────────────────────
           Row(
@@ -68,10 +80,10 @@ class DailyWorkoutBentoCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: AppColors.primary.withValues(alpha: 0.4),
                     width: 1,
@@ -81,28 +93,22 @@ class DailyWorkoutBentoCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
+                      width: 5,
+                      height: 5,
+                      decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.primary,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.8),
-                            blurRadius: 6,
-                          ),
-                        ],
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 5),
                     Text(
                       'ACTIVE PROTOCOL',
                       style: AppTypography.labelSmall.copyWith(
                         fontFamily: 'JetBrains Mono',
-                        fontSize: 9.5,
+                        fontSize: 9,
                         color: AppColors.primary,
                         fontWeight: FontWeight.w700,
-                        letterSpacing: 1.2,
+                        letterSpacing: 1.0,
                       ),
                     ),
                   ],
@@ -110,51 +116,13 @@ class DailyWorkoutBentoCard extends StatelessWidget {
               ),
 
               Text(
-                'TARGET RPE $targetRpe',
+                'TARGET RPE ${widget.targetRpe}',
                 style: const TextStyle(
                   fontFamily: 'JetBrains Mono',
-                  fontSize: 10.5,
+                  fontSize: 10,
                   color: AppColors.textMuted,
-                  letterSpacing: 0.8,
+                  letterSpacing: 0.6,
                   fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 14),
-
-          // ── Protocol Name ─────────────────────────────────────────────────
-          Text(
-            splitTitle,
-            style: AppTypography.headlineMedium.copyWith(
-              fontSize: 18,
-              letterSpacing: 1.2,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-            ),
-          ),
-
-          const SizedBox(height: 14),
-
-          // ── Targeted Muscles Heading & Badges ─────────────────────────────
-          Row(
-            children: [
-              Text(
-                'TARGETED MUSCLES',
-                style: AppTypography.labelSmall.copyWith(
-                  fontFamily: 'JetBrains Mono',
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.2,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Container(
-                  height: 1,
-                  color: Colors.white.withValues(alpha: 0.06),
                 ),
               ),
             ],
@@ -162,19 +130,33 @@ class DailyWorkoutBentoCard extends StatelessWidget {
 
           const SizedBox(height: 8),
 
+          // ── Protocol Name ─────────────────────────────────────────────────
+          Text(
+            splitTitle,
+            style: AppTypography.headlineMedium.copyWith(
+              fontSize: 15,
+              letterSpacing: 1.0,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          // ── Targeted Muscles Badges ───────────────────────────────────────
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 6,
+            runSpacing: 6,
             children: [
-              for (final muscle in muscleGroups)
+              for (final muscle in widget.muscleGroups)
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(10),
+                    color: const Color(0xFF1F2432),
+                    borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.35),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
@@ -182,22 +164,22 @@ class DailyWorkoutBentoCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        width: 4,
-                        height: 4,
+                        width: 3.5,
+                        height: 3.5,
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
                           color: AppColors.primary,
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 5),
                       Text(
                         muscle.toUpperCase(),
                         style: const TextStyle(
                           fontFamily: 'JetBrains Mono',
-                          fontSize: 10.5,
+                          fontSize: 9.5,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
-                          letterSpacing: 0.8,
+                          letterSpacing: 0.6,
                         ),
                       ),
                     ],
@@ -206,16 +188,16 @@ class DailyWorkoutBentoCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
 
           // ── Session Metrics Strip ─────────────────────────────────────────
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.25),
-              borderRadius: BorderRadius.circular(12),
+              color: const Color(0xFF12151E),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.06),
+                color: Colors.white.withValues(alpha: 0.05),
                 width: 1,
               ),
             ),
@@ -224,20 +206,20 @@ class DailyWorkoutBentoCard extends StatelessWidget {
               children: [
                 _SessionMetricItem(
                   icon: Icons.fitness_center_rounded,
-                  label: '$exerciseCount EXERCISES',
+                  label: '${widget.exerciseCount} EXERCISES',
                 ),
                 Container(
                   width: 1,
-                  height: 14,
+                  height: 11,
                   color: Colors.white.withValues(alpha: 0.1),
                 ),
                 _SessionMetricItem(
                   icon: Icons.timer_outlined,
-                  label: '~$estimatedMinutes MIN',
+                  label: '~${widget.estimatedMinutes} MIN',
                 ),
                 Container(
                   width: 1,
-                  height: 14,
+                  height: 11,
                   color: Colors.white.withValues(alpha: 0.1),
                 ),
                 const _SessionMetricItem(
@@ -248,41 +230,56 @@ class DailyWorkoutBentoCard extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 10),
 
           // ── Commence Operation Action Button ──────────────────────────────
-          LiquidGlassButton(
-            height: 50,
-            accentColor: AppColors.primary,
-            onPressed: () {
+          GestureDetector(
+            onTapDown: (_) => setState(() => _isPressed = true),
+            onTapUp: (_) => setState(() => _isPressed = false),
+            onTapCancel: () => setState(() => _isPressed = false),
+            onTap: () {
               HapticFeedback.heavyImpact();
-              if (onStartWorkout != null) {
-                onStartWorkout!();
+              if (widget.onStartWorkout != null) {
+                widget.onStartWorkout!();
               } else {
                 context.push(AppConstants.routeWorkoutSession);
               }
             },
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.play_arrow_rounded,
-                  color: AppColors.primary,
-                  size: 22,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'COMMENCE OPERATION',
-                  style: AppTypography.titleLarge.copyWith(
-                    fontFamily: 'Outfit',
-                    fontSize: 13.5,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.8,
+            child: AnimatedScale(
+              scale: _isPressed ? 0.97 : 1.0,
+              duration: const Duration(milliseconds: 100),
+              child: Container(
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.6),
+                    width: 1.2,
                   ),
                 ),
-              ],
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.play_arrow_rounded,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'COMMENCE OPERATION',
+                      style: AppTypography.titleLarge.copyWith(
+                        fontFamily: 'Outfit',
+                        fontSize: 12.5,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
@@ -307,18 +304,18 @@ class _SessionMetricItem extends StatelessWidget {
       children: [
         Icon(
           icon,
-          size: 13,
+          size: 11,
           color: AppColors.primary,
         ),
-        const SizedBox(width: 5),
+        const SizedBox(width: 4),
         Text(
           label,
           style: const TextStyle(
             fontFamily: 'JetBrains Mono',
-            fontSize: 10,
+            fontSize: 9,
             fontWeight: FontWeight.w600,
             color: AppColors.textSecondary,
-            letterSpacing: 0.6,
+            letterSpacing: 0.5,
           ),
         ),
       ],

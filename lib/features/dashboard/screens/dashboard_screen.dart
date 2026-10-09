@@ -1,16 +1,15 @@
 /// LEON Tactical Command Center — Dashboard Screen.
 ///
 /// Features:
-/// - Retractable interactive calendar header (Hello [Name], PFP, week calendar strip)
-/// - Footsteps Bento Card: 8,420 steps, +6.12 km, 12-hour activity bar chart with peak tooltip
-/// - Calories & Hydration Bento Grid: 2-column split with radial donut chart and fluid wave curve
-/// - Daily Workout Bento Card: Info of the day, targeted muscle groups, and prominent start button
-/// - Tactical Module Quick Access: Builder, Database, Telemetry, and Vitals
-/// - Optimized scroll clearance for the floating glass navigation pill
+/// - Clean, minimal, non-glassmorphic solid tactical calendar header
+/// - Compact footsteps bento card (8,420 steps, distance, clean activity bars)
+/// - Compact 2-column bento grid for calories & water intake
+/// - Compact daily workout card with prominent commence operation button
+/// - Zero mandatory scroll: entire daily overview & start button fits on initial view
+/// - Clean dark Cyber-Slate palette without sloppy blur glows
 library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -18,7 +17,6 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/app_shell.dart';
-import '../../../shared/widgets/glass_card.dart';
 import '../../../state/app_providers.dart';
 import '../models/daily_telemetry_model.dart';
 import '../widgets/calories_bento_card.dart';
@@ -27,7 +25,7 @@ import '../widgets/retractable_calendar_header.dart';
 import '../widgets/steps_bento_card.dart';
 import '../widgets/water_bento_card.dart';
 
-/// Main Dashboard Screen powered by Riverpod and modular glass bento grids.
+/// Main Dashboard Screen powered by Riverpod and modular minimal bento grids.
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
@@ -51,28 +49,28 @@ class DashboardScreen extends ConsumerWidget {
             // ── Main Content Padding ────────────────────────────────────────
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(
-                18,
-                12,
-                18,
-                AppShell.reservedBottomSpace + 28,
+                16,
+                6,
+                16,
+                AppShell.reservedBottomSpace + 20,
               ),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  // ── 1. Retractable Calendar Header ────────────────────────
+                  // ── 1. Clean Solid Retractable Calendar Header ────────────
                   RetractableCalendarHeader(
                     userName: operativeName,
                     avatarUrl: userProfile?.avatarUrl,
                     initialExpanded: true,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
 
-                  // ── 2. Footsteps Tracker Bento Card ───────────────────────
+                  // ── 2. Compact Footsteps Tracker Bento Card ───────────────
                   StepsBentoCard(
                     telemetry: telemetry,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
 
-                  // ── 3. Split Bento Grid: Calories & Water ─────────────────
+                  // ── 3. Compact Split Bento Grid: Calories & Water ─────────
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -81,7 +79,7 @@ class DashboardScreen extends ConsumerWidget {
                           telemetry: telemetry,
                         ),
                       ),
-                      const SizedBox(width: 14),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: WaterBentoCard(
                           telemetry: telemetry,
@@ -89,9 +87,9 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
 
-                  // ── 4. Daily Workout / Start Workout Bento Card ───────────
+                  // ── 4. Compact Daily Workout / Start Workout Bento Card ───
                   DailyWorkoutBentoCard(
                     activeSplit: activeSplit,
                     muscleGroups: const ['CHEST', 'DELTOIDS', 'TRICEPS'],
@@ -99,9 +97,9 @@ class DashboardScreen extends ConsumerWidget {
                     estimatedMinutes: 48,
                     targetRpe: '8.5',
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
-                  // ── 5. Tactical Module Shortcuts ──────────────────────────
+                  // ── 5. Secondary Tactical Modules (Scroll to inspect) ─────
                   Row(
                     children: [
                       Container(
@@ -117,15 +115,15 @@ class DashboardScreen extends ConsumerWidget {
                         'TACTICAL MODULES',
                         style: AppTypography.labelSmall.copyWith(
                           fontFamily: 'JetBrains Mono',
-                          fontSize: 11,
-                          letterSpacing: 1.8,
+                          fontSize: 10.5,
+                          letterSpacing: 1.6,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textSecondary,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
 
                   Row(
                     children: [
@@ -139,7 +137,7 @@ class DashboardScreen extends ConsumerWidget {
                               context.go(AppConstants.routeWorkoutBuilder),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: _TacticalModuleTile(
                           icon: Icons.local_fire_department_rounded,
@@ -152,7 +150,7 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       Expanded(
@@ -164,7 +162,7 @@ class DashboardScreen extends ConsumerWidget {
                           onTap: () => context.go(AppConstants.routeAnalytics),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: _TacticalModuleTile(
                           icon: Icons.monitor_heart_outlined,
@@ -187,7 +185,7 @@ class DashboardScreen extends ConsumerWidget {
   }
 }
 
-/// Tactical Glass Module Tile for the dashboard grid.
+/// Tactical Clean Module Tile for secondary access.
 class _TacticalModuleTile extends StatelessWidget {
   const _TacticalModuleTile({
     required this.icon,
@@ -205,57 +203,65 @@ class _TacticalModuleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
-      padding: const EdgeInsets.all(16),
-      glowColor: accentColor.withValues(alpha: 0.1),
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: accentColor.withValues(alpha: 0.35),
-                    width: 1,
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF161A23),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+          width: 1.0,
+        ),
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: accentColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(icon, color: accentColor, size: 18),
+                    ),
+                    const Icon(
+                      Icons.arrow_outward_rounded,
+                      color: AppColors.textMuted,
+                      size: 14,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  title,
+                  style: AppTypography.titleLarge.copyWith(
+                    fontFamily: 'Outfit',
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.0,
                   ),
                 ),
-                child: Icon(icon, color: accentColor, size: 20),
-              ),
-              const Icon(
-                Icons.arrow_outward_rounded,
-                color: AppColors.textMuted,
-                size: 15,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: AppTypography.titleLarge.copyWith(
-              fontFamily: 'Outfit',
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 9.5,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-              fontSize: 10,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

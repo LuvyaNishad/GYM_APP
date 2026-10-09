@@ -1,12 +1,12 @@
 /// Retractable tactical calendar header widget for the LEON dashboard.
 ///
-/// Features:
-/// - Operative greeting ("Hello [Name]!") and circular PFP avatar
+/// Clean, minimal, non-glassmorphic solid dark card design inspired by
+/// tactical HUDs:
+/// - Operative greeting ("Hello [Name]!") and circular avatar
 /// - Interactive month/year indicator with collapse/expand toggle
-/// - 7-day horizontal calendar week strip with date numbers & day letters
-/// - Active day highlighted with high-contrast tactical glow badge
-/// - Retractable animation: slides up and converges smoothly to just the
-///   greeting and PFP at the same position, and expands on tap or pull-down.
+/// - 7-day horizontal calendar week strip with pill slots (matching reference)
+/// - Active day highlighted with solid amber circular badge (no glow)
+/// - Smooth collapsible retraction: converges to greeting + avatar
 library;
 
 import 'package:flutter/material.dart';
@@ -16,7 +16,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../shared/widgets/liquid_glass.dart';
 
 /// Retractable calendar header for the dashboard.
 class RetractableCalendarHeader extends StatefulWidget {
@@ -45,11 +44,15 @@ class RetractableCalendarHeader extends StatefulWidget {
       _RetractableCalendarHeaderState();
 }
 
-class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
-    with SingleTickerProviderStateMixin {
+class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
   late bool _isExpanded;
   late DateTime _selectedDate;
   late final List<DateTime> _weekDays;
+
+  // Solid dark background matching reference (clean & minimal, non-glassmorphic)
+  static const Color _cardBg = Color(0xFF161A23);
+  static const Color _pillSlotBg = Color(0xFF1F2432);
+  static const Color _amberAccent = Color(0xFFFFB300);
 
   @override
   void initState() {
@@ -57,7 +60,6 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
     _isExpanded = widget.initialExpanded;
     _selectedDate = DateTime.now();
 
-    // Generate current week dates centered on today (Monday - Sunday or current 7 days)
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday % 7));
     _weekDays = List.generate(
@@ -105,24 +107,26 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
       onVerticalDragEnd: (details) {
         if (details.primaryVelocity != null) {
           if (details.primaryVelocity! < -100 && _isExpanded) {
-            // Swiped up -> collapse
             _toggleExpanded();
           } else if (details.primaryVelocity! > 100 && !_isExpanded) {
-            // Swiped down -> expand
             _toggleExpanded();
           }
         }
       },
       child: AnimatedSize(
-        duration: const Duration(milliseconds: 320),
+        duration: const Duration(milliseconds: 280),
         curve: Curves.easeInOutCubic,
         alignment: Alignment.topCenter,
-        child: LiquidGlassContainer(
-          borderRadius: 22,
-          blurSigma: 24,
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-          borderWidth: 1.0,
-          glowColor: AppColors.primary.withValues(alpha: 0.08),
+        child: Container(
+          decoration: BoxDecoration(
+            color: _cardBg,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.08),
+              width: 1.0,
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,7 +139,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                   Expanded(
                     child: InkWell(
                       onTap: _toggleExpanded,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                       splashColor: Colors.transparent,
                       highlightColor: Colors.transparent,
                       child: Column(
@@ -144,10 +148,10 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                           Text.rich(
                             TextSpan(
                               style: AppTypography.displayMedium.copyWith(
-                                fontSize: 22,
+                                fontSize: 19,
                                 fontWeight: FontWeight.w400,
                                 color: AppColors.textPrimary,
-                                letterSpacing: 0.5,
+                                letterSpacing: 0.3,
                               ),
                               children: [
                                 const TextSpan(text: 'Hello '),
@@ -163,26 +167,26 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                           ),
                           const SizedBox(height: 2),
 
-                          // Month & Year with retractable chevron indicator
+                          // Month & Year with animated chevron
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
                                 monthStr,
-                                style: AppTypography.labelSmall.copyWith(
+                                style: const TextStyle(
                                   fontFamily: 'Outfit',
-                                  fontSize: 12,
+                                  fontSize: 11.5,
                                   color: AppColors.textSecondary,
-                                  letterSpacing: 0.6,
+                                  letterSpacing: 0.4,
                                 ),
                               ),
                               const SizedBox(width: 4),
                               AnimatedRotation(
                                 turns: _isExpanded ? 0.0 : -0.25,
-                                duration: const Duration(milliseconds: 250),
+                                duration: const Duration(milliseconds: 220),
                                 child: const Icon(
                                   Icons.keyboard_arrow_down_rounded,
-                                  size: 16,
+                                  size: 15,
                                   color: AppColors.textSecondary,
                                 ),
                               ),
@@ -200,21 +204,14 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                       context.push(AppConstants.routeProfile);
                     },
                     child: Container(
-                      width: 44,
-                      height: 44,
+                      width: 38,
+                      height: 38,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.5),
+                          color: AppColors.primary.withValues(alpha: 0.6),
                           width: 1.5,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.25),
-                            blurRadius: 10,
-                            spreadRadius: 1,
-                          ),
-                        ],
                       ),
                       child: ClipOval(
                         child: widget.avatarUrl != null
@@ -233,19 +230,13 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
 
               // ── Retractable Calendar Strip ────────────────────────────────
               if (_isExpanded) ...[
-                const SizedBox(height: 14),
-                Container(
-                  height: 1,
-                  color: Colors.white.withValues(alpha: 0.06),
-                ),
-                const SizedBox(height: 12),
-
-                // Weekday chips row (S, M, T, W, T, F, S)
+                const SizedBox(height: 10),
+                // Weekday pill chips row (S, M, T, W, T, F, S)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     for (final date in _weekDays)
-                      _buildDayItem(
+                      _buildDayPill(
                         date: date,
                         isSelected: date.year == _selectedDate.year &&
                             date.month == _selectedDate.month &&
@@ -271,83 +262,77 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
         child: Icon(
           Icons.person_rounded,
           color: AppColors.primary,
-          size: 24,
+          size: 20,
         ),
       ),
     );
   }
 
-  Widget _buildDayItem({
+  Widget _buildDayPill({
     required DateTime date,
     required bool isSelected,
     required bool isToday,
   }) {
-    // Selected day gets luminous amber/gold tactical glow (matching reference image)
-    const accentColor = Color(0xFFFFB300);
-
     return InkWell(
       onTap: () {
         HapticFeedback.lightImpact();
         setState(() => _selectedDate = date);
         widget.onDateSelected?.call(date);
       },
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        width: 42,
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        width: 38,
+        height: 50,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          color: isSelected
-              ? Colors.transparent
-              : Colors.white.withValues(alpha: 0.03),
-          border: isSelected
-              ? Border.all(color: accentColor.withValues(alpha: 0.6), width: 1)
-              : null,
+          borderRadius: BorderRadius.circular(16),
+          color: _pillSlotBg,
         ),
+        padding: const EdgeInsets.symmetric(vertical: 4),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            // Day letter (S, M, T...)
+            // Weekday letter
             Text(
               _weekdayLetter(date.weekday),
               style: TextStyle(
                 fontFamily: 'Outfit',
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? accentColor : AppColors.textSecondary,
+                color: isSelected ? _amberAccent : AppColors.textSecondary,
               ),
             ),
-            const SizedBox(height: 6),
 
-            // Date number circle
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isSelected ? accentColor : Colors.transparent,
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: accentColor.withValues(alpha: 0.6),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                        ),
-                      ]
-                    : null,
-              ),
-              child: Center(
-                child: Text(
-                  '${date.day}',
-                  style: TextStyle(
-                    fontFamily: 'JetBrains Mono',
-                    fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                    color: isSelected ? Colors.black : Colors.white,
+            // Date Number (active day has solid amber badge, no blur glow)
+            if (isSelected)
+              Container(
+                width: 24,
+                height: 24,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _amberAccent,
+                ),
+                child: Center(
+                  child: Text(
+                    '${date.day}',
+                    style: const TextStyle(
+                      fontFamily: 'JetBrains Mono',
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
+              )
+            else
+              Text(
+                '${date.day}',
+                style: const TextStyle(
+                  fontFamily: 'JetBrains Mono',
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
-            ),
           ],
         ),
       ),
