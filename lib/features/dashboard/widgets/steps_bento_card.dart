@@ -180,7 +180,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
-                  letterSpacing: 0.4,
+                  letterSpacing: -0.3, // SKILL2.md §15: Negative optical tracking
                   height: 1.0,
                 ),
               ),
@@ -313,14 +313,20 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        width: width,
-        height: normalizedHeight,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(4),
-          color: isActive ? _cyanAccent : _cyanAccent.withValues(alpha: 0.25),
+      child: Container(
+        color: Colors.transparent, // Expands hit testing to full column height
+        padding: const EdgeInsets.symmetric(horizontal: 1.5),
+        alignment: Alignment.bottomCenter,
+        height: maxHeight,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          width: width,
+          height: normalizedHeight,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            color: isActive ? _cyanAccent : _cyanAccent.withValues(alpha: 0.25),
+          ),
         ),
       ),
     );

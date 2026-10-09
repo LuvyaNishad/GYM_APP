@@ -135,7 +135,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
             splitTitle,
             style: AppTypography.headlineMedium.copyWith(
               fontSize: 15,
-              letterSpacing: 1.0,
+              letterSpacing: 0.6, // SKILL2.md §15: Optical tracking for medium headings
               fontWeight: FontWeight.w800,
               color: Colors.white,
             ),

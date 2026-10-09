@@ -46,8 +46,9 @@ class RetractableCalendarHeader extends StatefulWidget {
       _RetractableCalendarHeaderState();
 }
 
-class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
-  late bool _isExpanded;
+class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
   late DateTime _selectedDate;
   late final List<DateTime> _weekDays;
 
@@ -56,10 +57,12 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
   static const Color _pillSlotBg = Color(0xFF262C3A);
   static const Color _amberAccent = Color(0xFFFFB300);
 
+  // Height of expandable strip in logical pixels
+  static const double _stripHeight = 70.0;
+
   @override
   void initState() {
     super.initState();
-    _isExpanded = widget.initialExpanded;
     _selectedDate = DateTime.now();
 
     final now = DateTime.now();
@@ -69,13 +72,49 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
       7,
       (i) => startOfWeek.add(Duration(days: i)),
     );
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 280),
+      value: widget.initialExpanded ? 1.0 : 0.0,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   void _toggleExpanded() {
     HapticFeedback.lightImpact();
-    setState(() {
-      _isExpanded = !_isExpanded;
-    });
+    if (_controller.value >= 0.5) {
+      _controller.animateTo(0.0, curve: Curves.easeOutCubic);
+    } else {
+      _controller.animateTo(1.0, curve: Curves.easeOutCubic);
+    }
+  }
+
+  void _onDragStart(DragStartDetails details) {
+    _controller.stop(); // SKILL2.md §3: Interrupt instantly from live value
+  }
+
+  void _onDragUpdate(DragUpdateDetails details) {
+    // SKILL2.md §2: Direct 1:1 manipulation
+    final delta = details.primaryDelta ?? 0.0;
+    _controller.value = (_controller.value + (delta / _stripHeight)).clamp(0.0, 1.0);
+  }
+
+  void _onDragEnd(DragEndDetails details) {
+    // SKILL2.md §5 & §6: Velocity handoff & momentum projection
+    final v = details.primaryVelocity ?? 0.0;
+    double target;
+    if (v.abs() > 300) {
+      target = v > 0 ? 1.0 : 0.0;
+    } else {
+      target = _controller.value >= 0.5 ? 1.0 : 0.0;
+    }
+    _controller.animateTo(target, curve: Curves.easeOutCubic);
   }
 
   String _monthName(int month) {
@@ -124,166 +163,177 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
     final topPadding = MediaQuery.paddingOf(context).top;
 
     return GestureDetector(
-      onVerticalDragEnd: (details) {
-        if (details.primaryVelocity != null) {
-          if (details.primaryVelocity! < -100 && _isExpanded) {
-            _toggleExpanded();
-          } else if (details.primaryVelocity! > 100 && !_isExpanded) {
-            _toggleExpanded();
-          }
-        }
-      },
-      child: AnimatedSize(
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeInOutCubic,
-        alignment: Alignment.topCenter,
-        child: Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: _cardBg,
-            // Bottom two vertices curved (32px), top vertices flush corner-to-corner
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(32),
-              bottomRight: Radius.circular(32),
-            ),
-            border: Border(
-              bottom: BorderSide(
-                color: Colors.white.withValues(alpha: 0.08),
-                width: 1.0,
+      behavior: HitTestBehavior.opaque,
+      onVerticalDragStart: _onDragStart,
+      onVerticalDragUpdate: _onDragUpdate,
+      onVerticalDragEnd: _onDragEnd,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          final animValue = _controller.value;
+          final bottomPadding = 14.0 + (animValue * 4.0);
+
+          return Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: _cardBg,
+              // Bottom two vertices curved (32px), top vertices flush corner-to-corner
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(32),
+                bottomRight: Radius.circular(32),
+              ),
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  width: 1.0,
+                ),
               ),
             ),
-          ),
-          padding: EdgeInsets.only(
-            top: topPadding + 8,
-            left: 20,
-            right: 20,
-            bottom: _isExpanded ? 18 : 14,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Top Greeting Row: Hello Name & PFP ─────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: _toggleExpanded,
-                      borderRadius: BorderRadius.circular(10),
-                      splashColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text.rich(
-                            TextSpan(
-                              style: AppTypography.displayMedium.copyWith(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w400,
-                                color: const Color(0xFFD8DDE8),
-                                letterSpacing: 0.2,
-                              ),
-                              children: [
-                                const TextSpan(text: 'Hello '),
-                                TextSpan(
-                                  text: '${widget.userName}!',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-
-                          // Month & Year with animated chevron
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
+            padding: EdgeInsets.only(
+              top: topPadding + 8,
+              left: 20,
+              right: 20,
+              bottom: bottomPadding,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Top Greeting Row: Hello Name & PFP ─────────────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: _toggleExpanded,
+                        borderRadius: BorderRadius.circular(10),
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                monthStr,
-                                style: const TextStyle(
-                                  fontFamily: 'Outfit',
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.textSecondary,
-                                  letterSpacing: 0.3,
+                              Text.rich(
+                                TextSpan(
+                                  style: AppTypography.displayMedium.copyWith(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w400,
+                                    color: const Color(0xFFD8DDE8),
+                                    // SKILL2.md §15: Negative optical tracking for display size
+                                    letterSpacing: -0.4,
+                                  ),
+                                  children: [
+                                    const TextSpan(text: 'Hello '),
+                                    TextSpan(
+                                      text: '${widget.userName}!',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(width: 4),
-                              AnimatedRotation(
-                                turns: _isExpanded ? 0.0 : -0.25,
-                                duration: const Duration(milliseconds: 220),
-                                child: const Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                  size: 16,
-                                  color: AppColors.textSecondary,
-                                ),
+                              const SizedBox(height: 3),
+
+                              // Month & Year with animated chevron
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    monthStr,
+                                    style: const TextStyle(
+                                      fontFamily: 'Outfit',
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.textSecondary,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Transform.rotate(
+                                    angle: (1.0 - animValue) * -1.5708, // -90 degrees when collapsed
+                                    child: const Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      size: 16,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Operative PFP Avatar
-                  GestureDetector(
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      context.push(AppConstants.routeProfile);
-                    },
-                    child: Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          width: 1.5,
                         ),
                       ),
-                      child: ClipOval(
-                        child: widget.avatarUrl != null
-                            ? Image.network(
-                                widget.avatarUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    _buildDefaultAvatar(),
-                              )
-                            : _buildDefaultAvatar(),
+                    ),
+
+                    // Operative PFP Avatar with 44pt accessible touch target
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        context.push(AppConstants.routeProfile);
+                      },
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: ClipOval(
+                          child: widget.avatarUrl != null
+                              ? Image.network(
+                                  widget.avatarUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) =>
+                                      _buildDefaultAvatar(),
+                                )
+                              : _buildDefaultAvatar(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // ── Retractable Calendar Strip with Fluid Height & Opacity ───
+                ClipRect(
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    heightFactor: animValue,
+                    child: Opacity(
+                      opacity: animValue.clamp(0.0, 1.0),
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 14),
+                        // Weekday pill chips row (S, M, T, W, T, F, S)
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            for (final date in _weekDays)
+                              _buildDayPill(
+                                date: date,
+                                isSelected: date.year == _selectedDate.year &&
+                                    date.month == _selectedDate.month &&
+                                    date.day == _selectedDate.day,
+                                isToday: date.year == now.year &&
+                                    date.month == now.month &&
+                                    date.day == now.day,
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ],
-              ),
-
-              // ── Retractable Calendar Strip ────────────────────────────────
-              if (_isExpanded) ...[
-                const SizedBox(height: 14),
-                // Weekday pill chips row (S, M, T, W, T, F, S)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    for (final date in _weekDays)
-                      _buildDayPill(
-                        date: date,
-                        isSelected: date.year == _selectedDate.year &&
-                            date.month == _selectedDate.month &&
-                            date.day == _selectedDate.day,
-                        isToday: date.year == now.year &&
-                            date.month == now.month &&
-                            date.day == now.day,
-                      ),
-                  ],
                 ),
               ],
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -306,16 +356,16 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
     required bool isSelected,
     required bool isToday,
   }) {
-    return InkWell(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () {
         HapticFeedback.lightImpact();
         setState(() => _selectedDate = date);
         widget.onDateSelected?.call(date);
       },
-      borderRadius: BorderRadius.circular(18),
       child: Container(
-        width: 42,
-        height: 54,
+        width: 44,
+        height: 56,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           color: _pillSlotBg,

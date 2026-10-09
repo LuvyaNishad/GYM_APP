@@ -234,7 +234,7 @@ class _TubelightIndicatorState extends State<TubelightIndicator>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 320),
+      duration: const Duration(milliseconds: 300),
     );
 
     _slideAnimation = Tween<double>(
@@ -243,7 +243,7 @@ class _TubelightIndicatorState extends State<TubelightIndicator>
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Curves.easeInOutCubic,
+        curve: Curves.easeOutCubic,
       ),
     );
 
@@ -268,7 +268,7 @@ class _TubelightIndicatorState extends State<TubelightIndicator>
       ).animate(
         CurvedAnimation(
           parent: _controller,
-          curve: Curves.easeInOutCubic,
+          curve: Curves.easeOutCubic,
         ),
       );
 
@@ -433,8 +433,8 @@ class _TubelightIndicatorState extends State<TubelightIndicator>
   }
 }
 
-/// Navigation Button for each tab item.
-class _NavPillButton extends StatelessWidget {
+/// Navigation Button for each tab item with instant touch response and Title Case label.
+class _NavPillButton extends StatefulWidget {
   const _NavPillButton({
     required this.tab,
     required this.isActive,
@@ -448,6 +448,13 @@ class _NavPillButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_NavPillButton> createState() => _NavPillButtonState();
+}
+
+class _NavPillButtonState extends State<_NavPillButton> {
+  bool _isDown = false;
+
+  @override
   Widget build(BuildContext context) {
     const activeColor = Colors.white;
     // Apple HIG Contrast: min 4.5:1 on dark glass surface (60% white yields ~5.4:1)
@@ -455,46 +462,50 @@ class _NavPillButton extends StatelessWidget {
 
     return Semantics(
       button: true,
-      selected: isActive,
-      label: tab.label,
-      child: InkWell(
-        onTap: () {
+      selected: widget.isActive,
+      label: widget.tab.label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (_) {
           HapticFeedback.lightImpact();
-          onTap();
+          setState(() => _isDown = true);
         },
-        borderRadius: BorderRadius.circular(21),
-        splashColor: Colors.white.withValues(alpha: 0.15),
-        highlightColor: Colors.transparent,
-        child: SizedBox(
-          height: height,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              AnimatedScale(
-                scale: isActive ? 1.06 : 1.0,
-                duration: AppConstants.animFast,
-                curve: Curves.easeOutBack,
-                child: Icon(
-                  isActive ? tab.activeIcon : tab.icon,
+        onTapUp: (_) {
+          setState(() => _isDown = false);
+          widget.onTap();
+        },
+        onTapCancel: () => setState(() => _isDown = false),
+        child: AnimatedScale(
+          scale: _isDown ? 0.94 : (widget.isActive ? 1.03 : 1.0),
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.easeOutCubic,
+          child: SizedBox(
+            height: widget.height,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(
+                  widget.isActive ? widget.tab.activeIcon : widget.tab.icon,
                   size: 20,
-                  color: isActive ? activeColor : inactiveColor,
+                  color: widget.isActive ? activeColor : inactiveColor,
                 ),
-              ),
-              const SizedBox(height: 2.5),
-              AnimatedDefaultTextStyle(
-                duration: AppConstants.animFast,
-                style: TextStyle(
-                  fontFamily: 'Outfit',
-                  // Apple HIG Minimum Typography Floor: 11.0 pt
-                  fontSize: 11.0,
-                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                  letterSpacing: 0.6,
-                  color: isActive ? activeColor : inactiveColor,
+                const SizedBox(height: 2.5),
+                AnimatedDefaultTextStyle(
+                  duration: AppConstants.animFast,
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    // Apple HIG Minimum Typography Floor: 11.0 pt
+                    fontSize: 11.0,
+                    fontWeight: widget.isActive ? FontWeight.w700 : FontWeight.w500,
+                    letterSpacing: 0.2, // Natural tracking for title case
+                    color: widget.isActive ? activeColor : inactiveColor,
+                  ),
+                  // Apple HIG tab-bars.md: Title Case, not ALL CAPS
+                  child: Text(widget.tab.label),
                 ),
-                child: Text(tab.label.toUpperCase()),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

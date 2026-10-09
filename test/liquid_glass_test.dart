@@ -53,15 +53,15 @@ void main() {
         ),
       );
 
-      // Verify all 5 tab labels are rendered
-      expect(find.text('HOME'), findsOneWidget);
-      expect(find.text('WORKOUTS'), findsOneWidget);
-      expect(find.text('EXERCISES'), findsOneWidget);
-      expect(find.text('HISTORY'), findsOneWidget);
-      expect(find.text('ACCOUNT'), findsOneWidget);
+      // Verify all 5 tab labels are rendered (Title Case per Apple HIG tab-bars.md)
+      expect(find.text('Home'), findsOneWidget);
+      expect(find.text('Workouts'), findsOneWidget);
+      expect(find.text('Exercises'), findsOneWidget);
+      expect(find.text('History'), findsOneWidget);
+      expect(find.text('Account'), findsOneWidget);
 
       // Verify tapping History selects tab index 3
-      await tester.tap(find.text('HISTORY'));
+      await tester.tap(find.text('History'));
       await tester.pumpAndSettle();
 
       expect(selectedTab, 3);

@@ -45,7 +45,7 @@ class WaterBentoCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: _cardBg,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.08),
           width: 1.0,

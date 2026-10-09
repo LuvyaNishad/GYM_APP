@@ -111,7 +111,7 @@ class CaloriesBentoCard extends StatelessWidget {
                   fontSize: 19,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
-                  letterSpacing: 0.2,
+                  letterSpacing: -0.2, // SKILL2.md §15: Negative optical tracking
                   height: 1.0,
                 ),
               ),
