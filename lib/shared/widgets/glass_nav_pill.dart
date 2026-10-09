@@ -1,12 +1,17 @@
-/// LEON floating limelight glass navigation pill.
+/// LEON floating tubelight glass navigation pill.
 ///
-/// Implements 21st.dev Limelight spotlight navigation:
-/// - Horizontal glowing greyish-white emitter bar at the top of the pill
-/// - Trapezoidal limelight spotlight beam shining downward over the active icon
-/// - Smooth transition choreography: light dims on previous tab, emitter slides
-///   smoothly across with dynamic stretch, and spotlight flares on over the new tab
-/// - Greyish-white / luminous platinum palette for high-contrast visibility
-///   over the Cyber-Slate liquid glass backdrop
+/// Implements the 21st.dev / shadcn Tubelight Navbar:
+/// - Rounded pill container with backdrop blur and border
+/// - Active tab highlighted with a rounded pill background (bg-muted / bg-primary/5)
+/// - Overhead "tubelight" lamp emitter positioned on the top edge of the active tab
+/// - 3-tier concentrated downward glow blooms mirroring the React component:
+///   1) Wide soft glow (48x24, blur 14)
+///   2) Medium glow (32x16, blur 8)
+///   3) Core lamp bloom (16x10, blur 4)
+///   4) Solid overhead tube emitter bar (32x3.5) with rounded top corners
+/// - Smooth spring-sliding transition that glides the lamp and active background
+///   across tabs with easeInOutCubic physics
+/// - Clean dark Cyber-Slate palette with high-contrast text and icons
 library;
 
 import 'package:flutter/material.dart';
@@ -83,6 +88,7 @@ int navPillIndexFor(String location) {
   return bestIndex;
 }
 
+/// Floating Tubelight Glass Navigation Pill.
 class GlassNavPill extends ConsumerWidget {
   const GlassNavPill({
     required this.activeIndex,
@@ -96,30 +102,29 @@ class GlassNavPill extends ConsumerWidget {
   /// Called with the tapped index.
   final ValueChanged<int> onTabSelected;
 
-  static const double height = 66;
+  static const double height = 64.0;
 
-  /// Corner radius for tactical rounded rectangle styling.
-  static const double borderRadius = 18.0;
+  /// Corner radius for stadium capsule styling (rounded-full).
+  static const double borderRadius = 32.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return LiquidGlassContainer(
       height: height,
       borderRadius: borderRadius,
-      blurSigma: 26,
-      borderWidth: 1.2,
-      showGlow: true,
-      glowColor: Colors.white.withValues(alpha: 0.06),
-      padding: EdgeInsets.zero,
+      blurSigma: 24,
+      borderWidth: 1.0,
+      showGlow: false,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Material(
         type: MaterialType.transparency,
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // ── 21st.dev Limelight Spotlight Indicator ──────────────────────
+            // ── Tubelight Animated Lamp Indicator ────────────────────────────
             if (activeIndex >= 0 && activeIndex < kNavPillTabs.length)
               Positioned.fill(
-                child: LimelightIndicator(
+                child: TubelightIndicator(
                   activeIndex: activeIndex,
                   totalTabs: kNavPillTabs.length,
                 ),
@@ -148,34 +153,37 @@ class GlassNavPill extends ConsumerWidget {
   }
 }
 
-/// The Limelight spotlight indicator inspired by 21st.dev.
-/// Features an overhead emitter bar and a smooth trapezoidal downward beam.
-class LimelightIndicator extends StatefulWidget {
-  const LimelightIndicator({
+/// Backward compatibility alias for any references to LimelightIndicator.
+typedef LimelightIndicator = TubelightIndicator;
+
+/// Tubelight Lamp Indicator ported directly from 21st.dev / shadcn Tubelight Navbar.
+/// Features a rounded active tab highlight pill with an overhead tubelight fixture
+/// and concentrated 3-layer downward glow blooms.
+class TubelightIndicator extends StatefulWidget {
+  const TubelightIndicator({
     super.key,
     required this.activeIndex,
     required this.totalTabs,
-    this.lightColor = const Color(0xFFF1F5F9),
-    this.barWidth = 40.0,
-    this.barHeight = 4.0,
+    this.lampColor = const Color(0xFFF1F5F9),
+    this.tubeWidth = 32.0,
+    this.tubeHeight = 3.5,
   });
 
   final int activeIndex;
   final int totalTabs;
-  final Color lightColor;
-  final double barWidth;
-  final double barHeight;
+  final Color lampColor;
+  final double tubeWidth;
+  final double tubeHeight;
 
   @override
-  State<LimelightIndicator> createState() => _LimelightIndicatorState();
+  State<TubelightIndicator> createState() => _TubelightIndicatorState();
 }
 
-class _LimelightIndicatorState extends State<LimelightIndicator>
+class _TubelightIndicatorState extends State<TubelightIndicator>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late Animation<double> _slideAnimation;
   late Animation<double> _intensityAnimation;
-  late Animation<double> _stretchAnimation;
 
   int _previousIndex = 0;
   int _currentIndex = 0;
@@ -188,20 +196,24 @@ class _LimelightIndicatorState extends State<LimelightIndicator>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 380),
+      duration: const Duration(milliseconds: 320),
     );
 
     _slideAnimation = Tween<double>(
       begin: _currentIndex.toDouble(),
       end: _currentIndex.toDouble(),
-    ).animate(_controller);
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOutCubic,
+      ),
+    );
 
     _intensityAnimation = const AlwaysStoppedAnimation(1.0);
-    _stretchAnimation = const AlwaysStoppedAnimation(1.0);
   }
 
   @override
-  void didUpdateWidget(LimelightIndicator oldWidget) {
+  void didUpdateWidget(TubelightIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.activeIndex != _currentIndex && widget.activeIndex >= 0) {
       _previousIndex = _currentIndex;
@@ -222,35 +234,17 @@ class _LimelightIndicatorState extends State<LimelightIndicator>
         ),
       );
 
-      // Light turns off (1.0 -> 0.15) during early motion, then turns on (0.15 -> 1.0) as it lands
+      // Tubelight dynamic glow dip during movement, then flares bright upon landing
       _intensityAnimation = TweenSequence<double>([
         TweenSequenceItem(
-          tween: Tween<double>(begin: 1.0, end: 0.15)
+          tween: Tween<double>(begin: 1.0, end: 0.40)
               .chain(CurveTween(curve: Curves.easeOut)),
-          weight: 35,
+          weight: 40,
         ),
         TweenSequenceItem(
-          tween: Tween<double>(begin: 0.15, end: 0.15),
-          weight: 15,
-        ),
-        TweenSequenceItem(
-          tween: Tween<double>(begin: 0.15, end: 1.0)
+          tween: Tween<double>(begin: 0.40, end: 1.0)
               .chain(CurveTween(curve: Curves.easeInCubic)),
-          weight: 50,
-        ),
-      ]).animate(_controller);
-
-      // Subtle dynamic stretch during transit
-      _stretchAnimation = TweenSequence<double>([
-        TweenSequenceItem(
-          tween: Tween<double>(begin: 1.0, end: 1.25)
-              .chain(CurveTween(curve: Curves.easeOut)),
-          weight: 45,
-        ),
-        TweenSequenceItem(
-          tween: Tween<double>(begin: 1.25, end: 1.0)
-              .chain(CurveTween(curve: Curves.easeIn)),
-          weight: 55,
+          weight: 60,
         ),
       ]).animate(_controller);
 
@@ -287,55 +281,127 @@ class _LimelightIndicatorState extends State<LimelightIndicator>
             final intensity = _controller.isAnimating
                 ? _intensityAnimation.value
                 : 1.0;
-            final stretch = _controller.isAnimating
-                ? _stretchAnimation.value
-                : 1.0;
 
             final currentCenterX = (animIndex + 0.5) * tabWidth;
-            final currentBarWidth =
-                (widget.barWidth * stretch).clamp(24.0, tabWidth * 0.85);
-            final bottomBeamWidth =
-                (tabWidth * 0.92).clamp(currentBarWidth * 1.3, tabWidth);
+            final activePillWidth = (tabWidth - 6).clamp(36.0, tabWidth);
+            final activePillHeight = totalHeight - 10;
+            final tubeWidth = widget.tubeWidth.clamp(20.0, tabWidth * 0.7);
 
             return IgnorePointer(
               child: Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  // 1. Limelight Spotlight Cone (Beam shining down over active icon and label)
-                  CustomPaint(
-                    size: Size(totalWidth, totalHeight),
-                    painter: _LimelightBeamPainter(
-                      color: widget.lightColor,
-                      intensity: intensity,
-                      centerX: currentCenterX,
-                      topWidth: currentBarWidth,
-                      bottomWidth: bottomBeamWidth,
-                      height: totalHeight,
+                  // ── 1. Active Tab Pill Background (bg-muted / bg-primary/5) ──
+                  Positioned(
+                    left: currentCenterX - (activePillWidth / 2),
+                    top: 5.0,
+                    width: activePillWidth,
+                    height: activePillHeight,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.08 * intensity),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white
+                              .withValues(alpha: 0.07 * intensity),
+                          width: 1.0,
+                        ),
+                      ),
                     ),
                   ),
 
-                  // 2. Horizontal Header Emitter Bar (Glowing top pill)
+                  // ── 2. Layer 1: Wide Soft Downward Glow (w-12 h-6 blur-md) ──
                   Positioned(
-                    left: currentCenterX - (currentBarWidth / 2),
-                    top: 1.0,
+                    left: currentCenterX - 24,
+                    top: -2.0,
                     child: Container(
-                      width: currentBarWidth,
-                      height: widget.barHeight,
+                      width: 48,
+                      height: 24,
                       decoration: BoxDecoration(
-                        color: widget.lightColor,
-                        borderRadius:
-                            BorderRadius.circular(widget.barHeight / 2),
+                        borderRadius: BorderRadius.circular(12),
+                        color: widget.lampColor
+                            .withValues(alpha: 0.18 * intensity),
                         boxShadow: [
                           BoxShadow(
-                            color: widget.lightColor
-                                .withValues(alpha: 0.95 * intensity),
-                            blurRadius: 7,
-                            spreadRadius: 0.6,
+                            color: widget.lampColor
+                                .withValues(alpha: 0.28 * intensity),
+                            blurRadius: 14,
+                            spreadRadius: 2,
+                            offset: const Offset(0, 4),
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // ── 3. Layer 2: Medium Concentrated Glow (w-8 h-6 blur-md) ──
+                  Positioned(
+                    left: currentCenterX - 16,
+                    top: -1.0,
+                    child: Container(
+                      width: 32,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: widget.lampColor
+                            .withValues(alpha: 0.24 * intensity),
+                        boxShadow: [
                           BoxShadow(
-                            color: widget.lightColor
-                                .withValues(alpha: 0.45 * intensity),
-                            blurRadius: 18,
-                            offset: const Offset(0, 3),
+                            color: widget.lampColor
+                                .withValues(alpha: 0.40 * intensity),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // ── 4. Layer 3: Core Lamp Bloom (w-4 h-4 blur-sm) ──────────
+                  Positioned(
+                    left: currentCenterX - 8,
+                    top: 1.0,
+                    child: Container(
+                      width: 16,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: widget.lampColor
+                            .withValues(alpha: 0.35 * intensity),
+                        boxShadow: [
+                          BoxShadow(
+                            color: widget.lampColor
+                                .withValues(alpha: 0.60 * intensity),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // ── 5. Overhead Tubelight Bar (w-8 h-1 bg-primary rounded-t-full) ─
+                  Positioned(
+                    left: currentCenterX - (tubeWidth / 2),
+                    top: 0.0,
+                    child: Container(
+                      width: tubeWidth,
+                      height: widget.tubeHeight,
+                      decoration: BoxDecoration(
+                        color: widget.lampColor,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(3),
+                          topRight: Radius.circular(3),
+                          bottomLeft: Radius.circular(1),
+                          bottomRight: Radius.circular(1),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: widget.lampColor
+                                .withValues(alpha: 0.95 * intensity),
+                            blurRadius: 5,
+                            spreadRadius: 0.5,
                           ),
                         ],
                       ),
@@ -351,135 +417,7 @@ class _LimelightIndicatorState extends State<LimelightIndicator>
   }
 }
 
-/// Custom painter that draws the trapezoidal limelight spotlight beam
-class _LimelightBeamPainter extends CustomPainter {
-  const _LimelightBeamPainter({
-    required this.color,
-    required this.intensity,
-    required this.centerX,
-    required this.topWidth,
-    required this.bottomWidth,
-    required this.height,
-  });
-
-  final Color color;
-  final double intensity;
-  final double centerX;
-  final double topWidth;
-  final double bottomWidth;
-  final double height;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (intensity <= 0.01) return;
-
-    final halfTop = topWidth / 2;
-    final halfBottom = bottomWidth / 2;
-
-    // Trapezoidal spotlight cone
-    final path = Path()
-      ..moveTo(centerX - halfTop, 2.0)
-      ..lineTo(centerX + halfTop, 2.0)
-      ..lineTo(centerX + halfBottom, height)
-      ..lineTo(centerX - halfBottom, height)
-      ..close();
-
-    final beamRect = Rect.fromLTWH(
-      centerX - halfBottom,
-      0,
-      bottomWidth,
-      height,
-    );
-
-    // 1. Primary downward beam gradient spanning full height
-    final beamPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          color.withValues(alpha: 0.42 * intensity),
-          color.withValues(alpha: 0.28 * intensity),
-          color.withValues(alpha: 0.16 * intensity),
-          color.withValues(alpha: 0.05 * intensity),
-          Colors.transparent,
-        ],
-        stops: const [0.0, 0.25, 0.60, 0.88, 1.0],
-      ).createShader(beamRect);
-
-    canvas.drawPath(path, beamPaint);
-
-    // 2. Central radiant beam core (emitter glow bloom)
-    final corePaint = Paint()
-      ..shader = RadialGradient(
-        center: const Alignment(0.0, -0.65),
-        radius: 0.85,
-        colors: [
-          color.withValues(alpha: 0.28 * intensity),
-          color.withValues(alpha: 0.10 * intensity),
-          Colors.transparent,
-        ],
-        stops: const [0.0, 0.45, 1.0],
-      ).createShader(beamRect);
-
-    canvas.drawPath(path, corePaint);
-
-    // 3. Ground illumination puddle on the active icon and label section
-    final groundRect = Rect.fromCenter(
-      center: Offset(centerX, height * 0.54),
-      width: bottomWidth * 0.95,
-      height: height * 0.65,
-    );
-    final groundPaint = Paint()
-      ..shader = RadialGradient(
-        center: Alignment.center,
-        radius: 0.85,
-        colors: [
-          color.withValues(alpha: 0.15 * intensity),
-          Colors.transparent,
-        ],
-        stops: const [0.0, 1.0],
-      ).createShader(groundRect);
-
-    canvas.drawOval(groundRect, groundPaint);
-
-    // 4. Subtle optical boundary rays for volumetric light feel
-    final edgePaint = Paint()
-      ..strokeWidth = 1.0
-      ..style = PaintingStyle.stroke
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          color.withValues(alpha: 0.30 * intensity),
-          color.withValues(alpha: 0.10 * intensity),
-          Colors.transparent,
-        ],
-        stops: const [0.0, 0.50, 1.0],
-      ).createShader(beamRect);
-
-    canvas.drawLine(
-      Offset(centerX - halfTop, 2.0),
-      Offset(centerX - halfBottom, height),
-      edgePaint,
-    );
-    canvas.drawLine(
-      Offset(centerX + halfTop, 2.0),
-      Offset(centerX + halfBottom, height),
-      edgePaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _LimelightBeamPainter old) {
-    return old.intensity != intensity ||
-        old.centerX != centerX ||
-        old.topWidth != topWidth ||
-        old.bottomWidth != bottomWidth ||
-        old.height != height ||
-        old.color != color;
-  }
-}
-
+/// Navigation Button for each tab item.
 class _NavPillButton extends StatelessWidget {
   const _NavPillButton({
     required this.tab,
@@ -493,8 +431,8 @@ class _NavPillButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = Colors.white;
-    final inactiveColor = Colors.white.withValues(alpha: 0.40);
+    const activeColor = Colors.white;
+    final inactiveColor = Colors.white.withValues(alpha: 0.45);
 
     return Semantics(
       button: true,
@@ -505,53 +443,34 @@ class _NavPillButton extends StatelessWidget {
           HapticFeedback.lightImpact();
           onTap();
         },
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
         splashColor: Colors.white.withValues(alpha: 0.15),
         highlightColor: Colors.transparent,
         child: SizedBox(
           height: GlassNavPill.height,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               AnimatedScale(
-                scale: isActive ? 1.08 : 1.0,
+                scale: isActive ? 1.06 : 1.0,
                 duration: AppConstants.animFast,
                 curve: Curves.easeOutBack,
                 child: Icon(
                   isActive ? tab.activeIcon : tab.icon,
-                  size: 21,
+                  size: 20,
                   color: isActive ? activeColor : inactiveColor,
-                  shadows: isActive
-                      ? [
-                          Shadow(
-                            color: Colors.white.withValues(alpha: 0.80),
-                            blurRadius: 10,
-                          ),
-                          Shadow(
-                            color: const Color(0xFFF1F5F9).withValues(alpha: 0.40),
-                            blurRadius: 18,
-                          ),
-                        ]
-                      : null,
                 ),
               ),
-              const SizedBox(height: 3.5),
+              const SizedBox(height: 3.0),
               AnimatedDefaultTextStyle(
                 duration: AppConstants.animFast,
                 style: TextStyle(
                   fontFamily: 'Outfit',
                   fontSize: 9.0,
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                  letterSpacing: 1.1,
+                  letterSpacing: 1.0,
                   color: isActive ? activeColor : inactiveColor,
-                  shadows: isActive
-                      ? [
-                          Shadow(
-                            color: Colors.white.withValues(alpha: 0.65),
-                            blurRadius: 6,
-                          ),
-                        ]
-                      : null,
                 ),
                 child: Text(tab.label.toUpperCase()),
               ),
