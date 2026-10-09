@@ -5,6 +5,7 @@ import 'package:leon/core/theme/app_theme.dart';
 import 'package:leon/features/dashboard/models/daily_telemetry_model.dart';
 import 'package:leon/features/dashboard/widgets/calories_bento_card.dart';
 import 'package:leon/features/dashboard/widgets/daily_workout_bento_card.dart';
+import 'package:leon/features/dashboard/widgets/gym_contribution_chart.dart';
 import 'package:leon/features/dashboard/widgets/retractable_calendar_header.dart';
 import 'package:leon/features/dashboard/widgets/sleep_bento_card.dart';
 import 'package:leon/features/dashboard/widgets/steps_bento_card.dart';
@@ -82,6 +83,35 @@ void main() {
         (c) => (c.decoration as BoxDecoration).color == const Color(0xFFFFB300),
       );
       expect(amberBadges, isNotEmpty);
+    });
+
+    testWidgets('GymContributionChart renders heatmap and day labels',
+        (WidgetTester tester) async {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final loggedYesterday = today.subtract(const Duration(days: 1));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          home: Scaffold(
+            body: GymContributionChart(
+              loggedWorkoutDates: {loggedYesterday},
+              weeksCount: 12,
+            ),
+          ),
+        ),
+      );
+
+      // Verify telemetry header and day labels
+      expect(find.text('ACTIVITY TELEMETRY'), findsOneWidget);
+      expect(find.textContaining('SESSIONS LOGGED'), findsOneWidget);
+      expect(find.text('Mon'), findsOneWidget);
+      expect(find.text('Wed'), findsOneWidget);
+      expect(find.text('Fri'), findsOneWidget);
+      expect(find.text('Rest'), findsOneWidget);
+      expect(find.text('Gym'), findsOneWidget);
+      expect(find.text('Today'), findsOneWidget);
     });
 
     testWidgets('StepsBentoCard renders step telemetry and peak badge',

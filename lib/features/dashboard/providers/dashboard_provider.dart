@@ -74,6 +74,20 @@ class LoggedWorkoutDatesNotifier extends Notifier<Set<DateTime>> {
       if (dates.isEmpty && currentWeekdayIndex > 0) {
         dates.add(today.subtract(const Duration(days: 1)));
       }
+
+      // Seed realistic historical training sessions across the past 26 weeks (~6 months)
+      // so the extended GitHub-style contribution graph shows rich operative gym activity
+      for (int week = 1; week <= 26; week++) {
+        final pastWeekStart = startOfWeek.subtract(Duration(days: week * 7));
+        dates.add(pastWeekStart.add(const Duration(days: 1))); // Mon
+        dates.add(pastWeekStart.add(const Duration(days: 3))); // Wed
+        dates.add(pastWeekStart.add(const Duration(days: 5))); // Fri
+        if (week % 2 == 0) {
+          dates.add(pastWeekStart.add(const Duration(days: 2))); // Tue
+        } else if (week % 3 == 0) {
+          dates.add(pastWeekStart.add(const Duration(days: 6))); // Sat
+        }
+      }
     }
 
     return dates;
