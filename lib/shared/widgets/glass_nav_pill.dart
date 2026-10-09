@@ -98,13 +98,14 @@ class GlassNavPill extends ConsumerWidget {
 
   static const double height = 66;
 
+  /// Corner radius for tactical rounded rectangle styling.
+  static const double borderRadius = 18.0;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const radiusVal = height / 2;
-
     return LiquidGlassContainer(
       height: height,
-      borderRadius: radiusVal,
+      borderRadius: borderRadius,
       blurSigma: 26,
       borderWidth: 1.2,
       showGlow: true,
@@ -424,7 +425,7 @@ class _LimelightBeamPainter extends CustomPainter {
 
     // 3. Ground illumination puddle on the active icon and label section
     final groundRect = Rect.fromCenter(
-      center: Offset(centerX, height * 0.60),
+      center: Offset(centerX, height * 0.54),
       width: bottomWidth * 0.95,
       height: height * 0.65,
     );
@@ -504,7 +505,7 @@ class _NavPillButton extends StatelessWidget {
           HapticFeedback.lightImpact();
           onTap();
         },
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(14),
         splashColor: Colors.white.withValues(alpha: 0.15),
         highlightColor: Colors.transparent,
         child: SizedBox(
@@ -512,7 +513,6 @@ class _NavPillButton extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 5),
               AnimatedScale(
                 scale: isActive ? 1.08 : 1.0,
                 duration: AppConstants.animFast,
@@ -535,7 +535,7 @@ class _NavPillButton extends StatelessWidget {
                       : null,
                 ),
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: 3.5),
               AnimatedDefaultTextStyle(
                 duration: AppConstants.animFast,
                 style: TextStyle(
