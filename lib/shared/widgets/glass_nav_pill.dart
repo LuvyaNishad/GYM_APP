@@ -1,11 +1,12 @@
-/// LEON floating liquid glass navigation pill.
+/// LEON floating limelight glass navigation pill.
 ///
-/// Implements 21st.dev-inspired Liquid Glass Tactical aesthetics:
-/// - Refractive frosted lens with 26px backdrop blur
-/// - Multi-layer specular perimeter highlight and optical caustic rim
-/// - Curved lens surface sheen and convex bevel depth
-/// - Fluid sliding liquid indicator pod with cyan aura
-/// - Logical tactical icons (Home, Workouts, Exercises, History, Account)
+/// Implements 21st.dev Limelight spotlight navigation:
+/// - Horizontal glowing greyish-white emitter bar at the top of the pill
+/// - Trapezoidal limelight spotlight beam shining downward over the active icon
+/// - Smooth transition choreography: light dims on previous tab, emitter slides
+///   smoothly across with dynamic stretch, and spotlight flares on over the new tab
+/// - Greyish-white / luminous platinum palette for high-contrast visibility
+///   over the Cyber-Slate liquid glass backdrop
 library;
 
 import 'package:flutter/material.dart';
@@ -13,7 +14,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/app_constants.dart';
-import '../../core/theme/app_colors.dart';
 import '../../state/app_providers.dart';
 import 'liquid_glass.dart';
 
@@ -33,12 +33,6 @@ class NavPillTab {
 }
 
 /// The five main operational tabs in display order.
-/// Updated with logical, high-clarity tactical icons:
-/// - Home (Dashboard & readiness overview)
-/// - Workouts (Builder & active routine)
-/// - Exercises (Movement library & form guides)
-/// - History (Analytics, logs & progression records)
-/// - Account (Profile, biometric settings & operative credentials)
 const List<NavPillTab> kNavPillTabs = <NavPillTab>[
   NavPillTab(
     icon: Icons.home_outlined,
@@ -114,18 +108,21 @@ class GlassNavPill extends ConsumerWidget {
       blurSigma: 26,
       borderWidth: 1.2,
       showGlow: true,
-      glowColor: AppColors.primary.withValues(alpha: 0.05),
+      glowColor: Colors.white.withValues(alpha: 0.06),
       padding: EdgeInsets.zero,
       child: Material(
         type: MaterialType.transparency,
         child: Stack(
           alignment: Alignment.center,
           children: [
+            // ── 21st.dev Limelight Spotlight Indicator ──────────────────────
             if (activeIndex >= 0 && activeIndex < kNavPillTabs.length)
-              _ActiveLiquidIndicator(
-                index: activeIndex,
+              LimelightIndicator(
+                activeIndex: activeIndex,
                 totalTabs: kNavPillTabs.length,
               ),
+
+            // ── Navigation Buttons Row ───────────────────────────────────────
             Row(
               children: [
                 for (var i = 0; i < kNavPillTabs.length; i++)
@@ -148,78 +145,265 @@ class GlassNavPill extends ConsumerWidget {
   }
 }
 
-/// The sliding liquid glass pod and neon aura behind the active tab.
-class _ActiveLiquidIndicator extends StatelessWidget {
-  const _ActiveLiquidIndicator({
-    required this.index,
+/// The Limelight spotlight indicator inspired by 21st.dev.
+/// Features an overhead emitter bar and a smooth trapezoidal downward beam.
+class LimelightIndicator extends StatefulWidget {
+  const LimelightIndicator({
+    super.key,
+    required this.activeIndex,
     required this.totalTabs,
+    this.lightColor = const Color(0xFFF1F5F9),
+    this.barWidth = 36.0,
+    this.barHeight = 3.5,
   });
 
-  final int index;
+  final int activeIndex;
   final int totalTabs;
+  final Color lightColor;
+  final double barWidth;
+  final double barHeight;
+
+  @override
+  State<LimelightIndicator> createState() => _LimelightIndicatorState();
+}
+
+class _LimelightIndicatorState extends State<LimelightIndicator>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late Animation<double> _slideAnimation;
+  late Animation<double> _intensityAnimation;
+  late Animation<double> _stretchAnimation;
+
+  int _previousIndex = 0;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.activeIndex.clamp(0, widget.totalTabs - 1);
+    _previousIndex = _currentIndex;
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 380),
+    );
+
+    _slideAnimation = Tween<double>(
+      begin: _alignmentFor(_currentIndex),
+      end: _alignmentFor(_currentIndex),
+    ).animate(_controller);
+
+    _intensityAnimation = const AlwaysStoppedAnimation(1.0);
+    _stretchAnimation = const AlwaysStoppedAnimation(1.0);
+  }
+
+  double _alignmentFor(int index) {
+    if (widget.totalTabs <= 0) return 0.0;
+    return -1.0 + (2.0 * index + 1.0) / widget.totalTabs;
+  }
+
+  @override
+  void didUpdateWidget(LimelightIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.activeIndex != _currentIndex && widget.activeIndex >= 0) {
+      _previousIndex = _currentIndex;
+      _currentIndex = widget.activeIndex.clamp(0, widget.totalTabs - 1);
+
+      final startX = _alignmentFor(_previousIndex);
+      final endX = _alignmentFor(_currentIndex);
+
+      _slideAnimation = Tween<double>(
+        begin: startX,
+        end: endX,
+      ).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeInOutCubic,
+        ),
+      );
+
+      // Light turns off (1.0 -> 0.15) during early motion, then turns on (0.15 -> 1.0) as it lands
+      _intensityAnimation = TweenSequence<double>([
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 1.0, end: 0.15)
+              .chain(CurveTween(curve: Curves.easeOut)),
+          weight: 35,
+        ),
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 0.15, end: 0.15),
+          weight: 15,
+        ),
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 0.15, end: 1.0)
+              .chain(CurveTween(curve: Curves.easeInCubic)),
+          weight: 50,
+        ),
+      ]).animate(_controller);
+
+      // Subtle dynamic stretch during transit
+      _stretchAnimation = TweenSequence<double>([
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 1.0, end: 1.25)
+              .chain(CurveTween(curve: Curves.easeOut)),
+          weight: 45,
+        ),
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 1.25, end: 1.0)
+              .chain(CurveTween(curve: Curves.easeIn)),
+          weight: 55,
+        ),
+      ]).animate(_controller);
+
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final x = totalTabs > 0 ? -1.0 + (2.0 * index + 1.0) / totalTabs : 0.0;
+    if (widget.activeIndex < 0) return const SizedBox.shrink();
 
-    return AnimatedAlign(
-      alignment: Alignment(x, 0),
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeOutCubic,
-      child: IgnorePointer(
-        child: Container(
-          width: 58,
-          height: 52,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(26),
-            // Glowing neon liquid aura
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.28),
-                blurRadius: 16,
-                spreadRadius: 1,
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final alignX = _controller.isAnimating
+            ? _slideAnimation.value
+            : _alignmentFor(_currentIndex);
+        final intensity = _controller.isAnimating
+            ? _intensityAnimation.value
+            : 1.0;
+        final stretch = _controller.isAnimating
+            ? _stretchAnimation.value
+            : 1.0;
+
+        final currentBarWidth = widget.barWidth * stretch;
+
+        return Align(
+          alignment: Alignment(alignX, -1.0),
+          child: IgnorePointer(
+            child: SizedBox(
+              width: 80,
+              height: GlassNavPill.height,
+              child: Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  // 1. Limelight Spotlight Cone (Beam shining down)
+                  CustomPaint(
+                    size: const Size(80, GlassNavPill.height),
+                    painter: _LimelightBeamPainter(
+                      color: widget.lightColor,
+                      intensity: intensity,
+                      topWidth: currentBarWidth,
+                      bottomWidth: currentBarWidth * 1.75,
+                      height: GlassNavPill.height - 4,
+                    ),
+                  ),
+
+                  // 2. Horizontal Header Emitter Bar (Glowing top pill)
+                  Container(
+                    margin: const EdgeInsets.only(top: 1.0),
+                    width: currentBarWidth,
+                    height: widget.barHeight,
+                    decoration: BoxDecoration(
+                      color: widget.lightColor,
+                      borderRadius: BorderRadius.circular(widget.barHeight / 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: widget.lightColor.withValues(alpha: 0.85 * intensity),
+                          blurRadius: 6,
+                          spreadRadius: 0.5,
+                        ),
+                        BoxShadow(
+                          color: widget.lightColor.withValues(alpha: 0.35 * intensity),
+                          blurRadius: 14,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.12),
-                blurRadius: 28,
-                spreadRadius: 2,
-              ),
-            ],
-            // Liquid active pod fill
-            gradient: RadialGradient(
-              center: Alignment.center,
-              radius: 0.85,
-              colors: [
-                AppColors.primary.withValues(alpha: 0.22),
-                AppColors.primary.withValues(alpha: 0.05),
-              ],
-            ),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.35),
-              width: 1.0,
             ),
           ),
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: Container(
-              margin: const EdgeInsets.only(top: 2),
-              width: 24,
-              height: 1.5,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(1),
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.white.withValues(alpha: 0.0),
-                    Colors.white.withValues(alpha: 0.8),
-                    Colors.white.withValues(alpha: 0.0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
+        );
+      },
     );
+  }
+}
+
+/// Custom painter that draws the trapezoidal limelight beam
+class _LimelightBeamPainter extends CustomPainter {
+  const _LimelightBeamPainter({
+    required this.color,
+    required this.intensity,
+    required this.topWidth,
+    required this.bottomWidth,
+    required this.height,
+  });
+
+  final Color color;
+  final double intensity;
+  final double topWidth;
+  final double bottomWidth;
+  final double height;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (intensity <= 0.01) return;
+
+    final centerX = size.width / 2;
+    final halfTop = topWidth / 2;
+    final halfBottom = bottomWidth / 2;
+
+    // Trapezoidal spotlight cone
+    final path = Path()
+      ..moveTo(centerX - halfTop, 2)
+      ..lineTo(centerX + halfTop, 2)
+      ..lineTo(centerX + halfBottom, height)
+      ..lineTo(centerX - halfBottom, height)
+      ..close();
+
+    // Downward soft gradient
+    final beamPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          color.withValues(alpha: 0.30 * intensity),
+          color.withValues(alpha: 0.14 * intensity),
+          color.withValues(alpha: 0.04 * intensity),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.35, 0.70, 1.0],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, height));
+
+    canvas.drawPath(path, beamPaint);
+
+    // Central diffuse beam core for soft physical radiance
+    final corePaint = Paint()
+      ..shader = RadialGradient(
+        center: Alignment.topCenter,
+        radius: 0.9,
+        colors: [
+          color.withValues(alpha: 0.22 * intensity),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, height));
+
+    canvas.drawPath(path, corePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _LimelightBeamPainter old) {
+    return old.intensity != intensity ||
+        old.topWidth != topWidth ||
+        old.bottomWidth != bottomWidth ||
+        old.color != color;
   }
 }
 
@@ -236,6 +420,9 @@ class _NavPillButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final activeColor = Colors.white;
+    final inactiveColor = Colors.white.withValues(alpha: 0.42);
+
     return Semantics(
       button: true,
       selected: isActive,
@@ -246,27 +433,26 @@ class _NavPillButton extends StatelessWidget {
           onTap();
         },
         borderRadius: BorderRadius.circular(24),
-        splashColor: AppColors.primary.withValues(alpha: 0.15),
+        splashColor: Colors.white.withValues(alpha: 0.15),
         highlightColor: Colors.transparent,
         child: SizedBox(
           height: GlassNavPill.height,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(height: 4),
               AnimatedScale(
-                scale: isActive ? 1.12 : 1.0,
+                scale: isActive ? 1.10 : 1.0,
                 duration: AppConstants.animFast,
                 curve: Curves.easeOutBack,
                 child: Icon(
                   isActive ? tab.activeIcon : tab.icon,
                   size: 21,
-                  color: isActive
-                      ? AppColors.primary
-                      : AppColors.textSecondary.withValues(alpha: 0.8),
+                  color: isActive ? activeColor : inactiveColor,
                   shadows: isActive
                       ? [
                           Shadow(
-                            color: AppColors.primary.withValues(alpha: 0.75),
+                            color: Colors.white.withValues(alpha: 0.70),
                             blurRadius: 10,
                           ),
                         ]
@@ -281,9 +467,7 @@ class _NavPillButton extends StatelessWidget {
                   fontSize: 8.5,
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                   letterSpacing: 1.0,
-                  color: isActive
-                      ? AppColors.primary
-                      : AppColors.textSecondary.withValues(alpha: 0.6),
+                  color: isActive ? activeColor : inactiveColor.withValues(alpha: 0.35),
                 ),
                 child: Text(tab.label.toUpperCase()),
               ),
