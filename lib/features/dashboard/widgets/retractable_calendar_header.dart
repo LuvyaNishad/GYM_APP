@@ -2,6 +2,8 @@
 ///
 /// Clean, minimal, non-glassmorphic solid dark card design inspired by
 /// tactical HUDs:
+/// - Full-bleed end-to-end container (corner to corner, covers top of screen)
+/// - Bottom two vertices curved (32px radius), top vertices flush
 /// - Operative greeting ("Hello [Name]!") and circular avatar
 /// - Interactive month/year indicator with collapse/expand toggle
 /// - 7-day horizontal calendar week strip with pill slots (matching reference)
@@ -50,8 +52,8 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
   late final List<DateTime> _weekDays;
 
   // Solid dark background matching reference (clean & minimal, non-glassmorphic)
-  static const Color _cardBg = Color(0xFF161A23);
-  static const Color _pillSlotBg = Color(0xFF1F2432);
+  static const Color _cardBg = Color(0xFF1E232F);
+  static const Color _pillSlotBg = Color(0xFF262C3A);
   static const Color _amberAccent = Color(0xFFFFB300);
 
   @override
@@ -61,6 +63,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
     _selectedDate = DateTime.now();
 
     final now = DateTime.now();
+    // Sunday-based 7-day strip matching reference (S, M, T, W, T, F, S)
     final startOfWeek = now.subtract(Duration(days: now.weekday % 7));
     _weekDays = List.generate(
       7,
@@ -94,14 +97,31 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
   }
 
   String _weekdayLetter(int weekday) {
-    const letters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    return letters[(weekday - 1) % 7];
+    switch (weekday) {
+      case DateTime.sunday:
+        return 'S';
+      case DateTime.monday:
+        return 'M';
+      case DateTime.tuesday:
+        return 'T';
+      case DateTime.wednesday:
+        return 'W';
+      case DateTime.thursday:
+        return 'T';
+      case DateTime.friday:
+        return 'F';
+      case DateTime.saturday:
+        return 'S';
+      default:
+        return '';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final monthStr = '${_monthName(now.month)}, ${now.year}';
+    final topPadding = MediaQuery.paddingOf(context).top;
 
     return GestureDetector(
       onVerticalDragEnd: (details) {
@@ -118,15 +138,27 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
         curve: Curves.easeInOutCubic,
         alignment: Alignment.topCenter,
         child: Container(
+          width: double.infinity,
           decoration: BoxDecoration(
             color: _cardBg,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.08),
-              width: 1.0,
+            // Bottom two vertices curved (32px), top vertices flush corner-to-corner
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(32),
+              bottomRight: Radius.circular(32),
+            ),
+            border: Border(
+              bottom: BorderSide(
+                color: Colors.white.withValues(alpha: 0.08),
+                width: 1.0,
+              ),
             ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: EdgeInsets.only(
+            top: topPadding + 8,
+            left: 20,
+            right: 20,
+            bottom: _isExpanded ? 18 : 14,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,10 +180,10 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                           Text.rich(
                             TextSpan(
                               style: AppTypography.displayMedium.copyWith(
-                                fontSize: 19,
+                                fontSize: 20,
                                 fontWeight: FontWeight.w400,
-                                color: AppColors.textPrimary,
-                                letterSpacing: 0.3,
+                                color: const Color(0xFFD8DDE8),
+                                letterSpacing: 0.2,
                               ),
                               children: [
                                 const TextSpan(text: 'Hello '),
@@ -165,7 +197,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 3),
 
                           // Month & Year with animated chevron
                           Row(
@@ -175,9 +207,10 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                                 monthStr,
                                 style: const TextStyle(
                                   fontFamily: 'Outfit',
-                                  fontSize: 11.5,
-                                  color: AppColors.textSecondary,
-                                  letterSpacing: 0.4,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF8E95A5),
+                                  letterSpacing: 0.3,
                                 ),
                               ),
                               const SizedBox(width: 4),
@@ -186,8 +219,8 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                                 duration: const Duration(milliseconds: 220),
                                 child: const Icon(
                                   Icons.keyboard_arrow_down_rounded,
-                                  size: 15,
-                                  color: AppColors.textSecondary,
+                                  size: 16,
+                                  color: Color(0xFF8E95A5),
                                 ),
                               ),
                             ],
@@ -204,12 +237,12 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                       context.push(AppConstants.routeProfile);
                     },
                     child: Container(
-                      width: 38,
-                      height: 38,
+                      width: 42,
+                      height: 42,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.6),
+                          color: Colors.white.withValues(alpha: 0.15),
                           width: 1.5,
                         ),
                       ),
@@ -230,7 +263,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
 
               // ── Retractable Calendar Strip ────────────────────────────────
               if (_isExpanded) ...[
-                const SizedBox(height: 10),
+                const SizedBox(height: 14),
                 // Weekday pill chips row (S, M, T, W, T, F, S)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -257,12 +290,12 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
 
   Widget _buildDefaultAvatar() {
     return Container(
-      color: AppColors.surfaceVariant,
+      color: const Color(0xFF2C3240),
       child: const Center(
         child: Icon(
           Icons.person_rounded,
           color: AppColors.primary,
-          size: 20,
+          size: 22,
         ),
       ),
     );
@@ -279,15 +312,15 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
         setState(() => _selectedDate = date);
         widget.onDateSelected?.call(date);
       },
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(18),
       child: Container(
-        width: 38,
-        height: 50,
+        width: 42,
+        height: 54,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           color: _pillSlotBg,
         ),
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(vertical: 5),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -296,17 +329,17 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
               _weekdayLetter(date.weekday),
               style: TextStyle(
                 fontFamily: 'Outfit',
-                fontSize: 10,
+                fontSize: 10.5,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? _amberAccent : AppColors.textSecondary,
+                color: isSelected ? _amberAccent : const Color(0xFF7E8799),
               ),
             ),
 
             // Date Number (active day has solid amber badge, no blur glow)
             if (isSelected)
               Container(
-                width: 24,
-                height: 24,
+                width: 26,
+                height: 26,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   color: _amberAccent,
@@ -316,7 +349,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                     '${date.day}',
                     style: const TextStyle(
                       fontFamily: 'JetBrains Mono',
-                      fontSize: 11,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.w800,
                       color: Colors.black,
                     ),
@@ -328,9 +361,9 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                 '${date.day}',
                 style: const TextStyle(
                   fontFamily: 'JetBrains Mono',
-                  fontSize: 11,
+                  fontSize: 11.5,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: Color(0xFFD3D8E4),
                 ),
               ),
           ],

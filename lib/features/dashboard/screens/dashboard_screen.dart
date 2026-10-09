@@ -39,81 +39,80 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        bottom: false,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // ── Main Content Padding ────────────────────────────────────────
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
-                16,
-                6,
-                16,
-                AppShell.reservedBottomSpace + 16,
-              ),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  // ── 1. Clean Solid Retractable Calendar Header ────────────
-                  RetractableCalendarHeader(
-                    userName: operativeName,
-                    avatarUrl: userProfile?.avatarUrl,
-                    initialExpanded: true,
-                  ),
-                  const SizedBox(height: 10),
-
-                  // ── 2. Compact Footsteps Tracker Bento Card ───────────────
-                  StepsBentoCard(
-                    telemetry: telemetry,
-                  ),
-                  const SizedBox(height: 10),
-
-                  // ── 3. Split Bento Grid: Calories (Left) & Hydration/Sleep (Right) ─
-                  IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(
-                          child: CaloriesBentoCard(
-                            telemetry: telemetry,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: WaterBentoCard(
-                                  telemetry: telemetry,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Expanded(
-                                child: SleepBentoCard(
-                                  telemetry: telemetry,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // ── 4. Compact Daily Workout / Start Workout Bento Card ───
-                  DailyWorkoutBentoCard(
-                    activeSplit: activeSplit,
-                    muscleGroups: const ['CHEST', 'DELTOIDS', 'TRICEPS'],
-                    exerciseCount: 5,
-                    estimatedMinutes: 48,
-                    targetRpe: '8.5',
-                  ),
-                ]),
-              ),
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          // ── 1. End-to-End Retractable Tactical Calendar Header ─────────
+          // Corner-to-corner full bleed, completely covers top of screen
+          SliverToBoxAdapter(
+            child: RetractableCalendarHeader(
+              userName: operativeName,
+              avatarUrl: userProfile?.avatarUrl,
+              initialExpanded: true,
             ),
-          ],
-        ),
+          ),
+
+          // ── 2. Bento Grid Telemetry & Operational Modules ───────────────
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(
+              16,
+              12,
+              16,
+              AppShell.reservedBottomSpace + 16,
+            ),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                // ── Compact Footsteps Tracker Bento Card ───────────────────
+                StepsBentoCard(
+                  telemetry: telemetry,
+                ),
+                const SizedBox(height: 10),
+
+                // ── Split Bento Grid: Calories (Left) & Hydration/Sleep (Right) ─
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: CaloriesBentoCard(
+                          telemetry: telemetry,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: WaterBentoCard(
+                                telemetry: telemetry,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Expanded(
+                              child: SleepBentoCard(
+                                telemetry: telemetry,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // ── Compact Daily Workout / Start Workout Bento Card ───────
+                DailyWorkoutBentoCard(
+                  activeSplit: activeSplit,
+                  muscleGroups: const ['CHEST', 'DELTOIDS', 'TRICEPS'],
+                  exerciseCount: 5,
+                  estimatedMinutes: 48,
+                  targetRpe: '8.5',
+                ),
+              ]),
+            ),
+          ),
+        ],
       ),
     );
   }
