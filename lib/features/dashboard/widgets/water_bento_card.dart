@@ -117,7 +117,7 @@ class WaterBentoCard extends StatelessWidget {
                   const Text(
                     'ml',
                     style: TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: AppTypography.fontBody,
                       fontSize: 11.0,
                       fontWeight: FontWeight.w600,
                       color: AppColors.primary,

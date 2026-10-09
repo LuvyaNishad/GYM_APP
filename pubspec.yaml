@@ -101,3 +101,21 @@ flutter:
           weight: 500
         - asset: assets/fonts/JetBrainsMono-Bold.ttf
           weight: 700
+    - family: Nano
+      fonts:
+        - asset: assets/fonts/Nano-Regular.ttf
+    - family: Scal
+      fonts:
+        - asset: assets/fonts/Scal-Regular.ttf
+    - family: SpaceGrotesk
+      fonts:
+        - asset: assets/fonts/SpaceGrotesk-Regular.ttf
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-Regular.ttf
+    - family: ChakraPetch
+      fonts:
+        - asset: assets/fonts/ChakraPetch-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/ChakraPetch-Bold.ttf
+          weight: 700

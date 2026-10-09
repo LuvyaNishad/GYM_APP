@@ -14,6 +14,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/theme/app_typography.dart';
+
 /// Horizontally scrollable gym activity contribution graph.
 class GymContributionChart extends StatefulWidget {
   const GymContributionChart({
@@ -120,7 +122,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
             const Text(
               'ACTIVITY TELEMETRY',
               style: TextStyle(
-                fontFamily: 'Outfit',
+                fontFamily: AppTypography.fontDisplay,
                 fontSize: 11.5,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1.2,
@@ -172,7 +174,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
                         child: Text(
                           'Mon',
                           style: TextStyle(
-                            fontFamily: 'Outfit',
+                            fontFamily: AppTypography.fontBody,
                             fontSize: 11.0,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF94A3B8),
@@ -189,7 +191,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
                         child: Text(
                           'Wed',
                           style: TextStyle(
-                            fontFamily: 'Outfit',
+                            fontFamily: AppTypography.fontBody,
                             fontSize: 11.0,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF94A3B8),
@@ -206,7 +208,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
                         child: Text(
                           'Fri',
                           style: TextStyle(
-                            fontFamily: 'Outfit',
+                            fontFamily: AppTypography.fontBody,
                             fontSize: 11.0,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF94A3B8),
@@ -337,7 +339,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
               child: Text(
                 _monthAbbr(firstDayOfWeek.month),
                 style: const TextStyle(
-                  fontFamily: 'Outfit',
+                  fontFamily: AppTypography.fontBody,
                   fontSize: 11.0,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF94A3B8),
@@ -423,7 +425,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
         Text(
           label,
           style: const TextStyle(
-            fontFamily: 'Outfit',
+            fontFamily: AppTypography.fontBody,
             fontSize: 11.0,
             fontWeight: FontWeight.w500,
             color: Color(0xFF94A3B8),

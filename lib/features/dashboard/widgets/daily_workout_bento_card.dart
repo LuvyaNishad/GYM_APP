@@ -270,7 +270,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                     Text(
                       'COMMENCE OPERATION',
                       style: AppTypography.titleLarge.copyWith(
-                        fontFamily: 'Outfit',
+                        fontFamily: AppTypography.fontDisplay,
                         fontSize: 12.5,
                         color: AppColors.primary,
                         fontWeight: FontWeight.w800,

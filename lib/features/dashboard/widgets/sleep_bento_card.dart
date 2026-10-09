@@ -112,7 +112,7 @@ class SleepBentoCard extends StatelessWidget {
                   const Text(
                     'hrs',
                     style: TextStyle(
-                      fontFamily: 'Outfit',
+                      fontFamily: AppTypography.fontBody,
                       fontSize: 11.0,
                       fontWeight: FontWeight.w600,
                       color: _sleepAccent,

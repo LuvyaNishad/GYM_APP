@@ -15,6 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/theme/app_typography.dart';
 import '../../state/app_providers.dart';
 
 /// One tab in the navigation pill.
@@ -494,7 +495,7 @@ class _NavPillButtonState extends State<_NavPillButton> {
                 AnimatedDefaultTextStyle(
                   duration: AppConstants.animFast,
                   style: TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: AppTypography.fontBody,
                     // Apple HIG Minimum Typography Floor: 11.0 pt
                     fontSize: 11.0,
                     fontWeight: widget.isActive ? FontWeight.w700 : FontWeight.w500,

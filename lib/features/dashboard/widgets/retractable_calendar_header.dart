@@ -299,7 +299,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                                         Text(
                                           phaseSubtitle,
                                           style: const TextStyle(
-                                            fontFamily: 'Outfit',
+                                            fontFamily: AppTypography.fontBody,
                                             fontSize: 12.0,
                                             fontWeight: FontWeight.w500,
                                             color: AppColors.textSecondary,
@@ -503,7 +503,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
             Text(
               _weekdayLetter(date.weekday),
               style: TextStyle(
-                fontFamily: 'Outfit',
+                fontFamily: AppTypography.fontDisplay,
                 fontSize: 11.0,
                 fontWeight: (isToday || isPreviousSession || isSelected)
                     ? FontWeight.w700

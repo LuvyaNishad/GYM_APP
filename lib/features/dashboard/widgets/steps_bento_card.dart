@@ -188,7 +188,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
               Text(
                 'Steps',
                 style: AppTypography.titleLarge.copyWith(
-                  fontFamily: 'Outfit',
+                  fontFamily: AppTypography.fontBody,
                   fontSize: 12.0,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
