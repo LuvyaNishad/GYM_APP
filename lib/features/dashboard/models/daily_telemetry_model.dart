@@ -17,6 +17,8 @@ class DailyTelemetry {
     this.caloriesGoal = 3000,
     this.waterMl = 2750,
     this.waterGoalMl = 3500,
+    this.sleepHours = 7.5,
+    this.sleepGoalHours = 8.0,
     this.hourlySteps = const [
       120, 240, 520, 890, 1420, 2100, 3902, 2800, 1950, 1200, 680, 310
     ],
@@ -43,6 +45,12 @@ class DailyTelemetry {
   /// Daily water target in milliliters.
   final int waterGoalMl;
 
+  /// Sleep logged last night in hours (e.g. 7.5).
+  final double sleepHours;
+
+  /// Daily sleep target in hours.
+  final double sleepGoalHours;
+
   /// Hourly steps distribution across active daytime hours (e.g. 08:00 - 20:00).
   final List<int> hourlySteps;
 
@@ -55,6 +63,9 @@ class DailyTelemetry {
   /// Progress fraction for water (0.0 to 1.0+).
   double get waterProgress => (waterMl / waterGoalMl).clamp(0.0, 1.0);
 
+  /// Progress fraction for sleep (0.0 to 1.0+).
+  double get sleepProgress => (sleepHours / sleepGoalHours).clamp(0.0, 1.0);
+
   DailyTelemetry copyWith({
     int? steps,
     int? stepsGoal,
@@ -63,6 +74,8 @@ class DailyTelemetry {
     int? caloriesGoal,
     int? waterMl,
     int? waterGoalMl,
+    double? sleepHours,
+    double? sleepGoalHours,
     List<int>? hourlySteps,
   }) {
     return DailyTelemetry(
@@ -73,6 +86,8 @@ class DailyTelemetry {
       caloriesGoal: caloriesGoal ?? this.caloriesGoal,
       waterMl: waterMl ?? this.waterMl,
       waterGoalMl: waterGoalMl ?? this.waterGoalMl,
+      sleepHours: sleepHours ?? this.sleepHours,
+      sleepGoalHours: sleepGoalHours ?? this.sleepGoalHours,
       hourlySteps: hourlySteps ?? this.hourlySteps,
     );
   }
@@ -95,6 +110,10 @@ class DailyTelemetryNotifier extends Notifier<DailyTelemetry> {
 
   void logCalories(int additionalCalories) {
     state = state.copyWith(calories: state.calories + additionalCalories);
+  }
+
+  void updateSleep(double hours) {
+    state = state.copyWith(sleepHours: hours);
   }
 }
 

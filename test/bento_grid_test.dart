@@ -6,6 +6,7 @@ import 'package:leon/features/dashboard/models/daily_telemetry_model.dart';
 import 'package:leon/features/dashboard/widgets/calories_bento_card.dart';
 import 'package:leon/features/dashboard/widgets/daily_workout_bento_card.dart';
 import 'package:leon/features/dashboard/widgets/retractable_calendar_header.dart';
+import 'package:leon/features/dashboard/widgets/sleep_bento_card.dart';
 import 'package:leon/features/dashboard/widgets/steps_bento_card.dart';
 import 'package:leon/features/dashboard/widgets/water_bento_card.dart';
 
@@ -65,13 +66,15 @@ void main() {
       expect(find.text('3,902'), findsOneWidget); // Tooltip peak badge
     });
 
-    testWidgets('CaloriesBentoCard and WaterBentoCard render metrics',
+    testWidgets('CaloriesBentoCard, WaterBentoCard, and SleepBentoCard render metrics',
         (WidgetTester tester) async {
       const telemetry = DailyTelemetry(
         calories: 2390,
         caloriesGoal: 3000,
         waterMl: 2750,
         waterGoalMl: 3500,
+        sleepHours: 7.5,
+        sleepGoalHours: 8.0,
       );
 
       await tester.pumpWidget(
@@ -82,6 +85,7 @@ void main() {
               children: [
                 CaloriesBentoCard(telemetry: telemetry),
                 WaterBentoCard(telemetry: telemetry),
+                SleepBentoCard(telemetry: telemetry),
               ],
             ),
           ),
@@ -92,6 +96,8 @@ void main() {
       expect(find.text('2,390'), findsOneWidget);
       expect(find.text('HYDRATION'), findsOneWidget);
       expect(find.text('2,750'), findsOneWidget);
+      expect(find.text('SLEEP'), findsOneWidget);
+      expect(find.text('7.5'), findsOneWidget);
     });
 
     testWidgets('DailyWorkoutBentoCard renders targeted muscles and commences session',

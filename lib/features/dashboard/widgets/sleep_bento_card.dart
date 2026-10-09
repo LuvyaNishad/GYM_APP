@@ -1,9 +1,9 @@
-/// Hydration / Water Bento Card for the LEON Dashboard.
+/// Sleep Bento Card for the LEON Dashboard.
 ///
 /// Clean, minimal bento card designed for vertical stacking:
-/// - Daily water intake stat in milliliters (ml) and liters (L)
-/// - Clean horizontal progress gauge with milestone readout
-/// - Tactical cyan styling without sloppy blur glows
+/// - Sleep logged in hours (e.g. 7.5 hrs)
+/// - Clean horizontal progress gauge with daily target readout
+/// - Tactical indigo/purple styling without sloppy blur glows
 library;
 
 import 'package:flutter/material.dart';
@@ -12,9 +12,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/daily_telemetry_model.dart';
 
-/// Compact Bento card displaying daily hydration intake.
-class WaterBentoCard extends StatelessWidget {
-  const WaterBentoCard({
+/// Compact Bento card displaying daily sleep duration in hours.
+class SleepBentoCard extends StatelessWidget {
+  const SleepBentoCard({
     super.key,
     required this.telemetry,
     this.onTap,
@@ -27,20 +27,15 @@ class WaterBentoCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   static const Color _cardBg = Color(0xFF161A23);
-
-  String _formatNumber(int number) {
-    return number.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]},',
-        );
-  }
+  static const Color _purpleAccent = Color(0xFF9D84FF);
+  static const Color _purpleBg = Color(0xFF7B61FF);
 
   @override
   Widget build(BuildContext context) {
-    final progress = telemetry.waterProgress;
+    final progress = telemetry.sleepProgress;
     final progressPct = (progress * 100).toInt();
-    final liters = (telemetry.waterMl / 1000).toStringAsFixed(2);
-    final goalLiters = (telemetry.waterGoalMl / 1000).toStringAsFixed(1);
+    final hoursStr = telemetry.sleepHours.toStringAsFixed(1);
+    final goalHoursStr = telemetry.sleepGoalHours.toStringAsFixed(1);
 
     return Container(
       decoration: BoxDecoration(
@@ -56,7 +51,7 @@ class WaterBentoCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // ── Top Row: Water Icon + Label + Value Readout ───────────────────
+          // ── Top Row: Moon Icon + Label + Value Readout ────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -68,24 +63,24 @@ class WaterBentoCard extends StatelessWidget {
                     width: 22,
                     height: 22,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.16),
+                      color: _purpleBg.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(7),
                       border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.35),
+                        color: _purpleAccent.withValues(alpha: 0.35),
                         width: 1,
                       ),
                     ),
                     child: const Center(
                       child: Icon(
-                        Icons.water_drop_rounded,
-                        color: AppColors.primary,
+                        Icons.bedtime_rounded,
+                        color: _purpleAccent,
                         size: 13,
                       ),
                     ),
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'HYDRATION',
+                    'SLEEP',
                     style: AppTypography.labelSmall.copyWith(
                       fontFamily: 'JetBrains Mono',
                       fontSize: 9.5,
@@ -97,14 +92,14 @@ class WaterBentoCard extends StatelessWidget {
                 ],
               ),
 
-              // 2,750 ml stat
+              // 7.5 hrs stat
               Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
                   Text(
-                    _formatNumber(telemetry.waterMl),
+                    hoursStr,
                     style: const TextStyle(
                       fontFamily: 'JetBrains Mono',
                       fontSize: 14,
@@ -115,12 +110,12 @@ class WaterBentoCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 2),
                   const Text(
-                    'ml',
+                    'hrs',
                     style: TextStyle(
                       fontFamily: 'Outfit',
                       fontSize: 9.5,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
+                      color: _purpleAccent,
                     ),
                   ),
                 ],
@@ -138,7 +133,7 @@ class WaterBentoCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: progress,
                 backgroundColor: Colors.white.withValues(alpha: 0.08),
-                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                valueColor: const AlwaysStoppedAnimation<Color>(_purpleAccent),
               ),
             ),
           ),
@@ -150,7 +145,7 @@ class WaterBentoCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '$liters / $goalLiters L',
+                '$hoursStr / $goalHoursStr hrs',
                 style: const TextStyle(
                   fontFamily: 'JetBrains Mono',
                   fontSize: 8.5,
@@ -165,7 +160,7 @@ class WaterBentoCard extends StatelessWidget {
                   fontFamily: 'JetBrains Mono',
                   fontSize: 8.5,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+                  color: _purpleAccent,
                 ),
               ),
             ],

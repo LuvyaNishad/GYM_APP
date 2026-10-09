@@ -22,6 +22,7 @@ import '../models/daily_telemetry_model.dart';
 import '../widgets/calories_bento_card.dart';
 import '../widgets/daily_workout_bento_card.dart';
 import '../widgets/retractable_calendar_header.dart';
+import '../widgets/sleep_bento_card.dart';
 import '../widgets/steps_bento_card.dart';
 import '../widgets/water_bento_card.dart';
 
@@ -70,22 +71,36 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 10),
 
-                  // ── 3. Compact Split Bento Grid: Calories & Water ─────────
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: CaloriesBentoCard(
-                          telemetry: telemetry,
+                  // ── 3. Split Bento Grid: Calories (Left) & Hydration/Sleep (Right) ─
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: CaloriesBentoCard(
+                            telemetry: telemetry,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: WaterBentoCard(
-                          telemetry: telemetry,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: WaterBentoCard(
+                                  telemetry: telemetry,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Expanded(
+                                child: SleepBentoCard(
+                                  telemetry: telemetry,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 10),
 
