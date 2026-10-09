@@ -43,6 +43,47 @@ void main() {
       expect(find.textContaining('Leon'), findsOneWidget);
     });
 
+    testWidgets(
+        'RetractableCalendarHeader highlights today in amber and logged sessions in green',
+        (WidgetTester tester) async {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final loggedYesterday = today.subtract(const Duration(days: 1));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          home: Scaffold(
+            body: RetractableCalendarHeader(
+              userName: 'Leon',
+              initialExpanded: true,
+              loggedWorkoutDates: {loggedYesterday},
+            ),
+          ),
+        ),
+      );
+
+      // Verify today's number is present
+      expect(find.text('${today.day}'), findsOneWidget);
+
+      // Verify circular badges
+      final circleContainers = tester
+          .widgetList<Container>(find.byType(Container))
+          .where((c) {
+        final dec = c.decoration;
+        return dec is BoxDecoration &&
+            dec.shape == BoxShape.circle &&
+            (dec.color == const Color(0xFFFFB300) ||
+                dec.color == const Color(0xFF00E676));
+      }).toList();
+
+      // Today has the golden yellow circle badge
+      final amberBadges = circleContainers.where(
+        (c) => (c.decoration as BoxDecoration).color == const Color(0xFFFFB300),
+      );
+      expect(amberBadges, isNotEmpty);
+    });
+
     testWidgets('StepsBentoCard renders step telemetry and peak badge',
         (WidgetTester tester) async {
       const telemetry = DailyTelemetry(

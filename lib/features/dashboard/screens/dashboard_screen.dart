@@ -16,6 +16,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../state/app_providers.dart';
 import '../models/daily_telemetry_model.dart';
+import '../providers/dashboard_provider.dart';
 import '../widgets/calories_bento_card.dart';
 import '../widgets/daily_workout_bento_card.dart';
 import '../widgets/retractable_calendar_header.dart';
@@ -32,6 +33,7 @@ class DashboardScreen extends ConsumerWidget {
     final userProfile = ref.watch(userProfileProvider);
     final activeSplit = ref.watch(activeSplitProvider);
     final telemetry = ref.watch(dailyTelemetryProvider);
+    final loggedWorkoutDates = ref.watch(loggedWorkoutDatesProvider);
 
     final operativeName = (userProfile?.displayName.isNotEmpty ?? false)
         ? userProfile!.displayName
@@ -49,6 +51,7 @@ class DashboardScreen extends ConsumerWidget {
               userName: operativeName,
               avatarUrl: userProfile?.avatarUrl,
               initialExpanded: true,
+              loggedWorkoutDates: loggedWorkoutDates,
             ),
           ),
 

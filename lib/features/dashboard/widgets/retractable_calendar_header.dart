@@ -27,6 +27,7 @@ class RetractableCalendarHeader extends StatefulWidget {
     this.avatarUrl,
     this.initialExpanded = true,
     this.onDateSelected,
+    this.loggedWorkoutDates = const <DateTime>{},
   });
 
   /// User display name (e.g. 'Leon').
@@ -40,6 +41,9 @@ class RetractableCalendarHeader extends StatefulWidget {
 
   /// Callback when a calendar day is tapped.
   final ValueChanged<DateTime>? onDateSelected;
+
+  /// Dates where gym workout sessions have been logged/completed.
+  final Set<DateTime> loggedWorkoutDates;
 
   @override
   State<RetractableCalendarHeader> createState() =>
@@ -56,6 +60,8 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
   static const Color _cardBg = Color(0xFF1E232F);
   static const Color _pillSlotBg = Color(0xFF262C3A);
   static const Color _amberAccent = Color(0xFFFFB300);
+  static const Color _greenAccent = Color(0xFF00E676); // Tactical ECG Green
+
 
   // Height of expandable strip in logical pixels
   static const double _stripHeight = 70.0;
@@ -323,6 +329,12 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                                 isToday: date.year == now.year &&
                                     date.month == now.month &&
                                     date.day == now.day,
+                                isLogged: widget.loggedWorkoutDates.any(
+                                  (d) =>
+                                      d.year == date.year &&
+                                      d.month == date.month &&
+                                      d.day == date.day,
+                                ),
                               ),
                           ],
                         ),
@@ -355,7 +367,11 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
     required DateTime date,
     required bool isSelected,
     required bool isToday,
+    required bool isLogged,
   }) {
+    // Days prior to today where a workout was completed/logged
+    final isPreviousSession = isLogged && !isToday;
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
@@ -369,6 +385,16 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           color: _pillSlotBg,
+          border: isSelected
+              ? Border.all(
+                  color: isToday
+                      ? _amberAccent.withValues(alpha: 0.8)
+                      : (isPreviousSession
+                          ? _greenAccent.withValues(alpha: 0.8)
+                          : Colors.white.withValues(alpha: 0.35)),
+                  width: 1.5,
+                )
+              : null,
         ),
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: Column(
@@ -380,13 +406,22 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
               style: TextStyle(
                 fontFamily: 'Outfit',
                 fontSize: 11.0,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? _amberAccent : AppColors.textSecondary,
+                fontWeight: (isToday || isPreviousSession || isSelected)
+                    ? FontWeight.w700
+                    : FontWeight.w500,
+                color: isToday
+                    ? _amberAccent
+                    : (isPreviousSession
+                        ? _greenAccent
+                        : (isSelected ? Colors.white : AppColors.textSecondary)),
               ),
             ),
 
-            // Date Number (active day has solid amber badge, no blur glow)
-            if (isSelected)
+            // Date Number:
+            // - Today: Solid golden yellow badge (_amberAccent) with dark text
+            // - Previous logged sessions: Solid tactical green badge (_greenAccent) with dark text
+            // - Unlogged / Rest days: Crisp mono numeral (#E2E8F0)
+            if (isToday)
               Container(
                 width: 26,
                 height: 26,
@@ -406,14 +441,34 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                   ),
                 ),
               )
+            else if (isPreviousSession)
+              Container(
+                width: 26,
+                height: 26,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _greenAccent,
+                ),
+                child: Center(
+                  child: Text(
+                    '${date.day}',
+                    style: const TextStyle(
+                      fontFamily: 'JetBrains Mono',
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              )
             else
               Text(
                 '${date.day}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'JetBrains Mono',
                   fontSize: 12.0,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFFE2E8F0),
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                  color: isSelected ? Colors.white : const Color(0xFFE2E8F0),
                 ),
               ),
           ],
