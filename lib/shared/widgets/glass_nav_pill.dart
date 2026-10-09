@@ -1,26 +1,21 @@
 /// LEON floating tubelight glass navigation pill.
 ///
-/// Implements the 21st.dev / shadcn Tubelight Navbar:
-/// - Rounded pill container with backdrop blur and border
-/// - Active tab highlighted with a rounded pill background (bg-muted / bg-primary/5)
-/// - Overhead "tubelight" lamp emitter positioned on the top edge of the active tab
-/// - 3-tier concentrated downward glow blooms mirroring the React component:
-///   1) Wide soft glow (48x24, blur 14)
-///   2) Medium glow (32x16, blur 8)
-///   3) Core lamp bloom (16x10, blur 4)
-///   4) Solid overhead tube emitter bar (32x3.5) with rounded top corners
-/// - Smooth spring-sliding transition that glides the lamp and active background
-///   across tabs with easeInOutCubic physics
-/// - Clean dark Cyber-Slate palette with high-contrast text and icons
+/// Implements the 21st.dev / shadcn Tubelight Navbar matching the reference:
+/// - Clean, non-glitchy uniform dark glass capsule container
+/// - Bulging emitter element that visibly protrudes above the top edge of the navbar
+/// - Uniform atmospheric glow and smooth downward light wash
+/// - Solid muted active tab background pill (Color(0xFF222634))
+/// - Smooth spring-like slide transition connecting tabs with easeInOutCubic physics
+/// - Vertically centered icons and labels with high contrast
 library;
 
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../state/app_providers.dart';
-import 'liquid_glass.dart';
 
 /// One tab in the navigation pill.
 class NavPillTab {
@@ -102,52 +97,94 @@ class GlassNavPill extends ConsumerWidget {
   /// Called with the tapped index.
   final ValueChanged<int> onTabSelected;
 
-  static const double height = 64.0;
+  /// Total height of the widget including the top bulging emitter protrusion.
+  static const double height = 70.0;
+
+  /// Height of the glass pill body itself (below the bulging emitter).
+  static const double bodyHeight = 62.0;
 
   /// Corner radius for stadium capsule styling (rounded-full).
-  static const double borderRadius = 32.0;
+  static const double borderRadius = 31.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return LiquidGlassContainer(
+    return SizedBox(
       height: height,
-      borderRadius: borderRadius,
-      blurSigma: 24,
-      borderWidth: 1.0,
-      showGlow: false,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Material(
-        type: MaterialType.transparency,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // ── Tubelight Animated Lamp Indicator ────────────────────────────
-            if (activeIndex >= 0 && activeIndex < kNavPillTabs.length)
-              Positioned.fill(
-                child: TubelightIndicator(
-                  activeIndex: activeIndex,
-                  totalTabs: kNavPillTabs.length,
-                ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // ── 1. Clean Glass Pill Body Container (No Glitchy Reflections) ──
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: bodyHeight,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(borderRadius),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.50),
+                    blurRadius: 22,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
-
-            // ── Navigation Buttons Row ───────────────────────────────────────
-            Row(
-              children: [
-                for (var i = 0; i < kNavPillTabs.length; i++)
-                  Expanded(
-                    child: _NavPillButton(
-                      tab: kNavPillTabs[i],
-                      isActive: i == activeIndex,
-                      onTap: () {
-                        ref.read(bottomNavIndexProvider.notifier).select(i);
-                        onTabSelected(i);
-                      },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(borderRadius),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF141722).withValues(alpha: 0.90),
+                      borderRadius: BorderRadius.circular(borderRadius),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        width: 1.0,
+                      ),
                     ),
                   ),
-              ],
+                ),
+              ),
             ),
-          ],
-        ),
+          ),
+
+          // ── 2. Sliding Tubelight Emitter & Active Tab Background ──────────
+          if (activeIndex >= 0 && activeIndex < kNavPillTabs.length)
+            Positioned.fill(
+              child: TubelightIndicator(
+                activeIndex: activeIndex,
+                totalTabs: kNavPillTabs.length,
+              ),
+            ),
+
+          // ── 3. Navigation Buttons Row ────────────────────────────────────
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: bodyHeight,
+            child: Material(
+              type: MaterialType.transparency,
+              child: Row(
+                children: [
+                  for (var i = 0; i < kNavPillTabs.length; i++)
+                    Expanded(
+                      child: _NavPillButton(
+                        tab: kNavPillTabs[i],
+                        isActive: i == activeIndex,
+                        height: bodyHeight,
+                        onTap: () {
+                          ref.read(bottomNavIndexProvider.notifier).select(i);
+                          onTabSelected(i);
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -156,17 +193,18 @@ class GlassNavPill extends ConsumerWidget {
 /// Backward compatibility alias for any references to LimelightIndicator.
 typedef LimelightIndicator = TubelightIndicator;
 
-/// Tubelight Lamp Indicator ported directly from 21st.dev / shadcn Tubelight Navbar.
-/// Features a rounded active tab highlight pill with an overhead tubelight fixture
-/// and concentrated 3-layer downward glow blooms.
+/// Tubelight Indicator that renders:
+/// 1. The active tab rounded background pill
+/// 2. The overhead bulging emitter element protruding above the navbar pill
+/// 3. The smooth uniform downward light wash
 class TubelightIndicator extends StatefulWidget {
   const TubelightIndicator({
     super.key,
     required this.activeIndex,
     required this.totalTabs,
-    this.lampColor = const Color(0xFFF1F5F9),
-    this.tubeWidth = 32.0,
-    this.tubeHeight = 3.5,
+    this.lampColor = const Color(0xFFF8FAFC),
+    this.tubeWidth = 34.0,
+    this.tubeHeight = 5.5,
   });
 
   final int activeIndex;
@@ -234,15 +272,15 @@ class _TubelightIndicatorState extends State<TubelightIndicator>
         ),
       );
 
-      // Tubelight dynamic glow dip during movement, then flares bright upon landing
+      // Smooth intensity transition during transit
       _intensityAnimation = TweenSequence<double>([
         TweenSequenceItem(
-          tween: Tween<double>(begin: 1.0, end: 0.40)
+          tween: Tween<double>(begin: 1.0, end: 0.50)
               .chain(CurveTween(curve: Curves.easeOut)),
           weight: 40,
         ),
         TweenSequenceItem(
-          tween: Tween<double>(begin: 0.40, end: 1.0)
+          tween: Tween<double>(begin: 0.50, end: 1.0)
               .chain(CurveTween(curve: Curves.easeInCubic)),
           weight: 60,
         ),
@@ -271,6 +309,7 @@ class _TubelightIndicatorState extends State<TubelightIndicator>
         }
 
         final tabWidth = totalWidth / widget.totalTabs;
+        final bodyTopOffset = totalHeight - GlassNavPill.bodyHeight; // 8.0
 
         return AnimatedBuilder(
           animation: _controller,
@@ -283,119 +322,96 @@ class _TubelightIndicatorState extends State<TubelightIndicator>
                 : 1.0;
 
             final currentCenterX = (animIndex + 0.5) * tabWidth;
-            final activePillWidth = (tabWidth - 6).clamp(36.0, tabWidth);
-            final activePillHeight = totalHeight - 10;
-            final tubeWidth = widget.tubeWidth.clamp(20.0, tabWidth * 0.7);
+            final activePillWidth = (tabWidth - 6).clamp(38.0, tabWidth);
+            final activePillHeight = GlassNavPill.bodyHeight - 12; // 50.0
 
             return IgnorePointer(
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  // ── 1. Active Tab Pill Background (bg-muted / bg-primary/5) ──
+                  // ── A. Active Tab Background Pill (Muted Solid Pill) ───────
                   Positioned(
                     left: currentCenterX - (activePillWidth / 2),
-                    top: 5.0,
+                    top: bodyTopOffset + 6.0,
                     width: activePillWidth,
                     height: activePillHeight,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.08 * intensity),
-                        borderRadius: BorderRadius.circular(20),
+                        color: const Color(0xFF222634),
+                        borderRadius: BorderRadius.circular(21),
                         border: Border.all(
-                          color: Colors.white
-                              .withValues(alpha: 0.07 * intensity),
+                          color: Colors.white.withValues(alpha: 0.08),
                           width: 1.0,
                         ),
                       ),
                     ),
                   ),
 
-                  // ── 2. Layer 1: Wide Soft Downward Glow (w-12 h-6 blur-md) ──
+                  // ── B. Uniform Downward Light Wash ────────────────────────
                   Positioned(
-                    left: currentCenterX - 24,
-                    top: -2.0,
+                    left: currentCenterX - (activePillWidth / 2),
+                    top: bodyTopOffset,
+                    width: activePillWidth,
+                    height: 38.0,
                     child: Container(
-                      width: 48,
-                      height: 24,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: widget.lampColor
-                            .withValues(alpha: 0.18 * intensity),
-                        boxShadow: [
-                          BoxShadow(
-                            color: widget.lampColor
-                                .withValues(alpha: 0.28 * intensity),
-                            blurRadius: 14,
-                            spreadRadius: 2,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(21),
+                        ),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.white.withValues(alpha: 0.36 * intensity),
+                            Colors.white.withValues(alpha: 0.14 * intensity),
+                            Colors.white.withValues(alpha: 0.03 * intensity),
+                            Colors.transparent,
+                          ],
+                          stops: const [0.0, 0.35, 0.70, 1.0],
+                        ),
                       ),
                     ),
                   ),
 
-                  // ── 3. Layer 2: Medium Concentrated Glow (w-8 h-6 blur-md) ──
+                  // ── C. Soft Atmospheric Glow Halo around Bulging Emitter ──
                   Positioned(
-                    left: currentCenterX - 16,
-                    top: -1.0,
+                    left: currentCenterX - 22.0,
+                    top: bodyTopOffset - 6.0,
                     child: Container(
-                      width: 32,
-                      height: 18,
+                      width: 44.0,
+                      height: 16.0,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: widget.lampColor
-                            .withValues(alpha: 0.24 * intensity),
+                        borderRadius: BorderRadius.circular(8.0),
                         boxShadow: [
                           BoxShadow(
-                            color: widget.lampColor
-                                .withValues(alpha: 0.40 * intensity),
-                            blurRadius: 8,
+                            color: Colors.white
+                                .withValues(alpha: 0.45 * intensity),
+                            blurRadius: 12,
                             spreadRadius: 1,
-                            offset: const Offset(0, 2),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // ── 4. Layer 3: Core Lamp Bloom (w-4 h-4 blur-sm) ──────────
-                  Positioned(
-                    left: currentCenterX - 8,
-                    top: 1.0,
-                    child: Container(
-                      width: 16,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        color: widget.lampColor
-                            .withValues(alpha: 0.35 * intensity),
-                        boxShadow: [
                           BoxShadow(
-                            color: widget.lampColor
-                                .withValues(alpha: 0.60 * intensity),
-                            blurRadius: 4,
-                            offset: const Offset(0, 1),
+                            color: Colors.white
+                                .withValues(alpha: 0.25 * intensity),
+                            blurRadius: 22,
+                            spreadRadius: 3,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
                     ),
                   ),
 
-                  // ── 5. Overhead Tubelight Bar (w-8 h-1 bg-primary rounded-t-full) ─
+                  // ── D. THE BULGING EMITTER ELEMENT ────────────────────────
+                  // Protrudes visibly above the top edge of the navbar pill
                   Positioned(
-                    left: currentCenterX - (tubeWidth / 2),
-                    top: 0.0,
+                    left: currentCenterX - (widget.tubeWidth / 2),
+                    top: bodyTopOffset - 3.8, // Bulges ~4px out above the pill
                     child: Container(
-                      width: tubeWidth,
+                      width: widget.tubeWidth,
                       height: widget.tubeHeight,
                       decoration: BoxDecoration(
                         color: widget.lampColor,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(3),
-                          topRight: Radius.circular(3),
-                          bottomLeft: Radius.circular(1),
-                          bottomRight: Radius.circular(1),
-                        ),
+                        borderRadius: BorderRadius.circular(3.0),
                         boxShadow: [
                           BoxShadow(
                             color: widget.lampColor
@@ -422,11 +438,13 @@ class _NavPillButton extends StatelessWidget {
   const _NavPillButton({
     required this.tab,
     required this.isActive,
+    required this.height,
     required this.onTap,
   });
 
   final NavPillTab tab;
   final bool isActive;
+  final double height;
   final VoidCallback onTap;
 
   @override
@@ -443,11 +461,11 @@ class _NavPillButton extends StatelessWidget {
           HapticFeedback.lightImpact();
           onTap();
         },
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(21),
         splashColor: Colors.white.withValues(alpha: 0.15),
         highlightColor: Colors.transparent,
         child: SizedBox(
-          height: GlassNavPill.height,
+          height: height,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
