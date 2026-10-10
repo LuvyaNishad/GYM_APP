@@ -125,44 +125,38 @@ class GlassNavPill extends ConsumerWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(borderRadius),
                 boxShadow: [
-                  // Tight contact shadow hugging the bottom rim
+                  // Subtle downward elevation shadow with negative spread so it doesn't block the glass
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.65),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                  // Wide ambient halo to float cleanly above cards & content
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.85),
-                    blurRadius: 32,
-                    spreadRadius: 2.0,
-                    offset: const Offset(0, 12),
+                    color: Colors.black.withValues(alpha: 0.45),
+                    blurRadius: 18,
+                    spreadRadius: -2.0,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(borderRadius),
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
+                  filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      // Frosted glass: translucent so background content is distorted yet visibly refracted
-                      color: const Color(0xFF141722).withValues(alpha: 0.72),
+                      // Real glassmorphic frosted tint: 40% opacity allows background elements to be visible yet distorted
+                      color: const Color(0xFF141722).withValues(alpha: 0.40),
                       borderRadius: BorderRadius.circular(borderRadius),
                       border: Border.all(
-                        // Ethereal hairline light stroke inspired by Apple & District design
-                        color: Colors.white.withValues(alpha: 0.15),
+                        // Ethereal hairline light stroke
+                        color: Colors.white.withValues(alpha: 0.16),
                         width: 1.0,
                       ),
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.white.withValues(alpha: 0.08),
-                          Colors.white.withValues(alpha: 0.02),
+                          Colors.white.withValues(alpha: 0.12),
+                          Colors.white.withValues(alpha: 0.03),
                           Colors.transparent,
                         ],
-                        stops: const [0.0, 0.30, 1.0],
+                        stops: const [0.0, 0.35, 1.0],
                       ),
                     ),
                   ),
@@ -350,7 +344,7 @@ class _TubelightIndicatorState extends State<TubelightIndicator>
                 clipBehavior: Clip.none,
                 children: [
                   // ── A. Seamless Ambient Downward Light Wash ────────────────────────
-                  // Natural radial downlight spreading smoothly across the entire active tab column
+                  // Natural linear downlight curtain spreading smoothly down the active column
                   Positioned(
                     left: currentCenterX - (tabWidth * 0.44),
                     top: bodyTopOffset,
@@ -359,43 +353,36 @@ class _TubelightIndicatorState extends State<TubelightIndicator>
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(GlassNavPill.borderRadius - 4),
-                        gradient: RadialGradient(
-                          center: Alignment.topCenter,
-                          radius: 1.25,
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
                           colors: [
-                            Colors.white.withValues(alpha: 0.20 * intensity),
+                            Colors.white.withValues(alpha: 0.22 * intensity),
                             Colors.white.withValues(alpha: 0.08 * intensity),
-                            Colors.white.withValues(alpha: 0.02 * intensity),
+                            Colors.white.withValues(alpha: 0.015 * intensity),
                             Colors.transparent,
                           ],
-                          stops: const [0.0, 0.40, 0.75, 1.0],
+                          stops: const [0.0, 0.25, 0.60, 1.0],
                         ),
                       ),
                     ),
                   ),
 
-                  // ── B. Soft Atmospheric Radial Halo ────────────────────────
+                  // ── B. Soft Atmospheric Emitter Glow ──────────────────────────────
                   Positioned(
-                    left: currentCenterX - 24.0,
-                    top: bodyTopOffset - 6.0,
+                    left: currentCenterX - (widget.tubeWidth * 0.8),
+                    top: bodyTopOffset - 4.0,
                     child: Container(
-                      width: 48.0,
-                      height: 18.0,
+                      width: widget.tubeWidth * 1.6,
+                      height: 8.0,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(9.0),
+                        borderRadius: BorderRadius.circular(4.0),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.white
-                                .withValues(alpha: 0.50 * intensity),
-                            blurRadius: 14,
+                                .withValues(alpha: 0.35 * intensity),
+                            blurRadius: 10,
                             spreadRadius: 1,
-                          ),
-                          BoxShadow(
-                            color: Colors.white
-                                .withValues(alpha: 0.25 * intensity),
-                            blurRadius: 24,
-                            spreadRadius: 3,
-                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
