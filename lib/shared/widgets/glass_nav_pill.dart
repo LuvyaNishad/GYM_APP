@@ -146,13 +146,23 @@ class GlassNavPill extends ConsumerWidget {
                   filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      // Deep gunmetal tone distinct from #27262A cards and #0F131B background
-                      color: const Color(0xFF161922).withValues(alpha: 0.96),
+                      // Frosted glass: translucent so background content is distorted yet visibly refracted
+                      color: const Color(0xFF141722).withValues(alpha: 0.72),
                       borderRadius: BorderRadius.circular(borderRadius),
                       border: Border.all(
                         // Ethereal hairline light stroke inspired by Apple & District design
-                        color: Colors.white.withValues(alpha: 0.14),
+                        color: Colors.white.withValues(alpha: 0.15),
                         width: 1.0,
+                      ),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.white.withValues(alpha: 0.08),
+                          Colors.white.withValues(alpha: 0.02),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.30, 1.0],
                       ),
                     ),
                   ),
@@ -334,31 +344,57 @@ class _TubelightIndicatorState extends State<TubelightIndicator>
                 : 1.0;
 
             final currentCenterX = (animIndex + 0.5) * tabWidth;
-            final activePillWidth = (tabWidth - 6).clamp(38.0, tabWidth);
-            final activePillHeight = GlassNavPill.bodyHeight - 12; // 50.0
 
             return IgnorePointer(
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  // ── A. Active Tab Background Pill (Muted Solid Pill) ───────
+                  // ── A. Seamless Ambient Downward Light Wash ────────────────────────
+                  // Natural radial downlight spreading smoothly across the entire active tab column
                   Positioned(
-                    left: currentCenterX - (activePillWidth / 2),
-                    top: bodyTopOffset + 6.0,
-                    width: activePillWidth,
-                    height: activePillHeight,
+                    left: currentCenterX - (tabWidth * 0.44),
+                    top: bodyTopOffset,
+                    width: tabWidth * 0.88,
+                    height: GlassNavPill.bodyHeight,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2A2E39).withValues(alpha: 0.90),
-                        borderRadius: BorderRadius.circular(21),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.12),
-                          width: 1.0,
+                        borderRadius: BorderRadius.circular(GlassNavPill.borderRadius - 4),
+                        gradient: RadialGradient(
+                          center: Alignment.topCenter,
+                          radius: 1.25,
+                          colors: [
+                            Colors.white.withValues(alpha: 0.20 * intensity),
+                            Colors.white.withValues(alpha: 0.08 * intensity),
+                            Colors.white.withValues(alpha: 0.02 * intensity),
+                            Colors.transparent,
+                          ],
+                          stops: const [0.0, 0.40, 0.75, 1.0],
                         ),
+                      ),
+                    ),
+                  ),
+
+                  // ── B. Soft Atmospheric Radial Halo ────────────────────────
+                  Positioned(
+                    left: currentCenterX - 24.0,
+                    top: bodyTopOffset - 6.0,
+                    child: Container(
+                      width: 48.0,
+                      height: 18.0,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(9.0),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.35),
-                            blurRadius: 6,
+                            color: Colors.white
+                                .withValues(alpha: 0.50 * intensity),
+                            blurRadius: 14,
+                            spreadRadius: 1,
+                          ),
+                          BoxShadow(
+                            color: Colors.white
+                                .withValues(alpha: 0.25 * intensity),
+                            blurRadius: 24,
+                            spreadRadius: 3,
                             offset: const Offset(0, 2),
                           ),
                         ],
@@ -366,65 +402,10 @@ class _TubelightIndicatorState extends State<TubelightIndicator>
                     ),
                   ),
 
-                  // ── B. Uniform Downward Light Wash ────────────────────────
-                  Positioned(
-                    left: currentCenterX - (activePillWidth / 2),
-                    top: bodyTopOffset,
-                    width: activePillWidth,
-                    height: 38.0,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(21),
-                        ),
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.white.withValues(alpha: 0.36 * intensity),
-                            Colors.white.withValues(alpha: 0.14 * intensity),
-                            Colors.white.withValues(alpha: 0.03 * intensity),
-                            Colors.transparent,
-                          ],
-                          stops: const [0.0, 0.35, 0.70, 1.0],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // ── C. Soft Atmospheric Glow Halo around Bulging Emitter ──
-                  Positioned(
-                    left: currentCenterX - 22.0,
-                    top: bodyTopOffset - 6.0,
-                    child: Container(
-                      width: 44.0,
-                      height: 16.0,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.white
-                                .withValues(alpha: 0.45 * intensity),
-                            blurRadius: 12,
-                            spreadRadius: 1,
-                          ),
-                          BoxShadow(
-                            color: Colors.white
-                                .withValues(alpha: 0.25 * intensity),
-                            blurRadius: 22,
-                            spreadRadius: 3,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // ── D. THE BULGING EMITTER ELEMENT ────────────────────────
-                  // Protrudes visibly above the top edge of the navbar pill
+                  // ── C. The Overhead Tubelight Emitter Element ──────────────
                   Positioned(
                     left: currentCenterX - (widget.tubeWidth / 2),
-                    top: bodyTopOffset - 3.8, // Bulges ~4px out above the pill
+                    top: bodyTopOffset - 3.2,
                     child: Container(
                       width: widget.tubeWidth,
                       height: widget.tubeHeight,
@@ -435,7 +416,7 @@ class _TubelightIndicatorState extends State<TubelightIndicator>
                           BoxShadow(
                             color: widget.lampColor
                                 .withValues(alpha: 0.95 * intensity),
-                            blurRadius: 5,
+                            blurRadius: 6,
                             spreadRadius: 0.5,
                           ),
                         ],
