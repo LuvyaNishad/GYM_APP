@@ -28,9 +28,7 @@ class CaloriesBentoCard extends StatelessWidget {
   /// Optional tap handler.
   final VoidCallback? onTap;
 
-  static const Color _amberOrange = Color(0xFFFF7A00);
-  static const Color _amberLight = Color(0xFFFFB300);
-  static const Color _cardBg = Color(0xFF161A23);
+  static const Color _cardBg = AppColors.charcoal;
 
   String _formatNumber(int number) {
     return number.toString().replaceAllMapped(
@@ -49,7 +47,7 @@ class CaloriesBentoCard extends StatelessWidget {
         color: _cardBg,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: AppColors.steel.withValues(alpha: 0.5),
           width: 1.0,
         ),
       ),
@@ -65,17 +63,17 @@ class CaloriesBentoCard extends StatelessWidget {
                 width: 26,
                 height: 26,
                 decoration: BoxDecoration(
-                  color: _amberOrange.withValues(alpha: 0.16),
+                  color: AppColors.steel.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: _amberOrange.withValues(alpha: 0.35),
+                    color: AppColors.steel,
                     width: 1,
                   ),
                 ),
                 child: const Center(
                   child: Icon(
                     Icons.local_fire_department_rounded,
-                    color: _amberOrange,
+                    color: AppColors.pureWhite,
                     size: 15,
                   ),
                 ),
@@ -111,7 +109,7 @@ class CaloriesBentoCard extends StatelessWidget {
                   fontSize: 19,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
-                  letterSpacing: -0.2, // SKILL2.md §15: Negative optical tracking
+                  letterSpacing: -0.2,
                   height: 1.0,
                 ),
               ),
@@ -122,7 +120,7 @@ class CaloriesBentoCard extends StatelessWidget {
                   fontFamily: AppTypography.fontBody,
                   fontSize: 11.0,
                   fontWeight: FontWeight.w600,
-                  color: _amberLight,
+                  color: AppColors.platinum,
                 ),
               ),
             ],
@@ -142,9 +140,9 @@ class CaloriesBentoCard extends StatelessWidget {
                     size: const Size(72, 72),
                     painter: _DonutProgressPainter(
                       progress: progress,
-                      trackColor: _amberOrange.withValues(alpha: 0.15),
-                      progressColor: _amberOrange,
-                      secondaryColor: _amberLight,
+                      trackColor: AppColors.steel.withValues(alpha: 0.4),
+                      progressColor: AppColors.pureWhite,
+                      secondaryColor: AppColors.platinum,
                       strokeWidth: 6.0,
                     ),
                   ),

@@ -14,6 +14,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 
 /// Horizontally scrollable gym activity contribution graph.
@@ -46,10 +47,10 @@ class _GymContributionChartState extends State<GymContributionChart> {
   late final ScrollController _scrollController;
   DateTime? _inspectedDate;
 
-  static const Color _greenAccent = Color(0xFF00E676);
-  static const Color _amberAccent = Color(0xFFFFB300);
-  static const Color _emptyCellBg = Color(0xFF222836);
-  static const Color _emptyCellBorder = Color(0xFF2C3446);
+  static const Color _todayAccent = AppColors.pureWhite;
+  static const Color _loggedAccent = AppColors.platinum;
+  static const Color _emptyCellBg = AppColors.charcoal;
+  static const Color _emptyCellBorder = AppColors.steel;
   static const double _cellSize = 13.0;
   static const double _cellGap = 3.5;
 
@@ -133,9 +134,9 @@ class _GymContributionChartState extends State<GymContributionChart> {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: _greenAccent.withValues(alpha: 0.14),
+                color: _loggedAccent.withValues(alpha: 0.14),
                 border: Border.all(
-                  color: _greenAccent.withValues(alpha: 0.35),
+                  color: _loggedAccent.withValues(alpha: 0.35),
                   width: 1.0,
                 ),
               ),
@@ -146,7 +147,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
                   fontSize: 11.0,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.5,
-                  color: _greenAccent,
+                  color: _loggedAccent,
                 ),
               ),
             ),
@@ -281,10 +282,10 @@ class _GymContributionChartState extends State<GymContributionChart> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isInspectedToday
-                          ? _amberAccent
+                          ? _todayAccent
                           : (isInspectedLogged
-                              ? _greenAccent
-                              : const Color(0xFF64748B)),
+                              ? _loggedAccent
+                              : AppColors.steel),
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -314,9 +315,9 @@ class _GymContributionChartState extends State<GymContributionChart> {
               children: [
                 _buildLegendItem('Rest', _emptyCellBg),
                 const SizedBox(width: 8),
-                _buildLegendItem('Gym', _greenAccent),
+                _buildLegendItem('Gym', _loggedAccent),
                 const SizedBox(width: 8),
-                _buildLegendItem('Today', _amberAccent),
+                _buildLegendItem('Today', _todayAccent),
               ],
             ),
           ],
@@ -367,12 +368,12 @@ class _GymContributionChartState extends State<GymContributionChart> {
       bgColor = Colors.white.withValues(alpha: 0.04);
       border = Border.all(color: Colors.white.withValues(alpha: 0.06), width: 1.0);
     } else if (isToday) {
-      bgColor = _amberAccent;
+      bgColor = _todayAccent;
       if (isSelected) {
         border = Border.all(color: Colors.white, width: 1.5);
       }
     } else if (isLogged) {
-      bgColor = _greenAccent;
+      bgColor = _loggedAccent;
       if (isSelected) {
         border = Border.all(color: Colors.white, width: 1.5);
       }

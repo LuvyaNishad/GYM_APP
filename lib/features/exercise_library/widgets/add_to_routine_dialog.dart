@@ -79,18 +79,18 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: const Color(0xFF141722),
+        backgroundColor: AppColors.charcoal,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: AppColors.primary, width: 1),
+          side: const BorderSide(color: AppColors.steel, width: 1),
         ),
         content: Text(
           'Added ${widget.exercise.name} ($_targetSets sets) to $_selectedDestination',
           style: AppTypography.bodySmall.copyWith(
             fontSize: 12.5,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: AppColors.pureWhite,
           ),
         ),
       ),
@@ -108,10 +108,10 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
           filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
           child: Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF0F1219).withValues(alpha: 0.96),
+              color: AppColors.onyx.withValues(alpha: 0.96),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.12),
+                color: AppColors.steel,
                 width: 1.0,
               ),
             ),
@@ -134,7 +134,7 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 1.0,
-                                color: AppColors.primary,
+                                color: AppColors.platinum,
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -143,7 +143,7 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                               style: AppTypography.headlineMedium.copyWith(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w800,
-                                color: Colors.white,
+                                color: AppColors.pureWhite,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -153,7 +153,7 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                       ),
                       IconButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                        icon: const Icon(Icons.close_rounded, color: AppColors.platinum),
                         iconSize: 22,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
@@ -161,17 +161,17 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                     ],
                   ),
 
-                  const Divider(color: Color(0xFF1E293B), height: 24),
+                  const Divider(color: AppColors.steel, height: 24),
 
                   // ── Destination Split Selector ─────────────────────────
                   _buildSectionLabel('SELECT DESTINATION'),
                   const SizedBox(height: 8),
                   Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF141722),
+                      color: AppColors.charcoal,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.08),
+                        color: AppColors.steel,
                         width: 1.0,
                       ),
                     ),
@@ -180,8 +180,8 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                       child: DropdownButton<String>(
                         value: _selectedDestination,
                         isExpanded: true,
-                        dropdownColor: const Color(0xFF161A23),
-                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primary),
+                        dropdownColor: AppColors.charcoal,
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.platinum),
                         items: _destinations.map((dest) {
                           return DropdownMenuItem<String>(
                             value: dest,
@@ -190,7 +190,7 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                               style: AppTypography.bodySmall.copyWith(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                                color: AppColors.pureWhite,
                               ),
                             ),
                           );
@@ -222,7 +222,7 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                             style: AppTypography.monoMedium.copyWith(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                              color: AppColors.pureWhite,
                             ),
                           ),
                         ),
@@ -254,11 +254,11 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? AppColors.primary.withValues(alpha: 0.18)
-                                : const Color(0xFF141722),
+                                ? AppColors.pureWhite
+                                : AppColors.charcoal,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: isSelected ? AppColors.primary : Colors.white.withValues(alpha: 0.10),
+                              color: isSelected ? AppColors.pureWhite : AppColors.steel,
                               width: 1.0,
                             ),
                           ),
@@ -267,7 +267,7 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                             style: AppTypography.labelSmall.copyWith(
                               fontSize: 12.0,
                               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                              color: isSelected ? AppColors.primary : const Color(0xFFCBD5E1),
+                              color: isSelected ? AppColors.onyx : AppColors.platinum,
                             ),
                           ),
                         ),
@@ -294,11 +294,11 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? AppColors.primary.withValues(alpha: 0.18)
-                                    : const Color(0xFF141722),
+                                    ? AppColors.pureWhite
+                                    : AppColors.charcoal,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: isSelected ? AppColors.primary : Colors.white.withValues(alpha: 0.10),
+                                  color: isSelected ? AppColors.pureWhite : AppColors.steel,
                                   width: 1.0,
                                 ),
                               ),
@@ -308,7 +308,7 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                                   style: AppTypography.monoSmall.copyWith(
                                     fontSize: 12.0,
                                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                    color: isSelected ? AppColors.primary : const Color(0xFFCBD5E1),
+                                    color: isSelected ? AppColors.onyx : AppColors.platinum,
                                   ),
                                 ),
                               ),
@@ -325,8 +325,8 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                   FilledButton(
                     onPressed: _onConfirm,
                     style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.black,
+                      backgroundColor: AppColors.pureWhite,
+                      foregroundColor: AppColors.onyx,
                       minimumSize: const Size(double.infinity, 48),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -338,7 +338,7 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                         fontSize: 13.5,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1.1,
-                        color: Colors.black,
+                        color: AppColors.onyx,
                       ),
                     ),
                   ),
@@ -358,7 +358,7 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
         fontSize: 11.5,
         fontWeight: FontWeight.w700,
         letterSpacing: 0.8,
-        color: const Color(0xFF94A3B8),
+        color: AppColors.platinum,
       ),
     );
   }
@@ -376,14 +376,14 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: const Color(0xFF141722),
+            color: AppColors.steel,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.10),
+              color: AppColors.steel,
               width: 1.0,
             ),
           ),
-          child: Icon(icon, size: 20, color: Colors.white),
+          child: Icon(icon, size: 20, color: AppColors.pureWhite),
         ),
       ),
     );

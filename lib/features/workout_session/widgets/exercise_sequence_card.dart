@@ -37,21 +37,21 @@ class ExerciseSequenceCard extends ConsumerWidget {
     final topSet = exercise.topCompletedSet;
 
     final borderColor = isExpanded
-        ? AppColors.primary.withValues(alpha: 0.40)
+        ? AppColors.pureWhite
         : (isDone
-            ? AppColors.success.withValues(alpha: 0.30)
-            : Colors.white.withValues(alpha: 0.08));
+            ? AppColors.pureWhite.withValues(alpha: 0.50)
+            : AppColors.steel);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF131620),
+        color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: borderColor, width: isExpanded ? 1.5 : 1.0),
         boxShadow: isExpanded
             ? [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.08),
+                  color: AppColors.pureWhite.withValues(alpha: 0.08),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -80,7 +80,7 @@ class ExerciseSequenceCard extends ConsumerWidget {
                           padding: EdgeInsets.only(right: 10),
                           child: Icon(
                             Icons.drag_indicator,
-                            color: Color(0xFF64748B),
+                            color: AppColors.platinum,
                             size: 20,
                           ),
                         ),
@@ -92,13 +92,13 @@ class ExerciseSequenceCard extends ConsumerWidget {
                         height: 26,
                         decoration: BoxDecoration(
                           color: isDone
-                              ? AppColors.success.withValues(alpha: 0.15)
-                              : Colors.white.withValues(alpha: 0.06),
+                              ? AppColors.pureWhite.withValues(alpha: 0.15)
+                              : AppColors.steel,
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: isDone
-                                ? AppColors.success.withValues(alpha: 0.5)
-                                : Colors.white.withValues(alpha: 0.12),
+                                ? AppColors.pureWhite
+                                : AppColors.steel,
                           ),
                         ),
                         alignment: Alignment.center,
@@ -107,7 +107,7 @@ class ExerciseSequenceCard extends ConsumerWidget {
                           style: AppTypography.monoSmall.copyWith(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w800,
-                            color: isDone ? AppColors.success : Colors.white,
+                            color: isDone ? AppColors.pureWhite : AppColors.platinum,
                           ),
                         ),
                       ),
@@ -145,14 +145,14 @@ class ExerciseSequenceCard extends ConsumerWidget {
                                   style: AppTypography.monoSmall.copyWith(
                                     fontSize: 11.0,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.primary,
+                                    color: AppColors.pureWhite,
                                   ),
                                 ),
                                 Text(
                                   '· ${exercise.completedSetsCount}/${exercise.totalSetsCount} SETS',
                                   style: AppTypography.monoSmall.copyWith(
                                     fontSize: 11.0,
-                                    color: const Color(0xFF94A3B8),
+                                    color: AppColors.platinum,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -161,7 +161,7 @@ class ExerciseSequenceCard extends ConsumerWidget {
                                     '· Top: ${topSet.weightKg.toInt()}kg × ${topSet.reps}',
                                     style: AppTypography.monoSmall.copyWith(
                                       fontSize: 11.0,
-                                      color: const Color(0xFF94A3B8),
+                                      color: AppColors.platinum,
                                     ),
                                   ),
                               ],
@@ -174,14 +174,14 @@ class ExerciseSequenceCard extends ConsumerWidget {
                       PopupMenuButton<String>(
                         icon: const Icon(
                           Icons.more_vert,
-                          color: Color(0xFF94A3B8),
+                          color: AppColors.platinum,
                           size: 20,
                         ),
-                        color: const Color(0xFF1E2230),
+                        color: AppColors.onyx,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.12),
+                          side: const BorderSide(
+                            color: AppColors.steel,
                           ),
                         ),
                         onSelected: (value) {
@@ -208,11 +208,11 @@ class ExerciseSequenceCard extends ConsumerWidget {
                             value: 'replace',
                             child: Row(
                               children: [
-                                const Icon(Icons.swap_horiz, size: 18, color: AppColors.primary),
+                                const Icon(Icons.swap_horiz, size: 18, color: AppColors.pureWhite),
                                 const SizedBox(width: 10),
                                 Text(
                                   'Replace Exercise',
-                                  style: AppTypography.bodySmall.copyWith(color: Colors.white),
+                                  style: AppTypography.bodySmall.copyWith(color: AppColors.pureWhite),
                                 ),
                               ],
                             ),
@@ -239,7 +239,7 @@ class ExerciseSequenceCard extends ConsumerWidget {
                         duration: const Duration(milliseconds: 200),
                         child: const Icon(
                           Icons.keyboard_arrow_down,
-                          color: Color(0xFF94A3B8),
+                          color: AppColors.platinum,
                           size: 22,
                         ),
                       ),
@@ -255,9 +255,9 @@ class ExerciseSequenceCard extends ConsumerWidget {
                 child: isExpanded
                     ? Column(
                         children: [
-                          Divider(
+                          const Divider(
                             height: 1,
-                            color: Colors.white.withValues(alpha: 0.08),
+                            color: AppColors.steel,
                           ),
                           ExerciseSetTable(exercise: exercise),
                         ],

@@ -59,11 +59,11 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
   late DateTime _selectedDate;
   late final List<DateTime> _weekDays;
 
-  // Solid dark background matching reference (clean & minimal, non-glassmorphic)
-  static const Color _cardBg = Color(0xFF1E232F);
-  static const Color _pillSlotBg = Color(0xFF262C3A);
-  static const Color _amberAccent = Color(0xFFFFB300);
-  static const Color _greenAccent = Color(0xFF00E676); // Completed workout green
+  // Noguchi Monochrome Minimal palette
+  static const Color _cardBg = AppColors.charcoal; // #27262A
+  static const Color _pillSlotBg = Color(0xFF1B1C22); // Sleek dark slot
+  static const Color _todayAccent = AppColors.pureWhite; // Pure white for today
+  static const Color _loggedAccent = AppColors.platinum; // Platinum silver for logged gym days
   static const double _tabHeight = 18.0;
 
   @override
@@ -236,8 +236,8 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
           return CustomPaint(
             painter: NotchedHeaderPainter(
               backgroundColor: _cardBg,
-              borderColor: Colors.white.withValues(alpha: 0.10),
-              handleColor: Colors.white.withValues(alpha: 0.38),
+              borderColor: AppColors.steel.withValues(alpha: 0.6),
+              handleColor: AppColors.platinum.withValues(alpha: 0.5),
               tabHeight: _tabHeight,
             ),
             child: Stack(
@@ -452,11 +452,11 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
 
   Widget _buildDefaultAvatar() {
     return Container(
-      color: const Color(0xFF2C3240),
+      color: AppColors.steel,
       child: const Center(
         child: Icon(
           Icons.person_rounded,
-          color: AppColors.primary,
+          color: AppColors.pureWhite,
           size: 22,
         ),
       ),
@@ -487,13 +487,16 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
           border: isSelected
               ? Border.all(
                   color: isToday
-                      ? _amberAccent.withValues(alpha: 0.8)
+                      ? Colors.white
                       : (isPreviousSession
-                          ? _greenAccent.withValues(alpha: 0.8)
-                          : Colors.white.withValues(alpha: 0.35)),
+                          ? _loggedAccent
+                          : Colors.white.withValues(alpha: 0.6)),
                   width: 1.5,
                 )
-              : null,
+              : Border.all(
+                  color: AppColors.steel.withValues(alpha: 0.35),
+                  width: 0.8,
+                ),
         ),
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: Column(
@@ -509,24 +512,24 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                     ? FontWeight.w700
                     : FontWeight.w500,
                 color: isToday
-                    ? _amberAccent
+                    ? _todayAccent
                     : (isPreviousSession
-                        ? _greenAccent
+                        ? _loggedAccent
                         : (isSelected ? Colors.white : AppColors.textSecondary)),
               ),
             ),
 
             // Date Number:
-            // - Today: Solid golden yellow badge (_amberAccent) with dark text
-            // - Previous logged sessions: Solid green badge (_greenAccent) with dark text
-            // - Unlogged / Rest days: Crisp mono numeral (#E2E8F0)
+            // - Today: Solid pure white badge with dark text
+            // - Previous logged sessions: Solid platinum silver badge with dark text
+            // - Unlogged / Rest days: Crisp mono numeral
             if (isToday)
               Container(
                 width: 26,
                 height: 26,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _amberAccent,
+                  color: _todayAccent,
                 ),
                 child: Center(
                   child: Text(
@@ -535,7 +538,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                       fontFamily: 'JetBrains Mono',
                       fontSize: 12.0,
                       fontWeight: FontWeight.w800,
-                      color: Colors.black,
+                      color: AppColors.onyx,
                     ),
                   ),
                 ),
@@ -546,7 +549,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                 height: 26,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _greenAccent,
+                  color: _loggedAccent,
                 ),
                 child: Center(
                   child: Text(
@@ -555,7 +558,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                       fontFamily: 'JetBrains Mono',
                       fontSize: 12.0,
                       fontWeight: FontWeight.w800,
-                      color: Colors.black,
+                      color: AppColors.onyx,
                     ),
                   ),
                 ),
@@ -567,7 +570,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                   fontFamily: 'JetBrains Mono',
                   fontSize: 12.0,
                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: isSelected ? Colors.white : const Color(0xFFE2E8F0),
+                  color: isSelected ? Colors.white : AppColors.platinum,
                 ),
               ),
           ],

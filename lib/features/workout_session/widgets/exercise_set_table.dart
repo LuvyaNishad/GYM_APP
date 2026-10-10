@@ -38,10 +38,10 @@ class ExerciseSetTable extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: AppColors.charcoal,
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.10),
+                    color: AppColors.steel,
                   ),
                 ),
                 child: Text(
@@ -49,7 +49,7 @@ class ExerciseSetTable extends ConsumerWidget {
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 11.0,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF94A3B8),
+                    color: AppColors.platinum,
                   ),
                 ),
               ),
@@ -76,7 +76,7 @@ class ExerciseSetTable extends ConsumerWidget {
                         const Icon(
                           Icons.fitness_center,
                           size: 15,
-                          color: AppColors.primary,
+                          color: AppColors.pureWhite,
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -84,7 +84,7 @@ class ExerciseSetTable extends ConsumerWidget {
                           style: AppTypography.monoSmall.copyWith(
                             fontSize: 11.0,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
+                            color: AppColors.pureWhite,
                           ),
                         ),
                       ],
@@ -98,11 +98,11 @@ class ExerciseSetTable extends ConsumerWidget {
         // Table Header
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.02),
+          decoration: const BoxDecoration(
+            color: AppColors.charcoal,
             border: Border(
               bottom: BorderSide(
-                color: Colors.white.withValues(alpha: 0.06),
+                color: AppColors.steel,
               ),
             ),
           ),
@@ -115,7 +115,7 @@ class ExerciseSetTable extends ConsumerWidget {
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 11.0,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF94A3B8),
+                    color: AppColors.platinum,
                   ),
                 ),
               ),
@@ -126,7 +126,7 @@ class ExerciseSetTable extends ConsumerWidget {
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 11.0,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF94A3B8),
+                    color: AppColors.platinum,
                   ),
                 ),
               ),
@@ -137,7 +137,7 @@ class ExerciseSetTable extends ConsumerWidget {
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 11.0,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF94A3B8),
+                    color: AppColors.platinum,
                   ),
                 ),
               ),
@@ -148,7 +148,7 @@ class ExerciseSetTable extends ConsumerWidget {
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 11.0,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF94A3B8),
+                    color: AppColors.platinum,
                   ),
                 ),
               ),
@@ -159,7 +159,7 @@ class ExerciseSetTable extends ConsumerWidget {
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 11.0,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF94A3B8),
+                    color: AppColors.platinum,
                   ),
                 ),
               ),
@@ -171,7 +171,7 @@ class ExerciseSetTable extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 11.0,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF94A3B8),
+                      color: AppColors.platinum,
                     ),
                   ),
                 ),
@@ -185,9 +185,9 @@ class ExerciseSetTable extends ConsumerWidget {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: exercise.sets.length,
-          separatorBuilder: (context, index) => Divider(
+          separatorBuilder: (context, index) => const Divider(
             height: 1,
-            color: Colors.white.withValues(alpha: 0.05),
+            color: AppColors.steel,
           ),
           itemBuilder: (context, index) {
             final set = exercise.sets[index];
@@ -211,17 +211,17 @@ class ExerciseSetTable extends ConsumerWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => notifier.addSet(exercise.exerciseId),
-                  icon: const Icon(Icons.add, size: 16, color: AppColors.primary),
+                  icon: const Icon(Icons.add, size: 16, color: AppColors.pureWhite),
                   label: Text(
                     '+ ADD SET',
                     style: AppTypography.monoSmall.copyWith(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
+                      color: AppColors.pureWhite,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: AppColors.primary.withValues(alpha: 0.35)),
+                    side: const BorderSide(color: AppColors.steel),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -234,17 +234,17 @@ class ExerciseSetTable extends ConsumerWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => notifier.addWarmupSets(exercise.exerciseId),
-                  icon: const Icon(Icons.fitness_center, size: 16, color: Color(0xFF94A3B8)),
+                  icon: const Icon(Icons.fitness_center, size: 16, color: AppColors.platinum),
                   label: Text(
                     '+ WARMUP',
                     style: AppTypography.monoSmall.copyWith(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF94A3B8),
+                      color: AppColors.platinum,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                    side: const BorderSide(color: AppColors.steel),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -272,7 +272,7 @@ class ExerciseSetTable extends ConsumerWidget {
 
     return Container(
       color: isCompleted
-          ? AppColors.primary.withValues(alpha: 0.04)
+          ? AppColors.steel.withValues(alpha: 0.15)
           : Colors.transparent,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -286,14 +286,10 @@ class ExerciseSetTable extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                 decoration: BoxDecoration(
-                  color: set.isWarmup
-                      ? AppColors.warning.withValues(alpha: 0.15)
-                      : Colors.white.withValues(alpha: 0.06),
+                  color: AppColors.charcoal,
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                    color: set.isWarmup
-                        ? AppColors.warning.withValues(alpha: 0.40)
-                        : Colors.white.withValues(alpha: 0.10),
+                    color: AppColors.steel,
                   ),
                 ),
                 alignment: Alignment.center,
@@ -302,7 +298,7 @@ class ExerciseSetTable extends ConsumerWidget {
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w800,
-                    color: set.isWarmup ? AppColors.warning : Colors.white,
+                    color: AppColors.pureWhite,
                   ),
                 ),
               ),
@@ -334,7 +330,7 @@ class ExerciseSetTable extends ConsumerWidget {
                       : '—',
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 11.5,
-                    color: const Color(0xFF94A3B8),
+                    color: AppColors.platinum,
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
@@ -351,12 +347,12 @@ class ExerciseSetTable extends ConsumerWidget {
             child: Container(
               height: 38,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: AppColors.charcoal,
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
                   color: isCompleted
-                      ? AppColors.primary.withValues(alpha: 0.3)
-                      : Colors.white.withValues(alpha: 0.10),
+                      ? AppColors.pureWhite.withValues(alpha: 0.5)
+                      : AppColors.steel,
                 ),
               ),
               child: Row(
@@ -370,7 +366,7 @@ class ExerciseSetTable extends ConsumerWidget {
                         style: AppTypography.monoSmall.copyWith(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: AppColors.pureWhite,
                         ),
                       ),
                     ),
@@ -408,12 +404,12 @@ class ExerciseSetTable extends ConsumerWidget {
             child: Container(
               height: 38,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: AppColors.charcoal,
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
                   color: isCompleted
-                      ? AppColors.primary.withValues(alpha: 0.3)
-                      : Colors.white.withValues(alpha: 0.10),
+                      ? AppColors.pureWhite.withValues(alpha: 0.5)
+                      : AppColors.steel,
                 ),
               ),
               child: Row(
@@ -425,7 +421,7 @@ class ExerciseSetTable extends ConsumerWidget {
                         style: AppTypography.monoSmall.copyWith(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: AppColors.pureWhite,
                         ),
                       ),
                     ),
@@ -485,10 +481,10 @@ class ExerciseSetTable extends ConsumerWidget {
                 height: 38,
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: AppColors.charcoal,
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.10),
+                    color: AppColors.steel,
                   ),
                 ),
                 alignment: Alignment.center,
@@ -497,7 +493,7 @@ class ExerciseSetTable extends ConsumerWidget {
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 11.0,
                     fontWeight: FontWeight.w700,
-                    color: set.rir <= 0 ? AppColors.warning : AppColors.primary,
+                    color: AppColors.pureWhite,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -520,7 +516,7 @@ class ExerciseSetTable extends ConsumerWidget {
               },
               icon: Icon(
                 isCompleted ? Icons.check_circle : Icons.check_circle_outline,
-                color: isCompleted ? AppColors.primary : const Color(0xFF94A3B8),
+                color: isCompleted ? AppColors.pureWhite : AppColors.platinum,
                 size: 24,
               ),
               padding: EdgeInsets.zero,
@@ -542,7 +538,7 @@ class ExerciseSetTable extends ConsumerWidget {
       child: SizedBox(
         width: 18,
         height: 18,
-        child: Icon(icon, size: 14, color: const Color(0xFF94A3B8)),
+        child: Icon(icon, size: 14, color: AppColors.platinum),
       ),
     );
   }
@@ -555,9 +551,10 @@ class ExerciseSetTable extends ConsumerWidget {
     final set = exercise.sets[setIndex];
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF141722),
+      backgroundColor: AppColors.onyx,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(color: AppColors.steel),
       ),
       builder: (ctx) {
         return SafeArea(
@@ -569,11 +566,11 @@ class ExerciseSetTable extends ConsumerWidget {
                 ListTile(
                   leading: Icon(
                     set.isWarmup ? Icons.fitness_center : Icons.whatshot,
-                    color: AppColors.warning,
+                    color: AppColors.pureWhite,
                   ),
                   title: Text(
                     set.isWarmup ? 'Convert to Working Set' : 'Convert to Warm-up Set',
-                    style: AppTypography.bodyMedium.copyWith(color: Colors.white),
+                    style: AppTypography.bodyMedium.copyWith(color: AppColors.pureWhite),
                   ),
                   onTap: () {
                     notifier.updateSetValues(

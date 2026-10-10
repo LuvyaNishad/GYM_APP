@@ -26,7 +26,7 @@ class WaterBentoCard extends StatelessWidget {
   /// Optional tap handler.
   final VoidCallback? onTap;
 
-  static const Color _cardBg = Color(0xFF161A23);
+  static const Color _cardBg = AppColors.charcoal;
 
   String _formatNumber(int number) {
     return number.toString().replaceAllMapped(
@@ -47,7 +47,7 @@ class WaterBentoCard extends StatelessWidget {
         color: _cardBg,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: AppColors.steel.withValues(alpha: 0.5),
           width: 1.0,
         ),
       ),
@@ -68,17 +68,17 @@ class WaterBentoCard extends StatelessWidget {
                     width: 22,
                     height: 22,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.16),
+                      color: AppColors.steel.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(7),
                       border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.35),
+                        color: AppColors.steel,
                         width: 1,
                       ),
                     ),
                     child: const Center(
                       child: Icon(
                         Icons.water_drop_rounded,
-                        color: AppColors.primary,
+                        color: AppColors.pureWhite,
                         size: 13,
                       ),
                     ),
@@ -109,7 +109,7 @@ class WaterBentoCard extends StatelessWidget {
                       fontFamily: 'JetBrains Mono',
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
-                      color: Colors.white,
+                      color: AppColors.pureWhite,
                       height: 1.0,
                     ),
                   ),
@@ -120,7 +120,7 @@ class WaterBentoCard extends StatelessWidget {
                       fontFamily: AppTypography.fontBody,
                       fontSize: 11.0,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -137,8 +137,8 @@ class WaterBentoCard extends StatelessWidget {
               height: 5,
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: Colors.white.withValues(alpha: 0.08),
-                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                backgroundColor: AppColors.steel,
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.pureWhite),
               ),
             ),
           ),
@@ -165,7 +165,7 @@ class WaterBentoCard extends StatelessWidget {
                   fontFamily: 'JetBrains Mono',
                   fontSize: 11.0,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+                  color: AppColors.pureWhite,
                 ),
               ),
             ],

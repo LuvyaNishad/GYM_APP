@@ -92,10 +92,10 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
         filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF0F1219).withValues(alpha: 0.94),
+            color: AppColors.onyx.withValues(alpha: 0.96),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.12),
+              color: AppColors.steel,
               width: 1.0,
             ),
           ),
@@ -113,7 +113,7 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
                   width: 44,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF475569),
+                    color: AppColors.steel,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -132,7 +132,7 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.0,
-                        color: Colors.white,
+                        color: AppColors.pureWhite,
                       ),
                     ),
                     TextButton(
@@ -147,7 +147,7 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.8,
-                          color: AppColors.amber,
+                          color: AppColors.platinum,
                         ),
                       ),
                     ),
@@ -155,7 +155,7 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
                 ),
               ),
 
-              const Divider(color: Color(0xFF1E293B), height: 20),
+              const Divider(color: AppColors.steel, height: 20),
 
               // ── Filter Body ───────────────────────────────────────────
               ConstrainedBox(
@@ -211,8 +211,8 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
                 child: FilledButton(
                   onPressed: _apply,
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.black,
+                    backgroundColor: AppColors.pureWhite,
+                    foregroundColor: AppColors.onyx,
                     minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -224,7 +224,7 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
                       fontSize: 13.5,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.1,
-                      color: Colors.black,
+                      color: AppColors.onyx,
                     ),
                   ),
                 ),
@@ -245,7 +245,7 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
           fontSize: 11.5,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.0,
-          color: const Color(0xFF94A3B8),
+          color: AppColors.platinum,
         ),
       ),
     );
@@ -269,12 +269,12 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.primary.withValues(alpha: 0.20)
-                  : const Color(0xFF161A23),
+                  ? AppColors.pureWhite
+                  : AppColors.charcoal,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: isSelected ? AppColors.primary : Colors.white.withValues(alpha: 0.12),
-                width: isSelected ? 1.5 : 1.0,
+                color: isSelected ? AppColors.pureWhite : AppColors.steel,
+                width: 1.0,
               ),
             ),
             child: Text(
@@ -282,7 +282,7 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
               style: AppTypography.labelSmall.copyWith(
                 fontSize: 12.0,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? AppColors.primary : const Color(0xFFE2E8F0),
+                color: isSelected ? AppColors.onyx : AppColors.platinum,
               ),
             ),
           ),

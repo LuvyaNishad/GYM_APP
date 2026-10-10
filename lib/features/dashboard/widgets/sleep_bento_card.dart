@@ -26,9 +26,8 @@ class SleepBentoCard extends StatelessWidget {
   /// Optional tap handler.
   final VoidCallback? onTap;
 
-  static const Color _cardBg = Color(0xFF161A23);
-  static const Color _sleepAccent = Color(0xFFCBD5E1); // Luminous silver-slate
-  static const Color _sleepBg = Color(0xFF334155);
+  static const Color _cardBg = AppColors.charcoal;
+  static const Color _sleepBg = AppColors.steel;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +41,7 @@ class SleepBentoCard extends StatelessWidget {
         color: _cardBg,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: AppColors.steel.withValues(alpha: 0.5),
           width: 1.0,
         ),
       ),
@@ -63,17 +62,17 @@ class SleepBentoCard extends StatelessWidget {
                     width: 22,
                     height: 22,
                     decoration: BoxDecoration(
-                      color: _sleepBg.withValues(alpha: 0.35),
+                      color: _sleepBg.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(7),
                       border: Border.all(
-                        color: _sleepAccent.withValues(alpha: 0.35),
+                        color: AppColors.steel,
                         width: 1,
                       ),
                     ),
                     child: const Center(
                       child: Icon(
                         Icons.bedtime_rounded,
-                        color: _sleepAccent,
+                        color: AppColors.pureWhite,
                         size: 13,
                       ),
                     ),
@@ -104,7 +103,7 @@ class SleepBentoCard extends StatelessWidget {
                       fontFamily: 'JetBrains Mono',
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
-                      color: Colors.white,
+                      color: AppColors.pureWhite,
                       height: 1.0,
                     ),
                   ),
@@ -115,7 +114,7 @@ class SleepBentoCard extends StatelessWidget {
                       fontFamily: AppTypography.fontBody,
                       fontSize: 11.0,
                       fontWeight: FontWeight.w600,
-                      color: _sleepAccent,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -132,8 +131,8 @@ class SleepBentoCard extends StatelessWidget {
               height: 5,
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: Colors.white.withValues(alpha: 0.08),
-                valueColor: const AlwaysStoppedAnimation<Color>(_sleepAccent),
+                backgroundColor: AppColors.steel,
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.pureWhite),
               ),
             ),
           ),
@@ -160,7 +159,7 @@ class SleepBentoCard extends StatelessWidget {
                   fontFamily: 'JetBrains Mono',
                   fontSize: 11.0,
                   fontWeight: FontWeight.w700,
-                  color: _sleepAccent,
+                  color: AppColors.pureWhite,
                 ),
               ),
             ],

@@ -58,12 +58,12 @@ class ExerciseFilterBar extends ConsumerWidget {
             },
           ),
 
-          // ── Vertical Subtle Glass Divider ──────────────────────────────
+          // ── Vertical Subtle Divider ────────────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             child: Container(
               width: 1,
-              color: Colors.white.withValues(alpha: 0.15),
+              color: AppColors.steel,
             ),
           ),
 
@@ -128,14 +128,14 @@ class _MasterFilterButton extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: hasActive
-                  ? AppColors.primary.withValues(alpha: 0.15)
-                  : const Color(0xFF161A23),
+                  ? AppColors.pureWhite
+                  : AppColors.charcoal,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: hasActive
-                    ? AppColors.primary
-                    : Colors.white.withValues(alpha: 0.14),
-                width: hasActive ? 1.5 : 1.0,
+                    ? AppColors.pureWhite
+                    : AppColors.steel,
+                width: 1.0,
               ),
             ),
             child: Row(
@@ -144,7 +144,7 @@ class _MasterFilterButton extends StatelessWidget {
                 Icon(
                   Icons.tune_rounded,
                   size: 16,
-                  color: hasActive ? AppColors.primary : Colors.white,
+                  color: hasActive ? AppColors.onyx : AppColors.pureWhite,
                 ),
                 const SizedBox(width: 6),
                 Text(
@@ -153,14 +153,14 @@ class _MasterFilterButton extends StatelessWidget {
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.5,
-                    color: hasActive ? AppColors.primary : Colors.white,
+                    color: hasActive ? AppColors.onyx : AppColors.pureWhite,
                   ),
                 ),
                 const SizedBox(width: 4),
                 Icon(
                   Icons.keyboard_arrow_down_rounded,
                   size: 16,
-                  color: hasActive ? AppColors.primary : const Color(0xFF94A3B8),
+                  color: hasActive ? AppColors.onyx : AppColors.platinum,
                 ),
               ],
             ),
@@ -200,14 +200,14 @@ class _FilterChip extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.primary.withValues(alpha: 0.18)
-                    : const Color(0xFF161A23),
+                    ? AppColors.pureWhite
+                    : AppColors.charcoal,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: isSelected
-                      ? AppColors.primary
-                      : Colors.white.withValues(alpha: 0.12),
-                  width: isSelected ? 1.5 : 1.0,
+                      ? AppColors.pureWhite
+                      : AppColors.steel,
+                  width: 1.0,
                 ),
               ),
               child: Center(
@@ -217,7 +217,7 @@ class _FilterChip extends StatelessWidget {
                     fontSize: 12.0,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     letterSpacing: 0.4,
-                    color: isSelected ? AppColors.primary : const Color(0xFFE2E8F0),
+                    color: isSelected ? AppColors.onyx : AppColors.platinum,
                   ),
                 ),
               ),

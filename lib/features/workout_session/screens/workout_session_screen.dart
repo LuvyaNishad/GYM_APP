@@ -42,18 +42,18 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF141722),
+        backgroundColor: AppColors.onyx,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+          side: const BorderSide(color: AppColors.steel),
         ),
         title: Text(
           'Cancel Workout?',
-          style: AppTypography.headlineSmall.copyWith(color: Colors.white),
+          style: AppTypography.headlineSmall.copyWith(color: AppColors.pureWhite),
         ),
         content: Text(
           'All sets logged in this workout session will be discarded.',
-          style: AppTypography.bodyMedium.copyWith(color: const Color(0xFF94A3B8)),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.platinum),
         ),
         actions: [
           TextButton(
@@ -61,7 +61,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
             child: Text(
               'KEEP GOING',
               style: AppTypography.labelSmall.copyWith(
-                color: AppColors.primary,
+                color: AppColors.platinum,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -74,12 +74,12 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.danger,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.pureWhite,
             ),
             child: Text(
               'DISCARD',
               style: AppTypography.labelSmall.copyWith(
-                color: Colors.white,
+                color: AppColors.pureWhite,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -141,19 +141,19 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                           ),
                         );
                       },
-                      icon: const Icon(Icons.add, size: 16, color: Colors.black),
+                      icon: const Icon(Icons.add, size: 16, color: AppColors.onPrimary),
                       label: Text(
                         '+ ADD EXERCISE',
                         style: AppTypography.monoSmall.copyWith(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w800,
-                          color: Colors.black,
+                          color: AppColors.onPrimary,
                           letterSpacing: 0.8,
                         ),
                       ),
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.black,
+                        foregroundColor: AppColors.onPrimary,
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         minimumSize: const Size(0, 38),
                         shape: RoundedRectangleBorder(
@@ -165,21 +165,21 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
+                        color: AppColors.charcoal,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.08),
+                          color: AppColors.steel,
                         ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.touch_app_outlined, size: 14, color: Color(0xFF94A3B8)),
+                          const Icon(Icons.touch_app_outlined, size: 14, color: AppColors.platinum),
                           const SizedBox(width: 4),
                           Text(
                             'Hold ≡ to reorder',
                             style: AppTypography.monoSmall.copyWith(
                               fontSize: 11.0,
-                              color: const Color(0xFF94A3B8),
+                              color: AppColors.platinum,
                             ),
                           ),
                         ],
@@ -196,7 +196,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                         child: Text(
                           'No exercises in workout.\nTap "+ ADD EXERCISE" above.',
                           style: AppTypography.bodyMedium.copyWith(
-                            color: const Color(0xFF94A3B8),
+                            color: AppColors.platinum,
                           ),
                           textAlign: TextAlign.center,
                         ),

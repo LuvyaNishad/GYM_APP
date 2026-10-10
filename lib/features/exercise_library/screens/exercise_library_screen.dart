@@ -55,14 +55,14 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
     final notifier = ref.read(exerciseLibraryProvider.notifier);
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.onyx,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: AppColors.onyx,
         elevation: 0,
         centerTitle: false,
         leading: Navigator.canPop(context)
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Colors.white),
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppColors.pureWhite),
                 onPressed: () => Navigator.of(context).pop(),
               )
             : null,
@@ -72,7 +72,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
             fontSize: 16.5,
             fontWeight: FontWeight.w800,
             letterSpacing: 1.1,
-            color: Colors.white,
+            color: AppColors.pureWhite,
           ),
         ),
         actions: [
@@ -87,23 +87,23 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                   ),
                 );
               },
-              icon: const Icon(Icons.add_rounded, size: 16, color: AppColors.primary),
+              icon: const Icon(Icons.add_rounded, size: 16, color: AppColors.pureWhite),
               label: Text(
                 'CUSTOM',
                 style: AppTypography.labelSmall.copyWith(
                   fontSize: 12.0,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.8,
-                  color: AppColors.primary,
+                  color: AppColors.pureWhite,
                 ),
               ),
               style: TextButton.styleFrom(
-                backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                backgroundColor: AppColors.charcoal,
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
-                  side: BorderSide(
-                    color: AppColors.primary.withValues(alpha: 0.35),
+                  side: const BorderSide(
+                    color: AppColors.steel,
                     width: 1.0,
                   ),
                 ),
@@ -120,27 +120,27 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF141722),
+                  color: AppColors.charcoal,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.10),
+                    color: AppColors.steel,
                     width: 1.0,
                   ),
                 ),
                 child: TextField(
                   controller: _searchController,
                   onChanged: notifier.setSearchQuery,
-                  style: AppTypography.bodyMedium.copyWith(color: Colors.white, fontSize: 14),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.pureWhite, fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Search 156 exercises, muscles, equipment...',
                     hintStyle: AppTypography.bodySmall.copyWith(
-                      color: const Color(0xFF64748B),
+                      color: AppColors.textMuted,
                       fontSize: 13,
                     ),
-                    prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 20),
+                    prefixIcon: const Icon(Icons.search_rounded, color: AppColors.platinum, size: 20),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear_rounded, color: Color(0xFF94A3B8), size: 18),
+                            icon: const Icon(Icons.clear_rounded, color: AppColors.platinum, size: 18),
                             onPressed: () {
                               _searchController.clear();
                               notifier.setSearchQuery('');
@@ -171,7 +171,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.8,
-                      color: const Color(0xFF94A3B8),
+                      color: AppColors.platinum,
                     ),
                   ),
                   if (state.filter.hasActiveFilters)
@@ -189,7 +189,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                             fontSize: 11.0,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 0.8,
-                            color: AppColors.amber,
+                            color: AppColors.pureWhite,
                           ),
                         ),
                       ),
@@ -202,7 +202,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
             Expanded(
               child: state.isLoading
                   ? const Center(
-                      child: CircularProgressIndicator(color: AppColors.primary),
+                      child: CircularProgressIndicator(color: AppColors.pureWhite),
                     )
                   : state.filteredExercises.isEmpty
                       ? _buildEmptyState(notifier)
@@ -235,17 +235,17 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF141722),
+                color: AppColors.charcoal,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.08),
+                  color: AppColors.steel,
                   width: 1.0,
                 ),
               ),
               child: const Icon(
                 Icons.search_off_rounded,
                 size: 36,
-                color: Color(0xFF64748B),
+                color: AppColors.platinum,
               ),
             ),
             const SizedBox(height: 16),
@@ -254,7 +254,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
               style: AppTypography.headlineMedium.copyWith(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: Colors.white,
+                color: AppColors.pureWhite,
               ),
             ),
             const SizedBox(height: 6),
@@ -263,7 +263,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
               textAlign: TextAlign.center,
               style: AppTypography.bodySmall.copyWith(
                 fontSize: 12.5,
-                color: const Color(0xFF94A3B8),
+                color: AppColors.platinum,
               ),
             ),
             const SizedBox(height: 18),
@@ -273,8 +273,8 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                 notifier.clearAll();
               },
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.black,
+                backgroundColor: AppColors.pureWhite,
+                foregroundColor: AppColors.onyx,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -286,7 +286,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                   fontSize: 12.0,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.8,
-                  color: Colors.black,
+                  color: AppColors.onyx,
                 ),
               ),
             ),

@@ -55,10 +55,10 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
             filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF0F1219).withValues(alpha: 0.96),
+                color: AppColors.onyx.withValues(alpha: 0.96),
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.12),
+                  color: AppColors.steel,
                   width: 1.0,
                 ),
               ),
@@ -72,7 +72,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                       width: 44,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF475569),
+                        color: AppColors.steel,
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
@@ -93,7 +93,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                                 fontSize: 20,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 0.4,
-                                color: Colors.white,
+                                color: AppColors.pureWhite,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -101,10 +101,10 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                               spacing: 6,
                               runSpacing: 4,
                               children: [
-                                _buildBadge(_currentExercise.category.toUpperCase(), AppColors.primary, true),
-                                _buildBadge(_currentExercise.movementPatternDisplay.toUpperCase(), const Color(0xFFCBD5E1), false),
-                                _buildBadge(_currentExercise.exerciseType.toUpperCase(), const Color(0xFF94A3B8), false),
-                                _buildBadge(_currentExercise.difficultyDisplay.toUpperCase(), AppColors.amber, false),
+                                _buildBadge(_currentExercise.category.toUpperCase(), AppColors.pureWhite, true),
+                                _buildBadge(_currentExercise.movementPatternDisplay.toUpperCase(), AppColors.platinum, false),
+                                _buildBadge(_currentExercise.exerciseType.toUpperCase(), AppColors.platinum, false),
+                                _buildBadge(_currentExercise.difficultyDisplay.toUpperCase(), AppColors.platinum, false),
                               ],
                             ),
                           ],
@@ -112,7 +112,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                       ),
                       IconButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                        icon: const Icon(Icons.close_rounded, color: AppColors.platinum),
                         iconSize: 22,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
@@ -129,7 +129,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                         child: _buildInfoCard(
                           title: 'PRIMARY MUSCLE',
                           content: _currentExercise.primaryMusclesDisplay,
-                          highlightColor: AppColors.primary,
+                          highlightColor: AppColors.pureWhite,
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -137,7 +137,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                         child: _buildInfoCard(
                           title: 'EQUIPMENT',
                           content: _currentExercise.equipmentDisplay,
-                          highlightColor: const Color(0xFFCBD5E1),
+                          highlightColor: AppColors.platinum,
                         ),
                       ),
                     ],
@@ -150,7 +150,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                     _buildInfoCard(
                       title: 'SECONDARY & STABILIZERS',
                       content: _currentExercise.secondaryMusclesDisplay,
-                      highlightColor: const Color(0xFF94A3B8),
+                      highlightColor: AppColors.platinum,
                     ),
 
                   const SizedBox(height: 16),
@@ -161,19 +161,19 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                       Navigator.of(context).pop();
                       widget.onAddToWorkout(_currentExercise);
                     },
-                    icon: const Icon(Icons.add_rounded, size: 20),
+                    icon: const Icon(Icons.add_rounded, size: 20, color: AppColors.onyx),
                     label: Text(
                       'ADD TO WORKOUT',
                       style: AppTypography.labelSmall.copyWith(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1.0,
-                        color: Colors.black,
+                        color: AppColors.onyx,
                       ),
                     ),
                     style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.black,
+                      backgroundColor: AppColors.pureWhite,
+                      foregroundColor: AppColors.onyx,
                       minimumSize: const Size(double.infinity, 48),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -182,7 +182,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                   ),
 
                   const SizedBox(height: 20),
-                  const Divider(color: Color(0xFF1E293B), height: 1),
+                  const Divider(color: AppColors.steel, height: 1),
                   const SizedBox(height: 16),
 
                   // ── Personal Performance / History Snapshot ────────────
@@ -204,10 +204,10 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                             height: 22,
                             margin: const EdgeInsets.only(right: 10, top: 1),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.15),
+                              color: AppColors.steel,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: AppColors.primary.withValues(alpha: 0.35),
+                                color: AppColors.steel,
                                 width: 1,
                               ),
                             ),
@@ -217,7 +217,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                               style: AppTypography.monoSmall.copyWith(
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
+                                color: AppColors.pureWhite,
                               ),
                             ),
                           ),
@@ -227,7 +227,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                               style: AppTypography.bodySmall.copyWith(
                                 fontSize: 13.0,
                                 height: 1.4,
-                                color: const Color(0xFFE2E8F0),
+                                color: AppColors.pureWhite,
                               ),
                             ),
                           ),
@@ -245,10 +245,10 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF141722),
+                        color: AppColors.charcoal,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: AppColors.amber.withValues(alpha: 0.25),
+                          color: AppColors.steel,
                           width: 1.0,
                         ),
                       ),
@@ -258,7 +258,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                           const Icon(
                             Icons.lightbulb_outline_rounded,
                             size: 18,
-                            color: AppColors.amber,
+                            color: AppColors.platinum,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -267,7 +267,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                               style: AppTypography.bodySmall.copyWith(
                                 fontSize: 12.5,
                                 height: 1.4,
-                                color: const Color(0xFFCBD5E1),
+                                color: AppColors.platinum,
                               ),
                             ),
                           ),
@@ -290,10 +290,10 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF161A23),
+                              color: AppColors.charcoal,
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.08),
+                                color: AppColors.steel,
                                 width: 1.0,
                               ),
                             ),
@@ -302,7 +302,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                                 const Icon(
                                   Icons.swap_horiz_rounded,
                                   size: 18,
-                                  color: AppColors.primary,
+                                  color: AppColors.pureWhite,
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
@@ -314,14 +314,14 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                                         style: AppTypography.bodyMedium.copyWith(
                                           fontSize: 13.5,
                                           fontWeight: FontWeight.w700,
-                                          color: Colors.white,
+                                          color: AppColors.pureWhite,
                                         ),
                                       ),
                                       Text(
                                         '${alt.primaryEquipment.toUpperCase()} · ${alt.primaryMusclesDisplay}',
                                         style: AppTypography.monoSmall.copyWith(
                                           fontSize: 11.0,
-                                          color: const Color(0xFF94A3B8),
+                                          color: AppColors.platinum,
                                         ),
                                       ),
                                     ],
@@ -330,7 +330,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                                 const Icon(
                                   Icons.chevron_right_rounded,
                                   size: 18,
-                                  color: Color(0xFF64748B),
+                                  color: AppColors.platinum,
                                 ),
                               ],
                             ),
@@ -356,7 +356,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
         fontSize: 11.5,
         fontWeight: FontWeight.w700,
         letterSpacing: 1.0,
-        color: const Color(0xFF94A3B8),
+        color: AppColors.platinum,
       ),
     );
   }
@@ -365,10 +365,10 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: isFilled ? color.withValues(alpha: 0.15) : const Color(0xFF1E2433),
+        color: isFilled ? AppColors.steel : AppColors.onyx,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(
-          color: color.withValues(alpha: 0.35),
+          color: AppColors.steel,
           width: 0.8,
         ),
       ),
@@ -378,7 +378,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
           fontSize: 11.0,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.4,
-          color: color,
+          color: isFilled ? AppColors.pureWhite : AppColors.platinum,
         ),
       ),
     );
@@ -392,10 +392,10 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF141722),
+        color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: AppColors.steel,
           width: 1.0,
         ),
       ),
@@ -408,7 +408,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
               fontSize: 11.0,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.6,
-              color: const Color(0xFF94A3B8),
+              color: AppColors.platinum,
             ),
           ),
           const SizedBox(height: 4),
@@ -431,10 +431,10 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF161A23),
+        color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.20),
+          color: AppColors.steel,
           width: 1.0,
         ),
       ),
@@ -442,14 +442,14 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
+            decoration: const BoxDecoration(
+              color: AppColors.steel,
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.emoji_events_outlined,
               size: 20,
-              color: AppColors.primary,
+              color: AppColors.pureWhite,
             ),
           ),
           const SizedBox(width: 12),
@@ -463,7 +463,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                     fontSize: 11.0,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.6,
-                    color: AppColors.primary,
+                    color: AppColors.platinum,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -472,7 +472,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                   style: AppTypography.bodySmall.copyWith(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: AppColors.pureWhite,
                   ),
                 ),
               ],

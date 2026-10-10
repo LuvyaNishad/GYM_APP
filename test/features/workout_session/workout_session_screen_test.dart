@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:leon/features/workout_session/screens/workout_session_screen.dart';
+import 'package:leon/features/workout_session/providers/active_session_provider.dart';
 import 'package:leon/features/workout_session/widgets/active_session_header.dart';
 import 'package:leon/features/workout_session/widgets/exercise_sequence_card.dart';
 import 'package:leon/features/workout_session/widgets/floating_rest_timer_bar.dart';
@@ -13,14 +14,18 @@ void main() {
     testWidgets('renders active header, sequence list cards, and floating rest bar', (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
+      final container = ProviderContainer();
       addTearDown(() {
+        container.read(activeSessionProvider.notifier).cancelSession();
+        container.dispose();
         tester.view.resetPhysicalSize();
         tester.view.resetDevicePixelRatio();
       });
 
       await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
             home: WorkoutSessionScreen(),
           ),
         ),
@@ -49,6 +54,10 @@ void main() {
 
       // Top action button + ADD EXERCISE should be present
       expect(find.text('+ ADD EXERCISE'), findsOneWidget);
+
+      // Cancel session ticker so no timers remain pending
+      container.read(activeSessionProvider.notifier).cancelSession();
+      await tester.pump();
     });
   });
 }

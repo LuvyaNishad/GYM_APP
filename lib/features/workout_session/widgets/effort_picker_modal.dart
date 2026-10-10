@@ -47,8 +47,9 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
       decoration: const BoxDecoration(
-        color: Color(0xFF141722),
+        color: AppColors.onyx,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(top: BorderSide(color: AppColors.steel)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -60,7 +61,7 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.20),
+                color: AppColors.steel,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -77,11 +78,11 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.0,
-                  color: Colors.white,
+                  color: AppColors.pureWhite,
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close, color: Color(0xFF94A3B8), size: 20),
+                icon: const Icon(Icons.close, color: AppColors.platinum, size: 20),
                 onPressed: () => Navigator.of(context).maybePop(),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
@@ -94,10 +95,10 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.04),
+              color: AppColors.charcoal,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.08),
+                color: AppColors.steel,
               ),
             ),
             child: Row(
@@ -110,7 +111,7 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
                       style: AppTypography.monoMedium.copyWith(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
-                        color: _currentRir <= 0.5 ? AppColors.warning : AppColors.primary,
+                        color: AppColors.pureWhite,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -118,7 +119,7 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
                       'Reps In Reserve',
                       style: AppTypography.labelSmall.copyWith(
                         fontSize: 11.0,
-                        color: const Color(0xFF94A3B8),
+                        color: AppColors.platinum,
                       ),
                     ),
                   ],
@@ -126,7 +127,7 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
                 Container(
                   width: 1,
                   height: 40,
-                  color: Colors.white.withValues(alpha: 0.12),
+                  color: AppColors.steel,
                 ),
                 Column(
                   children: [
@@ -135,7 +136,7 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
                       style: AppTypography.monoMedium.copyWith(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
-                        color: Colors.white,
+                        color: AppColors.pureWhite,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -143,7 +144,7 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
                       'Perceived Exertion',
                       style: AppTypography.labelSmall.copyWith(
                         fontSize: 11.0,
-                        color: const Color(0xFF94A3B8),
+                        color: AppColors.platinum,
                       ),
                     ),
                   ],
@@ -198,7 +199,7 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
                 style: AppTypography.bodySmall.copyWith(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF94A3B8),
+                  color: AppColors.platinum,
                 ),
               ),
               const SizedBox(width: 20),
@@ -219,7 +220,7 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.black,
+              foregroundColor: AppColors.onPrimary,
               minimumSize: const Size.fromHeight(48),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -231,7 +232,7 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
                 fontSize: 13,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1.2,
-                color: Colors.black,
+                color: AppColors.onPrimary,
               ),
             ),
           ),
@@ -246,7 +247,6 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
     bool isWarning = false,
   }) {
     final isSelected = (_currentRir - rir).abs() < 0.25;
-    final color = isWarning ? AppColors.warning : AppColors.primary;
 
     return InkWell(
       onTap: () => _updateFromRir(rir),
@@ -255,11 +255,11 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? color.withValues(alpha: 0.18)
-              : Colors.white.withValues(alpha: 0.05),
+              ? AppColors.pureWhite
+              : AppColors.charcoal,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? color : Colors.white.withValues(alpha: 0.12),
+            color: isSelected ? AppColors.pureWhite : AppColors.steel,
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
@@ -268,7 +268,7 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
           style: AppTypography.monoSmall.copyWith(
             fontSize: 11.5,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected ? (isWarning ? AppColors.warning : Colors.white) : const Color(0xFF94A3B8),
+            color: isSelected ? AppColors.onPrimary : AppColors.platinum,
           ),
         ),
       ),
@@ -284,14 +284,14 @@ class _EffortPickerModalState extends State<EffortPickerModal> {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.08),
+        color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.15),
+          color: AppColors.steel,
         ),
       ),
       child: IconButton(
-        icon: Icon(icon, color: Colors.white, size: 20),
+        icon: Icon(icon, color: AppColors.pureWhite, size: 20),
         onPressed: onPressed,
         tooltip: tooltip,
       ),

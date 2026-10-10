@@ -99,8 +99,9 @@ class _ExercisePickerModalState extends State<ExercisePickerModal> {
       height: MediaQuery.of(context).size.height * 0.85,
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       decoration: const BoxDecoration(
-        color: Color(0xFF141722),
+        color: AppColors.onyx,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(top: BorderSide(color: AppColors.steel)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -111,7 +112,7 @@ class _ExercisePickerModalState extends State<ExercisePickerModal> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.20),
+                color: AppColors.steel,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -128,11 +129,11 @@ class _ExercisePickerModalState extends State<ExercisePickerModal> {
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.0,
-                  color: Colors.white,
+                  color: AppColors.pureWhite,
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close, color: Color(0xFF94A3B8), size: 20),
+                icon: const Icon(Icons.close, color: AppColors.platinum, size: 20),
                 onPressed: () => Navigator.of(context).pop(),
                 constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
                 padding: EdgeInsets.zero,
@@ -147,22 +148,22 @@ class _ExercisePickerModalState extends State<ExercisePickerModal> {
             style: const TextStyle(color: Colors.white, fontSize: 14),
             decoration: InputDecoration(
               hintText: 'Search exercise or muscle...',
-              hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-              prefixIcon: const Icon(Icons.search, color: Color(0xFF94A3B8), size: 20),
+              hintStyle: const TextStyle(color: AppColors.platinum, fontSize: 13),
+              prefixIcon: const Icon(Icons.search, color: AppColors.platinum, size: 20),
               filled: true,
-              fillColor: Colors.white.withValues(alpha: 0.05),
+              fillColor: AppColors.charcoal,
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.10)),
+                borderSide: const BorderSide(color: AppColors.steel),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.10)),
+                borderSide: const BorderSide(color: AppColors.steel),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.primary),
+                borderSide: const BorderSide(color: AppColors.pureWhite),
               ),
             ),
           ),
@@ -185,14 +186,14 @@ class _ExercisePickerModalState extends State<ExercisePickerModal> {
                       labelStyle: AppTypography.monoSmall.copyWith(
                         fontSize: 11.0,
                         fontWeight: FontWeight.w700,
-                        color: _selectedCategory == cat ? Colors.black : Colors.white,
+                        color: _selectedCategory == cat ? AppColors.onPrimary : AppColors.platinum,
                       ),
-                      selectedColor: AppColors.primary,
-                      backgroundColor: Colors.white.withValues(alpha: 0.06),
+                      selectedColor: AppColors.pureWhite,
+                      backgroundColor: AppColors.charcoal,
                       side: BorderSide(
                         color: _selectedCategory == cat
-                            ? AppColors.primary
-                            : Colors.white.withValues(alpha: 0.12),
+                            ? AppColors.pureWhite
+                            : AppColors.steel,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -208,9 +209,9 @@ class _ExercisePickerModalState extends State<ExercisePickerModal> {
           Expanded(
             child: ListView.separated(
               itemCount: filtered.length,
-              separatorBuilder: (context, index) => Divider(
+              separatorBuilder: (context, index) => const Divider(
                 height: 1,
-                color: Colors.white.withValues(alpha: 0.05),
+                color: AppColors.steel,
               ),
               itemBuilder: (context, index) {
                 final template = filtered[index];
@@ -220,7 +221,7 @@ class _ExercisePickerModalState extends State<ExercisePickerModal> {
                     template.name,
                     style: AppTypography.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.pureWhite,
                     ),
                   ),
                   subtitle: Row(
@@ -229,7 +230,7 @@ class _ExercisePickerModalState extends State<ExercisePickerModal> {
                         template.muscleGroup,
                         style: AppTypography.labelSmall.copyWith(
                           fontSize: 11.0,
-                          color: AppColors.primary,
+                          color: AppColors.pureWhite,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -237,14 +238,14 @@ class _ExercisePickerModalState extends State<ExercisePickerModal> {
                         '· ${template.equipment}',
                         style: AppTypography.labelSmall.copyWith(
                           fontSize: 11.0,
-                          color: const Color(0xFF94A3B8),
+                          color: AppColors.platinum,
                         ),
                       ),
                     ],
                   ),
                   trailing: const Icon(
                     Icons.add_circle_outline,
-                    color: AppColors.primary,
+                    color: AppColors.pureWhite,
                     size: 22,
                   ),
                   onTap: () {

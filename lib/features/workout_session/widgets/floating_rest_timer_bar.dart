@@ -22,7 +22,7 @@ class FloatingRestTimerBar extends ConsumerWidget {
     final notifier = ref.read(restTimerProvider.notifier);
 
     final isLowTime = restState.remainingSeconds <= 15 && restState.remainingSeconds > 0;
-    final accentColor = isLowTime ? AppColors.warning : AppColors.primary;
+    const accentColor = AppColors.pureWhite;
 
     if (!restState.isRunning && restState.remainingSeconds == 0) {
       // Inactive / Idle Rest Bar: compact affordance to trigger rest manually
@@ -36,10 +36,10 @@ class FloatingRestTimerBar extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: const Color(0xE6141722),
+                  color: AppColors.charcoal.withValues(alpha: 0.95),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.10),
+                    color: AppColors.steel,
                   ),
                 ),
                 child: Row(
@@ -47,7 +47,7 @@ class FloatingRestTimerBar extends ConsumerWidget {
                     const Icon(
                       Icons.timer_outlined,
                       size: 20,
-                      color: Color(0xFF94A3B8),
+                      color: AppColors.platinum,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -55,7 +55,7 @@ class FloatingRestTimerBar extends ConsumerWidget {
                         'Rest Timer · Ready',
                         style: AppTypography.bodySmall.copyWith(
                           fontSize: 12.0,
-                          color: const Color(0xFF94A3B8),
+                          color: AppColors.platinum,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -97,15 +97,15 @@ class FloatingRestTimerBar extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xF210131B),
+                color: AppColors.onyx.withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: accentColor.withValues(alpha: 0.35),
+                  color: AppColors.steel,
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: accentColor.withValues(alpha: 0.12),
+                    color: AppColors.pureWhite.withValues(alpha: 0.08),
                     blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
@@ -126,8 +126,8 @@ class FloatingRestTimerBar extends ConsumerWidget {
                             CircularProgressIndicator(
                               value: restState.progressRatio,
                               strokeWidth: 3.5,
-                              backgroundColor: Colors.white.withValues(alpha: 0.08),
-                              valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+                              backgroundColor: AppColors.steel,
+                              valueColor: const AlwaysStoppedAnimation<Color>(accentColor),
                             ),
                             Icon(
                               restState.isRunning
@@ -166,7 +166,7 @@ class FloatingRestTimerBar extends ConsumerWidget {
                                       vertical: 2,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppColors.warning.withValues(alpha: 0.20),
+                                      color: AppColors.steel,
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
@@ -174,7 +174,7 @@ class FloatingRestTimerBar extends ConsumerWidget {
                                       style: AppTypography.monoSmall.copyWith(
                                         fontSize: 11.0,
                                         fontWeight: FontWeight.bold,
-                                        color: AppColors.warning,
+                                        color: AppColors.pureWhite,
                                       ),
                                     ),
                                   ),
@@ -187,7 +187,7 @@ class FloatingRestTimerBar extends ConsumerWidget {
                                   : 'Inter-set recovery',
                               style: AppTypography.labelSmall.copyWith(
                                 fontSize: 11.0,
-                                color: const Color(0xFF94A3B8),
+                                color: AppColors.platinum,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -240,10 +240,10 @@ class FloatingRestTimerBar extends ConsumerWidget {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.08),
+                            color: AppColors.charcoal,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.12),
+                              color: AppColors.steel,
                             ),
                           ),
                           child: Text(
@@ -252,7 +252,7 @@ class FloatingRestTimerBar extends ConsumerWidget {
                               fontSize: 11.0,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 1.0,
-                              color: Colors.white,
+                              color: AppColors.pureWhite,
                             ),
                           ),
                         ),
@@ -278,10 +278,10 @@ class FloatingRestTimerBar extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.06),
+          color: AppColors.charcoal,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.10),
+            color: AppColors.steel,
           ),
         ),
         child: Text(
@@ -289,7 +289,7 @@ class FloatingRestTimerBar extends ConsumerWidget {
           style: AppTypography.monoSmall.copyWith(
             fontSize: 11.0,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: AppColors.pureWhite,
           ),
         ),
       ),
@@ -308,10 +308,10 @@ class FloatingRestTimerBar extends ConsumerWidget {
         alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.07),
+          color: AppColors.charcoal,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.12),
+            color: AppColors.steel,
           ),
         ),
         child: Text(
@@ -319,7 +319,7 @@ class FloatingRestTimerBar extends ConsumerWidget {
           style: AppTypography.monoSmall.copyWith(
             fontSize: 11.0,
             fontWeight: FontWeight.w700,
-            color: Colors.white,
+            color: AppColors.pureWhite,
           ),
         ),
       ),

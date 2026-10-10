@@ -92,18 +92,18 @@ class _CustomExerciseCreatorScreenState
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: const Color(0xFF141722),
+        backgroundColor: AppColors.charcoal,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: AppColors.primary, width: 1),
+          side: const BorderSide(color: AppColors.steel, width: 1),
         ),
         content: Text(
           'Custom exercise "$name" created successfully!',
           style: AppTypography.bodySmall.copyWith(
             fontSize: 12.5,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: AppColors.pureWhite,
           ),
         ),
       ),
@@ -113,12 +113,12 @@ class _CustomExerciseCreatorScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.onyx,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: AppColors.onyx,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppColors.pureWhite),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -127,7 +127,7 @@ class _CustomExerciseCreatorScreenState
             fontSize: 16,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.8,
-            color: Colors.white,
+            color: AppColors.pureWhite,
           ),
         ),
       ),
@@ -142,7 +142,7 @@ class _CustomExerciseCreatorScreenState
               const SizedBox(height: 6),
               TextFormField(
                 controller: _nameController,
-                style: AppTypography.bodyMedium.copyWith(color: Colors.white),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.pureWhite),
                 decoration: _inputDecoration(hintText: 'e.g. Arsenal Strength Hack Squat'),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
@@ -168,11 +168,11 @@ class _CustomExerciseCreatorScreenState
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.primary.withValues(alpha: 0.18)
-                            : const Color(0xFF141722),
+                            ? AppColors.pureWhite
+                            : AppColors.charcoal,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: isSelected ? AppColors.primary : Colors.white.withValues(alpha: 0.10),
+                          color: isSelected ? AppColors.pureWhite : AppColors.steel,
                           width: 1.0,
                         ),
                       ),
@@ -181,7 +181,7 @@ class _CustomExerciseCreatorScreenState
                         style: AppTypography.labelSmall.copyWith(
                           fontSize: 12.0,
                           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                          color: isSelected ? AppColors.primary : const Color(0xFFCBD5E1),
+                          color: isSelected ? AppColors.onyx : AppColors.platinum,
                         ),
                       ),
                     ),
@@ -195,7 +195,7 @@ class _CustomExerciseCreatorScreenState
               const SizedBox(height: 6),
               TextFormField(
                 controller: _primaryMusclesController,
-                style: AppTypography.bodyMedium.copyWith(color: Colors.white),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.pureWhite),
                 decoration: _inputDecoration(hintText: 'e.g. Quadriceps, Gluteus Maximus'),
               ),
               const SizedBox(height: 18),
@@ -205,10 +205,10 @@ class _CustomExerciseCreatorScreenState
               const SizedBox(height: 6),
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF141722),
+                  color: AppColors.charcoal,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.10),
+                    color: AppColors.steel,
                     width: 1.0,
                   ),
                 ),
@@ -217,8 +217,8 @@ class _CustomExerciseCreatorScreenState
                   child: DropdownButton<String>(
                     value: _equipment,
                     isExpanded: true,
-                    dropdownColor: const Color(0xFF161A23),
-                    icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primary),
+                    dropdownColor: AppColors.charcoal,
+                    icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.platinum),
                     items: _equipmentOptions.map((opt) {
                       return DropdownMenuItem<String>(
                         value: opt,
@@ -227,7 +227,7 @@ class _CustomExerciseCreatorScreenState
                           style: AppTypography.monoSmall.copyWith(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppColors.pureWhite,
                           ),
                         ),
                       );
@@ -256,11 +256,11 @@ class _CustomExerciseCreatorScreenState
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? AppColors.primary.withValues(alpha: 0.18)
-                                : const Color(0xFF141722),
+                                ? AppColors.pureWhite
+                                : AppColors.charcoal,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: isSelected ? AppColors.primary : Colors.white.withValues(alpha: 0.10),
+                              color: isSelected ? AppColors.pureWhite : AppColors.steel,
                               width: 1.0,
                             ),
                           ),
@@ -270,7 +270,7 @@ class _CustomExerciseCreatorScreenState
                               style: AppTypography.monoSmall.copyWith(
                                 fontSize: 12.0,
                                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                color: isSelected ? AppColors.primary : const Color(0xFFCBD5E1),
+                                color: isSelected ? AppColors.onyx : AppColors.platinum,
                               ),
                             ),
                           ),
@@ -298,11 +298,11 @@ class _CustomExerciseCreatorScreenState
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? AppColors.primary.withValues(alpha: 0.18)
-                                : const Color(0xFF141722),
+                                ? AppColors.pureWhite
+                                : AppColors.charcoal,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: isSelected ? AppColors.primary : Colors.white.withValues(alpha: 0.10),
+                              color: isSelected ? AppColors.pureWhite : AppColors.steel,
                               width: 1.0,
                             ),
                           ),
@@ -312,7 +312,7 @@ class _CustomExerciseCreatorScreenState
                               style: AppTypography.monoSmall.copyWith(
                                 fontSize: 12.0,
                                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                color: isSelected ? AppColors.primary : const Color(0xFFCBD5E1),
+                                color: isSelected ? AppColors.onyx : AppColors.platinum,
                               ),
                             ),
                           ),
@@ -330,7 +330,7 @@ class _CustomExerciseCreatorScreenState
               TextFormField(
                 controller: _cuesController,
                 maxLines: 3,
-                style: AppTypography.bodySmall.copyWith(color: Colors.white, fontSize: 13),
+                style: AppTypography.bodySmall.copyWith(color: AppColors.pureWhite, fontSize: 13),
                 decoration: _inputDecoration(hintText: 'e.g. Feet shoulder width, drive through heels, full depth.'),
               ),
               const SizedBox(height: 30),
@@ -339,8 +339,8 @@ class _CustomExerciseCreatorScreenState
               FilledButton(
                 onPressed: _saveExercise,
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.black,
+                  backgroundColor: AppColors.pureWhite,
+                  foregroundColor: AppColors.onyx,
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -352,7 +352,7 @@ class _CustomExerciseCreatorScreenState
                     fontSize: 13.5,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.1,
-                    color: Colors.black,
+                    color: AppColors.onyx,
                   ),
                 ),
               ),
@@ -370,7 +370,7 @@ class _CustomExerciseCreatorScreenState
         fontSize: 11.5,
         fontWeight: FontWeight.w700,
         letterSpacing: 0.8,
-        color: const Color(0xFF94A3B8),
+        color: AppColors.platinum,
       ),
     );
   }
@@ -380,22 +380,22 @@ class _CustomExerciseCreatorScreenState
       hintText: hintText,
       hintStyle: AppTypography.bodySmall.copyWith(
         fontSize: 12.5,
-        color: const Color(0xFF64748B),
+        color: AppColors.textMuted,
       ),
       filled: true,
-      fillColor: const Color(0xFF141722),
+      fillColor: AppColors.charcoal,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.10)),
+        borderSide: const BorderSide(color: AppColors.steel),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.10)),
+        borderSide: const BorderSide(color: AppColors.steel),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        borderSide: const BorderSide(color: AppColors.pureWhite, width: 1.5),
       ),
     );
   }

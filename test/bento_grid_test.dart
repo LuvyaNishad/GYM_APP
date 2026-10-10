@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:leon/core/theme/app_colors.dart';
 import 'package:leon/core/theme/app_theme.dart';
 import 'package:leon/features/dashboard/models/daily_telemetry_model.dart';
 import 'package:leon/features/dashboard/widgets/calories_bento_card.dart';
@@ -74,15 +75,15 @@ void main() {
         final dec = c.decoration;
         return dec is BoxDecoration &&
             dec.shape == BoxShape.circle &&
-            (dec.color == const Color(0xFFFFB300) ||
-                dec.color == const Color(0xFF00E676));
+            (dec.color == AppColors.pureWhite ||
+                dec.color == AppColors.platinum);
       }).toList();
 
-      // Today has the golden yellow circle badge
-      final amberBadges = circleContainers.where(
-        (c) => (c.decoration as BoxDecoration).color == const Color(0xFFFFB300),
+      // Today has the pure white circle badge
+      final todayBadges = circleContainers.where(
+        (c) => (c.decoration as BoxDecoration).color == AppColors.pureWhite,
       );
-      expect(amberBadges, isNotEmpty);
+      expect(todayBadges, isNotEmpty);
     });
 
     testWidgets('GymContributionChart renders heatmap and day labels',

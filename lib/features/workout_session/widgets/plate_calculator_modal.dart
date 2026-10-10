@@ -33,13 +33,13 @@ Map<double, int> calculatePlatesPerSide({
 }
 
 Color getPlateColor(double plateKg) {
-  if (plateKg >= 25.0) return const Color(0xFFEF4444); // Red
-  if (plateKg >= 20.0) return const Color(0xFF3B82F6); // Blue
-  if (plateKg >= 15.0) return const Color(0xFFEAB308); // Yellow
-  if (plateKg >= 10.0) return const Color(0xFF22C55E); // Green
-  if (plateKg >= 5.0) return const Color(0xFFF8FAFC); // White
-  if (plateKg >= 2.5) return const Color(0xFF64748B); // Slate
-  return const Color(0xFFCBD5E1); // Silver
+  if (plateKg >= 25.0) return AppColors.pureWhite;
+  if (plateKg >= 20.0) return AppColors.platinum;
+  if (plateKg >= 15.0) return const Color(0xFF9CA3AF);
+  if (plateKg >= 10.0) return AppColors.steel;
+  if (plateKg >= 5.0) return const Color(0xFF4B5563);
+  if (plateKg >= 2.5) return const Color(0xFF374151);
+  return AppColors.platinum;
 }
 
 /// Interactive Barbell Plate Calculator modal.
@@ -86,8 +86,9 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
       decoration: const BoxDecoration(
-        color: Color(0xFF141722),
+        color: AppColors.onyx,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(top: BorderSide(color: AppColors.steel)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -99,7 +100,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.20),
+                color: AppColors.steel,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -116,11 +117,11 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.0,
-                  color: Colors.white,
+                  color: AppColors.pureWhite,
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close, color: Color(0xFF94A3B8), size: 20),
+                icon: const Icon(Icons.close, color: AppColors.platinum, size: 20),
                 onPressed: () => Navigator.of(context).maybePop(),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
@@ -133,10 +134,10 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.04),
+              color: AppColors.charcoal,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.08),
+                color: AppColors.steel,
               ),
             ),
             child: Column(
@@ -146,7 +147,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
                   style: AppTypography.monoLarge.copyWith(
                     fontSize: 28,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
+                    color: AppColors.pureWhite,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -154,7 +155,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
                   '${perSideWeight.toStringAsFixed(1)} KG PER SIDE (+ ${_barWeightKg.toInt()} KG BAR)',
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 11.5,
-                    color: const Color(0xFF94A3B8),
+                    color: AppColors.platinum,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -168,9 +169,9 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
             height: 90,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.3),
+              color: AppColors.charcoal,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+              border: Border.all(color: AppColors.steel),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -180,7 +181,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
                   width: 32,
                   height: 14,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF64748B),
+                    color: AppColors.steel,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -189,7 +190,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
                   width: 8,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF94A3B8),
+                    color: AppColors.platinum,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -202,7 +203,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
                       'Empty Bar',
                       style: AppTypography.labelSmall.copyWith(
                         fontSize: 12,
-                        color: const Color(0xFF94A3B8),
+                        color: AppColors.platinum,
                       ),
                     ),
                   )
@@ -246,7 +247,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
                   width: 24,
                   height: 12,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF475569),
+                    color: AppColors.steel,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -261,7 +262,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
               'PLATES NEEDED PER SIDE:',
               style: AppTypography.monoSmall.copyWith(
                 fontSize: 11.0,
-                color: const Color(0xFF94A3B8),
+                color: AppColors.platinum,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.8,
               ),
@@ -275,10 +276,10 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: getPlateColor(entry.key).withValues(alpha: 0.20),
+                      color: AppColors.charcoal,
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(
-                        color: getPlateColor(entry.key),
+                        color: AppColors.steel,
                       ),
                     ),
                     child: Text(
@@ -286,7 +287,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
                       style: AppTypography.monoSmall.copyWith(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: AppColors.pureWhite,
                       ),
                     ),
                   ),
@@ -312,7 +313,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
             onPressed: () => Navigator.of(context).maybePop(),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.black,
+              foregroundColor: AppColors.onPrimary,
               minimumSize: const Size.fromHeight(48),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -324,7 +325,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
                 fontSize: 13,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1.2,
-                color: Colors.black,
+                color: AppColors.onPrimary,
               ),
             ),
           ),
@@ -345,10 +346,10 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
         alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: AppColors.charcoal,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.12),
+            color: AppColors.steel,
           ),
         ),
         child: Text(
@@ -356,7 +357,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
           style: AppTypography.monoSmall.copyWith(
             fontSize: 11.5,
             fontWeight: FontWeight.w700,
-            color: Colors.white,
+            color: AppColors.pureWhite,
           ),
         ),
       ),

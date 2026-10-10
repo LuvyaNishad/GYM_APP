@@ -33,8 +33,9 @@ class WorkoutSummaryDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
       decoration: const BoxDecoration(
-        color: Color(0xFF141722),
+        color: AppColors.onyx,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(top: BorderSide(color: AppColors.steel)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -46,7 +47,7 @@ class WorkoutSummaryDialog extends StatelessWidget {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.20),
+                color: AppColors.steel,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -66,7 +67,7 @@ class WorkoutSummaryDialog extends StatelessWidget {
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.2,
-                      color: AppColors.primary,
+                      color: AppColors.pureWhite,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -74,7 +75,7 @@ class WorkoutSummaryDialog extends StatelessWidget {
                     session.splitName,
                     style: AppTypography.monoSmall.copyWith(
                       fontSize: 12.0,
-                      color: Colors.white,
+                      color: AppColors.pureWhite,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -83,10 +84,10 @@ class WorkoutSummaryDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.15),
+                  color: AppColors.charcoal,
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                    color: AppColors.success.withValues(alpha: 0.35),
+                    color: AppColors.steel,
                   ),
                 ),
                 child: Text(
@@ -94,7 +95,7 @@ class WorkoutSummaryDialog extends StatelessWidget {
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 11.0,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.success,
+                    color: AppColors.pureWhite,
                   ),
                 ),
               ),
@@ -139,10 +140,10 @@ class WorkoutSummaryDialog extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.04),
+              color: AppColors.charcoal,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.08),
+                color: AppColors.steel,
               ),
             ),
             child: Column(
@@ -153,7 +154,7 @@ class WorkoutSummaryDialog extends StatelessWidget {
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 11.0,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF94A3B8),
+                    color: AppColors.platinum,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -168,14 +169,14 @@ class WorkoutSummaryDialog extends StatelessWidget {
                           style: AppTypography.bodySmall.copyWith(
                             fontSize: 12.0,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppColors.pureWhite,
                           ),
                         ),
                         Text(
                           '${ex.completedSetsCount}/${ex.totalSetsCount} Sets · ${ex.totalVolumeKg.toInt()} kg',
                           style: AppTypography.monoSmall.copyWith(
                             fontSize: 11.0,
-                            color: const Color(0xFF94A3B8),
+                            color: AppColors.platinum,
                           ),
                         ),
                       ],
@@ -194,7 +195,7 @@ class WorkoutSummaryDialog extends StatelessWidget {
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.black,
+              foregroundColor: AppColors.onPrimary,
               minimumSize: const Size.fromHeight(48),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -206,7 +207,7 @@ class WorkoutSummaryDialog extends StatelessWidget {
                 fontSize: 13,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1.2,
-                color: Colors.black,
+                color: AppColors.onPrimary,
               ),
             ),
           ),
@@ -219,7 +220,7 @@ class WorkoutSummaryDialog extends StatelessWidget {
               'RESUME WORKOUT',
               style: AppTypography.monoSmall.copyWith(
                 fontSize: 12.0,
-                color: const Color(0xFF94A3B8),
+                color: AppColors.platinum,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -237,22 +238,22 @@ class WorkoutSummaryDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.10),
+          color: AppColors.steel,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: AppColors.primary),
+          Icon(icon, size: 16, color: AppColors.pureWhite),
           const SizedBox(height: 8),
           Text(
             label,
             style: AppTypography.monoSmall.copyWith(
               fontSize: 11.0,
-              color: const Color(0xFF94A3B8),
+              color: AppColors.platinum,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -262,7 +263,7 @@ class WorkoutSummaryDialog extends StatelessWidget {
             style: AppTypography.monoSmall.copyWith(
               fontSize: 12.5,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: AppColors.pureWhite,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

@@ -11,7 +11,6 @@ import '../../features/recovery/screens/recovery_screen.dart';
 import '../../features/analytics/screens/analytics_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 // ── New features ──────────────────────────────────────────────────────────────
-import '../../features/onboarding/providers/onboarding_provider.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/exercise_library/screens/exercise_library_screen.dart';
 import '../../features/health_tracking/screens/health_tracking_screen.dart';
@@ -25,11 +24,8 @@ import '../constants/app_constants.dart';
 /// completing onboarding navigates imperatively instead.
 final routerProvider = Provider<GoRouter>((ref) {
   ref.keepAlive();
-  final onboardingComplete = ref.read(onboardingCompleteProvider);
   return AppRouter.build(
-    initialLocation: onboardingComplete
-        ? AppConstants.routeDashboard
-        : AppConstants.routeOnboarding,
+    initialLocation: AppConstants.routeDashboard,
   );
 });
 

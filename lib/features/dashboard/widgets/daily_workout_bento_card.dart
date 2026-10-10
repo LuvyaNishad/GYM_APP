@@ -52,7 +52,7 @@ class DailyWorkoutBentoCard extends StatefulWidget {
 }
 
 class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
-  static const Color _cardBg = Color(0xFF161A23);
+  static const Color _cardBg = AppColors.charcoal;
   bool _isPressed = false;
 
   @override
@@ -65,7 +65,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
         color: _cardBg,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: AppColors.steel.withValues(alpha: 0.5),
           width: 1.0,
         ),
       ),
@@ -82,10 +82,10 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.14),
+                  color: AppColors.steel.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.4),
+                    color: AppColors.steel,
                     width: 1,
                   ),
                 ),
@@ -97,7 +97,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                       height: 5,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.primary,
+                        color: AppColors.pureWhite,
                       ),
                     ),
                     const SizedBox(width: 5),
@@ -106,7 +106,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                       style: AppTypography.labelSmall.copyWith(
                         fontFamily: 'JetBrains Mono',
                         fontSize: 11.0,
-                        color: AppColors.primary,
+                        color: AppColors.pureWhite,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.0,
                       ),
@@ -135,9 +135,9 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
             splitTitle,
             style: AppTypography.headlineMedium.copyWith(
               fontSize: 15,
-              letterSpacing: 0.6, // SKILL2.md §15: Optical tracking for medium headings
+              letterSpacing: 0.6,
               fontWeight: FontWeight.w800,
-              color: Colors.white,
+              color: AppColors.pureWhite,
             ),
           ),
 
@@ -153,10 +153,10 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1F2432),
+                    color: AppColors.steel.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.3),
+                      color: AppColors.steel,
                       width: 1,
                     ),
                   ),
@@ -168,7 +168,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                         height: 3.5,
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppColors.primary,
+                          color: AppColors.platinum,
                         ),
                       ),
                       const SizedBox(width: 5),
@@ -178,7 +178,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                           fontFamily: 'JetBrains Mono',
                           fontSize: 11.0,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: AppColors.platinum,
                           letterSpacing: 0.6,
                         ),
                       ),
@@ -194,10 +194,10 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFF12151E),
+              color: AppColors.onyx,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: AppColors.steel.withValues(alpha: 0.4),
                 width: 1,
               ),
             ),
@@ -211,7 +211,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                 Container(
                   width: 1,
                   height: 11,
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: AppColors.steel,
                 ),
                 _SessionMetricItem(
                   icon: Icons.timer_outlined,
@@ -220,7 +220,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                 Container(
                   width: 1,
                   height: 11,
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: AppColors.steel,
                 ),
                 const _SessionMetricItem(
                   icon: Icons.bolt_rounded,
@@ -232,7 +232,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
 
           const SizedBox(height: 10),
 
-          // ── Start Workout Action Button ────────────────────────────────────
+          // ── Start Workout Action Button (Solid Pure White High-Contrast CTA) ──
           GestureDetector(
             onTapDown: (_) => setState(() => _isPressed = true),
             onTapUp: (_) => setState(() => _isPressed = false),
@@ -249,21 +249,17 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
               scale: _isPressed ? 0.97 : 1.0,
               duration: const Duration(milliseconds: 100),
               child: Container(
-                height: 42,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.16),
+                  color: AppColors.pureWhite,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.6),
-                    width: 1.2,
-                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(
                       Icons.play_arrow_rounded,
-                      color: AppColors.primary,
+                      color: AppColors.onyx,
                       size: 20,
                     ),
                     const SizedBox(width: 6),
@@ -272,9 +268,9 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                       style: AppTypography.titleLarge.copyWith(
                         fontFamily: AppTypography.fontDisplay,
                         fontSize: 12.5,
-                        color: AppColors.primary,
+                        color: AppColors.onyx,
                         fontWeight: FontWeight.w800,
-                        letterSpacing: 1.5,
+                        letterSpacing: 1.2,
                       ),
                     ),
                   ],
@@ -305,7 +301,7 @@ class _SessionMetricItem extends StatelessWidget {
         Icon(
           icon,
           size: 13,
-          color: AppColors.primary,
+          color: AppColors.platinum,
         ),
         const SizedBox(width: 4),
         Text(

@@ -34,8 +34,9 @@ class StepsBentoCard extends StatefulWidget {
 }
 
 class _StepsBentoCardState extends State<StepsBentoCard> {
-  static const Color _cyanAccent = AppColors.primary;
-  static const Color _cardBg = Color(0xFF161A23);
+  static const Color _activeAccent = AppColors.pureWhite;
+  static const Color _inactiveBarColor = AppColors.steel;
+  static const Color _cardBg = AppColors.charcoal;
   int? _hoveredIndex;
 
   @override
@@ -81,7 +82,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
         color: _cardBg,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: AppColors.steel.withValues(alpha: 0.5),
           width: 1.0,
         ),
       ),
@@ -101,17 +102,17 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                     width: 28,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: _cyanAccent.withValues(alpha: 0.16),
+                      color: AppColors.steel.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(9),
                       border: Border.all(
-                        color: _cyanAccent.withValues(alpha: 0.35),
+                        color: AppColors.steel,
                         width: 1.0,
                       ),
                     ),
                     child: const Center(
                       child: Icon(
                         Icons.directions_walk_rounded,
-                        color: _cyanAccent,
+                        color: _activeAccent,
                         size: 16,
                       ),
                     ),
@@ -134,10 +135,10 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: AppColors.onyx.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.12),
+                    color: AppColors.steel,
                     width: 1,
                   ),
                 ),
@@ -147,7 +148,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                     const Icon(
                       Icons.near_me_outlined,
                       size: 11,
-                      color: _cyanAccent,
+                      color: AppColors.platinum,
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -180,7 +181,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
-                  letterSpacing: -0.3, // SKILL2.md §15: Negative optical tracking
+                  letterSpacing: -0.3,
                   height: 1.0,
                 ),
               ),
@@ -199,8 +200,12 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: _cyanAccent.withValues(alpha: 0.12),
+                  color: AppColors.steel.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: AppColors.steel,
+                    width: 0.8,
+                  ),
                 ),
                 child: Text(
                   '$progressPct% OF GOAL',
@@ -208,7 +213,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                     fontFamily: 'JetBrains Mono',
                     fontSize: 11.0,
                     fontWeight: FontWeight.w700,
-                    color: _cyanAccent,
+                    color: AppColors.platinum,
                     letterSpacing: 0.6,
                   ),
                 ),
@@ -325,7 +330,7 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
           height: normalizedHeight,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(4),
-            color: isActive ? _cyanAccent : _cyanAccent.withValues(alpha: 0.25),
+            color: isActive ? _activeAccent : _inactiveBarColor.withValues(alpha: 0.6),
           ),
         ),
       ),
@@ -357,10 +362,10 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.0),
             decoration: BoxDecoration(
-              color: const Color(0xFF0F1218),
+              color: AppColors.onyx,
               borderRadius: BorderRadius.circular(6),
               border: Border.all(
-                color: _cyanAccent,
+                color: AppColors.platinum,
                 width: 1.0,
               ),
             ),
@@ -370,15 +375,15 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
                 fontFamily: 'JetBrains Mono',
                 fontSize: 11.0,
                 fontWeight: FontWeight.w700,
-                color: _cyanAccent,
+                color: AppColors.pureWhite,
                 letterSpacing: 0.3,
               ),
             ),
           ),
           // Downward pointer caret
-          CustomPaint(
-            size: const Size(6, 3.5),
-            painter: _CaretPainter(color: _cyanAccent),
+          const CustomPaint(
+            size: Size(6, 3.5),
+            painter: _CaretPainter(color: AppColors.pureWhite),
           ),
         ],
       ),

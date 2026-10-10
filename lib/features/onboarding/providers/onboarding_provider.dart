@@ -12,9 +12,9 @@ export '../models/onboarding_state.dart';
 final onboardingCompleteProvider = Provider<bool>((ref) {
   return ref.watch(hiveServiceProvider).getSetting<bool>(
             AppConstants.settingOnboardingComplete,
-            fallback: false,
+            fallback: true,
           ) ??
-      false;
+      true;
 });
 
 /// Manages the step-by-step progression through the 16-screen onboarding flow.

@@ -19,7 +19,7 @@ final class AppTheme {
         primary: AppColors.primary,
         secondary: AppColors.secondary,
         error: AppColors.danger,
-        onPrimary: AppColors.background,
+        onPrimary: AppColors.onPrimary,
         onSurface: AppColors.textPrimary,
       ),
 
@@ -49,10 +49,13 @@ final class AppTheme {
 
       // ── Card ──────────────────────────────────────────────────────────────
       cardTheme: CardThemeData(
-        color: AppColors.surfaceVariant,
+        color: AppColors.card,
         elevation: 0,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.steel, width: 1.0),
+        ),
       ),
 
       // ── Bottom Nav ────────────────────────────────────────────────────────
@@ -62,14 +65,14 @@ final class AppTheme {
       // ── Input ─────────────────────────────────────────────────────────────
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceVariant,
+        fillColor: AppColors.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.glassBorder),
+          borderSide: const BorderSide(color: AppColors.steel),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.glassBorder),
+          borderSide: const BorderSide(color: AppColors.steel),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -81,7 +84,7 @@ final class AppTheme {
 
       // ── Divider ───────────────────────────────────────────────────────────
       dividerTheme: const DividerThemeData(
-        color: AppColors.glassBorder,
+        color: AppColors.steel,
         thickness: 0.5,
       ),
     );

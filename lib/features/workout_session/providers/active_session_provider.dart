@@ -332,6 +332,13 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     return workoutModel;
   }
 
+  /// Cancels and resets the active workout session, halting all tickers.
+  void cancelSession() {
+    _elapsedTicker?.cancel();
+    ref.read(restTimerProvider.notifier).skip();
+    state = ActiveSessionState(startTime: DateTime.now());
+  }
+
   static List<ActiveExerciseState> _buildDefaultPushWorkout() {
     return [
       ActiveExerciseState(

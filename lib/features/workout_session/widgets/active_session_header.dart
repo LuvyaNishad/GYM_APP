@@ -32,11 +32,11 @@ class ActiveSessionHeader extends ConsumerWidget {
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0D0F14),
+      decoration: const BoxDecoration(
+        color: AppColors.onyx,
         border: Border(
           bottom: BorderSide(
-            color: Colors.white.withValues(alpha: 0.08),
+            color: AppColors.steel,
             width: 1,
           ),
         ),
@@ -51,7 +51,7 @@ class ActiveSessionHeader extends ConsumerWidget {
             Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.close, color: Color(0xFF94A3B8), size: 22),
+                  icon: const Icon(Icons.close, color: AppColors.platinum, size: 22),
                   onPressed: onCancelPressed,
                   tooltip: 'Cancel workout',
                   padding: EdgeInsets.zero,
@@ -127,7 +127,7 @@ class ActiveSessionHeader extends ConsumerWidget {
                   onPressed: onFinishPressed,
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.black,
+                    foregroundColor: AppColors.onPrimary,
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     minimumSize: const Size(68, 40),
                     shape: RoundedRectangleBorder(
@@ -141,7 +141,7 @@ class ActiveSessionHeader extends ConsumerWidget {
                       fontSize: 12.5,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.0,
-                      color: Colors.black,
+                      color: AppColors.onPrimary,
                     ),
                   ),
                 ),
@@ -163,7 +163,7 @@ class ActiveSessionHeader extends ConsumerWidget {
                             '$completedSets / $totalSets SETS COMPLETED ($percent%)',
                             style: AppTypography.monoSmall.copyWith(
                               fontSize: 11.0,
-                              color: const Color(0xFF94A3B8),
+                              color: AppColors.platinum,
                               fontWeight: FontWeight.w600,
                               letterSpacing: 0.8,
                             ),
@@ -172,7 +172,7 @@ class ActiveSessionHeader extends ConsumerWidget {
                             'VOLUME: ${sessionState.totalVolumeKg.toInt()} KG',
                             style: AppTypography.monoSmall.copyWith(
                               fontSize: 11.0,
-                              color: const Color(0xFF94A3B8),
+                              color: AppColors.platinum,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -185,7 +185,7 @@ class ActiveSessionHeader extends ConsumerWidget {
                         child: LinearProgressIndicator(
                           value: progress,
                           minHeight: 4,
-                          backgroundColor: Colors.white.withValues(alpha: 0.08),
+                          backgroundColor: AppColors.charcoal,
                           valueColor: const AlwaysStoppedAnimation<Color>(
                             AppColors.primary,
                           ),

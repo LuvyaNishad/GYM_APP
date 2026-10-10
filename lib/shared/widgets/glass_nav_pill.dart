@@ -15,6 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../state/app_providers.dart';
 
@@ -137,10 +138,10 @@ class GlassNavPill extends ConsumerWidget {
                   filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF141722).withValues(alpha: 0.90),
+                      color: AppColors.charcoal.withValues(alpha: 0.94),
                       borderRadius: BorderRadius.circular(borderRadius),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.12),
+                        color: AppColors.steel.withValues(alpha: 0.6),
                         width: 1.0,
                       ),
                     ),
@@ -338,10 +339,10 @@ class _TubelightIndicatorState extends State<TubelightIndicator>
                     height: activePillHeight,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFF222634),
+                        color: AppColors.steel.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(21),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.08),
+                          color: AppColors.steel,
                           width: 1.0,
                         ),
                       ),
@@ -457,9 +458,9 @@ class _NavPillButtonState extends State<_NavPillButton> {
 
   @override
   Widget build(BuildContext context) {
-    const activeColor = Colors.white;
-    // Apple HIG Contrast: min 4.5:1 on dark glass surface (60% white yields ~5.4:1)
-    final inactiveColor = Colors.white.withValues(alpha: 0.60);
+    const activeColor = AppColors.pureWhite;
+    // Apple HIG Contrast: min 4.5:1 on dark glass surface (platinum yields 6.5:1+)
+    const inactiveColor = AppColors.platinum;
 
     return Semantics(
       button: true,

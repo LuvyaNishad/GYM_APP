@@ -30,12 +30,10 @@ class ExerciseLibraryCard extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFF141722).withValues(alpha: 0.90),
+              color: AppColors.charcoal,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: exercise.isCustom
-                    ? AppColors.amber.withValues(alpha: 0.35)
-                    : Colors.white.withValues(alpha: 0.09),
+                color: AppColors.steel,
                 width: 1.0,
               ),
             ),
@@ -58,7 +56,7 @@ class ExerciseLibraryCard extends StatelessWidget {
                                 fontSize: 15.5,
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 0.3,
-                                color: Colors.white,
+                                color: AppColors.pureWhite,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -69,12 +67,8 @@ class ExerciseLibraryCard extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: AppColors.amber.withValues(alpha: 0.20),
+                                color: AppColors.steel,
                                 borderRadius: BorderRadius.circular(4),
-                                border: Border.all(
-                                  color: AppColors.amber.withValues(alpha: 0.50),
-                                  width: 0.8,
-                                ),
                               ),
                               child: Text(
                                 'CUSTOM',
@@ -82,7 +76,7 @@ class ExerciseLibraryCard extends StatelessWidget {
                                   fontSize: 11.0,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 0.6,
-                                  color: AppColors.amber,
+                                  color: AppColors.pureWhite,
                                 ),
                               ),
                             ),
@@ -99,24 +93,22 @@ class ExerciseLibraryCard extends StatelessWidget {
                         children: [
                           _buildTag(
                             label: exercise.category.toUpperCase(),
-                            color: AppColors.primary,
+                            color: AppColors.pureWhite,
                             isFilled: true,
                           ),
                           _buildTag(
                             label: exercise.exerciseType.toUpperCase(),
-                            color: const Color(0xFF94A3B8),
+                            color: AppColors.platinum,
                             isFilled: false,
                           ),
                           _buildTag(
                             label: exercise.primaryEquipment.toUpperCase(),
-                            color: const Color(0xFFCBD5E1),
+                            color: AppColors.platinum,
                             isFilled: false,
                           ),
                           _buildTag(
                             label: exercise.difficultyDisplay.toUpperCase(),
-                            color: exercise.difficulty.toLowerCase().contains('advanced')
-                                ? AppColors.amber
-                                : const Color(0xFF94A3B8),
+                            color: AppColors.platinum,
                             isFilled: false,
                           ),
                         ],
@@ -129,7 +121,7 @@ class ExerciseLibraryCard extends StatelessWidget {
                         style: AppTypography.bodySmall.copyWith(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xFF94A3B8),
+                          color: AppColors.platinum,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -153,17 +145,17 @@ class ExerciseLibraryCard extends StatelessWidget {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.12),
+                          color: AppColors.steel,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: AppColors.primary.withValues(alpha: 0.40),
-                            width: 1.2,
+                            color: AppColors.steel,
+                            width: 1.0,
                           ),
                         ),
                         child: const Icon(
                           Icons.add_rounded,
                           size: 24,
-                          color: AppColors.primary,
+                          color: AppColors.pureWhite,
                         ),
                       ),
                     ),
@@ -185,10 +177,10 @@ class ExerciseLibraryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: isFilled ? color.withValues(alpha: 0.15) : const Color(0xFF1E2433),
+        color: isFilled ? AppColors.steel : AppColors.onyx,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(
-          color: color.withValues(alpha: 0.35),
+          color: AppColors.steel,
           width: 0.8,
         ),
       ),
@@ -198,7 +190,7 @@ class ExerciseLibraryCard extends StatelessWidget {
           fontSize: 11.0,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.4,
-          color: color,
+          color: isFilled ? AppColors.pureWhite : AppColors.platinum,
         ),
       ),
     );
