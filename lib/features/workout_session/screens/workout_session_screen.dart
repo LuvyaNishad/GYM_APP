@@ -123,9 +123,66 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                 onCancelPressed: _handleCancelWorkout,
               ),
 
+              // Session Telemetry Strip (Available after starting workout)
+              Container(
+                margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  color: AppColors.onyx,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: AppColors.steel.withValues(alpha: 0.5),
+                    width: 1,
+                  ),
+                ),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _SessionSummaryItem(
+                        icon: Icons.fitness_center_rounded,
+                        label: '${sessionState.exercises.length} EXERCISES',
+                      ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 10),
+                        width: 1,
+                        height: 11,
+                        color: AppColors.steel,
+                      ),
+                      const _SessionSummaryItem(
+                        icon: Icons.timer_outlined,
+                        label: '~48 MIN',
+                      ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 10),
+                        width: 1,
+                        height: 11,
+                        color: AppColors.steel,
+                      ),
+                      const _SessionSummaryItem(
+                        icon: Icons.bolt_rounded,
+                        label: 'HYPERTROPHY',
+                      ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 10),
+                        width: 1,
+                        height: 11,
+                        color: AppColors.steel,
+                      ),
+                      const _SessionSummaryItem(
+                        icon: Icons.speed_rounded,
+                        label: 'TARGET RPE 8.5',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
               // Action Toolbar
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
                 child: Row(
                   children: [
                     FilledButton.icon(
@@ -236,6 +293,41 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SessionSummaryItem extends StatelessWidget {
+  const _SessionSummaryItem({
+    required this.icon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 13,
+          color: AppColors.platinum,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'JetBrains Mono',
+            fontSize: 11.0,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textSecondary,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ],
     );
   }
 }

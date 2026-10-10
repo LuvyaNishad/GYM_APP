@@ -237,7 +237,7 @@ void main() {
       expect(find.text('ACTIVE TIME'), findsOneWidget);
     });
 
-    testWidgets('DailyWorkoutBentoCard renders targeted muscles and starts workout',
+    testWidgets('DailyWorkoutBentoCard is clutter-free and opens detail modal on tap',
         (WidgetTester tester) async {
       var commenced = false;
 
@@ -255,15 +255,32 @@ void main() {
         ),
       );
 
+      // Verify minimal surface: no TARGET RPE or telemetry bar clutter
       expect(find.text("TODAY'S WORKOUT"), findsOneWidget);
+      expect(find.text('PUSH DAY // WORKOUT A'), findsOneWidget);
       expect(find.text('CHEST'), findsOneWidget);
       expect(find.text('DELTOIDS'), findsOneWidget);
       expect(find.text('TRICEPS'), findsOneWidget);
       expect(find.text('START WORKOUT'), findsOneWidget);
+      expect(find.textContaining('TARGET RPE'), findsNothing);
+      expect(find.textContaining('5 EXERCISES'), findsNothing);
 
+      // Tap START WORKOUT directly from card
       await tester.tap(find.text('START WORKOUT'));
       await tester.pumpAndSettle();
       expect(commenced, isTrue);
+
+      // Tap card body to open detail sheet
+      await tester.tap(find.text("TODAY'S WORKOUT"));
+      await tester.pumpAndSettle();
+
+      // Verify detail sheet opened with the detailed telemetry
+      expect(find.text('TARGET RPE'), findsOneWidget);
+      expect(find.text('EXERCISES'), findsOneWidget);
+      expect(find.text('DURATION'), findsOneWidget);
+      expect(find.text('TRAINING FOCUS'), findsOneWidget);
+      expect(find.text('HYPERTROPHY'), findsOneWidget);
+      expect(find.text('PLANNED EXERCISE SEQUENCE'), findsOneWidget);
     });
   });
 }
