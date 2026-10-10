@@ -229,7 +229,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
                           ),
                           alignment: Alignment.center,
                           child: Text(
-                            plate >= 10 ? '${plate.toInt()}' : '${plate.toStringAsFixed(1)}',
+                            plate >= 10 ? plate.toInt().toString() : plate.toStringAsFixed(1),
                             style: const TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.bold,

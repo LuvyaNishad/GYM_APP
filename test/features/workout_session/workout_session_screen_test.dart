@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:leon/features/workout_session/providers/active_session_provider.dart';
 import 'package:leon/features/workout_session/screens/workout_session_screen.dart';
 import 'package:leon/features/workout_session/widgets/active_session_header.dart';
 import 'package:leon/features/workout_session/widgets/exercise_sequence_card.dart';

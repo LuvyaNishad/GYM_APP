@@ -66,9 +66,9 @@ class ActiveSessionHeader extends ConsumerWidget {
                       Text(
                         sessionState.splitName,
                         style: AppTypography.headlineMedium.copyWith(
-                          fontSize: 16,
+                          fontSize: 14.5,
                           fontWeight: FontWeight.w700,
-                          letterSpacing: 1.1,
+                          letterSpacing: 0.6,
                           color: Colors.white,
                         ),
                         maxLines: 1,
@@ -121,15 +121,15 @@ class ActiveSessionHeader extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 // Finish Workout CTA
                 FilledButton(
                   onPressed: onFinishPressed,
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    minimumSize: const Size(80, 44),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    minimumSize: const Size(68, 40),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -138,9 +138,9 @@ class ActiveSessionHeader extends ConsumerWidget {
                   child: Text(
                     'FINISH',
                     style: AppTypography.labelSmall.copyWith(
-                      fontSize: 13,
+                      fontSize: 12.5,
                       fontWeight: FontWeight.w800,
-                      letterSpacing: 1.2,
+                      letterSpacing: 1.0,
                       color: Colors.black,
                     ),
                   ),

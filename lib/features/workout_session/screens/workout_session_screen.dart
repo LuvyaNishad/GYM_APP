@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../models/active_session_state.dart';
 import '../providers/active_session_provider.dart';
 import '../widgets/active_session_header.dart';
 import '../widgets/exercise_picker_modal.dart';
@@ -206,6 +205,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                         padding: const EdgeInsets.only(top: 8, bottom: 100),
                         physics: const BouncingScrollPhysics(),
                         itemCount: sessionState.exercises.length,
+                        // ignore: deprecated_member_use
                         onReorder: notifier.reorderExercises,
                         itemBuilder: (context, index) {
                           final exercise = sessionState.exercises[index];

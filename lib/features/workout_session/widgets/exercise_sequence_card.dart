@@ -135,7 +135,10 @@ class ExerciseSequenceCard extends ConsumerWidget {
                               ],
                             ),
                             const SizedBox(height: 3),
-                            Row(
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 2,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
                                 Text(
                                   exercise.muscleGroup.toUpperCase(),
@@ -145,7 +148,6 @@ class ExerciseSequenceCard extends ConsumerWidget {
                                     color: AppColors.primary,
                                   ),
                                 ),
-                                const SizedBox(width: 6),
                                 Text(
                                   '· ${exercise.completedSetsCount}/${exercise.totalSetsCount} SETS',
                                   style: AppTypography.monoSmall.copyWith(
@@ -154,8 +156,7 @@ class ExerciseSequenceCard extends ConsumerWidget {
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                if (topSet != null) ...[
-                                  const SizedBox(width: 6),
+                                if (topSet != null)
                                   Text(
                                     '· Top: ${topSet.weightKg.toInt()}kg × ${topSet.reps}',
                                     style: AppTypography.monoSmall.copyWith(
@@ -163,7 +164,6 @@ class ExerciseSequenceCard extends ConsumerWidget {
                                       color: const Color(0xFF94A3B8),
                                     ),
                                   ),
-                                ],
                               ],
                             ),
                           ],
