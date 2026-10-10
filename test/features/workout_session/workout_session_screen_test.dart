@@ -52,8 +52,8 @@ void main() {
       await tester.tap(find.text('Incline Dumbbell Press'));
       await tester.pump();
 
-      // Top action button + ADD EXERCISE should be present
-      expect(find.text('+ ADD EXERCISE'), findsOneWidget);
+      // Top action button ADD EXERCISE should be present
+      expect(find.text('ADD EXERCISE'), findsOneWidget);
 
       // Cancel session ticker so no timers remain pending
       container.read(activeSessionProvider.notifier).cancelSession();

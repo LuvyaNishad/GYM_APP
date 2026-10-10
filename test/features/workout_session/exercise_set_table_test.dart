@@ -59,11 +59,15 @@ void main() {
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
       expect(container.read(activeSessionProvider).exercises.first.sets.first.isCompleted, isTrue);
 
-      // Tap + Add Set
-      await tester.tap(find.text('+ ADD SET'));
+      // Tap Add Set
+      await tester.tap(find.text('ADD SET'));
       await tester.pumpAndSettle();
 
       expect(container.read(activeSessionProvider).exercises.first.sets.length, 5);
+
+      // Cancel session ticker so no timers remain pending
+      container.read(activeSessionProvider.notifier).cancelSession();
+      await tester.pump();
     });
   });
 }

@@ -143,7 +143,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                       },
                       icon: const Icon(Icons.add, size: 16, color: AppColors.onPrimary),
                       label: Text(
-                        '+ ADD EXERCISE',
+                        'ADD EXERCISE',
                         style: AppTypography.monoSmall.copyWith(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w800,

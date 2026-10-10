@@ -213,7 +213,7 @@ class ExerciseSetTable extends ConsumerWidget {
                   onPressed: () => notifier.addSet(exercise.exerciseId),
                   icon: const Icon(Icons.add, size: 16, color: AppColors.pureWhite),
                   label: Text(
-                    '+ ADD SET',
+                    'ADD SET',
                     style: AppTypography.monoSmall.copyWith(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
@@ -236,7 +236,7 @@ class ExerciseSetTable extends ConsumerWidget {
                   onPressed: () => notifier.addWarmupSets(exercise.exerciseId),
                   icon: const Icon(Icons.fitness_center, size: 16, color: AppColors.platinum),
                   label: Text(
-                    '+ WARMUP',
+                    'WARMUP SETS',
                     style: AppTypography.monoSmall.copyWith(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
