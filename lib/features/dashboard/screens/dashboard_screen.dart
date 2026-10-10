@@ -1,10 +1,10 @@
-/// LEON Tactical Command Center — Dashboard Screen.
+/// LEON Dashboard Screen.
 ///
 /// Features:
-/// - Clean, minimal, non-glassmorphic solid tactical calendar header
+/// - Clean, minimal, solid retractable calendar header
 /// - Compact footsteps bento card (8,420 steps, distance, clean activity bars)
 /// - Compact 2-column bento grid for calories & water intake + sleep
-/// - Compact daily workout card with prominent commence operation button
+/// - Compact daily workout card with prominent start workout button
 /// - Zero scroll: entire daily overview & start button fits cleanly on initial view
 /// - Clean dark Cyber-Slate palette without sloppy blur glows
 library;
@@ -35,7 +35,7 @@ class DashboardScreen extends ConsumerWidget {
     final telemetry = ref.watch(dailyTelemetryProvider);
     final loggedWorkoutDates = ref.watch(loggedWorkoutDatesProvider);
 
-    final operativeName = (userProfile?.displayName.isNotEmpty ?? false)
+    final userName = (userProfile?.displayName.isNotEmpty ?? false)
         ? userProfile!.displayName
         : 'Leon';
 
@@ -44,18 +44,18 @@ class DashboardScreen extends ConsumerWidget {
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // ── 1. End-to-End Retractable Tactical Calendar Header ─────────
+          // ── 1. End-to-End Retractable Calendar Header ───────────────────
           // Corner-to-corner full bleed, completely covers top of screen
           SliverToBoxAdapter(
             child: RetractableCalendarHeader(
-              userName: operativeName,
+              userName: userName,
               avatarUrl: userProfile?.avatarUrl,
               initialExpanded: true,
               loggedWorkoutDates: loggedWorkoutDates,
             ),
           ),
 
-          // ── 2. Bento Grid Telemetry & Operational Modules ───────────────
+          // ── 2. Bento Grid Workout & Activity Cards ──────────────────────
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               16,

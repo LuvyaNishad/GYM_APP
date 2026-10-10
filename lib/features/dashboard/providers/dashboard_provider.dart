@@ -39,7 +39,7 @@ final dashboardProvider =
 ///
 /// Watches Hive storage for real saved workouts. When no workouts have been
 /// stored yet (guest / demo mode), seeds realistic completed training sessions
-/// prior to today in the current week (e.g. Mon, Wed, Fri) so the operational
+/// prior to today in the current week (e.g. Mon, Wed, Fri) so the
 /// calendar visually demonstrates completed workout session tracking.
 class LoggedWorkoutDatesNotifier extends Notifier<Set<DateTime>> {
   @override
@@ -76,7 +76,7 @@ class LoggedWorkoutDatesNotifier extends Notifier<Set<DateTime>> {
       }
 
       // Seed realistic historical training sessions across the past 26 weeks (~6 months)
-      // so the extended GitHub-style contribution graph shows rich operative gym activity
+      // so the extended GitHub-style contribution graph shows rich gym activity
       for (int week = 1; week <= 26; week++) {
         final pastWeekStart = startOfWeek.subtract(Duration(days: week * 7));
         dates.add(pastWeekStart.add(const Duration(days: 1))); // Mon

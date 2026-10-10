@@ -6,12 +6,12 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/glass_card.dart';
 
-/// Tactical Recovery & Biometric Telemetry Widget
+/// Recovery & Readiness Widget
 ///
 /// Features:
 /// - Looping animated cardiac pulse beacon
 /// - Live ECG waveform trace custom painter
-/// - High-contrast biometric telemetry (Readiness %, HRV, Resting BPM)
+/// - High-contrast health metrics (Readiness %, HRV, Resting BPM)
 /// - Tap to open comprehensive recovery breakdown
 class RecoveryStatusWidget extends StatefulWidget {
   const RecoveryStatusWidget({
@@ -49,7 +49,7 @@ class _RecoveryStatusWidgetState extends State<RecoveryStatusWidget>
     final Color statusColor =
         widget.isReady ? AppColors.success : AppColors.danger;
     final String statusLabel =
-        widget.isReady ? 'OPTIMAL // READY TO TRAIN' : 'ALERT // REST REQUIRED';
+        widget.isReady ? 'READY TO TRAIN' : 'REST REQUIRED';
 
     return GlassCard(
       glowColor: statusColor,
@@ -123,7 +123,7 @@ class _RecoveryStatusWidgetState extends State<RecoveryStatusWidget>
                     Row(
                       children: [
                         Text(
-                          'BIOMETRIC READINESS',
+                          'RECOVERY READINESS',
                           style: AppTypography.labelSmall.copyWith(
                             letterSpacing: 1.5,
                             fontSize: 10,
@@ -209,10 +209,10 @@ class _RecoveryStatusWidgetState extends State<RecoveryStatusWidget>
                 ),
                 const SizedBox(width: 12),
 
-                // Telemetry Chip: CNS
+                // CNS Recovery Chip
                 _TelemetryChip(
                   label: 'CNS',
-                  value: 'PRIMED',
+                  value: 'RECOVERED',
                   color: statusColor,
                 ),
               ],

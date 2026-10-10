@@ -127,7 +127,7 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
 
     final user = UserModel(
       id: AppConstants.hiveKeyLocalProfile,
-      email: 'agent@leon.tactical',
+      email: 'athlete@leon.fit',
       displayName: displayName,
       currentWeight: state.weight,
       targetWeight: state.targetWeight,

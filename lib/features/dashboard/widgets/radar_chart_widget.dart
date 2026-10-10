@@ -55,7 +55,7 @@ class RadarChartWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'LOAD SYMMETRY',
+                  'MUSCLE BALANCE',
                   style: AppTypography.labelSmall.copyWith(
                     letterSpacing: 1.5,
                     fontSize: 10,
@@ -84,7 +84,7 @@ class RadarChartWidget extends StatelessWidget {
                 ),
               ),
               child: Text(
-                hasInsight ? 'CALIBRATION REQ' : 'OPTIMAL SYMMETRY',
+                hasInsight ? 'NEEDS FOCUS' : 'BALANCED',
                 style: AppTypography.labelSmall.copyWith(
                   fontFamily: 'JetBrains Mono',
                   fontSize: 9,
@@ -170,7 +170,7 @@ class RadarChartWidget extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'TACTICAL ADVISORY',
+                          'TRAINING RECOMMENDATION',
                           style: AppTypography.labelSmall.copyWith(
                             fontFamily: 'JetBrains Mono',
                             fontSize: 9.5,
@@ -181,7 +181,7 @@ class RadarChartWidget extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${weakest.label} volume is deficit. Scheduled ${_dayFor(weakest.label)} protocol recommended.',
+                          '${weakest.label} volume is low. Consider adding a ${_dayFor(weakest.label)} workout session.',
                           style: AppTypography.bodySmall.copyWith(
                             color: AppColors.textPrimary,
                             fontSize: 12,

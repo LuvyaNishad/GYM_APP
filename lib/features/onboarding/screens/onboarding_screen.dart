@@ -215,7 +215,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              'OPERATIONAL FITNESS OS',
+              'PREMIUM FITNESS OS',
               style: AppTypography.labelSmall.copyWith(
                 color: AppColors.textSecondary,
                 letterSpacing: 3.5,
@@ -254,7 +254,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             const SizedBox(height: 32),
             Text(
-              'TAP TO INITIALIZE',
+              'TAP TO GET STARTED',
               style: AppTypography.dataSmall.copyWith(
                 color: AppColors.textMuted,
                 letterSpacing: 2.0,
@@ -297,7 +297,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Your operational fitness OS.\nBuilt for performance.',
+            'Your intelligent fitness tracker.\nBuilt for performance.',
             textAlign: TextAlign.center,
             style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textSecondary,
@@ -308,7 +308,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
           // Actions
           LeonButton(
-            label: 'COMMENCE OPERATION',
+            label: 'GET STARTED',
             icon: Icons.arrow_forward,
             onPressed: _nextPage,
             width: double.infinity,
@@ -374,7 +374,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'IDENTIFY AGENT',
+                      "WHAT'S YOUR NAME?",
                       style: AppTypography.headlineMedium.copyWith(
                         letterSpacing: 2.0,
                         fontWeight: FontWeight.w700,
@@ -382,16 +382,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'What do we call you?',
+                      'Enter your name to personalize your workouts.',
                       style: AppTypography.bodyMedium.copyWith(
                         color: AppColors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 36),
 
-                    // Terminal-style Prompt Field
+                    // Name Input Field
                     Text(
-                      'DISPLAY_NAME_',
+                      'YOUR NAME',
                       style: AppTypography.labelSmall.copyWith(
                         color: AppColors.primary,
                         letterSpacing: 2.0,
@@ -412,13 +412,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ),
                       child: Row(
                         children: [
-                          Text(
-                            '> ',
-                            style: AppTypography.headlineMedium.copyWith(
-                              color: AppColors.primary,
-                              fontFamily: 'JetBrainsMono',
-                            ),
-                          ),
                           Expanded(
                             child: TextField(
                               controller: _nameController,
@@ -427,7 +420,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               ),
                               textAlign: TextAlign.center,
                               decoration: const InputDecoration(
-                                hintText: 'Enter callsign',
+                                hintText: 'Enter your name',
                                 hintStyle: TextStyle(
                                   color: AppColors.textMuted,
                                 ),
@@ -448,7 +441,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     const SizedBox(height: 40),
 
                     LeonButton(
-                      label: 'CONFIRM IDENTITY',
+                      label: 'CONTINUE',
                       icon: Icons.arrow_forward,
                       width: double.infinity,
                       onPressed: () {
@@ -878,7 +871,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final objectives = [
       {
         'title': 'BUILD MUSCLE',
-        'desc': 'Hypertrophy protocols for lean tissue acquisition.',
+        'desc': 'Hypertrophy training for building lean muscle.',
         'icon': Icons.fitness_center,
       },
       {
@@ -888,12 +881,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       },
       {
         'title': 'INCREASE STRENGTH',
-        'desc': 'Heavy compound lifts designed for maximal output.',
+        'desc': 'Heavy compound lifts designed for maximal strength.',
         'icon': Icons.bolt,
       },
       {
         'title': 'ATHLETIC PERFORMANCE',
-        'desc': 'Explosive power and functional agility calibration.',
+        'desc': 'Explosive power and athletic conditioning.',
         'icon': Icons.speed,
       },
       {
@@ -903,7 +896,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       },
       {
         'title': 'REHABILITATION',
-        'desc': 'Joint mobility and active recovery protocols.',
+        'desc': 'Joint mobility and active recovery routines.',
         'icon': Icons.healing,
       },
     ];
@@ -914,7 +907,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           const SizedBox(height: 16),
           Text(
-            'PRIMARY OBJECTIVE',
+            'PRIMARY GOAL',
             style: AppTypography.headlineMedium.copyWith(
               letterSpacing: 2.0,
               fontWeight: FontWeight.w700,
@@ -922,7 +915,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Calibrate your core directive. Dictates algorithmic adaptations.',
+            'Choose your main fitness focus to tailor your program.',
             textAlign: TextAlign.center,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
@@ -1060,7 +1053,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Operational cadence per weekly cycle.',
+            'How many days per week do you plan to train?',
             style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -1160,7 +1153,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  // ── SCREEN 11: PREFERRED PROTOCOL / SPLIT ──────────────────────────────────
+  // ── SCREEN 11: TRAINING SPLIT ──────────────────────────────────────────────
   Widget _buildSplitStep(
     BuildContext context,
     OnboardingState state,
@@ -1215,7 +1208,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           const SizedBox(height: 16),
           Text(
-            'PREFERRED PROTOCOL',
+            'TRAINING SPLIT',
             style: AppTypography.headlineMedium.copyWith(
               letterSpacing: 2.0,
               fontWeight: FontWeight.w700,
@@ -1311,7 +1304,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
 
           LeonButton(
-            label: 'SELECT PROTOCOL',
+            label: 'SELECT SPLIT',
             icon: Icons.check,
             width: double.infinity,
             onPressed: _nextPage,
@@ -1581,7 +1574,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           const SizedBox(height: 16),
           Text(
-            'PROGRAMME SYNTHESIZED',
+            'WORKOUT PLAN READY',
             style: AppTypography.headlineMedium.copyWith(
               letterSpacing: 2.0,
               fontWeight: FontWeight.w800,
@@ -1589,7 +1582,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Your custom operational split is locked and loaded.',
+            'Your custom workout split is set up and ready.',
             textAlign: TextAlign.center,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
@@ -1769,10 +1762,10 @@ class _GeneratingStepViewState extends State<_GeneratingStepView>
   Timer? _timer;
 
   final _messages = [
-    'Analyzing biometric profile...',
-    'Calibrating recovery baseline...',
-    'Synthesizing optimal split...',
-    'Finalizing neural training parameters...',
+    'Analyzing fitness profile...',
+    'Calculating workout split...',
+    'Building exercise plan...',
+    'Personalizing training routine...',
   ];
 
   @override

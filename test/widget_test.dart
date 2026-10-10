@@ -21,6 +21,6 @@ void main() {
 
     // Initial page is Splash (Screen 01)
     expect(find.text('L E O N'), findsOneWidget);
-    expect(find.text('OPERATIONAL FITNESS OS'), findsOneWidget);
+    expect(find.text('PREMIUM FITNESS OS'), findsOneWidget);
   });
 }

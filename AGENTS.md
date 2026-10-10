@@ -30,6 +30,19 @@ You are an expert Flutter developer building **LEON**, a premium, high-performan
 1. **Typography Floor (Min 11.0 pt):** Every piece of text, tag, badge, timestamp, metric caption, and button label MUST have a minimum font size of **11.0 pt** (per Apple HIG `typography.md` & `accessibility.md`). Never drop below 11 pt anywhere in the application.
 2. **Contrast Threshold (Min 4.5:1 WCAG AA):** All secondary, inactive, or caption text must meet or exceed a **4.5:1 contrast ratio**. On dark slate backgrounds (`#161A23` / `#141722`), use `Color(0xFF94A3B8)` (Slate-400) or `Colors.white.withValues(alpha: 0.60)` minimum. Never use faint 35–45% opacity washes for small text.
 3. **Color Discipline (2-Accent System & Visual Restraint):** Maintain a focused, purposeful 2-accent hierarchy (per Apple HIG `color.md` & `branding.md`):
-   * **Primary Operational Accent:** Electric Cyan (`#00E5FF`) for primary calls to action ("Commence Operation"), active protocol indicators, and primary interactive highlights.
-   * **Secondary Status Accent:** Tactical Amber (`#FFB300`) for active calendar day selection and metabolic/warning status.
-   * **Telemetry & Metrics:** Use cohesive luminous monochrome silver/slate tones and disciplined tints for secondary progress gauges instead of chaotic multi-colored rainbow neons.
+   * **Primary Accent:** Electric Cyan (`#00E5FF`) for primary calls to action ("Start Workout"), active workout indicators, and primary interactive highlights.
+   * **Secondary Status Accent:** Amber (`#FFB300`) for active calendar day selection and metabolic/warning status.
+   * **Metrics & Activity:** Use cohesive luminous monochrome silver/slate tones and disciplined tints for secondary progress gauges instead of chaotic multi-colored rainbow neons.
+4. **Language Discipline (Strict No-Roleplay / Normal Gym Terminology):**
+   * **STRICT PROHIBITION:** NEVER use pseudo-military, sci-fi, or tactical roleplay terms like `protocol`, `operation`, `cadence`, `telemetry`, `operative`, `agent identifier`, `mission`, `briefing`, or `commence`.
+   * **Standard Gym Terminology:** Always use clean, professional, normal gym and fitness wording across all UI screens, buttons, cards, badges, and onboarding flows:
+     - `COMMENCE OPERATION` → `START WORKOUT`
+     - `ACTIVE PROTOCOL` → `TODAY'S WORKOUT`
+     - `TACTICAL PUSH // PROTOCOL A` → `PUSH DAY // WORKOUT A`
+     - `PREFERRED PROTOCOL` / `SELECT PROTOCOL` → `TRAINING SPLIT` / `SELECT SPLIT`
+     - `ACTIVITY TELEMETRY` → `WORKOUT ACTIVITY`
+     - `OPERATIONAL FITNESS OS` → `PREMIUM FITNESS OS` / `FITNESS TRACKER`
+     - `AGENT IDENTIFIER` → `EMAIL ADDRESS`
+     - `OPERATIVE AUTHENTICATION` → `ACCOUNT LOGIN`
+     - `DEPLOY AS GUEST` → `CONTINUE AS GUEST`
+     - `TACTICAL ADVISORY` → `TRAINING RECOMMENDATION`

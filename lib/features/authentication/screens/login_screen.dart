@@ -17,7 +17,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailCtrl = TextEditingController(text: 'agent@leon.tactical');
+  final _emailCtrl = TextEditingController(text: 'athlete@leon.fit');
   final _passwordCtrl = TextEditingController(text: '••••••••');
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -98,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'OPERATIONAL FITNESS OS',
+                      'PREMIUM FITNESS OS',
                       style: AppTypography.labelSmall.copyWith(
                         color: AppColors.textSecondary,
                         letterSpacing: 3.0,
@@ -107,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 36),
 
-                    // Tactical Glass Container
+                    // Login Card Container
                     GlassCard(
                       borderRadius: 24,
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -118,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             Center(
                               child: Text(
-                                'OPERATIVE AUTHENTICATION',
+                                'ACCOUNT LOGIN',
                                 style: AppTypography.labelSmall.copyWith(
                                   color: AppColors.primary,
                                   letterSpacing: 2.0,
@@ -130,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             // Email
                             Text(
-                              'AGENT IDENTIFIER',
+                              'EMAIL ADDRESS',
                               style: AppTypography.labelSmall.copyWith(
                                 color: AppColors.textSecondary,
                                 fontSize: 11,
@@ -175,7 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             // Password
                             Text(
-                              'SECURITY KEY',
+                              'PASSWORD',
                               style: AppTypography.labelSmall.copyWith(
                                 color: AppColors.textSecondary,
                                 fontSize: 11,
@@ -232,8 +232,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             // Submit Button
                             LeonButton(
-                              label: 'AUTHENTICATE',
-                              icon: Icons.shield_outlined,
+                              label: 'SIGN IN',
+                              icon: Icons.login_rounded,
                               isLoading: _isLoading,
                               width: double.infinity,
                               onPressed: _submit,
@@ -252,12 +252,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextButton.icon(
                           onPressed: () => context.go(AppConstants.routeDashboard),
                           icon: const Icon(
-                            Icons.terminal,
+                            Icons.person_outline_rounded,
                             size: 16,
                             color: AppColors.textSecondary,
                           ),
                           label: Text(
-                            'DEPLOY AS GUEST',
+                            'CONTINUE AS GUEST',
                             style: AppTypography.labelSmall.copyWith(
                               color: AppColors.textSecondary,
                               letterSpacing: 1.5,
@@ -273,7 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextButton(
                           onPressed: () => context.go(AppConstants.routeOnboarding),
                           child: Text(
-                            'BEGIN ONBOARDING',
+                            'GET STARTED',
                             style: AppTypography.labelSmall.copyWith(
                               color: AppColors.primary,
                               letterSpacing: 1.5,

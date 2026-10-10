@@ -103,8 +103,8 @@ void main() {
         ),
       );
 
-      // Verify telemetry header and day labels
-      expect(find.text('ACTIVITY TELEMETRY'), findsOneWidget);
+      // Verify activity header and day labels
+      expect(find.text('WORKOUT ACTIVITY'), findsOneWidget);
       expect(find.textContaining('SESSIONS LOGGED'), findsOneWidget);
       expect(find.text('Mon'), findsOneWidget);
       expect(find.text('Wed'), findsOneWidget);
@@ -171,7 +171,7 @@ void main() {
       expect(find.text('7.5'), findsOneWidget);
     });
 
-    testWidgets('DailyWorkoutBentoCard renders targeted muscles and commences session',
+    testWidgets('DailyWorkoutBentoCard renders targeted muscles and starts workout',
         (WidgetTester tester) async {
       var commenced = false;
 
@@ -189,13 +189,13 @@ void main() {
         ),
       );
 
-      expect(find.text('ACTIVE PROTOCOL'), findsOneWidget);
+      expect(find.text("TODAY'S WORKOUT"), findsOneWidget);
       expect(find.text('CHEST'), findsOneWidget);
       expect(find.text('DELTOIDS'), findsOneWidget);
       expect(find.text('TRICEPS'), findsOneWidget);
-      expect(find.text('COMMENCE OPERATION'), findsOneWidget);
+      expect(find.text('START WORKOUT'), findsOneWidget);
 
-      await tester.tap(find.text('COMMENCE OPERATION'));
+      await tester.tap(find.text('START WORKOUT'));
       await tester.pumpAndSettle();
       expect(commenced, isTrue);
     });

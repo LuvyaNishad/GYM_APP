@@ -1,4 +1,4 @@
-/// Retractable tactical calendar header widget for the LEON dashboard.
+/// Retractable calendar header widget for the LEON dashboard.
 ///
 /// Features a 3-phase interactive layout with a dedicated pull-tab notch
 /// affordance at the bottom edge:
@@ -36,7 +36,7 @@ class RetractableCalendarHeader extends StatefulWidget {
   /// User display name (e.g. 'Leon').
   final String userName;
 
-  /// Optional avatar URL for operative PFP.
+  /// Optional avatar URL for profile avatar.
   final String? avatarUrl;
 
   /// Whether the calendar strip starts in the expanded weekly state (Phase 1).
@@ -63,7 +63,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
   static const Color _cardBg = Color(0xFF1E232F);
   static const Color _pillSlotBg = Color(0xFF262C3A);
   static const Color _amberAccent = Color(0xFFFFB300);
-  static const Color _greenAccent = Color(0xFF00E676); // Tactical ECG Green
+  static const Color _greenAccent = Color(0xFF00E676); // Completed workout green
   static const double _tabHeight = 18.0;
 
   @override
@@ -229,7 +229,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
             phaseSubtitle = monthStr;
             chevronAngle = (1.0 - t) * -1.5708;
           } else {
-            phaseSubtitle = '$monthStr · Activity Heatmap';
+            phaseSubtitle = '$monthStr · Workout History';
             chevronAngle = 3.14159; // 180 deg (pointing up to collapse)
           }
 
@@ -323,7 +323,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                             ),
                           ),
 
-                          // Operative PFP Avatar with 44pt accessible touch target
+                          // Profile avatar with 44pt accessible touch target
                           GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTap: () {
@@ -518,7 +518,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
 
             // Date Number:
             // - Today: Solid golden yellow badge (_amberAccent) with dark text
-            // - Previous logged sessions: Solid tactical green badge (_greenAccent) with dark text
+            // - Previous logged sessions: Solid green badge (_greenAccent) with dark text
             // - Unlogged / Rest days: Crisp mono numeral (#E2E8F0)
             if (isToday)
               Container(
@@ -577,7 +577,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
   }
 }
 
-/// Custom painter for the end-to-end tactical header with a protruding
+/// Custom painter for the end-to-end header with a protruding
 /// center notch tab and grab handle pill (matching user design).
 class NotchedHeaderPainter extends CustomPainter {
   const NotchedHeaderPainter({
@@ -685,7 +685,7 @@ class NotchedHeaderPainter extends CustomPainter {
 
     canvas.drawPath(borderPath, strokePaint);
 
-    // Tactile drag handle pill centered inside the protruding tab
+    // Drag handle pill centered inside the protruding tab
     final handleRect = RRect.fromRectAndRadius(
       Rect.fromCenter(
         center: Offset(cx, h + (tabHeight / 2)),

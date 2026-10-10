@@ -2,8 +2,8 @@
 ///
 /// Displays a horizontally scrollable 7-row matrix representing days of the
 /// week (Sunday to Saturday) across past weeks/months. Completed workout days
-/// are highlighted in tactical green (#00E676), today is highlighted in
-/// golden yellow (#FFB300), and rest days are dark tactical slate tiles.
+/// are highlighted in vibrant green (#00E676), today is highlighted in
+/// golden yellow (#FFB300), and rest days are dark slate tiles.
 ///
 /// Follows Apple HIG standards:
 /// - Typography floor: >= 11.0 pt on all month, weekday, and stat labels
@@ -120,7 +120,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              'ACTIVITY TELEMETRY',
+              'WORKOUT ACTIVITY',
               style: TextStyle(
                 fontFamily: AppTypography.fontDisplay,
                 fontSize: 11.5,
@@ -291,7 +291,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
                   Flexible(
                     child: Text(
                       isInspectedToday
-                          ? 'Today (${_monthAbbr(inspected.month)} ${inspected.day}) · Active Session Ready'
+                          ? 'Today (${_monthAbbr(inspected.month)} ${inspected.day}) · Workout Scheduled'
                           : (isInspectedLogged
                               ? '${_monthAbbr(inspected.month)} ${inspected.day} · Gym Session Completed'
                               : '${_monthAbbr(inspected.month)} ${inspected.day} · Rest & Recovery Day'),

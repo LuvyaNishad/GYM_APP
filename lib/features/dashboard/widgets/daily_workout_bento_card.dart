@@ -1,9 +1,9 @@
 /// Daily Workout / Start Workout Bento Card for the LEON Dashboard.
 ///
 /// Clean, minimal, non-sloppy design without outer blur glows:
-/// - Operation/Protocol briefing banner with active status indicator
-/// - Daily targeted muscle groups display with tactical tags
-/// - Workout session telemetry preview (exercise count, estimated time, target RPE)
+/// - Workout overview banner with active routine status indicator
+/// - Daily targeted muscle groups display with tags
+/// - Workout session preview (exercise count, estimated time, target RPE)
 /// - Prominent clean initiation action button
 /// - Compact height ensuring full-screen visibility without mandatory scroll
 library;
@@ -17,7 +17,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../models/split_model.dart';
 
-/// Full-width Bento card for reviewing today's workout protocol and launching the session.
+/// Full-width Bento card for reviewing today's workout and launching the session.
 class DailyWorkoutBentoCard extends StatefulWidget {
   const DailyWorkoutBentoCard({
     super.key,
@@ -29,10 +29,10 @@ class DailyWorkoutBentoCard extends StatefulWidget {
     this.onStartWorkout,
   });
 
-  /// The active split assigned to the operative.
+  /// The active split assigned to the user.
   final SplitModel? activeSplit;
 
-  /// Muscle groups being targeted during today's protocol.
+  /// Muscle groups being targeted during today's workout session.
   final List<String> muscleGroups;
 
   /// Total number of planned exercises for the day.
@@ -58,7 +58,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
   @override
   Widget build(BuildContext context) {
     final splitTitle =
-        widget.activeSplit?.name.toUpperCase() ?? 'TACTICAL PUSH // PROTOCOL A';
+        widget.activeSplit?.name.toUpperCase() ?? 'PUSH DAY // WORKOUT A';
 
     return Container(
       decoration: BoxDecoration(
@@ -102,7 +102,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      'ACTIVE PROTOCOL',
+                      "TODAY'S WORKOUT",
                       style: AppTypography.labelSmall.copyWith(
                         fontFamily: 'JetBrains Mono',
                         fontSize: 11.0,
@@ -130,7 +130,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
 
           const SizedBox(height: 8),
 
-          // ── Protocol Name ─────────────────────────────────────────────────
+          // ── Workout Name ──────────────────────────────────────────────────
           Text(
             splitTitle,
             style: AppTypography.headlineMedium.copyWith(
@@ -232,7 +232,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
 
           const SizedBox(height: 10),
 
-          // ── Commence Operation Action Button ──────────────────────────────
+          // ── Start Workout Action Button ────────────────────────────────────
           GestureDetector(
             onTapDown: (_) => setState(() => _isPressed = true),
             onTapUp: (_) => setState(() => _isPressed = false),
@@ -268,7 +268,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'COMMENCE OPERATION',
+                      'START WORKOUT',
                       style: AppTypography.titleLarge.copyWith(
                         fontFamily: AppTypography.fontDisplay,
                         fontSize: 12.5,
