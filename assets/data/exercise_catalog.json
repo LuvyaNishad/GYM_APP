@@ -1,0 +1,6307 @@
+[
+  {
+    "id": "barbell-bench-press",
+    "name": "Barbell Bench Press",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Barbell Bench Press is a compound; horizontal push; strength movement used to train the listed muscles.",
+    "primary_muscles": [
+      "pectoralis major"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "anterior deltoids"
+    ],
+    "equipment": [
+      "barbell",
+      "bench"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "horizontal_push",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "compound",
+      "horizontal-push",
+      "strength",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lie on a flat bench, grip slightly wider than shoulder width, lower the bar under control to mid-chest, then press up without bouncing"
+    ],
+    "coaching_notes": "Keep shoulder blades retracted, feet planted, and wrists stacked over elbows. Use a spotter or safety arms.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "dumbbell-bench-press",
+      "dumbbell-fly",
+      "cable-crossover"
+    ]
+  },
+  {
+    "id": "dumbbell-bench-press",
+    "name": "Dumbbell Bench Press",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Dumbbell Bench Press is a compound; horizontal push movement used to train the listed muscles.",
+    "primary_muscles": [
+      "pectoralis major"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "anterior deltoids"
+    ],
+    "equipment": [
+      "dumbbells",
+      "flat bench"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "horizontal_push",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "compound",
+      "horizontal-push",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lower dumbbells beside the chest with forearms vertical, then press upward while keeping the weights controlled"
+    ],
+    "coaching_notes": "Use a range of motion that feels comfortable for your shoulders.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bench-press",
+      "dumbbell-fly",
+      "cable-crossover"
+    ]
+  },
+  {
+    "id": "incline-barbell-bench-press",
+    "name": "Incline Barbell Bench Press",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Incline Barbell Bench Press is a compound; upper chest movement used to train the listed muscles.",
+    "primary_muscles": [
+      "upper pectoralis major"
+    ],
+    "secondary_muscles": [
+      "anterior deltoids",
+      "triceps"
+    ],
+    "equipment": [
+      "barbell",
+      "incline bench"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "compound",
+      "upper-chest",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Set bench to a modest incline, lower bar to upper chest, and press vertically over the shoulders"
+    ],
+    "coaching_notes": "A very steep angle shifts more work to the shoulders.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "incline-dumbbell-press",
+      "incline-dumbbell-fly",
+      "low-to-high-cable-fly"
+    ]
+  },
+  {
+    "id": "incline-dumbbell-press",
+    "name": "Incline Dumbbell Press",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Incline Dumbbell Press is a compound; upper chest movement used to train the listed muscles.",
+    "primary_muscles": [
+      "upper pectoralis major"
+    ],
+    "secondary_muscles": [
+      "anterior deltoids",
+      "triceps"
+    ],
+    "equipment": [
+      "dumbbells",
+      "incline bench"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "compound",
+      "upper-chest",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lower dumbbells to either side of the upper chest, then press up and slightly inward"
+    ],
+    "coaching_notes": "Avoid clanking the dumbbells together.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "incline-barbell-bench-press",
+      "incline-dumbbell-fly",
+      "low-to-high-cable-fly"
+    ]
+  },
+  {
+    "id": "decline-bench-press",
+    "name": "Decline Bench Press",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Decline Bench Press is a compound; lower chest movement used to train the listed muscles.",
+    "primary_muscles": [
+      "lower/sternal pectoralis major"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "anterior deltoids"
+    ],
+    "equipment": [
+      "barbell",
+      "decline bench"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "compound",
+      "lower-chest",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Secure legs, lower bar to lower chest, and press up in a controlled path"
+    ],
+    "coaching_notes": "Use a spotter and exit the bench carefully.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "high-to-low-cable-fly"
+    ]
+  },
+  {
+    "id": "dumbbell-fly",
+    "name": "Dumbbell Fly",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Dumbbell Fly is a isolation; chest adduction movement used to train the listed muscles.",
+    "primary_muscles": [
+      "pectoralis major"
+    ],
+    "secondary_muscles": [
+      "anterior deltoids"
+    ],
+    "equipment": [
+      "dumbbells",
+      "flat bench"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "isolation",
+      "chest-adduction",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "With a slight elbow bend, open arms in an arc until a comfortable chest stretch, then bring the weights together"
+    ],
+    "coaching_notes": "Use light loads; do not force a deep stretch.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bench-press",
+      "dumbbell-bench-press",
+      "cable-crossover"
+    ]
+  },
+  {
+    "id": "incline-dumbbell-fly",
+    "name": "Incline Dumbbell Fly",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Incline Dumbbell Fly is a isolation; upper chest movement used to train the listed muscles.",
+    "primary_muscles": [
+      "upper pectoralis major"
+    ],
+    "secondary_muscles": [
+      "anterior deltoids"
+    ],
+    "equipment": [
+      "dumbbells",
+      "incline bench"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "isolation",
+      "upper-chest",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Open the arms in a controlled arc on an incline bench, then bring them back above the chest"
+    ],
+    "coaching_notes": "Keep elbow angle nearly fixed.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "incline-barbell-bench-press",
+      "incline-dumbbell-press",
+      "low-to-high-cable-fly"
+    ]
+  },
+  {
+    "id": "cable-crossover",
+    "name": "Cable Crossover",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Cable Crossover is a isolation; chest adduction movement used to train the listed muscles.",
+    "primary_muscles": [
+      "pectoralis major"
+    ],
+    "secondary_muscles": [
+      "anterior deltoids",
+      "biceps stabilizers"
+    ],
+    "equipment": [
+      "dual cable machine"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "isolation",
+      "chest-adduction",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Stand between pulleys, bring handles together in front of the torso, and return slowly"
+    ],
+    "coaching_notes": "Adjust pulley height to change the line of pull.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bench-press",
+      "dumbbell-bench-press",
+      "dumbbell-fly"
+    ]
+  },
+  {
+    "id": "high-to-low-cable-fly",
+    "name": "High-to-Low Cable Fly",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "High-to-Low Cable Fly is a isolation; lower chest bias movement used to train the listed muscles.",
+    "primary_muscles": [
+      "lower/sternal pectoralis major"
+    ],
+    "secondary_muscles": [
+      "anterior deltoids"
+    ],
+    "equipment": [
+      "dual cable machine",
+      "high pulleys"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "isolation",
+      "lower-chest-bias",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Starting with handles high, sweep hands down and inward toward the hips"
+    ],
+    "coaching_notes": "Avoid turning it into a torso swing.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "decline-bench-press"
+    ]
+  },
+  {
+    "id": "low-to-high-cable-fly",
+    "name": "Low-to-High Cable Fly",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Low-to-High Cable Fly is a isolation; upper chest bias movement used to train the listed muscles.",
+    "primary_muscles": [
+      "upper pectoralis major"
+    ],
+    "secondary_muscles": [
+      "anterior deltoids"
+    ],
+    "equipment": [
+      "dual cable machine",
+      "low pulleys"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "isolation",
+      "upper-chest-bias",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Starting with handles low, sweep arms upward and inward to chest height"
+    ],
+    "coaching_notes": "Keep ribs down and shoulders controlled.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "incline-barbell-bench-press",
+      "incline-dumbbell-press",
+      "incline-dumbbell-fly"
+    ]
+  },
+  {
+    "id": "pec-deck-fly",
+    "name": "Pec Deck Fly",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Pec Deck Fly is a isolation; chest movement used to train the listed muscles.",
+    "primary_muscles": [
+      "pectoralis major"
+    ],
+    "secondary_muscles": [
+      "anterior deltoids"
+    ],
+    "equipment": [
+      "pec deck machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "isolation",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Bring pads or handles together in front of the chest, pause, then return slowly"
+    ],
+    "coaching_notes": "Set seat so handles align around mid-chest.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bench-press",
+      "dumbbell-bench-press",
+      "dumbbell-fly"
+    ]
+  },
+  {
+    "id": "push-up",
+    "name": "Push-Up",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Push-Up is a compound; bodyweight push movement used to train the listed muscles.",
+    "primary_muscles": [
+      "pectoralis major"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "anterior deltoids",
+      "core"
+    ],
+    "equipment": [
+      "bodyweight",
+      "optional handles"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner / scalable",
+    "tags": [
+      "chest",
+      "compound",
+      "bodyweight-push",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Keep body in a straight line, lower chest toward floor, and push back up"
+    ],
+    "coaching_notes": "Elevate hands to scale down or elevate feet to increase difficulty.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bench-press",
+      "dumbbell-bench-press",
+      "dumbbell-fly"
+    ]
+  },
+  {
+    "id": "wide-grip-push-up",
+    "name": "Wide-Grip Push-Up",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Wide-Grip Push-Up is a compound; chest emphasis movement used to train the listed muscles.",
+    "primary_muscles": [
+      "pectoralis major"
+    ],
+    "secondary_muscles": [
+      "anterior deltoids",
+      "triceps",
+      "core"
+    ],
+    "equipment": [
+      "bodyweight"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "compound",
+      "chest-emphasis",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Perform a push-up with hands somewhat wider than shoulders and elbows at a comfortable angle"
+    ],
+    "coaching_notes": "Do not flare elbows excessively.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bench-press",
+      "dumbbell-bench-press",
+      "dumbbell-fly"
+    ]
+  },
+  {
+    "id": "close-grip-push-up",
+    "name": "Close-Grip Push-Up",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Close-Grip Push-Up is a compound; triceps emphasis movement used to train the listed muscles.",
+    "primary_muscles": [
+      "triceps",
+      "inner chest contribution"
+    ],
+    "secondary_muscles": [
+      "pectoralis major",
+      "anterior deltoids",
+      "core"
+    ],
+    "equipment": [
+      "bodyweight"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "compound",
+      "triceps-emphasis",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Keep hands closer than shoulder width and lower the chest under control"
+    ],
+    "coaching_notes": "Hand placement should remain comfortable for wrists.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": []
+  },
+  {
+    "id": "chest-dip",
+    "name": "Chest Dip",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Chest Dip is a compound; chest/triceps movement used to train the listed muscles.",
+    "primary_muscles": [
+      "lower pectoralis major"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "anterior deltoids"
+    ],
+    "equipment": [
+      "dip bars",
+      "assisted dip machine optional"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "compound",
+      "chest-triceps",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lean slightly forward, lower only as far as shoulders tolerate, then press up"
+    ],
+    "coaching_notes": "Use assistance if needed; deep dips can irritate some shoulders.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": []
+  },
+  {
+    "id": "machine-chest-press",
+    "name": "Machine Chest Press",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Machine Chest Press is a compound; machine push movement used to train the listed muscles.",
+    "primary_muscles": [
+      "pectoralis major"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "anterior deltoids"
+    ],
+    "equipment": [
+      "chest press machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "compound",
+      "machine-push",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Set handles near mid-chest, press forward, then return without letting the stack slam"
+    ],
+    "coaching_notes": "Adjust seat and use a controlled range.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bench-press",
+      "dumbbell-bench-press",
+      "dumbbell-fly"
+    ]
+  },
+  {
+    "id": "smith-machine-bench-press",
+    "name": "Smith Machine Bench Press",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Smith Machine Bench Press is a compound; guided bar press movement used to train the listed muscles.",
+    "primary_muscles": [
+      "pectoralis major"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "anterior deltoids"
+    ],
+    "equipment": [
+      "smith machine",
+      "bench"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "compound",
+      "guided-bar-press",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Position bench so the bar descends to mid-chest, lower under control, and press upward"
+    ],
+    "coaching_notes": "Set safety stops and use a comfortable bar path.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bench-press",
+      "dumbbell-bench-press",
+      "dumbbell-fly"
+    ]
+  },
+  {
+    "id": "landmine-chest-press",
+    "name": "Landmine Chest Press",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Landmine Chest Press is a compound; angled press movement used to train the listed muscles.",
+    "primary_muscles": [
+      "pectoralis major"
+    ],
+    "secondary_muscles": [
+      "anterior deltoids",
+      "triceps",
+      "core"
+    ],
+    "equipment": [
+      "barbell",
+      "landmine attachment"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "compound",
+      "angled-press",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Press the landmine end forward and upward from chest level while resisting torso rotation"
+    ],
+    "coaching_notes": "Can be done half-kneeling or standing.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bench-press",
+      "dumbbell-bench-press",
+      "dumbbell-fly"
+    ]
+  },
+  {
+    "id": "conventional-deadlift",
+    "name": "Conventional Deadlift",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Conventional Deadlift is a compound; hip hinge; pull movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gluteus maximus",
+      "hamstrings",
+      "spinal erectors"
+    ],
+    "secondary_muscles": [
+      "lats",
+      "traps",
+      "forearms",
+      "quadriceps"
+    ],
+    "equipment": [
+      "barbell",
+      "plates"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "hinge",
+    "exercise_type": "compound",
+    "difficulty": "intermediate",
+    "tags": [
+      "back",
+      "compound",
+      "hip-hinge",
+      "pull",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Brace, hinge to grip the bar, push the floor away, and stand tall with the bar close to the legs"
+    ],
+    "coaching_notes": "Keep spine braced; do not lean back at lockout.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "romanian-deadlift",
+      "back-extension",
+      "reverse-hyperextension"
+    ]
+  },
+  {
+    "id": "romanian-deadlift",
+    "name": "Romanian Deadlift",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Romanian Deadlift is a compound; hip hinge movement used to train the listed muscles.",
+    "primary_muscles": [
+      "hamstrings",
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "spinal erectors",
+      "lats",
+      "forearms"
+    ],
+    "equipment": [
+      "barbell or dumbbells"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "hinge",
+    "exercise_type": "compound",
+    "difficulty": "intermediate",
+    "tags": [
+      "back",
+      "compound",
+      "hip-hinge",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "With soft knees, push hips back and lower the weight along the legs until hamstrings stretch, then stand"
+    ],
+    "coaching_notes": "Move from the hips; keep the load close.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "conventional-deadlift",
+      "reverse-hyperextension",
+      "rack-pull"
+    ]
+  },
+  {
+    "id": "barbell-bent-over-row",
+    "name": "Barbell Bent-Over Row",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Barbell Bent-Over Row is a compound; horizontal pull movement used to train the listed muscles.",
+    "primary_muscles": [
+      "latissimus dorsi",
+      "middle trapezius",
+      "rhomboids"
+    ],
+    "secondary_muscles": [
+      "rear deltoids",
+      "biceps",
+      "spinal erectors"
+    ],
+    "equipment": [
+      "barbell"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "horizontal_pull",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "back",
+      "compound",
+      "horizontal-pull",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hinge with a braced torso, pull bar toward lower ribs, and lower slowly"
+    ],
+    "coaching_notes": "Avoid jerking the torso to move the bar.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "one-arm-dumbbell-row",
+      "seated-cable-row",
+      "chest-supported-row"
+    ]
+  },
+  {
+    "id": "one-arm-dumbbell-row",
+    "name": "One-Arm Dumbbell Row",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "One-Arm Dumbbell Row is a compound; unilateral row movement used to train the listed muscles.",
+    "primary_muscles": [
+      "latissimus dorsi",
+      "rhomboids",
+      "middle trapezius"
+    ],
+    "secondary_muscles": [
+      "rear deltoids",
+      "biceps"
+    ],
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "horizontal_pull",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "back",
+      "compound",
+      "unilateral-row",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Support one hand on a bench, pull dumbbell toward hip, and lower with control"
+    ],
+    "coaching_notes": "Keep hips square and avoid twisting.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bent-over-row",
+      "seated-cable-row",
+      "chest-supported-row"
+    ]
+  },
+  {
+    "id": "seated-cable-row",
+    "name": "Seated Cable Row",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Seated Cable Row is a compound; horizontal pull movement used to train the listed muscles.",
+    "primary_muscles": [
+      "middle trapezius",
+      "rhomboids",
+      "latissimus dorsi"
+    ],
+    "secondary_muscles": [
+      "biceps",
+      "rear deltoids"
+    ],
+    "equipment": [
+      "cable row station",
+      "handle"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "horizontal_pull",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "back",
+      "compound",
+      "horizontal-pull",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Sit tall, pull handle toward lower ribs, squeeze shoulder blades, and extend arms slowly"
+    ],
+    "coaching_notes": "Avoid excessive backward rocking.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bent-over-row",
+      "one-arm-dumbbell-row",
+      "chest-supported-row"
+    ]
+  },
+  {
+    "id": "chest-supported-row",
+    "name": "Chest-Supported Row",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Chest-Supported Row is a compound; supported row movement used to train the listed muscles.",
+    "primary_muscles": [
+      "middle back",
+      "latissimus dorsi"
+    ],
+    "secondary_muscles": [
+      "rear deltoids",
+      "biceps"
+    ],
+    "equipment": [
+      "incline bench",
+      "dumbbells or machine"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "horizontal_pull",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "back",
+      "compound",
+      "supported-row",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lie chest-down on support and row weights toward the torso"
+    ],
+    "coaching_notes": "Support reduces lower-back demand.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bent-over-row",
+      "one-arm-dumbbell-row",
+      "seated-cable-row"
+    ]
+  },
+  {
+    "id": "t-bar-row",
+    "name": "T-Bar Row",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "T-Bar Row is a compound; horizontal pull movement used to train the listed muscles.",
+    "primary_muscles": [
+      "middle back",
+      "latissimus dorsi"
+    ],
+    "secondary_muscles": [
+      "biceps",
+      "rear deltoids",
+      "spinal erectors"
+    ],
+    "equipment": [
+      "t-bar row machine or landmine",
+      "handle"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "horizontal_pull",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "back",
+      "compound",
+      "horizontal-pull",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Brace, pull handle toward torso, and lower under control"
+    ],
+    "coaching_notes": "Keep torso stable.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bent-over-row",
+      "one-arm-dumbbell-row",
+      "seated-cable-row"
+    ]
+  },
+  {
+    "id": "pendlay-row",
+    "name": "Pendlay Row",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Pendlay Row is a compound; strict barbell row movement used to train the listed muscles.",
+    "primary_muscles": [
+      "middle back",
+      "latissimus dorsi"
+    ],
+    "secondary_muscles": [
+      "rear deltoids",
+      "biceps",
+      "spinal erectors"
+    ],
+    "equipment": [
+      "barbell",
+      "plates"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "horizontal_pull",
+    "exercise_type": "compound",
+    "difficulty": "advanced / skill-based",
+    "tags": [
+      "back",
+      "compound",
+      "strict-barbell-row",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "From a hinged torso, row the bar from the floor to the lower chest, resetting each rep"
+    ],
+    "coaching_notes": "Requires sound hinge and bracing technique.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bent-over-row",
+      "one-arm-dumbbell-row",
+      "seated-cable-row"
+    ]
+  },
+  {
+    "id": "inverted-row",
+    "name": "Inverted Row",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Inverted Row is a compound; bodyweight pull movement used to train the listed muscles.",
+    "primary_muscles": [
+      "rhomboids",
+      "middle trapezius",
+      "latissimus dorsi"
+    ],
+    "secondary_muscles": [
+      "biceps",
+      "rear deltoids",
+      "core"
+    ],
+    "equipment": [
+      "bar in rack or suspension trainer"
+    ],
+    "primary_equipment": "bar in rack or suspension trainer",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "back",
+      "compound",
+      "bodyweight-pull",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Keep body straight under a secure bar, pull chest to bar, then lower"
+    ],
+    "coaching_notes": "Bend knees or raise bar to make it easier.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bent-over-row",
+      "one-arm-dumbbell-row",
+      "seated-cable-row"
+    ]
+  },
+  {
+    "id": "pull-up",
+    "name": "Pull-Up",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Pull-Up is a compound; vertical pull movement used to train the listed muscles.",
+    "primary_muscles": [
+      "latissimus dorsi"
+    ],
+    "secondary_muscles": [
+      "biceps",
+      "brachialis",
+      "lower trapezius",
+      "core"
+    ],
+    "equipment": [
+      "pull-up bar"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "vertical_pull",
+    "exercise_type": "compound",
+    "difficulty": "intermediate",
+    "tags": [
+      "back",
+      "compound",
+      "vertical-pull",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hang from the bar, pull elbows down until chin reaches bar height, then lower steadily"
+    ],
+    "coaching_notes": "Use band or machine assistance if needed.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bent-over-row",
+      "one-arm-dumbbell-row",
+      "seated-cable-row"
+    ]
+  },
+  {
+    "id": "chin-up",
+    "name": "Chin-Up",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Chin-Up is a compound; underhand vertical pull movement used to train the listed muscles.",
+    "primary_muscles": [
+      "latissimus dorsi"
+    ],
+    "secondary_muscles": [
+      "biceps",
+      "brachialis",
+      "forearms"
+    ],
+    "equipment": [
+      "pull-up bar"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "vertical_pull",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "back",
+      "compound",
+      "underhand-vertical-pull",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Use an underhand grip and pull chest upward, then lower under control"
+    ],
+    "coaching_notes": "Avoid swinging or kicking.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bent-over-row",
+      "one-arm-dumbbell-row",
+      "seated-cable-row"
+    ]
+  },
+  {
+    "id": "lat-pulldown",
+    "name": "Lat Pulldown",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Lat Pulldown is a compound; vertical pull movement used to train the listed muscles.",
+    "primary_muscles": [
+      "latissimus dorsi"
+    ],
+    "secondary_muscles": [
+      "biceps",
+      "teres major",
+      "middle back"
+    ],
+    "equipment": [
+      "lat pulldown machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "vertical_pull",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "back",
+      "compound",
+      "vertical-pull",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Pull bar toward upper chest while keeping torso slightly leaned back, then allow arms to extend"
+    ],
+    "coaching_notes": "Do not pull behind the neck.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bent-over-row",
+      "one-arm-dumbbell-row",
+      "seated-cable-row"
+    ]
+  },
+  {
+    "id": "neutral-grip-lat-pulldown",
+    "name": "Neutral-Grip Lat Pulldown",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Neutral-Grip Lat Pulldown is a compound; vertical pull movement used to train the listed muscles.",
+    "primary_muscles": [
+      "latissimus dorsi"
+    ],
+    "secondary_muscles": [
+      "biceps",
+      "brachialis",
+      "teres major"
+    ],
+    "equipment": [
+      "pulldown machine",
+      "neutral handle"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "vertical_pull",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "back",
+      "compound",
+      "vertical-pull",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Pull neutral handles toward upper chest and return slowly"
+    ],
+    "coaching_notes": "Keep shoulders away from ears.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bent-over-row",
+      "one-arm-dumbbell-row",
+      "seated-cable-row"
+    ]
+  },
+  {
+    "id": "straight-arm-cable-pulldown",
+    "name": "Straight-Arm Cable Pulldown",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Straight-Arm Cable Pulldown is a isolation; shoulder extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "latissimus dorsi"
+    ],
+    "secondary_muscles": [
+      "teres major",
+      "long head of triceps contribution"
+    ],
+    "equipment": [
+      "cable machine",
+      "straight bar or rope"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "extension",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "back",
+      "isolation",
+      "shoulder-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "With elbows softly bent, sweep the bar from shoulder height to thighs without swinging"
+    ],
+    "coaching_notes": "Keep ribs down and arms mostly straight.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bent-over-row",
+      "one-arm-dumbbell-row",
+      "seated-cable-row"
+    ]
+  },
+  {
+    "id": "machine-high-row",
+    "name": "Machine High Row",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Machine High Row is a compound; angled pull movement used to train the listed muscles.",
+    "primary_muscles": [
+      "latissimus dorsi",
+      "upper/middle back"
+    ],
+    "secondary_muscles": [
+      "biceps",
+      "rear deltoids"
+    ],
+    "equipment": [
+      "high-row machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "back",
+      "compound",
+      "angled-pull",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Set chest against pad and pull handles down and back"
+    ],
+    "coaching_notes": "Follow the machine's natural path.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bent-over-row",
+      "one-arm-dumbbell-row",
+      "seated-cable-row"
+    ]
+  },
+  {
+    "id": "dumbbell-pullover",
+    "name": "Dumbbell Pullover",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Dumbbell Pullover is a compound/accessory; shoulder extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "latissimus dorsi",
+      "pectoralis major"
+    ],
+    "secondary_muscles": [
+      "serratus anterior",
+      "triceps long head"
+    ],
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "extension",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "back",
+      "compound-accessory",
+      "shoulder-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lower one dumbbell behind the head with slightly bent elbows, then bring it over the chest"
+    ],
+    "coaching_notes": "Use a comfortable shoulder range and modest load.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-bent-over-row",
+      "one-arm-dumbbell-row",
+      "seated-cable-row"
+    ]
+  },
+  {
+    "id": "back-extension",
+    "name": "Back Extension",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Back Extension is a accessory; trunk/hip extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "spinal erectors"
+    ],
+    "secondary_muscles": [
+      "gluteus maximus",
+      "hamstrings"
+    ],
+    "equipment": [
+      "back extension bench"
+    ],
+    "primary_equipment": "back extension bench",
+    "movement_pattern": "extension",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "back",
+      "accessory",
+      "trunk-hip-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hinge at hips to lower torso, then raise until body is straight"
+    ],
+    "coaching_notes": "Avoid hyperextending the lower back.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "conventional-deadlift",
+      "straight-arm-cable-pulldown",
+      "dumbbell-pullover"
+    ]
+  },
+  {
+    "id": "reverse-hyperextension",
+    "name": "Reverse Hyperextension",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Reverse Hyperextension is a accessory; hip extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gluteus maximus",
+      "spinal erectors"
+    ],
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": [
+      "reverse hyper machine or sturdy supported setup"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "extension",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "back",
+      "accessory",
+      "hip-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "With torso supported, lift legs by extending hips, then lower slowly"
+    ],
+    "coaching_notes": "Use controlled motion and appropriate equipment.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "conventional-deadlift",
+      "romanian-deadlift",
+      "straight-arm-cable-pulldown"
+    ]
+  },
+  {
+    "id": "rack-pull",
+    "name": "Rack Pull",
+    "category": "Back",
+    "sub_category": "Back",
+    "description": "Rack Pull is a compound; partial deadlift movement used to train the listed muscles.",
+    "primary_muscles": [
+      "spinal erectors",
+      "gluteus maximus",
+      "traps"
+    ],
+    "secondary_muscles": [
+      "hamstrings",
+      "forearms",
+      "lats"
+    ],
+    "equipment": [
+      "barbell",
+      "rack",
+      "safety pins"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "back",
+      "compound",
+      "partial-deadlift",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Set bar just below or above knees, brace, stand tall, and lower to pins"
+    ],
+    "coaching_notes": "Keep bar close; avoid overleaning at lockout.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "conventional-deadlift",
+      "romanian-deadlift",
+      "back-extension"
+    ]
+  },
+  {
+    "id": "standing-barbell-overhead-press",
+    "name": "Standing Barbell Overhead Press",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Standing Barbell Overhead Press is a compound; vertical push movement used to train the listed muscles.",
+    "primary_muscles": [
+      "anterior deltoids",
+      "medial deltoids"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "upper trapezius",
+      "core"
+    ],
+    "equipment": [
+      "barbell"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "vertical_push",
+    "exercise_type": "compound",
+    "difficulty": "intermediate",
+    "tags": [
+      "shoulders",
+      "compound",
+      "vertical-push",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Brace glutes and abdomen, press bar overhead, then lower to upper chest"
+    ],
+    "coaching_notes": "Avoid excessive lower-back arch.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "seated-dumbbell-shoulder-press",
+      "arnold-press",
+      "dumbbell-lateral-raise"
+    ]
+  },
+  {
+    "id": "seated-dumbbell-shoulder-press",
+    "name": "Seated Dumbbell Shoulder Press",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Seated Dumbbell Shoulder Press is a compound; vertical push movement used to train the listed muscles.",
+    "primary_muscles": [
+      "anterior deltoids",
+      "medial deltoids"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "upper trapezius"
+    ],
+    "equipment": [
+      "dumbbells",
+      "bench with back support"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "vertical_push",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "compound",
+      "vertical-push",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Press dumbbells from shoulder height overhead and lower slowly"
+    ],
+    "coaching_notes": "Use a pain-free range.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "standing-barbell-overhead-press",
+      "arnold-press",
+      "dumbbell-lateral-raise"
+    ]
+  },
+  {
+    "id": "arnold-press",
+    "name": "Arnold Press",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Arnold Press is a compound; rotational shoulder press movement used to train the listed muscles.",
+    "primary_muscles": [
+      "anterior deltoids",
+      "medial deltoids"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "upper trapezius"
+    ],
+    "equipment": [
+      "dumbbells",
+      "bench"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "rotation",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "compound",
+      "rotational-shoulder-press",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Start palms facing you, rotate palms forward as you press overhead, then reverse"
+    ],
+    "coaching_notes": "Use lighter weights while learning the rotation.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "standing-barbell-overhead-press",
+      "seated-dumbbell-shoulder-press",
+      "dumbbell-lateral-raise"
+    ]
+  },
+  {
+    "id": "dumbbell-lateral-raise",
+    "name": "Dumbbell Lateral Raise",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Dumbbell Lateral Raise is a isolation; shoulder abduction movement used to train the listed muscles.",
+    "primary_muscles": [
+      "medial deltoids"
+    ],
+    "secondary_muscles": [
+      "supraspinatus",
+      "upper trapezius"
+    ],
+    "equipment": [
+      "dumbbells"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "isolation",
+      "shoulder-abduction",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Raise dumbbells out to the sides to around shoulder height, then lower slowly"
+    ],
+    "coaching_notes": "Use a slight elbow bend and avoid swinging.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "standing-barbell-overhead-press",
+      "seated-dumbbell-shoulder-press",
+      "arnold-press"
+    ]
+  },
+  {
+    "id": "cable-lateral-raise",
+    "name": "Cable Lateral Raise",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Cable Lateral Raise is a isolation; shoulder abduction movement used to train the listed muscles.",
+    "primary_muscles": [
+      "medial deltoids"
+    ],
+    "secondary_muscles": [
+      "supraspinatus",
+      "upper trapezius"
+    ],
+    "equipment": [
+      "low cable",
+      "single handle"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "isolation",
+      "shoulder-abduction",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Raise the handle out to the side against cable tension and lower with control"
+    ],
+    "coaching_notes": "Stand so the cable pulls across the body.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "standing-barbell-overhead-press",
+      "seated-dumbbell-shoulder-press",
+      "arnold-press"
+    ]
+  },
+  {
+    "id": "machine-lateral-raise",
+    "name": "Machine Lateral Raise",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Machine Lateral Raise is a isolation; shoulder abduction movement used to train the listed muscles.",
+    "primary_muscles": [
+      "medial deltoids"
+    ],
+    "secondary_muscles": [
+      "upper trapezius"
+    ],
+    "equipment": [
+      "lateral raise machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "isolation",
+      "shoulder-abduction",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Press upper arms into pads and raise to a comfortable height"
+    ],
+    "coaching_notes": "Adjust seat so pads align with upper arms.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "standing-barbell-overhead-press",
+      "seated-dumbbell-shoulder-press",
+      "arnold-press"
+    ]
+  },
+  {
+    "id": "front-dumbbell-raise",
+    "name": "Front Dumbbell Raise",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Front Dumbbell Raise is a isolation; shoulder flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "anterior deltoids"
+    ],
+    "secondary_muscles": [
+      "upper pectoralis major",
+      "serratus anterior"
+    ],
+    "equipment": [
+      "dumbbells"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "isolation",
+      "shoulder-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Raise dumbbells in front to shoulder height and lower slowly"
+    ],
+    "coaching_notes": "Avoid leaning back; front delts already work in many presses.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "standing-barbell-overhead-press",
+      "seated-dumbbell-shoulder-press",
+      "arnold-press"
+    ]
+  },
+  {
+    "id": "plate-front-raise",
+    "name": "Plate Front Raise",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Plate Front Raise is a isolation; shoulder flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "anterior deltoids"
+    ],
+    "secondary_muscles": [
+      "upper pectoralis major"
+    ],
+    "equipment": [
+      "weight plate"
+    ],
+    "primary_equipment": "weight plate",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "isolation",
+      "shoulder-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hold plate with both hands, raise to shoulder height, and lower steadily"
+    ],
+    "coaching_notes": "Use a load that does not require momentum.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "standing-barbell-overhead-press",
+      "seated-dumbbell-shoulder-press",
+      "arnold-press"
+    ]
+  },
+  {
+    "id": "reverse-pec-deck",
+    "name": "Reverse Pec Deck",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Reverse Pec Deck is a isolation; horizontal abduction movement used to train the listed muscles.",
+    "primary_muscles": [
+      "rear deltoids"
+    ],
+    "secondary_muscles": [
+      "rhomboids",
+      "middle trapezius"
+    ],
+    "equipment": [
+      "reverse pec deck machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "isolation",
+      "horizontal-abduction",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Face the machine, open arms outward, pause, and return slowly"
+    ],
+    "coaching_notes": "Keep shoulders down and torso against pad.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "bent-over-rear-delt-fly",
+      "face-pull"
+    ]
+  },
+  {
+    "id": "bent-over-rear-delt-fly",
+    "name": "Bent-Over Rear Delt Fly",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Bent-Over Rear Delt Fly is a isolation; rear shoulder movement used to train the listed muscles.",
+    "primary_muscles": [
+      "rear deltoids"
+    ],
+    "secondary_muscles": [
+      "rhomboids",
+      "middle trapezius"
+    ],
+    "equipment": [
+      "dumbbells"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "isolation",
+      "rear-shoulder",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hinge forward and raise arms outward with soft elbows"
+    ],
+    "coaching_notes": "Avoid shrugging or swinging.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "reverse-pec-deck",
+      "face-pull"
+    ]
+  },
+  {
+    "id": "face-pull",
+    "name": "Face Pull",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Face Pull is a accessory; upper-back/shoulder health movement used to train the listed muscles.",
+    "primary_muscles": [
+      "rear deltoids",
+      "middle/lower trapezius"
+    ],
+    "secondary_muscles": [
+      "rotator cuff",
+      "rhomboids"
+    ],
+    "equipment": [
+      "cable machine",
+      "rope"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "accessory",
+      "upper-back-shoulder-health",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Pull rope toward face with elbows high and rotate hands apart near the end"
+    ],
+    "coaching_notes": "Use light-to-moderate load and controlled motion.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "reverse-pec-deck",
+      "bent-over-rear-delt-fly"
+    ]
+  },
+  {
+    "id": "upright-row",
+    "name": "Upright Row",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Upright Row is a compound/accessory; shoulder pull movement used to train the listed muscles.",
+    "primary_muscles": [
+      "medial deltoids",
+      "upper trapezius"
+    ],
+    "secondary_muscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": [
+      "barbell",
+      "ez bar",
+      "or cable"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "compound-accessory",
+      "shoulder-pull",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Pull the bar upward close to body to a comfortable height, then lower"
+    ],
+    "coaching_notes": "Use a grip and range that do not cause shoulder pinching.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "standing-barbell-overhead-press",
+      "seated-dumbbell-shoulder-press",
+      "arnold-press"
+    ]
+  },
+  {
+    "id": "barbell-shrug",
+    "name": "Barbell Shrug",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Barbell Shrug is a isolation; scapular elevation movement used to train the listed muscles.",
+    "primary_muscles": [
+      "upper trapezius"
+    ],
+    "secondary_muscles": [
+      "forearms",
+      "levator scapulae"
+    ],
+    "equipment": [
+      "barbell"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "isolation",
+      "scapular-elevation",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Stand tall and lift shoulders straight up, pause, then lower"
+    ],
+    "coaching_notes": "Do not roll shoulders in circles.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "upright-row",
+      "dumbbell-shrug"
+    ]
+  },
+  {
+    "id": "dumbbell-shrug",
+    "name": "Dumbbell Shrug",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Dumbbell Shrug is a isolation; scapular elevation movement used to train the listed muscles.",
+    "primary_muscles": [
+      "upper trapezius"
+    ],
+    "secondary_muscles": [
+      "forearms",
+      "levator scapulae"
+    ],
+    "equipment": [
+      "dumbbells"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "isolation",
+      "scapular-elevation",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hold weights at sides, shrug vertically, and lower slowly"
+    ],
+    "coaching_notes": "Keep neck neutral.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "upright-row",
+      "barbell-shrug"
+    ]
+  },
+  {
+    "id": "cable-y-raise",
+    "name": "Cable Y-Raise",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Cable Y-Raise is a accessory; scapular control movement used to train the listed muscles.",
+    "primary_muscles": [
+      "lower trapezius",
+      "medial/rear deltoids"
+    ],
+    "secondary_muscles": [
+      "rotator cuff",
+      "serratus anterior"
+    ],
+    "equipment": [
+      "cables or light dumbbells"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "accessory",
+      "scapular-control",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Raise arms diagonally into a Y while keeping ribs down"
+    ],
+    "coaching_notes": "Choose light resistance and prioritize control.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": []
+  },
+  {
+    "id": "barbell-biceps-curl",
+    "name": "Barbell Biceps Curl",
+    "category": "Arms",
+    "sub_category": "Biceps and Forearms",
+    "description": "Barbell Biceps Curl is a isolation; elbow flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "biceps brachii"
+    ],
+    "secondary_muscles": [
+      "brachialis",
+      "brachioradialis"
+    ],
+    "equipment": [
+      "barbell"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-biceps-and-forearms",
+      "isolation",
+      "elbow-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Curl bar toward shoulders without moving upper arms, then lower slowly"
+    ],
+    "coaching_notes": "Avoid swinging hips.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "ez-bar-curl",
+      "alternating-dumbbell-curl",
+      "incline-dumbbell-curl"
+    ]
+  },
+  {
+    "id": "ez-bar-curl",
+    "name": "EZ-Bar Curl",
+    "category": "Arms",
+    "sub_category": "Biceps and Forearms",
+    "description": "EZ-Bar Curl is a isolation; elbow flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "biceps brachii"
+    ],
+    "secondary_muscles": [
+      "brachialis",
+      "brachioradialis"
+    ],
+    "equipment": [
+      "ez curl bar"
+    ],
+    "primary_equipment": "ez curl bar",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-biceps-and-forearms",
+      "isolation",
+      "elbow-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Curl the angled bar while keeping elbows close to sides"
+    ],
+    "coaching_notes": "Angled grip may feel more comfortable on wrists.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-biceps-curl",
+      "alternating-dumbbell-curl",
+      "incline-dumbbell-curl"
+    ]
+  },
+  {
+    "id": "alternating-dumbbell-curl",
+    "name": "Alternating Dumbbell Curl",
+    "category": "Arms",
+    "sub_category": "Biceps and Forearms",
+    "description": "Alternating Dumbbell Curl is a isolation; unilateral curl movement used to train the listed muscles.",
+    "primary_muscles": [
+      "biceps brachii"
+    ],
+    "secondary_muscles": [
+      "brachialis",
+      "brachioradialis"
+    ],
+    "equipment": [
+      "dumbbells"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "curl",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-biceps-and-forearms",
+      "isolation",
+      "unilateral-curl",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Curl one dumbbell at a time, rotating palm upward as comfortable"
+    ],
+    "coaching_notes": "Keep upper arm still.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-biceps-curl",
+      "ez-bar-curl",
+      "hammer-curl"
+    ]
+  },
+  {
+    "id": "hammer-curl",
+    "name": "Hammer Curl",
+    "category": "Arms",
+    "sub_category": "Biceps and Forearms",
+    "description": "Hammer Curl is a isolation; neutral-grip curl movement used to train the listed muscles.",
+    "primary_muscles": [
+      "brachialis",
+      "brachioradialis"
+    ],
+    "secondary_muscles": [
+      "biceps brachii"
+    ],
+    "equipment": [
+      "dumbbells"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "curl",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-biceps-and-forearms",
+      "isolation",
+      "neutral-grip-curl",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Keep palms facing inward and curl dumbbells toward shoulders"
+    ],
+    "coaching_notes": "Avoid swinging or bending wrists.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "alternating-dumbbell-curl",
+      "incline-dumbbell-curl",
+      "preacher-curl"
+    ]
+  },
+  {
+    "id": "incline-dumbbell-curl",
+    "name": "Incline Dumbbell Curl",
+    "category": "Arms",
+    "sub_category": "Biceps and Forearms",
+    "description": "Incline Dumbbell Curl is a isolation; lengthened-position curl movement used to train the listed muscles.",
+    "primary_muscles": [
+      "biceps brachii",
+      "especially long head emphasis"
+    ],
+    "secondary_muscles": [
+      "brachialis",
+      "brachioradialis"
+    ],
+    "equipment": [
+      "dumbbells",
+      "incline bench"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "curl",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-biceps-and-forearms",
+      "isolation",
+      "lengthened-position-curl",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Sit back on incline bench with arms hanging, curl without moving elbows forward"
+    ],
+    "coaching_notes": "Use lighter weights and avoid overstretching.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-biceps-curl",
+      "ez-bar-curl",
+      "alternating-dumbbell-curl"
+    ]
+  },
+  {
+    "id": "preacher-curl",
+    "name": "Preacher Curl",
+    "category": "Arms",
+    "sub_category": "Biceps and Forearms",
+    "description": "Preacher Curl is a isolation; supported curl movement used to train the listed muscles.",
+    "primary_muscles": [
+      "biceps brachii"
+    ],
+    "secondary_muscles": [
+      "brachialis"
+    ],
+    "equipment": [
+      "preacher bench",
+      "ez bar or dumbbells"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "curl",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-biceps-and-forearms",
+      "isolation",
+      "supported-curl",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Rest upper arms on pad, curl upward, then lower without bouncing at the bottom"
+    ],
+    "coaching_notes": "Do not forcefully lock elbows.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-biceps-curl",
+      "ez-bar-curl",
+      "alternating-dumbbell-curl"
+    ]
+  },
+  {
+    "id": "concentration-curl",
+    "name": "Concentration Curl",
+    "category": "Arms",
+    "sub_category": "Biceps and Forearms",
+    "description": "Concentration Curl is a isolation; unilateral curl movement used to train the listed muscles.",
+    "primary_muscles": [
+      "biceps brachii"
+    ],
+    "secondary_muscles": [
+      "brachialis"
+    ],
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "curl",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-biceps-and-forearms",
+      "isolation",
+      "unilateral-curl",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Brace upper arm against inner thigh and curl dumbbell toward shoulder"
+    ],
+    "coaching_notes": "Keep movement smooth.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-biceps-curl",
+      "ez-bar-curl",
+      "alternating-dumbbell-curl"
+    ]
+  },
+  {
+    "id": "cable-biceps-curl",
+    "name": "Cable Biceps Curl",
+    "category": "Arms",
+    "sub_category": "Biceps and Forearms",
+    "description": "Cable Biceps Curl is a isolation; constant-tension curl movement used to train the listed muscles.",
+    "primary_muscles": [
+      "biceps brachii"
+    ],
+    "secondary_muscles": [
+      "brachialis",
+      "brachioradialis"
+    ],
+    "equipment": [
+      "cable machine",
+      "straight or ez handle"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "curl",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-biceps-and-forearms",
+      "isolation",
+      "constant-tension-curl",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Curl handle toward shoulders and lower against cable tension"
+    ],
+    "coaching_notes": "Keep elbows near the torso.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-biceps-curl",
+      "ez-bar-curl",
+      "alternating-dumbbell-curl"
+    ]
+  },
+  {
+    "id": "bayesian-cable-curl",
+    "name": "Bayesian Cable Curl",
+    "category": "Arms",
+    "sub_category": "Biceps and Forearms",
+    "description": "Bayesian Cable Curl is a isolation; shoulder-extended curl movement used to train the listed muscles.",
+    "primary_muscles": [
+      "biceps brachii"
+    ],
+    "secondary_muscles": [
+      "brachialis"
+    ],
+    "equipment": [
+      "low cable",
+      "single handle"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "curl",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-biceps-and-forearms",
+      "isolation",
+      "shoulder-extended-curl",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Stand facing away from low pulley with arm slightly behind body, curl handle upward"
+    ],
+    "coaching_notes": "Use a comfortable shoulder position.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-biceps-curl",
+      "ez-bar-curl",
+      "alternating-dumbbell-curl"
+    ]
+  },
+  {
+    "id": "spider-curl",
+    "name": "Spider Curl",
+    "category": "Arms",
+    "sub_category": "Biceps and Forearms",
+    "description": "Spider Curl is a isolation; strict curl movement used to train the listed muscles.",
+    "primary_muscles": [
+      "biceps brachii"
+    ],
+    "secondary_muscles": [
+      "brachialis"
+    ],
+    "equipment": [
+      "incline bench",
+      "dumbbells or ez bar"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "curl",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-biceps-and-forearms",
+      "isolation",
+      "strict-curl",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lie chest-down on incline bench with arms hanging and curl without swinging"
+    ],
+    "coaching_notes": "Keep shoulders supported.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-biceps-curl",
+      "ez-bar-curl",
+      "alternating-dumbbell-curl"
+    ]
+  },
+  {
+    "id": "reverse-curl",
+    "name": "Reverse Curl",
+    "category": "Arms",
+    "sub_category": "Biceps and Forearms",
+    "description": "Reverse Curl is a isolation; pronated curl movement used to train the listed muscles.",
+    "primary_muscles": [
+      "brachioradialis",
+      "brachialis"
+    ],
+    "secondary_muscles": [
+      "biceps brachii",
+      "wrist extensors"
+    ],
+    "equipment": [
+      "ez bar or barbell"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "curl",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-biceps-and-forearms",
+      "isolation",
+      "pronated-curl",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Curl with palms facing down and wrists straight"
+    ],
+    "coaching_notes": "Start lighter than with a standard curl.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "alternating-dumbbell-curl",
+      "hammer-curl",
+      "incline-dumbbell-curl"
+    ]
+  },
+  {
+    "id": "wrist-curl",
+    "name": "Wrist Curl",
+    "category": "Arms",
+    "sub_category": "Biceps and Forearms",
+    "description": "Wrist Curl is a isolation; wrist flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "wrist flexors"
+    ],
+    "secondary_muscles": [
+      "finger flexors"
+    ],
+    "equipment": [
+      "dumbbells or barbell",
+      "bench"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-biceps-and-forearms",
+      "isolation",
+      "wrist-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Rest forearms on thighs or bench, curl wrists upward, and lower slowly"
+    ],
+    "coaching_notes": "Move at the wrists rather than elbows.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": []
+  },
+  {
+    "id": "reverse-wrist-curl",
+    "name": "Reverse Wrist Curl",
+    "category": "Arms",
+    "sub_category": "Biceps and Forearms",
+    "description": "Reverse Wrist Curl is a isolation; wrist extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "wrist extensors"
+    ],
+    "secondary_muscles": [
+      "brachioradialis"
+    ],
+    "equipment": [
+      "dumbbells or barbell",
+      "bench"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "extension",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-biceps-and-forearms",
+      "isolation",
+      "wrist-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "With forearms supported and palms down, lift the backs of hands upward"
+    ],
+    "coaching_notes": "Use light loads and controlled reps.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "cable-triceps-pushdown",
+      "rope-triceps-pushdown",
+      "lying-triceps-extension-skull-crusher"
+    ]
+  },
+  {
+    "id": "farmer-s-carry",
+    "name": "Farmer's Carry",
+    "category": "Arms",
+    "sub_category": "Biceps and Forearms",
+    "description": "Farmer's Carry is a loaded carry; grip and bracing movement used to train the listed muscles.",
+    "primary_muscles": [
+      "forearms",
+      "grip muscles"
+    ],
+    "secondary_muscles": [
+      "traps",
+      "core",
+      "glutes"
+    ],
+    "equipment": [
+      "heavy dumbbells or farmer handles"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "carry",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-biceps-and-forearms",
+      "loaded-carry",
+      "grip-and-bracing",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Walk upright while holding heavy weights at your sides"
+    ],
+    "coaching_notes": "Take controlled steps and keep shoulders level.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": []
+  },
+  {
+    "id": "dead-hang",
+    "name": "Dead Hang",
+    "category": "Arms",
+    "sub_category": "Biceps and Forearms",
+    "description": "Dead Hang is a isometric; grip movement used to train the listed muscles.",
+    "primary_muscles": [
+      "forearm/grip muscles"
+    ],
+    "secondary_muscles": [
+      "lats",
+      "shoulder stabilizers"
+    ],
+    "equipment": [
+      "pull-up bar"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-biceps-and-forearms",
+      "isometric",
+      "grip",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hang from a secure bar for a chosen time, maintaining comfortable shoulder control"
+    ],
+    "coaching_notes": "Use feet support if grip or shoulders need scaling.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": []
+  },
+  {
+    "id": "cable-triceps-pushdown",
+    "name": "Cable Triceps Pushdown",
+    "category": "Arms",
+    "sub_category": "Triceps",
+    "description": "Cable Triceps Pushdown is a isolation; elbow extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "triceps brachii"
+    ],
+    "secondary_muscles": [
+      "anconeus"
+    ],
+    "equipment": [
+      "cable machine",
+      "rope or bar"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "extension",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-triceps",
+      "isolation",
+      "elbow-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Keep elbows by sides and straighten arms downward, then return slowly"
+    ],
+    "coaching_notes": "Do not let shoulders swing the weight.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "reverse-wrist-curl",
+      "rope-triceps-pushdown",
+      "dumbbell-overhead-triceps-extension"
+    ]
+  },
+  {
+    "id": "rope-triceps-pushdown",
+    "name": "Rope Triceps Pushdown",
+    "category": "Arms",
+    "sub_category": "Triceps",
+    "description": "Rope Triceps Pushdown is a isolation; elbow extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "triceps brachii"
+    ],
+    "secondary_muscles": [
+      "anconeus"
+    ],
+    "equipment": [
+      "cable machine",
+      "rope"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "extension",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-triceps",
+      "isolation",
+      "elbow-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Push rope down and separate ends slightly at the bottom"
+    ],
+    "coaching_notes": "Keep wrists neutral.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "reverse-wrist-curl",
+      "cable-triceps-pushdown",
+      "dumbbell-overhead-triceps-extension"
+    ]
+  },
+  {
+    "id": "overhead-cable-triceps-extension",
+    "name": "Overhead Cable Triceps Extension",
+    "category": "Arms",
+    "sub_category": "Triceps",
+    "description": "Overhead Cable Triceps Extension is a isolation; overhead elbow extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "triceps brachii long head"
+    ],
+    "secondary_muscles": [
+      "other triceps heads",
+      "core stabilizers"
+    ],
+    "equipment": [
+      "cable machine",
+      "rope"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "vertical_push",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-triceps",
+      "isolation",
+      "overhead-elbow-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Face away from pulley, elbows bent overhead, extend arms without flaring excessively"
+    ],
+    "coaching_notes": "Use a stable stance and comfortable shoulder range.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "dumbbell-overhead-triceps-extension",
+      "assisted-dip"
+    ]
+  },
+  {
+    "id": "dumbbell-overhead-triceps-extension",
+    "name": "Dumbbell Overhead Triceps Extension",
+    "category": "Arms",
+    "sub_category": "Triceps",
+    "description": "Dumbbell Overhead Triceps Extension is a isolation; overhead elbow extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "triceps brachii",
+      "long head emphasis"
+    ],
+    "secondary_muscles": [
+      "other triceps heads"
+    ],
+    "equipment": [
+      "one dumbbell"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "vertical_push",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-triceps",
+      "isolation",
+      "overhead-elbow-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hold dumbbell overhead, bend elbows to lower behind head, then extend"
+    ],
+    "coaching_notes": "Keep ribs down and elbows in a comfortable position.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "cable-triceps-pushdown",
+      "rope-triceps-pushdown",
+      "overhead-cable-triceps-extension"
+    ]
+  },
+  {
+    "id": "lying-triceps-extension-skull-crusher",
+    "name": "Lying Triceps Extension / Skull Crusher",
+    "category": "Arms",
+    "sub_category": "Triceps",
+    "description": "Lying Triceps Extension / Skull Crusher is a isolation; elbow extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "triceps brachii"
+    ],
+    "secondary_muscles": [
+      "anconeus"
+    ],
+    "equipment": [
+      "ez bar or dumbbells",
+      "bench"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "extension",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-triceps",
+      "isolation",
+      "elbow-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lower weight toward forehead or just behind head by bending elbows, then extend"
+    ],
+    "coaching_notes": "Use controlled loads; keep upper arms stable.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "reverse-wrist-curl",
+      "cable-triceps-pushdown",
+      "rope-triceps-pushdown"
+    ]
+  },
+  {
+    "id": "close-grip-bench-press",
+    "name": "Close-Grip Bench Press",
+    "category": "Arms",
+    "sub_category": "Triceps",
+    "description": "Close-Grip Bench Press is a compound; triceps-focused press movement used to train the listed muscles.",
+    "primary_muscles": [
+      "triceps brachii"
+    ],
+    "secondary_muscles": [
+      "pectoralis major",
+      "anterior deltoids"
+    ],
+    "equipment": [
+      "barbell",
+      "flat bench"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-triceps",
+      "compound",
+      "triceps-focused-press",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Use a moderately narrow grip, lower to lower chest, and press up"
+    ],
+    "coaching_notes": "Do not force hands extremely close together.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "cable-triceps-pushdown",
+      "rope-triceps-pushdown",
+      "dumbbell-overhead-triceps-extension"
+    ]
+  },
+  {
+    "id": "dumbbell-triceps-kickback",
+    "name": "Dumbbell Triceps Kickback",
+    "category": "Arms",
+    "sub_category": "Triceps",
+    "description": "Dumbbell Triceps Kickback is a isolation; elbow extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "triceps brachii"
+    ],
+    "secondary_muscles": [
+      "anconeus"
+    ],
+    "equipment": [
+      "dumbbells",
+      "bench optional"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "extension",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-triceps",
+      "isolation",
+      "elbow-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hinge forward, keep upper arm beside torso, and straighten elbow behind you"
+    ],
+    "coaching_notes": "Use light weights and avoid shoulder movement.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "reverse-wrist-curl",
+      "cable-triceps-pushdown",
+      "rope-triceps-pushdown"
+    ]
+  },
+  {
+    "id": "bench-dip",
+    "name": "Bench Dip",
+    "category": "Arms",
+    "sub_category": "Triceps",
+    "description": "Bench Dip is a compound; bodyweight push movement used to train the listed muscles.",
+    "primary_muscles": [
+      "triceps brachii"
+    ],
+    "secondary_muscles": [
+      "anterior deltoids",
+      "pectoralis major"
+    ],
+    "equipment": [
+      "bench or sturdy parallel surfaces"
+    ],
+    "primary_equipment": "bench or sturdy parallel surfaces",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-triceps",
+      "compound",
+      "bodyweight-push",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Place hands on a stable bench, bend elbows to lower a small comfortable distance, then press up"
+    ],
+    "coaching_notes": "Can stress the front of the shoulder; use an alternative if uncomfortable.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "cable-triceps-pushdown",
+      "rope-triceps-pushdown",
+      "dumbbell-overhead-triceps-extension"
+    ]
+  },
+  {
+    "id": "assisted-dip",
+    "name": "Assisted Dip",
+    "category": "Arms",
+    "sub_category": "Triceps",
+    "description": "Assisted Dip is a compound; vertical push movement used to train the listed muscles.",
+    "primary_muscles": [
+      "triceps brachii"
+    ],
+    "secondary_muscles": [
+      "pectoralis major",
+      "anterior deltoids"
+    ],
+    "equipment": [
+      "assisted dip machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "vertical_push",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-triceps",
+      "compound",
+      "vertical-push",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Use assistance to lower and press between handles with control"
+    ],
+    "coaching_notes": "Choose assistance that permits smooth reps.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "cable-triceps-pushdown",
+      "rope-triceps-pushdown",
+      "overhead-cable-triceps-extension"
+    ]
+  },
+  {
+    "id": "jm-press",
+    "name": "JM Press",
+    "category": "Arms",
+    "sub_category": "Triceps",
+    "description": "JM Press is a compound/accessory; triceps press movement used to train the listed muscles.",
+    "primary_muscles": [
+      "triceps brachii"
+    ],
+    "secondary_muscles": [
+      "pectoralis major",
+      "anterior deltoids"
+    ],
+    "equipment": [
+      "barbell or smith machine",
+      "bench"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "advanced / skill-based",
+    "tags": [
+      "arms-triceps",
+      "compound-accessory",
+      "triceps-press",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lower bar toward the area between upper chest and chin by bending elbows, then press"
+    ],
+    "coaching_notes": "Technique-sensitive; start light.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "cable-triceps-pushdown",
+      "rope-triceps-pushdown",
+      "dumbbell-overhead-triceps-extension"
+    ]
+  },
+  {
+    "id": "single-arm-cable-pushdown",
+    "name": "Single-Arm Cable Pushdown",
+    "category": "Arms",
+    "sub_category": "Triceps",
+    "description": "Single-Arm Cable Pushdown is a isolation; unilateral extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "triceps brachii"
+    ],
+    "secondary_muscles": [
+      "anconeus"
+    ],
+    "equipment": [
+      "cable machine",
+      "single handle"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "extension",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "arms-triceps",
+      "isolation",
+      "unilateral-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Keep elbow close to side and extend one arm downward"
+    ],
+    "coaching_notes": "Resist torso rotation.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "reverse-wrist-curl",
+      "cable-triceps-pushdown",
+      "rope-triceps-pushdown"
+    ]
+  },
+  {
+    "id": "barbell-back-squat",
+    "name": "Barbell Back Squat",
+    "category": "Legs",
+    "sub_category": "Quadriceps",
+    "description": "Barbell Back Squat is a compound; squat movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "adductors",
+      "spinal erectors",
+      "core"
+    ],
+    "equipment": [
+      "barbell",
+      "squat rack"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "squat",
+    "exercise_type": "compound",
+    "difficulty": "intermediate",
+    "tags": [
+      "legs-quadriceps",
+      "compound",
+      "squat",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Brace, sit down between hips with feet planted, then drive up through the floor"
+    ],
+    "coaching_notes": "Use rack safeties; depth depends on mobility and comfort.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-front-squat",
+      "goblet-squat",
+      "dumbbell-split-squat"
+    ]
+  },
+  {
+    "id": "barbell-front-squat",
+    "name": "Barbell Front Squat",
+    "category": "Legs",
+    "sub_category": "Quadriceps",
+    "description": "Barbell Front Squat is a compound; upright squat movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps"
+    ],
+    "secondary_muscles": [
+      "gluteus maximus",
+      "upper back",
+      "core"
+    ],
+    "equipment": [
+      "barbell",
+      "squat rack"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "squat",
+    "exercise_type": "compound",
+    "difficulty": "intermediate",
+    "tags": [
+      "legs-quadriceps",
+      "compound",
+      "upright-squat",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Rest bar on front shoulders, keep torso tall, squat, and stand"
+    ],
+    "coaching_notes": "Use a secure front-rack position or straps if needed.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "goblet-squat",
+      "dumbbell-split-squat"
+    ]
+  },
+  {
+    "id": "goblet-squat",
+    "name": "Goblet Squat",
+    "category": "Legs",
+    "sub_category": "Quadriceps",
+    "description": "Goblet Squat is a compound; squat movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "adductors",
+      "core"
+    ],
+    "equipment": [
+      "dumbbell or kettlebell"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "squat",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-quadriceps",
+      "compound",
+      "squat",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hold weight at chest, squat between hips, and stand while keeping torso controlled"
+    ],
+    "coaching_notes": "Useful for learning squat mechanics.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "barbell-front-squat",
+      "dumbbell-split-squat"
+    ]
+  },
+  {
+    "id": "dumbbell-split-squat",
+    "name": "Dumbbell Split Squat",
+    "category": "Legs",
+    "sub_category": "Quadriceps",
+    "description": "Dumbbell Split Squat is a compound; unilateral squat movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "adductors",
+      "core"
+    ],
+    "equipment": [
+      "dumbbells optional"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "squat",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-quadriceps",
+      "compound",
+      "unilateral-squat",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Take a staggered stance, lower back knee toward floor, and drive through front foot"
+    ],
+    "coaching_notes": "Keep front foot fully planted.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "barbell-front-squat",
+      "goblet-squat"
+    ]
+  },
+  {
+    "id": "bulgarian-split-squat",
+    "name": "Bulgarian Split Squat",
+    "category": "Legs",
+    "sub_category": "Quadriceps",
+    "description": "Bulgarian Split Squat is a compound; unilateral squat movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "adductors",
+      "hamstrings",
+      "core"
+    ],
+    "equipment": [
+      "bench",
+      "dumbbells optional"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "squat",
+    "exercise_type": "compound",
+    "difficulty": "intermediate",
+    "tags": [
+      "legs-quadriceps",
+      "compound",
+      "unilateral-squat",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Place rear foot on bench, lower vertically, then stand through front leg"
+    ],
+    "coaching_notes": "Start bodyweight and use support for balance.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "barbell-front-squat",
+      "goblet-squat"
+    ]
+  },
+  {
+    "id": "leg-press",
+    "name": "Leg Press",
+    "category": "Legs",
+    "sub_category": "Quadriceps",
+    "description": "Leg Press is a compound; machine squat movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "adductors",
+      "hamstrings"
+    ],
+    "equipment": [
+      "leg press machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "squat",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-quadriceps",
+      "compound",
+      "machine-squat",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lower platform until knees bend comfortably, then press without locking knees hard"
+    ],
+    "coaching_notes": "Keep hips and lower back against pad.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "barbell-front-squat",
+      "goblet-squat"
+    ]
+  },
+  {
+    "id": "hack-squat",
+    "name": "Hack Squat",
+    "category": "Legs",
+    "sub_category": "Quadriceps",
+    "description": "Hack Squat is a compound; machine squat movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps"
+    ],
+    "secondary_muscles": [
+      "gluteus maximus",
+      "adductors"
+    ],
+    "equipment": [
+      "hack squat machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "squat",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-quadriceps",
+      "compound",
+      "machine-squat",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Position shoulders under pads, squat to comfortable depth, and drive platform up"
+    ],
+    "coaching_notes": "Avoid bouncing at the bottom.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "barbell-front-squat",
+      "goblet-squat"
+    ]
+  },
+  {
+    "id": "smith-machine-squat",
+    "name": "Smith Machine Squat",
+    "category": "Legs",
+    "sub_category": "Quadriceps",
+    "description": "Smith Machine Squat is a compound; guided squat movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "adductors",
+      "core"
+    ],
+    "equipment": [
+      "smith machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "squat",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-quadriceps",
+      "compound",
+      "guided-squat",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Set feet under bar in a comfortable position, squat, then stand"
+    ],
+    "coaching_notes": "Set safety stops before loading.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "barbell-front-squat",
+      "goblet-squat"
+    ]
+  },
+  {
+    "id": "leg-extension",
+    "name": "Leg Extension",
+    "category": "Legs",
+    "sub_category": "Quadriceps",
+    "description": "Leg Extension is a isolation; knee extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps"
+    ],
+    "secondary_muscles": [
+      "---"
+    ],
+    "equipment": [
+      "leg extension machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "extension",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-quadriceps",
+      "isolation",
+      "knee-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Extend knees until legs are nearly straight, pause, and lower slowly"
+    ],
+    "coaching_notes": "Align machine pivot with knee joint.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "barbell-front-squat",
+      "goblet-squat"
+    ]
+  },
+  {
+    "id": "step-up",
+    "name": "Step-Up",
+    "category": "Legs",
+    "sub_category": "Quadriceps",
+    "description": "Step-Up is a compound; unilateral step movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "equipment": [
+      "box or sturdy step",
+      "optional dumbbells"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-quadriceps",
+      "compound",
+      "unilateral-step",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Place whole foot on step, rise through that leg, then step down under control"
+    ],
+    "coaching_notes": "Choose a height that allows pelvic control.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "barbell-front-squat",
+      "goblet-squat"
+    ]
+  },
+  {
+    "id": "walking-lunge",
+    "name": "Walking Lunge",
+    "category": "Legs",
+    "sub_category": "Quadriceps",
+    "description": "Walking Lunge is a compound; locomotion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "hamstrings",
+      "adductors",
+      "core"
+    ],
+    "equipment": [
+      "bodyweight or dumbbells"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-quadriceps",
+      "compound",
+      "locomotion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Step forward, lower both knees, push through front foot, and continue to next step"
+    ],
+    "coaching_notes": "Keep steps controlled and torso steady.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "barbell-front-squat",
+      "goblet-squat"
+    ]
+  },
+  {
+    "id": "reverse-lunge",
+    "name": "Reverse Lunge",
+    "category": "Legs",
+    "sub_category": "Quadriceps",
+    "description": "Reverse Lunge is a compound; unilateral lunge movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "hamstrings",
+      "adductors"
+    ],
+    "equipment": [
+      "bodyweight or dumbbells"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "lunge",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-quadriceps",
+      "compound",
+      "unilateral-lunge",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Step backward, lower under control, then push through front foot to return"
+    ],
+    "coaching_notes": "Often easier to control than forward lunges.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "barbell-front-squat",
+      "goblet-squat"
+    ]
+  },
+  {
+    "id": "sissy-squat",
+    "name": "Sissy Squat",
+    "category": "Legs",
+    "sub_category": "Quadriceps",
+    "description": "Sissy Squat is a isolation-like; knee-dominant movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps"
+    ],
+    "secondary_muscles": [
+      "hip flexors",
+      "core"
+    ],
+    "equipment": [
+      "sissy squat bench or bodyweight support"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "advanced / skill-based",
+    "tags": [
+      "legs-quadriceps",
+      "isolation-like",
+      "knee-dominant",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "With support, bend knees while leaning torso back as knees travel forward, then extend"
+    ],
+    "coaching_notes": "Advanced knee-loading movement; use only pain-free range.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "barbell-front-squat",
+      "goblet-squat"
+    ]
+  },
+  {
+    "id": "barbell-hip-thrust",
+    "name": "Barbell Hip Thrust",
+    "category": "Legs",
+    "sub_category": "Hamstrings and Glutes",
+    "description": "Barbell Hip Thrust is a compound; hip extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "hamstrings",
+      "adductors",
+      "core"
+    ],
+    "equipment": [
+      "barbell",
+      "bench",
+      "pad"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "extension",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-hamstrings-and-glutes",
+      "compound",
+      "hip-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Rest upper back on bench, drive hips upward, pause at top, and lower slowly"
+    ],
+    "coaching_notes": "Finish with hips extended, not by arching the lower back.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "goblet-squat",
+      "dumbbell-split-squat"
+    ]
+  },
+  {
+    "id": "glute-bridge",
+    "name": "Glute Bridge",
+    "category": "Legs",
+    "sub_category": "Hamstrings and Glutes",
+    "description": "Glute Bridge is a compound; hip extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "hamstrings",
+      "core"
+    ],
+    "equipment": [
+      "bodyweight or barbell"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "extension",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-hamstrings-and-glutes",
+      "compound",
+      "hip-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lie on back with knees bent, press through feet, lift hips, and lower"
+    ],
+    "coaching_notes": "Keep ribs down and avoid overextending.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "goblet-squat",
+      "dumbbell-split-squat"
+    ]
+  },
+  {
+    "id": "single-leg-glute-bridge",
+    "name": "Single-Leg Glute Bridge",
+    "category": "Legs",
+    "sub_category": "Hamstrings and Glutes",
+    "description": "Single-Leg Glute Bridge is a unilateral; hip extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "hamstrings",
+      "core"
+    ],
+    "equipment": [
+      "bodyweight"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "extension",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-hamstrings-and-glutes",
+      "unilateral",
+      "hip-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lift hips using one leg while keeping pelvis level"
+    ],
+    "coaching_notes": "Regress to two legs if hamstrings cramp or hips rotate.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "goblet-squat",
+      "dumbbell-split-squat"
+    ]
+  },
+  {
+    "id": "cable-glute-kickback",
+    "name": "Cable Glute Kickback",
+    "category": "Legs",
+    "sub_category": "Hamstrings and Glutes",
+    "description": "Cable Glute Kickback is a isolation; hip extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "hamstrings",
+      "gluteus medius"
+    ],
+    "equipment": [
+      "cable machine",
+      "ankle strap"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "extension",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-hamstrings-and-glutes",
+      "isolation",
+      "hip-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "With torso supported, extend leg backward without arching the back"
+    ],
+    "coaching_notes": "Use a small controlled range.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "goblet-squat",
+      "dumbbell-split-squat"
+    ]
+  },
+  {
+    "id": "glute-kickback-machine",
+    "name": "Glute Kickback Machine",
+    "category": "Legs",
+    "sub_category": "Hamstrings and Glutes",
+    "description": "Glute Kickback Machine is a isolation; hip extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "hamstrings"
+    ],
+    "equipment": [
+      "glute kickback machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "extension",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-hamstrings-and-glutes",
+      "isolation",
+      "hip-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Press the pad backward by extending hip, then return slowly"
+    ],
+    "coaching_notes": "Adjust pad and avoid twisting.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "goblet-squat",
+      "dumbbell-split-squat"
+    ]
+  },
+  {
+    "id": "seated-leg-curl",
+    "name": "Seated Leg Curl",
+    "category": "Legs",
+    "sub_category": "Hamstrings and Glutes",
+    "description": "Seated Leg Curl is a isolation; knee flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "hamstrings"
+    ],
+    "secondary_muscles": [
+      "gastrocnemius"
+    ],
+    "equipment": [
+      "seated leg curl machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-hamstrings-and-glutes",
+      "isolation",
+      "knee-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Curl heels down/back, pause, then return slowly"
+    ],
+    "coaching_notes": "Align knee with machine pivot.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "lying-leg-curl",
+      "standing-single-leg-curl",
+      "nordic-hamstring-curl"
+    ]
+  },
+  {
+    "id": "lying-leg-curl",
+    "name": "Lying Leg Curl",
+    "category": "Legs",
+    "sub_category": "Hamstrings and Glutes",
+    "description": "Lying Leg Curl is a isolation; knee flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "hamstrings"
+    ],
+    "secondary_muscles": [
+      "gastrocnemius"
+    ],
+    "equipment": [
+      "lying leg curl machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-hamstrings-and-glutes",
+      "isolation",
+      "knee-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Curl pad toward glutes without lifting hips, then lower"
+    ],
+    "coaching_notes": "Keep pelvis against pad.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "seated-leg-curl",
+      "standing-single-leg-curl",
+      "nordic-hamstring-curl"
+    ]
+  },
+  {
+    "id": "standing-single-leg-curl",
+    "name": "Standing Single-Leg Curl",
+    "category": "Legs",
+    "sub_category": "Hamstrings and Glutes",
+    "description": "Standing Single-Leg Curl is a isolation; unilateral knee flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "hamstrings"
+    ],
+    "secondary_muscles": [
+      "gastrocnemius"
+    ],
+    "equipment": [
+      "standing leg curl machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-hamstrings-and-glutes",
+      "isolation",
+      "unilateral-knee-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Curl heel toward glute and lower slowly"
+    ],
+    "coaching_notes": "Keep hips still.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "seated-leg-curl",
+      "lying-leg-curl",
+      "nordic-hamstring-curl"
+    ]
+  },
+  {
+    "id": "nordic-hamstring-curl",
+    "name": "Nordic Hamstring Curl",
+    "category": "Legs",
+    "sub_category": "Hamstrings and Glutes",
+    "description": "Nordic Hamstring Curl is a advanced; eccentric knee flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "hamstrings"
+    ],
+    "secondary_muscles": [
+      "gluteus maximus",
+      "calves"
+    ],
+    "equipment": [
+      "nordic bench or partner anchor"
+    ],
+    "primary_equipment": "nordic bench or partner anchor",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "advanced / skill-based",
+    "tags": [
+      "legs-hamstrings-and-glutes",
+      "advanced",
+      "eccentric-knee-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Kneel with ankles secured, keep body straight, and lower forward slowly; use hands to catch and assist return"
+    ],
+    "coaching_notes": "Scale with band assistance or shorter range.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "seated-leg-curl",
+      "lying-leg-curl",
+      "standing-single-leg-curl"
+    ]
+  },
+  {
+    "id": "good-morning",
+    "name": "Good Morning",
+    "category": "Legs",
+    "sub_category": "Hamstrings and Glutes",
+    "description": "Good Morning is a compound; hip hinge movement used to train the listed muscles.",
+    "primary_muscles": [
+      "hamstrings",
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "spinal erectors",
+      "adductors"
+    ],
+    "equipment": [
+      "barbell",
+      "rack"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "hinge",
+    "exercise_type": "compound",
+    "difficulty": "intermediate",
+    "tags": [
+      "legs-hamstrings-and-glutes",
+      "compound",
+      "hip-hinge",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "With bar across upper back and knees soft, hinge hips back, then stand"
+    ],
+    "coaching_notes": "Use light loads until hinge mechanics are consistent.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "goblet-squat",
+      "dumbbell-split-squat"
+    ]
+  },
+  {
+    "id": "cable-pull-through",
+    "name": "Cable Pull-Through",
+    "category": "Legs",
+    "sub_category": "Hamstrings and Glutes",
+    "description": "Cable Pull-Through is a compound; hip hinge movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gluteus maximus",
+      "hamstrings"
+    ],
+    "secondary_muscles": [
+      "spinal erectors",
+      "adductors"
+    ],
+    "equipment": [
+      "cable machine",
+      "rope"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "hinge",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-hamstrings-and-glutes",
+      "compound",
+      "hip-hinge",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Face away from low pulley, hinge with rope between legs, then drive hips forward"
+    ],
+    "coaching_notes": "Keep arms relaxed; hips create the motion.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "goblet-squat",
+      "dumbbell-split-squat"
+    ]
+  },
+  {
+    "id": "kettlebell-swing",
+    "name": "Kettlebell Swing",
+    "category": "Legs",
+    "sub_category": "Hamstrings and Glutes",
+    "description": "Kettlebell Swing is a ballistic; hip hinge movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gluteus maximus",
+      "hamstrings"
+    ],
+    "secondary_muscles": [
+      "spinal erectors",
+      "core",
+      "shoulders"
+    ],
+    "equipment": [
+      "kettlebell"
+    ],
+    "primary_equipment": "kettlebell",
+    "movement_pattern": "hinge",
+    "exercise_type": "mobility",
+    "difficulty": "intermediate",
+    "tags": [
+      "legs-hamstrings-and-glutes",
+      "ballistic",
+      "hip-hinge",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hike kettlebell back, snap hips forward to float it to chest height, and let it return"
+    ],
+    "coaching_notes": "A hip hinge, not a squat or shoulder raise; learn technique first.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "goblet-squat",
+      "dumbbell-split-squat"
+    ]
+  },
+  {
+    "id": "cable-romanian-deadlift",
+    "name": "Cable Romanian Deadlift",
+    "category": "Legs",
+    "sub_category": "Hamstrings and Glutes",
+    "description": "Cable Romanian Deadlift is a compound; hip hinge movement used to train the listed muscles.",
+    "primary_muscles": [
+      "hamstrings",
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "spinal erectors",
+      "lats"
+    ],
+    "equipment": [
+      "cable machine",
+      "low pulley or rope"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "hinge",
+    "exercise_type": "compound",
+    "difficulty": "intermediate",
+    "tags": [
+      "legs-hamstrings-and-glutes",
+      "compound",
+      "hip-hinge",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hinge hips back against cable pull, then stand by driving hips forward"
+    ],
+    "coaching_notes": "Maintain a braced torso.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-back-squat",
+      "goblet-squat",
+      "dumbbell-split-squat"
+    ]
+  },
+  {
+    "id": "standing-calf-raise",
+    "name": "Standing Calf Raise",
+    "category": "Legs",
+    "sub_category": "Calves and Adductors/Abductors",
+    "description": "Standing Calf Raise is a isolation; plantar flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gastrocnemius"
+    ],
+    "secondary_muscles": [
+      "soleus"
+    ],
+    "equipment": [
+      "calf raise machine or step"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-calves-and-adductors/abductors",
+      "isolation",
+      "plantar-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Rise onto balls of feet, pause, and lower heels through a comfortable stretch"
+    ],
+    "coaching_notes": "Avoid bouncing; use support for balance.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "leg-press-calf-raise",
+      "single-leg-calf-raise"
+    ]
+  },
+  {
+    "id": "seated-calf-raise",
+    "name": "Seated Calf Raise",
+    "category": "Legs",
+    "sub_category": "Calves and Adductors/Abductors",
+    "description": "Seated Calf Raise is a isolation; plantar flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "soleus"
+    ],
+    "secondary_muscles": [
+      "gastrocnemius"
+    ],
+    "equipment": [
+      "seated calf raise machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-calves-and-adductors/abductors",
+      "isolation",
+      "plantar-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "With knees bent, raise heels, pause, and lower slowly"
+    ],
+    "coaching_notes": "Use full controlled range.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "leg-press-calf-raise",
+      "single-leg-calf-raise"
+    ]
+  },
+  {
+    "id": "leg-press-calf-raise",
+    "name": "Leg Press Calf Raise",
+    "category": "Legs",
+    "sub_category": "Calves and Adductors/Abductors",
+    "description": "Leg Press Calf Raise is a isolation; plantar flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gastrocnemius",
+      "soleus"
+    ],
+    "secondary_muscles": [
+      "---"
+    ],
+    "equipment": [
+      "leg press machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-calves-and-adductors/abductors",
+      "isolation",
+      "plantar-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Place forefeet on platform, lower heels, then press through the balls of feet"
+    ],
+    "coaching_notes": "Keep knees softly extended and safety latch engaged.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "standing-calf-raise",
+      "seated-calf-raise",
+      "single-leg-calf-raise"
+    ]
+  },
+  {
+    "id": "single-leg-calf-raise",
+    "name": "Single-Leg Calf Raise",
+    "category": "Legs",
+    "sub_category": "Calves and Adductors/Abductors",
+    "description": "Single-Leg Calf Raise is a unilateral; plantar flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gastrocnemius",
+      "soleus"
+    ],
+    "secondary_muscles": [
+      "foot stabilizers"
+    ],
+    "equipment": [
+      "step or floor"
+    ],
+    "primary_equipment": "step or floor",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-calves-and-adductors/abductors",
+      "unilateral",
+      "plantar-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Rise on one foot, pause, then lower slowly"
+    ],
+    "coaching_notes": "Hold a rail for balance if needed.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "standing-calf-raise",
+      "seated-calf-raise",
+      "leg-press-calf-raise"
+    ]
+  },
+  {
+    "id": "tibialis-raise",
+    "name": "Tibialis Raise",
+    "category": "Legs",
+    "sub_category": "Calves and Adductors/Abductors",
+    "description": "Tibialis Raise is a isolation; dorsiflexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "tibialis anterior"
+    ],
+    "secondary_muscles": [
+      "toe extensors"
+    ],
+    "equipment": [
+      "wall or tibialis raise machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-calves-and-adductors/abductors",
+      "isolation",
+      "dorsiflexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Keep heels grounded and lift toes toward shins, then lower"
+    ],
+    "coaching_notes": "Useful complement to calf work.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": []
+  },
+  {
+    "id": "hip-adduction-machine",
+    "name": "Hip Adduction Machine",
+    "category": "Legs",
+    "sub_category": "Calves and Adductors/Abductors",
+    "description": "Hip Adduction Machine is a isolation; hip adduction movement used to train the listed muscles.",
+    "primary_muscles": [
+      "hip adductors"
+    ],
+    "secondary_muscles": [
+      "gracilis",
+      "pectineus"
+    ],
+    "equipment": [
+      "hip adduction machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-calves-and-adductors/abductors",
+      "isolation",
+      "hip-adduction",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Bring padded thighs together, pause, and return slowly"
+    ],
+    "coaching_notes": "Use a comfortable range; do not force the stretch.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "cable-hip-adduction"
+    ]
+  },
+  {
+    "id": "cable-hip-adduction",
+    "name": "Cable Hip Adduction",
+    "category": "Legs",
+    "sub_category": "Calves and Adductors/Abductors",
+    "description": "Cable Hip Adduction is a isolation; unilateral adduction movement used to train the listed muscles.",
+    "primary_muscles": [
+      "hip adductors"
+    ],
+    "secondary_muscles": [
+      "gracilis",
+      "pectineus"
+    ],
+    "equipment": [
+      "low cable",
+      "ankle strap"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-calves-and-adductors/abductors",
+      "isolation",
+      "unilateral-adduction",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Stand side-on to cable and draw working leg across the body's midline"
+    ],
+    "coaching_notes": "Hold support and keep pelvis level.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "hip-adduction-machine"
+    ]
+  },
+  {
+    "id": "hip-abduction-machine",
+    "name": "Hip Abduction Machine",
+    "category": "Legs",
+    "sub_category": "Calves and Adductors/Abductors",
+    "description": "Hip Abduction Machine is a isolation; hip abduction movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gluteus medius",
+      "gluteus minimus"
+    ],
+    "secondary_muscles": [
+      "tensor fasciae latae"
+    ],
+    "equipment": [
+      "hip abduction machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-calves-and-adductors/abductors",
+      "isolation",
+      "hip-abduction",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Push knees outward against pads, pause, and return slowly"
+    ],
+    "coaching_notes": "Avoid rocking the torso.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "cable-hip-abduction",
+      "clamshell"
+    ]
+  },
+  {
+    "id": "cable-hip-abduction",
+    "name": "Cable Hip Abduction",
+    "category": "Legs",
+    "sub_category": "Calves and Adductors/Abductors",
+    "description": "Cable Hip Abduction is a isolation; unilateral abduction movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gluteus medius",
+      "gluteus minimus"
+    ],
+    "secondary_muscles": [
+      "tensor fasciae latae"
+    ],
+    "equipment": [
+      "low cable",
+      "ankle strap"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-calves-and-adductors/abductors",
+      "isolation",
+      "unilateral-abduction",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Stand side-on and move working leg outward without tilting torso"
+    ],
+    "coaching_notes": "Use light resistance and stable support.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "hip-abduction-machine",
+      "clamshell"
+    ]
+  },
+  {
+    "id": "clamshell",
+    "name": "Clamshell",
+    "category": "Legs",
+    "sub_category": "Calves and Adductors/Abductors",
+    "description": "Clamshell is a accessory; hip external rotation movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gluteus medius",
+      "gluteus minimus"
+    ],
+    "secondary_muscles": [
+      "deep hip external rotators"
+    ],
+    "equipment": [
+      "mini-band optional",
+      "mat"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "rotation",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "legs-calves-and-adductors/abductors",
+      "accessory",
+      "hip-external-rotation",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lie on side with knees bent, keep feet together, and open top knee without rolling pelvis"
+    ],
+    "coaching_notes": "Use slow, small movements.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "hip-abduction-machine",
+      "cable-hip-abduction"
+    ]
+  },
+  {
+    "id": "crunch",
+    "name": "Crunch",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Crunch is a isolation; trunk flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "rectus abdominis"
+    ],
+    "secondary_muscles": [
+      "obliques"
+    ],
+    "equipment": [
+      "mat"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "core-and-abs",
+      "isolation",
+      "trunk-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Curl shoulders toward pelvis without pulling the neck, then lower slowly"
+    ],
+    "coaching_notes": "Think ribs toward hips; avoid yanking the head.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "reverse-crunch",
+      "sit-up",
+      "cable-crunch"
+    ]
+  },
+  {
+    "id": "reverse-crunch",
+    "name": "Reverse Crunch",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Reverse Crunch is a isolation; posterior pelvic tilt movement used to train the listed muscles.",
+    "primary_muscles": [
+      "rectus abdominis"
+    ],
+    "secondary_muscles": [
+      "hip flexors"
+    ],
+    "equipment": [
+      "mat or bench"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "core-and-abs",
+      "isolation",
+      "posterior-pelvic-tilt",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Bring knees toward chest by curling pelvis off floor, then lower with control"
+    ],
+    "coaching_notes": "Avoid swinging legs.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "crunch",
+      "sit-up",
+      "cable-crunch"
+    ]
+  },
+  {
+    "id": "sit-up",
+    "name": "Sit-Up",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Sit-Up is a compound; trunk flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "rectus abdominis"
+    ],
+    "secondary_muscles": [
+      "hip flexors",
+      "obliques"
+    ],
+    "equipment": [
+      "mat or decline bench"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "core-and-abs",
+      "compound",
+      "trunk-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Raise torso from floor to seated position and lower slowly"
+    ],
+    "coaching_notes": "Use a range that feels comfortable for the back.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "crunch",
+      "reverse-crunch",
+      "cable-crunch"
+    ]
+  },
+  {
+    "id": "cable-crunch",
+    "name": "Cable Crunch",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Cable Crunch is a isolation; loaded trunk flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "rectus abdominis"
+    ],
+    "secondary_muscles": [
+      "obliques"
+    ],
+    "equipment": [
+      "cable machine",
+      "rope"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "general",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "core-and-abs",
+      "isolation",
+      "loaded-trunk-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Kneel under cable and curl ribs toward pelvis while keeping hips mostly fixed"
+    ],
+    "coaching_notes": "Do not simply hinge at hips.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 90,
+    "is_custom": false,
+    "alternatives": [
+      "crunch",
+      "reverse-crunch",
+      "sit-up"
+    ]
+  },
+  {
+    "id": "hanging-knee-raise",
+    "name": "Hanging Knee Raise",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Hanging Knee Raise is a compound; trunk/pelvic control movement used to train the listed muscles.",
+    "primary_muscles": [
+      "rectus abdominis"
+    ],
+    "secondary_muscles": [
+      "hip flexors",
+      "obliques",
+      "grip"
+    ],
+    "equipment": [
+      "pull-up/dip station"
+    ],
+    "primary_equipment": "pull-up/dip station",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "core-and-abs",
+      "compound",
+      "trunk-pelvic-control",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hang securely, lift knees toward torso, and lower without swinging"
+    ],
+    "coaching_notes": "Use captain's chair or supported version to scale.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "crunch",
+      "reverse-crunch",
+      "sit-up"
+    ]
+  },
+  {
+    "id": "hanging-leg-raise",
+    "name": "Hanging Leg Raise",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Hanging Leg Raise is a advanced; trunk/pelvic control movement used to train the listed muscles.",
+    "primary_muscles": [
+      "rectus abdominis"
+    ],
+    "secondary_muscles": [
+      "hip flexors",
+      "obliques",
+      "grip"
+    ],
+    "equipment": [
+      "pull-up bar"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "intermediate",
+    "tags": [
+      "core-and-abs",
+      "advanced",
+      "trunk-pelvic-control",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Raise straight or slightly bent legs under control, then lower without swinging"
+    ],
+    "coaching_notes": "Progress from knee raises.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "crunch",
+      "reverse-crunch",
+      "sit-up"
+    ]
+  },
+  {
+    "id": "captain-s-chair-knee-raise",
+    "name": "Captain's Chair Knee Raise",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Captain's Chair Knee Raise is a compound; knee raise movement used to train the listed muscles.",
+    "primary_muscles": [
+      "rectus abdominis"
+    ],
+    "secondary_muscles": [
+      "hip flexors",
+      "obliques"
+    ],
+    "equipment": [
+      "captain's chair station"
+    ],
+    "primary_equipment": "captain's chair station",
+    "movement_pattern": "general",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "core-and-abs",
+      "compound",
+      "knee-raise",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Support forearms on pads and lift knees toward chest, then lower slowly"
+    ],
+    "coaching_notes": "Keep lower back controlled against pad if possible.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "crunch",
+      "reverse-crunch",
+      "sit-up"
+    ]
+  },
+  {
+    "id": "ab-wheel-rollout",
+    "name": "Ab Wheel Rollout",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Ab Wheel Rollout is a advanced; anti-extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "rectus abdominis"
+    ],
+    "secondary_muscles": [
+      "obliques",
+      "lats",
+      "shoulders"
+    ],
+    "equipment": [
+      "ab wheel",
+      "mat"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "extension",
+    "exercise_type": "mobility",
+    "difficulty": "advanced / skill-based",
+    "tags": [
+      "core-and-abs",
+      "advanced",
+      "anti-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "From knees, roll wheel forward while keeping ribs down, then pull back"
+    ],
+    "coaching_notes": "Shorten range or use wall target to prevent back arching.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "crunch",
+      "reverse-crunch",
+      "sit-up"
+    ]
+  },
+  {
+    "id": "plank",
+    "name": "Plank",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Plank is a isometric; anti-extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "transverse abdominis",
+      "rectus abdominis"
+    ],
+    "secondary_muscles": [
+      "obliques",
+      "glutes",
+      "shoulders"
+    ],
+    "equipment": [
+      "mat"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "extension",
+    "exercise_type": "mobility",
+    "difficulty": "beginner / scalable",
+    "tags": [
+      "core-and-abs",
+      "isometric",
+      "anti-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Keep elbows under shoulders and body in a straight line while bracing"
+    ],
+    "coaching_notes": "Stop when hips sag or lower back arches.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "crunch",
+      "reverse-crunch",
+      "sit-up"
+    ]
+  },
+  {
+    "id": "side-plank",
+    "name": "Side Plank",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Side Plank is a isometric; lateral stability movement used to train the listed muscles.",
+    "primary_muscles": [
+      "obliques",
+      "quadratus lumborum"
+    ],
+    "secondary_muscles": [
+      "gluteus medius",
+      "transverse abdominis"
+    ],
+    "equipment": [
+      "mat"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "core-and-abs",
+      "isometric",
+      "lateral-stability",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Support on forearm and side of foot, lift hips, and keep body aligned"
+    ],
+    "coaching_notes": "Bend knees to make it easier.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "pallof-press",
+      "russian-twist",
+      "wood-chop"
+    ]
+  },
+  {
+    "id": "pallof-press",
+    "name": "Pallof Press",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Pallof Press is a anti-rotation; core stability movement used to train the listed muscles.",
+    "primary_muscles": [
+      "obliques",
+      "transverse abdominis"
+    ],
+    "secondary_muscles": [
+      "glutes",
+      "shoulders"
+    ],
+    "equipment": [
+      "cable or resistance band"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "rotation",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "core-and-abs",
+      "anti-rotation",
+      "core-stability",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Stand side-on to anchor, press handle straight out, resist rotation, and return"
+    ],
+    "coaching_notes": "Keep hips and shoulders square.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "plank",
+      "side-plank",
+      "dead-bug"
+    ]
+  },
+  {
+    "id": "dead-bug",
+    "name": "Dead Bug",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Dead Bug is a core stability; anti-extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "transverse abdominis",
+      "rectus abdominis"
+    ],
+    "secondary_muscles": [
+      "hip flexors",
+      "obliques"
+    ],
+    "equipment": [
+      "mat"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "extension",
+    "exercise_type": "mobility",
+    "difficulty": "beginner / scalable",
+    "tags": [
+      "core-and-abs",
+      "core-stability",
+      "anti-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "On back, lower opposite arm and leg while keeping lower back gently controlled, then alternate"
+    ],
+    "coaching_notes": "Reduce range if back lifts off floor.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "crunch",
+      "reverse-crunch",
+      "sit-up"
+    ]
+  },
+  {
+    "id": "bird-dog",
+    "name": "Bird Dog",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Bird Dog is a core stability; contralateral control movement used to train the listed muscles.",
+    "primary_muscles": [
+      "multifidus",
+      "spinal stabilizers"
+    ],
+    "secondary_muscles": [
+      "gluteus maximus",
+      "shoulders",
+      "core"
+    ],
+    "equipment": [
+      "mat"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner / scalable",
+    "tags": [
+      "core-and-abs",
+      "core-stability",
+      "contralateral-control",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "On hands and knees, extend opposite arm and leg without rotating pelvis"
+    ],
+    "coaching_notes": "Move slowly and keep spine neutral.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": []
+  },
+  {
+    "id": "russian-twist",
+    "name": "Russian Twist",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Russian Twist is a rotational core movement used to train the listed muscles.",
+    "primary_muscles": [
+      "obliques"
+    ],
+    "secondary_muscles": [
+      "rectus abdominis",
+      "hip flexors"
+    ],
+    "equipment": [
+      "bodyweight or medicine ball"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "rotation",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "core-and-abs",
+      "rotational-core",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lean back slightly and rotate torso side to side with control"
+    ],
+    "coaching_notes": "Avoid rapid twisting under heavy load.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "side-plank",
+      "pallof-press",
+      "wood-chop"
+    ]
+  },
+  {
+    "id": "wood-chop",
+    "name": "Wood Chop",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Wood Chop is a rotational core; diagonal pull movement used to train the listed muscles.",
+    "primary_muscles": [
+      "obliques"
+    ],
+    "secondary_muscles": [
+      "rectus abdominis",
+      "shoulders",
+      "hips"
+    ],
+    "equipment": [
+      "cable machine or resistance band"
+    ],
+    "primary_equipment": "cable",
+    "movement_pattern": "rotation",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "core-and-abs",
+      "rotational-core",
+      "diagonal-pull",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Pull handle diagonally across body by rotating torso and hips together in a controlled way"
+    ],
+    "coaching_notes": "Keep load light enough to control the rotation.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "side-plank",
+      "pallof-press",
+      "russian-twist"
+    ]
+  },
+  {
+    "id": "back-extension-hold",
+    "name": "Back Extension Hold",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Back Extension Hold is a isometric; posterior chain movement used to train the listed muscles.",
+    "primary_muscles": [
+      "spinal erectors"
+    ],
+    "secondary_muscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "equipment": [
+      "back extension bench or mat"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "core-and-abs",
+      "isometric",
+      "posterior-chain",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hold a neutral straight-body position without overextending the spine"
+    ],
+    "coaching_notes": "Use short holds and stop if discomfort occurs.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": []
+  },
+  {
+    "id": "suitcase-carry",
+    "name": "Suitcase Carry",
+    "category": "Core",
+    "sub_category": "Core and Abs",
+    "description": "Suitcase Carry is a loaded carry; anti-lateral flexion movement used to train the listed muscles.",
+    "primary_muscles": [
+      "obliques",
+      "quadratus lumborum"
+    ],
+    "secondary_muscles": [
+      "grip",
+      "traps",
+      "glutes"
+    ],
+    "equipment": [
+      "one dumbbell or kettlebell"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "carry",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "core-and-abs",
+      "loaded-carry",
+      "anti-lateral-flexion",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Walk holding one weight at your side without leaning"
+    ],
+    "coaching_notes": "Switch sides and keep steps controlled.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "side-plank",
+      "pallof-press",
+      "russian-twist"
+    ]
+  },
+  {
+    "id": "barbell-clean",
+    "name": "Barbell Clean",
+    "category": "Full Body",
+    "sub_category": "Full Body, Olympic and Conditioning",
+    "description": "Barbell Clean is a explosive; olympic lift movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "gluteus maximus",
+      "traps"
+    ],
+    "secondary_muscles": [
+      "hamstrings",
+      "shoulders",
+      "core"
+    ],
+    "equipment": [
+      "barbell",
+      "bumper plates"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "advanced / skill-based",
+    "tags": [
+      "full-body,-olympic-and-conditioning",
+      "explosive",
+      "olympic-lift",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Accelerate bar from floor or hang and receive it on front shoulders"
+    ],
+    "coaching_notes": "Technical lift; learn with a qualified coach and light load.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "power-clean",
+      "thruster",
+      "sled-push"
+    ]
+  },
+  {
+    "id": "power-clean",
+    "name": "Power Clean",
+    "category": "Full Body",
+    "sub_category": "Full Body, Olympic and Conditioning",
+    "description": "Power Clean is a explosive; olympic lift movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gluteus maximus",
+      "quadriceps",
+      "traps"
+    ],
+    "secondary_muscles": [
+      "hamstrings",
+      "shoulders",
+      "core"
+    ],
+    "equipment": [
+      "barbell",
+      "bumper plates"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "advanced / skill-based",
+    "tags": [
+      "full-body,-olympic-and-conditioning",
+      "explosive",
+      "olympic-lift",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Explosively extend hips and legs, then catch bar in a partial squat"
+    ],
+    "coaching_notes": "Prioritize technique and safe catch position.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-clean",
+      "thruster",
+      "sled-push"
+    ]
+  },
+  {
+    "id": "push-press",
+    "name": "Push Press",
+    "category": "Full Body",
+    "sub_category": "Full Body, Olympic and Conditioning",
+    "description": "Push Press is a compound; explosive vertical push movement used to train the listed muscles.",
+    "primary_muscles": [
+      "deltoids",
+      "triceps"
+    ],
+    "secondary_muscles": [
+      "quadriceps",
+      "glutes",
+      "core"
+    ],
+    "equipment": [
+      "barbell or dumbbells"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "vertical_push",
+    "exercise_type": "compound",
+    "difficulty": "intermediate",
+    "tags": [
+      "full-body,-olympic-and-conditioning",
+      "compound",
+      "explosive-vertical-push",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Dip slightly through knees, drive upward, and press weight overhead"
+    ],
+    "coaching_notes": "Keep dip vertical and brace torso.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "thruster"
+    ]
+  },
+  {
+    "id": "thruster",
+    "name": "Thruster",
+    "category": "Full Body",
+    "sub_category": "Full Body, Olympic and Conditioning",
+    "description": "Thruster is a compound; squat-to-press movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "gluteus maximus",
+      "deltoids"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "core"
+    ],
+    "equipment": [
+      "barbell or dumbbells"
+    ],
+    "primary_equipment": "barbell",
+    "movement_pattern": "squat",
+    "exercise_type": "compound",
+    "difficulty": "intermediate",
+    "tags": [
+      "full-body,-olympic-and-conditioning",
+      "compound",
+      "squat-to-press",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Squat with weights at shoulders and use the stand-up drive to press overhead"
+    ],
+    "coaching_notes": "Use manageable load and maintain control.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-clean",
+      "power-clean",
+      "push-press"
+    ]
+  },
+  {
+    "id": "kettlebell-goblet-carry",
+    "name": "Kettlebell Goblet Carry",
+    "category": "Full Body",
+    "sub_category": "Full Body, Olympic and Conditioning",
+    "description": "Kettlebell Goblet Carry is a loaded carry; bracing movement used to train the listed muscles.",
+    "primary_muscles": [
+      "core",
+      "upper back"
+    ],
+    "secondary_muscles": [
+      "quadriceps",
+      "glutes",
+      "grip"
+    ],
+    "equipment": [
+      "kettlebell"
+    ],
+    "primary_equipment": "kettlebell",
+    "movement_pattern": "carry",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "full-body,-olympic-and-conditioning",
+      "loaded-carry",
+      "bracing",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hold kettlebell at chest and walk upright with steady breathing"
+    ],
+    "coaching_notes": "Keep ribs stacked over pelvis.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "mountain-climber",
+      "medicine-ball-slam",
+      "turkish-get-up"
+    ]
+  },
+  {
+    "id": "battle-rope-waves",
+    "name": "Battle Rope Waves",
+    "category": "Full Body",
+    "sub_category": "Full Body, Olympic and Conditioning",
+    "description": "Battle Rope Waves is a conditioning; upper-body endurance movement used to train the listed muscles.",
+    "primary_muscles": [
+      "shoulders",
+      "forearms"
+    ],
+    "secondary_muscles": [
+      "core",
+      "upper back"
+    ],
+    "equipment": [
+      "battle ropes"
+    ],
+    "primary_equipment": "battle ropes",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "full-body,-olympic-and-conditioning",
+      "conditioning",
+      "upper-body-endurance",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Create alternating or simultaneous rope waves while maintaining athletic stance"
+    ],
+    "coaching_notes": "Choose intervals appropriate to fitness level.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "burpee",
+      "medicine-ball-slam",
+      "turkish-get-up"
+    ]
+  },
+  {
+    "id": "sled-push",
+    "name": "Sled Push",
+    "category": "Full Body",
+    "sub_category": "Full Body, Olympic and Conditioning",
+    "description": "Sled Push is a conditioning; horizontal drive movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "gluteus maximus",
+      "calves"
+    ],
+    "secondary_muscles": [
+      "core",
+      "shoulders"
+    ],
+    "equipment": [
+      "weighted sled"
+    ],
+    "primary_equipment": "weighted sled",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "full-body,-olympic-and-conditioning",
+      "conditioning",
+      "horizontal-drive",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lean into handles and drive sled forward with short powerful steps"
+    ],
+    "coaching_notes": "Use a clear, non-slip path.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-clean",
+      "power-clean",
+      "thruster"
+    ]
+  },
+  {
+    "id": "sled-pull",
+    "name": "Sled Pull",
+    "category": "Full Body",
+    "sub_category": "Full Body, Olympic and Conditioning",
+    "description": "Sled Pull is a conditioning; pull movement used to train the listed muscles.",
+    "primary_muscles": [
+      "back",
+      "biceps",
+      "legs depending on setup"
+    ],
+    "secondary_muscles": [
+      "grip",
+      "core"
+    ],
+    "equipment": [
+      "weighted sled",
+      "rope or harness"
+    ],
+    "primary_equipment": "weighted sled",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "full-body,-olympic-and-conditioning",
+      "conditioning",
+      "pull",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Walk backward or hand-over-hand pull sled using controlled steps"
+    ],
+    "coaching_notes": "Secure rope and keep the path clear.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": []
+  },
+  {
+    "id": "burpee",
+    "name": "Burpee",
+    "category": "Full Body",
+    "sub_category": "Full Body, Olympic and Conditioning",
+    "description": "Burpee is a full-body conditioning movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "chest",
+      "shoulders"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "core",
+      "calves"
+    ],
+    "equipment": [
+      "bodyweight",
+      "optional mat"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "full-body,-olympic-and-conditioning",
+      "full-body-conditioning",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Squat down, place hands on floor, step or jump to plank, return to squat, and stand or jump"
+    ],
+    "coaching_notes": "Use step-back variation to reduce impact.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-clean",
+      "power-clean",
+      "thruster"
+    ]
+  },
+  {
+    "id": "mountain-climber",
+    "name": "Mountain Climber",
+    "category": "Full Body",
+    "sub_category": "Full Body, Olympic and Conditioning",
+    "description": "Mountain Climber is a conditioning; anti-extension movement used to train the listed muscles.",
+    "primary_muscles": [
+      "core",
+      "hip flexors"
+    ],
+    "secondary_muscles": [
+      "shoulders",
+      "quadriceps"
+    ],
+    "equipment": [
+      "bodyweight",
+      "mat"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "extension",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "full-body,-olympic-and-conditioning",
+      "conditioning",
+      "anti-extension",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "From plank, alternate driving knees toward chest while keeping hips steady"
+    ],
+    "coaching_notes": "Slow it down if hips bounce.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "kettlebell-goblet-carry",
+      "medicine-ball-slam",
+      "turkish-get-up"
+    ]
+  },
+  {
+    "id": "jump-squat",
+    "name": "Jump Squat",
+    "category": "Full Body",
+    "sub_category": "Full Body, Olympic and Conditioning",
+    "description": "Jump Squat is a plyometric; lower body movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "gluteus maximus",
+      "calves"
+    ],
+    "secondary_muscles": [
+      "hamstrings",
+      "core"
+    ],
+    "equipment": [
+      "bodyweight"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "advanced / skill-based",
+    "tags": [
+      "full-body,-olympic-and-conditioning",
+      "plyometric",
+      "lower-body",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Squat to a comfortable depth, jump explosively, and land softly before the next rep"
+    ],
+    "coaching_notes": "Avoid if impact is unsuitable; prioritize quiet landings.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-clean",
+      "power-clean",
+      "thruster"
+    ]
+  },
+  {
+    "id": "box-jump",
+    "name": "Box Jump",
+    "category": "Full Body",
+    "sub_category": "Full Body, Olympic and Conditioning",
+    "description": "Box Jump is a plyometric; power movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "gluteus maximus",
+      "calves"
+    ],
+    "secondary_muscles": [
+      "hamstrings",
+      "core"
+    ],
+    "equipment": [
+      "stable plyometric box"
+    ],
+    "primary_equipment": "stable plyometric box",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "advanced / skill-based",
+    "tags": [
+      "full-body,-olympic-and-conditioning",
+      "plyometric",
+      "power",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Jump onto a stable box, land softly, stand, and step down"
+    ],
+    "coaching_notes": "Choose a height that allows safe landing; do not jump down repeatedly.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-clean",
+      "power-clean",
+      "thruster"
+    ]
+  },
+  {
+    "id": "medicine-ball-slam",
+    "name": "Medicine Ball Slam",
+    "category": "Full Body",
+    "sub_category": "Full Body, Olympic and Conditioning",
+    "description": "Medicine Ball Slam is a power; full body movement used to train the listed muscles.",
+    "primary_muscles": [
+      "core",
+      "lats",
+      "shoulders"
+    ],
+    "secondary_muscles": [
+      "glutes",
+      "quadriceps"
+    ],
+    "equipment": [
+      "medicine ball designed for slams"
+    ],
+    "primary_equipment": "medicine ball designed for slams",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "full-body,-olympic-and-conditioning",
+      "power",
+      "full-body",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Raise ball overhead, brace, slam to floor, and retrieve with safe hinge mechanics"
+    ],
+    "coaching_notes": "Use a slam-safe ball and clear floor space.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "kettlebell-goblet-carry",
+      "battle-rope-waves",
+      "burpee"
+    ]
+  },
+  {
+    "id": "turkish-get-up",
+    "name": "Turkish Get-Up",
+    "category": "Full Body",
+    "sub_category": "Full Body, Olympic and Conditioning",
+    "description": "Turkish Get-Up is a full-body stability; skill movement used to train the listed muscles.",
+    "primary_muscles": [
+      "shoulders",
+      "core",
+      "glutes"
+    ],
+    "secondary_muscles": [
+      "legs",
+      "upper back"
+    ],
+    "equipment": [
+      "kettlebell or dumbbell",
+      "mat"
+    ],
+    "primary_equipment": "dumbbell",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "advanced / skill-based",
+    "tags": [
+      "full-body,-olympic-and-conditioning",
+      "full-body-stability",
+      "skill",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Move from lying to standing while keeping weight overhead, reversing each step slowly"
+    ],
+    "coaching_notes": "Learn unloaded first; highly technical movement.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "kettlebell-goblet-carry",
+      "battle-rope-waves",
+      "burpee"
+    ]
+  },
+  {
+    "id": "bear-crawl",
+    "name": "Bear Crawl",
+    "category": "Full Body",
+    "sub_category": "Full Body, Olympic and Conditioning",
+    "description": "Bear Crawl is a locomotion; full-body stability movement used to train the listed muscles.",
+    "primary_muscles": [
+      "core",
+      "shoulders",
+      "quadriceps"
+    ],
+    "secondary_muscles": [
+      "glutes",
+      "calves"
+    ],
+    "equipment": [
+      "bodyweight",
+      "floor"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "full-body,-olympic-and-conditioning",
+      "locomotion",
+      "full-body-stability",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Move on hands and feet with knees hovering, keeping hips level"
+    ],
+    "coaching_notes": "Take small controlled steps.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "barbell-clean",
+      "power-clean",
+      "thruster"
+    ]
+  },
+  {
+    "id": "band-pull-apart",
+    "name": "Band Pull-Apart",
+    "category": "Mobility",
+    "sub_category": "Mobility, Warm-Up and Rehabilitation-Oriented",
+    "description": "Band Pull-Apart is a accessory; shoulder control movement used to train the listed muscles.",
+    "primary_muscles": [
+      "rear deltoids",
+      "rhomboids",
+      "middle trapezius"
+    ],
+    "secondary_muscles": [
+      "rotator cuff"
+    ],
+    "equipment": [
+      "resistance band"
+    ],
+    "primary_equipment": "band",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner / scalable",
+    "tags": [
+      "mobility,-warm-up-and-rehabilitation-oriented",
+      "accessory",
+      "shoulder-control",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Hold band at chest height and pull hands apart, then return slowly"
+    ],
+    "coaching_notes": "Keep shoulders down and use light tension.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": []
+  },
+  {
+    "id": "band-external-rotation",
+    "name": "Band External Rotation",
+    "category": "Mobility",
+    "sub_category": "Mobility, Warm-Up and Rehabilitation-Oriented",
+    "description": "Band External Rotation is a rotator cuff accessory movement used to train the listed muscles.",
+    "primary_muscles": [
+      "infraspinatus",
+      "teres minor"
+    ],
+    "secondary_muscles": [
+      "rear deltoids",
+      "scapular stabilizers"
+    ],
+    "equipment": [
+      "resistance band"
+    ],
+    "primary_equipment": "band",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "mobility,-warm-up-and-rehabilitation-oriented",
+      "rotator-cuff-accessory",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "With elbow tucked to side, rotate forearm outward against band"
+    ],
+    "coaching_notes": "Use light resistance and avoid pain.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": []
+  },
+  {
+    "id": "scapular-push-up",
+    "name": "Scapular Push-Up",
+    "category": "Mobility",
+    "sub_category": "Mobility, Warm-Up and Rehabilitation-Oriented",
+    "description": "Scapular Push-Up is a accessory; scapular control movement used to train the listed muscles.",
+    "primary_muscles": [
+      "serratus anterior"
+    ],
+    "secondary_muscles": [
+      "pectoralis minor",
+      "core"
+    ],
+    "equipment": [
+      "bodyweight"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "mobility,-warm-up-and-rehabilitation-oriented",
+      "accessory",
+      "scapular-control",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "In plank, keep elbows straight and let chest sink slightly, then push floor away by spreading shoulder blades"
+    ],
+    "coaching_notes": "Small range; do not bend elbows.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "wall-slide"
+    ]
+  },
+  {
+    "id": "wall-slide",
+    "name": "Wall Slide",
+    "category": "Mobility",
+    "sub_category": "Mobility, Warm-Up and Rehabilitation-Oriented",
+    "description": "Wall Slide is a mobility/control; scapular upward rotation movement used to train the listed muscles.",
+    "primary_muscles": [
+      "serratus anterior",
+      "lower trapezius"
+    ],
+    "secondary_muscles": [
+      "rotator cuff"
+    ],
+    "equipment": [
+      "wall",
+      "optional mini-band"
+    ],
+    "primary_equipment": "band",
+    "movement_pattern": "rotation",
+    "exercise_type": "mobility",
+    "difficulty": "beginner / scalable",
+    "tags": [
+      "mobility,-warm-up-and-rehabilitation-oriented",
+      "mobility-control",
+      "scapular-upward-rotation",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Place forearms on wall and slide upward while keeping ribs down"
+    ],
+    "coaching_notes": "Stay within comfortable range.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "scapular-push-up",
+      "thoracic-open-book"
+    ]
+  },
+  {
+    "id": "cat-cow",
+    "name": "Cat-Cow",
+    "category": "Mobility",
+    "sub_category": "Mobility, Warm-Up and Rehabilitation-Oriented",
+    "description": "Cat-Cow is a mobility; warm-up movement used to train the listed muscles.",
+    "primary_muscles": [
+      "spinal mobility",
+      "trunk stabilizers"
+    ],
+    "secondary_muscles": [
+      "---"
+    ],
+    "equipment": [
+      "mat"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner / scalable",
+    "tags": [
+      "mobility,-warm-up-and-rehabilitation-oriented",
+      "mobility",
+      "warm-up",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "On hands and knees, gently alternate rounding and extending the spine with breath"
+    ],
+    "coaching_notes": "Move smoothly, not forcefully.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": []
+  },
+  {
+    "id": "world-s-greatest-stretch",
+    "name": "World's Greatest Stretch",
+    "category": "Mobility",
+    "sub_category": "Mobility, Warm-Up and Rehabilitation-Oriented",
+    "description": "World's Greatest Stretch is a mobility; dynamic warm-up movement used to train the listed muscles.",
+    "primary_muscles": [
+      "hip flexors",
+      "glutes",
+      "thoracic mobility"
+    ],
+    "secondary_muscles": [
+      "hamstrings",
+      "adductors"
+    ],
+    "equipment": [
+      "mat"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner / scalable",
+    "tags": [
+      "mobility,-warm-up-and-rehabilitation-oriented",
+      "mobility",
+      "dynamic-warm-up",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "From a lunge, place hand down and rotate the opposite arm upward, then switch sides"
+    ],
+    "coaching_notes": "Use a stable stance and comfortable range.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": []
+  },
+  {
+    "id": "bodyweight-squat",
+    "name": "Bodyweight Squat",
+    "category": "Mobility",
+    "sub_category": "Mobility, Warm-Up and Rehabilitation-Oriented",
+    "description": "Bodyweight Squat is a warm-up; squat pattern movement used to train the listed muscles.",
+    "primary_muscles": [
+      "quadriceps",
+      "gluteus maximus"
+    ],
+    "secondary_muscles": [
+      "adductors",
+      "core"
+    ],
+    "equipment": [
+      "bodyweight"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "squat",
+    "exercise_type": "mobility",
+    "difficulty": "beginner / scalable",
+    "tags": [
+      "mobility,-warm-up-and-rehabilitation-oriented",
+      "warm-up",
+      "squat-pattern",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Squat with feet planted and stand smoothly"
+    ],
+    "coaching_notes": "Use as a warm-up or movement practice.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "hip-hinge-drill"
+    ]
+  },
+  {
+    "id": "hip-hinge-drill",
+    "name": "Hip Hinge Drill",
+    "category": "Mobility",
+    "sub_category": "Mobility, Warm-Up and Rehabilitation-Oriented",
+    "description": "Hip Hinge Drill is a movement skill; warm-up movement used to train the listed muscles.",
+    "primary_muscles": [
+      "gluteus maximus",
+      "hamstrings"
+    ],
+    "secondary_muscles": [
+      "spinal erectors",
+      "core"
+    ],
+    "equipment": [
+      "dowel or bodyweight"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner / scalable",
+    "tags": [
+      "mobility,-warm-up-and-rehabilitation-oriented",
+      "movement-skill",
+      "warm-up",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Push hips backward while keeping spine neutral, then return to standing"
+    ],
+    "coaching_notes": "A dowel along head, upper back, and tailbone can provide feedback.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "bodyweight-squat"
+    ]
+  },
+  {
+    "id": "ankle-dorsiflexion-rock",
+    "name": "Ankle Dorsiflexion Rock",
+    "category": "Mobility",
+    "sub_category": "Mobility, Warm-Up and Rehabilitation-Oriented",
+    "description": "Ankle Dorsiflexion Rock is a mobility; ankle movement used to train the listed muscles.",
+    "primary_muscles": [
+      "ankle mobility",
+      "soleus"
+    ],
+    "secondary_muscles": [
+      "tibialis anterior"
+    ],
+    "equipment": [
+      "wall or support"
+    ],
+    "primary_equipment": "wall or support",
+    "movement_pattern": "general",
+    "exercise_type": "mobility",
+    "difficulty": "beginner / scalable",
+    "tags": [
+      "mobility,-warm-up-and-rehabilitation-oriented",
+      "mobility",
+      "ankle",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Keep heel down and gently move knee forward over toes, then return"
+    ],
+    "coaching_notes": "Do not force through sharp pain.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": []
+  },
+  {
+    "id": "thoracic-open-book",
+    "name": "Thoracic Open Book",
+    "category": "Mobility",
+    "sub_category": "Mobility, Warm-Up and Rehabilitation-Oriented",
+    "description": "Thoracic Open Book is a mobility; rotation movement used to train the listed muscles.",
+    "primary_muscles": [
+      "thoracic spine mobility"
+    ],
+    "secondary_muscles": [
+      "obliques",
+      "rear shoulder"
+    ],
+    "equipment": [
+      "mat"
+    ],
+    "primary_equipment": "bodyweight",
+    "movement_pattern": "rotation",
+    "exercise_type": "mobility",
+    "difficulty": "beginner / scalable",
+    "tags": [
+      "mobility,-warm-up-and-rehabilitation-oriented",
+      "mobility",
+      "rotation",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Lie on side with knees bent and rotate top arm open while following it with eyes"
+    ],
+    "coaching_notes": "Keep knees stacked to limit low-back rotation.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance. ## Useful app features to consider 1.  **Filters:** primary muscle, secondary muscle, equipment, movement pattern, difficulty, exercise type, and available equipment. 2.  **Alternatives:** offer equipment substitutions (e.g. dumbbell press for barbell press) and easier/harder variations. 3.  **Media:** add your own licensed demonstration video or step-by-step images; include camera angle and key form cues. 4.  **Programming fields:** suggested rep range, rest range, unilateral/bilateral, load type, and whether to log reps, time, distance, or assistance. 5.  **Personalization:** let users mark favorites, hide unavailable equipment, and record pain-free range or coach notes. 6.  **Data quality:** muscle emphasis is not exclusive; avoid presenting secondary muscles as completely inactive. Have a qualified trainer review instructions before publication. ## Scope and limitations This starter library includes common free-weight, machine, cable, bodyweight, core, conditioning, and mobility exercises. It is not literally every exercise variation: grips, stances, attachments, tempos, unilateral versions, and sport-specific drills create many additional variants. Keep variants linked to a parent exercise rather than duplicating all metadata. **Exercise count: 156.**",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "wall-slide"
+    ]
+  }
+]

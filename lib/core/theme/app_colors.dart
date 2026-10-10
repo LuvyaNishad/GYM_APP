@@ -27,6 +27,7 @@ abstract final class AppColors {
   static const Color danger = Color(0xFFE53935); // alert red
   static const Color success = Color(0xFF00C853); // ECG green
   static const Color warning = Color(0xFFFFC107); // amber
+  static const Color amber = Color(0xFFFFB300); // Amber status accent
 
   // ── Text ──────────────────────────────────────────────────────────────────
   static const Color textPrimary = Color(0xFFEAECF0);
