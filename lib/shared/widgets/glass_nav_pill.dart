@@ -125,23 +125,33 @@ class GlassNavPill extends ConsumerWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(borderRadius),
                 boxShadow: [
+                  // Tight contact shadow hugging the bottom rim
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.50),
-                    blurRadius: 22,
-                    offset: const Offset(0, 8),
+                    color: Colors.black.withValues(alpha: 0.65),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                  // Wide ambient halo to float cleanly above cards & content
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.85),
+                    blurRadius: 32,
+                    spreadRadius: 2.0,
+                    offset: const Offset(0, 12),
                   ),
                 ],
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(borderRadius),
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
+                  filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: AppColors.charcoal.withValues(alpha: 0.94),
+                      // Deep gunmetal tone distinct from #27262A cards and #0F131B background
+                      color: const Color(0xFF161922).withValues(alpha: 0.96),
                       borderRadius: BorderRadius.circular(borderRadius),
                       border: Border.all(
-                        color: AppColors.steel.withValues(alpha: 0.6),
+                        // Ethereal hairline light stroke inspired by Apple & District design
+                        color: Colors.white.withValues(alpha: 0.14),
                         width: 1.0,
                       ),
                     ),
@@ -339,12 +349,19 @@ class _TubelightIndicatorState extends State<TubelightIndicator>
                     height: activePillHeight,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: AppColors.steel.withValues(alpha: 0.7),
+                        color: const Color(0xFF2A2E39).withValues(alpha: 0.90),
                         borderRadius: BorderRadius.circular(21),
                         border: Border.all(
-                          color: AppColors.steel,
+                          color: Colors.white.withValues(alpha: 0.12),
                           width: 1.0,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                     ),
                   ),
