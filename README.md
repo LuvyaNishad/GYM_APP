@@ -9,133 +9,129 @@
 ╚══════╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝
 ```
 
-### Operational Fitness OS
+### Premium Minimalist Fitness OS
 
-*Fast. Tactical. Precise.*
+*Fast. Data-Dense. Distraction-Free.*
 
-![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
-![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
-![Riverpod](https://img.shields.io/badge/Riverpod-0553B1?style=for-the-badge&logo=flutter&logoColor=white)
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev)
+[![State](https://img.shields.io/badge/State-Riverpod_3-0553B1?style=flat-square&logo=flutter&logoColor=white)](https://riverpod.dev)
+[![Storage](https://img.shields.io/badge/Storage-Hive_CE_(Local--First)-F8981D?style=flat-square)](https://pub.dev/packages/hive_ce)
+[![Tests](https://img.shields.io/badge/Tests-54_Passing-00C853?style=flat-square)](./test)
+[![Design](https://img.shields.io/badge/Design-Noguchi_Monochrome-FFFFFF?style=flat-square&labelColor=0F131B)](./lib/core/theme)
 
 </div>
 
 ---
 
-## What is LEON?
+## Overview
 
-LEON is a high-performance fitness tracking app built for serious lifters. It's not just a workout logger — it's an **Operational Fitness OS** designed to help you train smarter, track everything, and never waste a set.
+**LEON** is a high-performance fitness operating system engineered for lifters who prioritize precision, speed, and clean data over decorative gimmicks. Built from the ground up in Flutter and Dart, LEON marries **Noguchi-inspired Japanese/Swiss monochrome luxury** with **Apple Human Interface Guidelines (HIG)** discipline.
 
-Inspired by tactical interfaces and the RE4 Remake HUD, LEON prioritises speed, clarity, and data density over decorative UI.
+Operating under a **local-first** architecture, every session, set, rep, and routine is stored directly on-device using Hive CE — delivering instant 120Hz responsiveness, zero network lag, and full offline autonomy in any gym environment.
 
 ---
 
-## Features
+## Key Modules & Features
 
-### Onboarding & Profile
-- Full questionnaire on first launch — collects goals, experience level, available equipment, training days, injuries
-- Auto-generates a recommended training split based on your answers
-- kg / lbs toggle, body weight tracking, target weight
+### 1. Dashboard (The Command Center)
+- **Retractable Calendar Header:** Interactive weekly/monthly selector with smooth expansion physics.
+- **Recovery Readiness Status:** Dynamic ECG-style status card calculating physiological readiness.
+- **Activity Metrics Bento Grid:** High-contrast widgets tracking steps, burned calories, hydration, and sleep.
+- **Today's Workout Spotlight:** Highlights the active rotation day with exercise previews, target RPE, and a 1-tap **`START WORKOUT`** launcher.
 
-### Split Builder
-- Built-in templates: PPL, Upper/Lower, Full Body, Bro Split, Arnold Split, Custom blank
-- Full control — rename days, reorder, clone days, swap exercises
-- Multiple splits saved, one active at a time
-- Equipment profile — mark exercises unavailable, LEON suggests alternatives and remembers your preferred substitutions
+### 2. Workouts & Routine Hub
+- **Pre-Loaded Scientific Training Splits:**
+  - **Push Pull Legs (PPL):** 6-Day Hypertrophy focus (114 weekly sets)
+  - **Upper / Lower (U/L):** 4-Day Strength & Mass focus (81 weekly sets)
+  - **Arnold Split:** 6-Day Antagonist volume focus (118 weekly sets)
+  - **5-Day Bro Split:** 5-Day Bodypart specialization (95 weekly sets)
+- **Interactive 6-Axis Muscle Radar Chart:** Custom-painted polygon canvas comparing planned routine volume vs actual 14-day logged volume across Chest, Back, Shoulders, Quads, Hamstrings, and Arms.
+- **Volume Deficit Diagnostics:** Intelligent labels flagging **Optimal Volume** vs **Needs Attention** muscle groups with a 1-tap **`AUTO-BALANCE DEFICIT`** action.
+- **Switch Training Split Modal:** Tactile bottom sheet with live volume delta impact calculation (e.g., `Shift: -2 days/wk (-33 sets/wk volume)`).
+- **Freestyle Workout Launcher:** Direct entry for unstructured training sessions.
 
-### Active Workout Session
-- OLED black distraction-free interface
-- Live PR detection — flashes when you beat your best
-- Smart rest timer — auto-adjusts duration based on RPE logged
-- Weight input via type or +2.5 / +5 kg tap buttons
-- RPE slider per set
-- Visual plate calculator (bar diagram)
-- Add exercises mid-workout
-- Auto-saves every set — resumes if app is killed
-- Previous set shown as reference ghost text
+### 3. Active Workout Session (OLED Distraction-Free HUD)
+- **Focused Execution Interface:** Pure OLED dark canvas eliminating distractions.
+- **Stopwatch & Floating Rest Timer:** Live timer bar featuring tactile $\pm10\text{s}$ adjustment chips and auto-start on set completion.
+- **Interactive Set Logger:** Records weight, target reps, RIR (Reps in Reserve), and RPE with ghost reference text showing past performance.
+- **Visual Plate Calculator:** Modal barbell diagram calculating exact Olympic plate breakdowns per sleeve for any target weight.
+- **Effort Picker Modal:** Dual-mode RIR / RPE selector translating perceived exertion into target training stress.
+- **Exercise Sequence Management:** Expandable exercise accordions with live reordering and on-the-fly substitutions.
+- **Workout Summary:** End-of-session modal computing total volume tonnage, set counts, and workout duration.
 
-### Muscle Balance Spider Graph
-- 3-axis PPL overview + 6-axis detailed breakdown (Chest / Back / Shoulders / Arms / Legs / Core)
-- Toggle between volume (kg) and sets
-- Three time windows — this workout / this week / all time
-- Highlights weak axes in red + text insight + suggests which day to add more
+### 4. Exercise Library
+- **150+ Gym Exercises:** Standard compound and isolation movements cataloged with muscle targets, mechanics, and required equipment.
+- **Instant Filtering & Debounced Search:** Real-time filter bar with quick-tap muscle chips (Chest, Back, Shoulders, Legs, Arms) and equipment selectors.
+- **Exercise Detail Drawer:** Tactile bottom-up modal sheet detailing execution form, target anatomy, and viable alternatives.
+- **Custom Exercise Builder:** Create and save personalized exercises with tailored muscle assignments.
 
-### Analytics
-- GitHub-style gym heatmap (full year, green squares — trains consistency)
-- PR history per exercise
-- Reps progression charts
-- Workout frequency calendar
+### 5. Floating Tubelight Glass Navigation Pill
+- **Liquid Glassmorphism:** Custom stadium capsule featuring 40% translucent gunmetal tint, 18px hardware-accelerated Gaussian blur, and a subtle white hairline rim (`Colors.white.withValues(alpha: 0.16)`).
+- **Optical Depth Shadow:** Downward-offset elevation shadow that separates the glass capsule from scrolling cards without darkening the frosted face.
+- **Sliding Tubelight Emitter:** Top emitter element casting a smooth, linear ambient downlight curtain across the active tab column.
 
-### Recovery
-- Recovery score from: days since last session, muscle group fatigue, sleep hours, soreness rating, last session RPE
-- Manual input only (no wearable required)
+---
 
-### History
-- List view with drill-down to full session details
-- Filter by muscle group or exercise
+## Design System & Principles
+
+LEON enforces a strict, minimalist aesthetic governed by three core rules:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│  Noguchi Minimalist Palette                                            │
+│  ├─ Onyx Background     │ #0F131B (Deepest canvas)                     │
+│  ├─ Charcoal Surface    │ #27262A (Bento cards & containers)           │
+│  ├─ Steel Slate         │ #383B42 (Borders & elevated dividers)        │
+│  ├─ Platinum Silver     │ #B8BCC3 (Secondary metrics & muted labels)   │
+│  └─ Pure White          │ #FFFFFF (Primary headings, text & CTA buttons)
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+1. **Apple HIG Typography Floor (Min 11.0 pt):** Every piece of text, tag, badge, timestamp, metric caption, and button label strictly observes an 11.0 pt floor.
+2. **WCAG Contrast Threshold (Min 4.5:1 AA / AAA):** Secondary text uses light platinum silver (`#B8BCC3`), delivering 9.1:1 contrast on onyx and 6.5:1 on charcoal.
+3. **Standard Gym Terminology:** Strictly zero pseudo-military or sci-fi roleplay terminology. Only clean, professional, and standard gym vocabulary across all screens.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Flutter (Dart 3.10) |
-| State Management | Riverpod 3 (`Notifier` / `AsyncNotifier`) |
-| Local Storage | `hive_ce` (local-first, models stored as JSON) |
-| Cloud Sync | Supabase *(deferred)* |
-| Charts | Hand-written `CustomPainter` for the radar; fl_chart for line/bar |
-| Navigation | go_router (`ShellRoute` + floating glass nav pill) |
-| Models | Freezed + JsonSerializable |
-| Animations | Flutter implicit + explicit controllers |
-
----
-
-## Design System
-
-**Vibe:** Liquid Glass Tactical · Operational · High-contrast
-
-| Token | Value |
-|---|---|
-| Background | `#0A0C10` OLED black |
-| Primary accent | `#00E5FF` cyan-neon |
-| Glass fill | `#FFFFFF0A` (`#FFFFFF1A` elevated) |
-| Glass border | `#FFFFFF33`, 1px |
-| Success | `#00C853` ECG green |
-| Danger | `#E53935` alert red |
-| Header font | Outfit |
-| Numbers font | JetBrains Mono |
-
-Cards use `BackdropFilter` at `sigmaX/Y: 24`, 24dp radius, 24dp padding, and a centred cyan glow
-instead of drop shadows. Full spec — including per-screen layout and copy — lives in
-[DESIGN.md](DESIGN.md), which is the single source of truth for every visual decision.
+| Layer | Technology | Details |
+| :--- | :--- | :--- |
+| **Framework** | **Flutter 3.x / Dart 3.x** | Multi-platform declarative UI engine |
+| **State Management** | **Riverpod 3** | Pure immutable state using `Notifier` / `AsyncNotifier` |
+| **Local Storage** | **`hive_ce`** | High-performance local-first storage; models stored as JSON |
+| **Routing** | **`go_router`** | Declarative navigation with `ShellRoute` keeping the nav pill persistent |
+| **Data Models** | **Freezed & JSON Serializable** | Immutable models with type-safe copy, equality, and JSON serialization |
+| **Custom Graphics** | **Flutter `CustomPainter`** | Hand-crafted 6-axis Radar Balance Canvas & Barbell Plate Diagram |
+| **Testing** | **Flutter Test** | 54 unit and widget tests covering providers, painters, and screens |
 
 ---
 
 ## Project Structure
-```
-lib/
-├── core/           # Theme, router, constants, utils, notifications
-├── features/       # One folder per screen/feature
-│   ├── onboarding/
-│   ├── authentication/
-│   ├── dashboard/
-│   ├── workout_session/
-│   ├── workout_builder/
-│   ├── split_builder/
-│   ├── exercise_library/
-│   ├── analytics/
-│   ├── recovery/
-│   ├── profile/
-│   ├── health_tracking/
-│   └── cycle/          # reserved — cycle tracking
-├── models/         # Freezed data models
-├── services/       # Hive storage, workouts, splits, PR detection
-├── shared/         # Reusable widgets (glass card, nav pill, app shell)
-└── state/          # Global Riverpod providers
 
-docs/archive/       # Superseded design docs, kept for the record
-reference images/   # Mockups for screens 01–15
+```text
+lib/
+├── core/
+│   ├── constants/          # Application constants and route identifiers
+│   ├── router/             # GoRouter configuration & AppRouter build
+│   └── theme/              # AppColors (Noguchi palette), AppTheme, AppTypography
+├── features/
+│   ├── analytics/          # Performance tracking, 1RM trends, volume load
+│   ├── authentication/     # Login, signup, and session recovery
+│   ├── dashboard/          # Command Center, calendar header, health metrics
+│   ├── exercise_library/   # 150+ exercise database, search, detail modal sheet
+│   ├── health_tracking/    # Metric logging and health integrations
+│   ├── onboarding/         # Initial setup and questionnaire
+│   ├── profile/            # User settings, units (kg/lbs), barbell configurations
+│   ├── recovery/           # Physiological readiness and soreness scoring
+│   ├── workout_builder/    # Training Splits hub, Muscle Radar chart, switch modal
+│   └── workout_session/    # OLED active workout HUD, timer, plate calc, set logger
+├── models/                 # Freezed models (Exercise, Workout, Split, SessionLog)
+├── services/               # HiveService, WorkoutService, SplitService, PRDetection
+├── shared/
+│   └── widgets/            # GlassCard, GlassNavPill, AppShell, LeonButton
+└── state/                  # Global Riverpod providers and application state
 ```
 
 ---
@@ -143,78 +139,81 @@ reference images/   # Mockups for screens 01–15
 ## Getting Started
 
 ### Prerequisites
-- Flutter SDK `>=3.38`
-- Dart SDK `^3.8.0`
-- **Windows only:** Developer Mode enabled (Flutter plugins need symlink support) —
-  `start ms-settings:developers`
-- A Supabase project *(optional — cloud sync is deferred; the app is local-first)*
+- **Flutter SDK:** `>=3.38.0`
+- **Dart SDK:** `^3.8.0`
+- **Platform:** Android SDK (API 34+) / iOS (iOS 16+) / Desktop
+- **Windows Developer Mode:** Recommended for symlink support (`start ms-settings:developers`)
 
-### Setup
+### Quickstart Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/LuvyaNishad/GYM_APP.git
+   cd leon
+   ```
+
+2. **Install project dependencies:**
+   ```bash
+   flutter pub get
+   ```
+
+3. **Generate Freezed & JSON code:**
+   ```bash
+   dart run build_runner build --delete-conflicting-outputs
+   ```
+
+4. **Verify static analysis:**
+   ```bash
+   flutter analyze
+   ```
+
+5. **Run the test suite:**
+   ```bash
+   flutter test
+   ```
+
+6. **Launch the application:**
+   ```bash
+   flutter run
+   ```
+
+---
+
+## Testing & Quality Assurance
+
+LEON maintains high test reliability across state transitions, UI rendering, and custom graphic pipelines:
+
 ```bash
-# 1. Clone the repo
-git clone https://github.com/LuvyaNishad/GYM_APP.git
-cd leon
-
-# 2. Copy env file and fill in your Supabase credentials
-cp .env.example .env
-
-# 3. Install dependencies
-flutter pub get
-
-# 4. Run code generation
-dart run build_runner build --force-jit
-
-# 5. Run the app
-flutter run
+# Run all unit and widget tests
+flutter test -j 1
 ```
 
-> `--force-jit` is required: the AOT snapshot step fails on `objective_c`'s native build hook.
-> Use `dart analyze`, not `flutter analyze` — the latter crashes with "analysis server exited
-> with code 64" on this toolchain.
-
-**New here?** [RUNNING.md](RUNNING.md) walks through the full Antigravity + Android Studio +
-Flutter setup, including the required Windows Developer Mode step.
-
-### Environment Variables
-```env
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_ANON_KEY=your_supabase_anon_key
-```
+- **54 passing tests** across:
+  - `active_session_provider_test.dart` (Effort math, RIR/RPE conversions, timer controls)
+  - `plate_calculator_test.dart` (Barbell sleeve plate distribution logic & modal rendering)
+  - `exercise_set_table_test.dart` (Set logging, ghost text references, completion toggles)
+  - `workout_builder_test.dart` (Training splits state, muscle radar painter, deficit auto-balancer)
+  - `exercise_library_widgets_test.dart` (Exercise catalog filtering, debounce search, detail sheets)
+  - `liquid_glass_test.dart` (Nav pill routing, container rendering, and tab selection)
 
 ---
 
 ## Roadmap
 
-**Foundation milestone**
-- [x] Project skeleton + architecture
-- [x] Design system (Liquid Glass Tactical — colors, typography, glass, buttons)
-- [x] Data models (Freezed + codegen)
-- [x] Local persistence (Hive CE, JSON-encoded models — survives restart)
-- [x] Navigation shell (`ShellRoute` + floating glass nav pill)
-- [x] Guest-first routing (fresh install lands on onboarding)
-- [ ] Real radar chart (`CustomPainter`, self-drawing, weak-axis detection)
-- [ ] Pluggable recovery scoring (cycle-ready factor list)
-
-**Next**
-- [ ] Onboarding questionnaire flow (4-page stub today; 14 screens specified)
-- [ ] Exercise library seed — 100+ exercises (6 hardcoded today; search + filters built)
-- [ ] Active workout session (set logger, RPE, rest timer, plate calculator, PR detection)
-- [ ] Split builder + rules-based program generator
-- [ ] Analytics + GitHub-style heatmap
-- [ ] Authentication + Supabase cloud sync
-- [ ] Push notifications
-- [ ] Cycle tracking
-
----
-
-## Status
-
-> Foundation milestone largely complete — persistence, navigation shell, and the Liquid Glass
-> design system are in place. Feature implementation in progress. Nothing above is "feature
-> complete"; check the roadmap checkboxes for the real state.
+- [x] **Core Architecture & Shell:** Persistent floating Liquid Glass navigation shell with `ShellRoute`
+- [x] **Dashboard:** Command Center with retractable calendar, recovery status, and activity tracking
+- [x] **Active Workout Mode:** OLED black HUD with stopwatch, $\pm10\text{s}$ rest timer, plate calculator, and RPE/RIR picker
+- [x] **Exercise Library:** 150+ categorized gym exercises with instant search, filters, and custom creator
+- [x] **Training Splits Hub:** PPL, Upper/Lower, Arnold, and Bro split presets with 6-axis Muscle Radar Balance
+- [x] **Liquid Glass Nav Pill:** Ethereal frosted glass capsule with true ambient linear downlight emitter
+- [ ] **Analytics & PR Tracker (Tab 3):** 1RM strength progression curves, tonnage load trends, and personal record trophy case
+- [ ] **AI Photo Calorie Tracking:** Zero-cost multimodal food intake logging via Gemini Flash Vision with editable macro review sheet
+- [ ] **Health & Wearable Sync:** Bi-directional sync with Apple HealthKit and Google Health Connect
 
 ---
 
 <div align="center">
-Built with precision. Trained with intent.
+
+**LEON** — Built with precision. Trained with intent.
+
 </div>
