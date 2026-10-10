@@ -1,11 +1,11 @@
-/// Footsteps Bento Card for the LEON Dashboard.
+/// Footsteps / Step Count Bento Card for the LEON Dashboard.
 ///
-/// Clean, minimal, non-sloppy design without outer glow bleeds:
-/// - Daily step telemetry with formatted count and distance traveled
-/// - Goal percentage milestone indicator
-/// - Compact 12-hour activity bar chart with rounded pill bars
-/// - Crisp peak indicator with floating high-contrast tooltip badge
-/// - Tactical clean dark aesthetic
+/// Clean, minimal square card inspired by Apple Fitness:
+/// - "Step Count" header with subtle circular chevron
+/// - "Today" caption
+/// - Bold hero step count readout (e.g. 8,420)
+/// - Minimal thin vertical bar sparkline with 00 / 06 / 12 / 18 timeline markers
+/// - Tap interaction opens the deep telemetry detail pop-up modal sheet
 library;
 
 import 'package:flutter/material.dart';
@@ -14,9 +14,10 @@ import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/daily_telemetry_model.dart';
+import 'telemetry_detail_sheets.dart';
 
-/// Footsteps bento tracker card with clean hourly activity bars.
-class StepsBentoCard extends StatefulWidget {
+/// Minimal square Bento card displaying daily step count with a thin-bar sparkline.
+class StepsBentoCard extends StatelessWidget {
   const StepsBentoCard({
     super.key,
     required this.telemetry,
@@ -26,38 +27,10 @@ class StepsBentoCard extends StatefulWidget {
   /// Daily telemetry source data.
   final DailyTelemetry telemetry;
 
-  /// Optional card tap handler.
+  /// Optional card tap handler override.
   final VoidCallback? onTap;
 
-  @override
-  State<StepsBentoCard> createState() => _StepsBentoCardState();
-}
-
-class _StepsBentoCardState extends State<StepsBentoCard> {
-  static const Color _activeAccent = AppColors.pureWhite;
-  static const Color _inactiveBarColor = AppColors.steel;
   static const Color _cardBg = AppColors.charcoal;
-  int? _hoveredIndex;
-
-  @override
-  void initState() {
-    super.initState();
-    _hoveredIndex = _calculatePeakIndex();
-  }
-
-  int _calculatePeakIndex() {
-    final list = widget.telemetry.hourlySteps;
-    if (list.isEmpty) return 0;
-    int peakIndex = 0;
-    int maxVal = list[0];
-    for (int i = 1; i < list.length; i++) {
-      if (list[i] > maxVal) {
-        maxVal = list[i];
-        peakIndex = i;
-      }
-    }
-    return peakIndex;
-  }
 
   String _formatNumber(int number) {
     return number.toString().replaceAllMapped(
@@ -68,331 +41,171 @@ class _StepsBentoCardState extends State<StepsBentoCard> {
 
   @override
   Widget build(BuildContext context) {
-    final t = widget.telemetry;
-    final peakIndex = _calculatePeakIndex();
-    final activeIndex = _hoveredIndex ?? peakIndex;
-    final maxStepsInHour = t.hourlySteps.isNotEmpty
-        ? t.hourlySteps.reduce((a, b) => a > b ? a : b)
-        : 1;
-
-    final progressPct = (t.stepsProgress * 100).toInt();
-
-    return Container(
-      decoration: BoxDecoration(
-        color: _cardBg,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          if (onTap != null) {
+            onTap!();
+          } else {
+            showStepsDetailSheet(context, telemetry);
+          }
+        },
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: AppColors.steel.withValues(alpha: 0.5),
-          width: 1.0,
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // ── Header Row: Footsteps Icon + Title + Distance Badge ───────────
-          Row(
+        child: Container(
+          decoration: BoxDecoration(
+            color: _cardBg,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: AppColors.steel.withValues(alpha: 0.5),
+              width: 1.0,
+            ),
+          ),
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
+              // ── Header Row: Title + Chevron ──────────────────────────────
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: AppColors.steel.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(9),
-                      border: Border.all(
-                        color: AppColors.steel,
-                        width: 1.0,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Step Count',
+                        style: TextStyle(
+                          fontFamily: AppTypography.fontDisplay,
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.pureWhite,
+                          letterSpacing: 0.2,
+                        ),
                       ),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.directions_walk_rounded,
-                        color: _activeAccent,
-                        size: 16,
+                      Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.08),
+                        ),
+                        child: const Icon(
+                          Icons.chevron_right_rounded,
+                          size: 14,
+                          color: AppColors.platinum,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'FOOTSTEPS',
-                    style: AppTypography.labelSmall.copyWith(
-                      fontFamily: 'JetBrains Mono',
-                      fontSize: 11.0,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.4,
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Today',
+                    style: TextStyle(
+                      fontFamily: AppTypography.fontBody,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
                       color: AppColors.textSecondary,
                     ),
                   ),
                 ],
               ),
 
-              // Distance pill badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.onyx.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: AppColors.steel,
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.near_me_outlined,
-                      size: 11,
-                      color: AppColors.platinum,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '+${t.distanceKm.toStringAsFixed(2)} km',
-                      style: const TextStyle(
-                        fontFamily: 'JetBrains Mono',
-                        fontSize: 11.0,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                        letterSpacing: 0.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          // ── Stat Numbers Row: 8,420 Steps ──────────────────────────────────
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
+              // ── Hero Stat: 8,420 ──────────────────────────────────────────
               Text(
-                _formatNumber(t.steps),
+                _formatNumber(telemetry.steps),
                 style: const TextStyle(
                   fontFamily: 'JetBrains Mono',
-                  fontSize: 24,
+                  fontSize: 23,
                   fontWeight: FontWeight.w800,
-                  color: Colors.white,
+                  color: AppColors.pureWhite,
                   letterSpacing: -0.3,
                   height: 1.0,
                 ),
               ),
-              const SizedBox(width: 6),
-              Text(
-                'Steps',
-                style: AppTypography.titleLarge.copyWith(
-                  fontFamily: AppTypography.fontBody,
-                  fontSize: 12.0,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const Spacer(),
-              // Target completion badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.steel.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: AppColors.steel,
-                    width: 0.8,
-                  ),
-                ),
-                child: Text(
-                  '$progressPct% OF GOAL',
-                  style: const TextStyle(
-                    fontFamily: 'JetBrains Mono',
-                    fontSize: 11.0,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.platinum,
-                    letterSpacing: 0.6,
-                  ),
-                ),
+
+              // ── Thin Bar Sparkline Graph + Timeline ───────────────────────
+              _ThinBarSparkline(
+                hourlySteps: telemetry.hourlySteps,
               ),
             ],
-          ),
-
-          const SizedBox(height: 12),
-
-          // ── Compact Hourly Activity Bar Chart with Clean Tooltip ───────────
-          SizedBox(
-            height: 68,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final barCount = t.hourlySteps.length;
-                const double chartBarAreaHeight = 44;
-                final double barWidth =
-                    ((constraints.maxWidth - ((barCount - 1) * 7)) / barCount)
-                        .clamp(6.0, 18.0);
-
-                return Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    // Bar chart elements
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 18,
-                      height: chartBarAreaHeight,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          for (int i = 0; i < barCount; i++)
-                            _buildBar(
-                              index: i,
-                              value: t.hourlySteps[i],
-                              maxValue: maxStepsInHour,
-                              width: barWidth,
-                              maxHeight: chartBarAreaHeight,
-                              isActive: i == activeIndex,
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                setState(() => _hoveredIndex = i);
-                              },
-                            ),
-                        ],
-                      ),
-                    ),
-
-                    // Clean Tooltip Badge above active bar (NO blurry glow)
-                    if (activeIndex >= 0 && activeIndex < barCount)
-                      _buildCleanTooltip(
-                        activeIndex: activeIndex,
-                        barCount: barCount,
-                        totalWidth: constraints.maxWidth,
-                        barWidth: barWidth,
-                        barHeight: ((t.hourlySteps[activeIndex] / maxStepsInHour) *
-                                (chartBarAreaHeight - 12)) +
-                            8,
-                        stepValue: t.hourlySteps[activeIndex],
-                      ),
-
-                    // Timeline X-Axis Labels (08:00 - 20:00) with Apple HIG floor & contrast
-                    const Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _TimeLabel('08:00'),
-                          _TimeLabel('11:00'),
-                          _TimeLabel('14:00'),
-                          _TimeLabel('17:00'),
-                          _TimeLabel('20:00'),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBar({
-    required int index,
-    required int value,
-    required int maxValue,
-    required double width,
-    required double maxHeight,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    final double normalizedHeight =
-        ((value / maxValue) * (maxHeight - 12)) + 7;
-
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        color: Colors.transparent, // Expands hit testing to full column height
-        padding: const EdgeInsets.symmetric(horizontal: 1.5),
-        alignment: Alignment.bottomCenter,
-        height: maxHeight,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-          width: width,
-          height: normalizedHeight,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(4),
-            color: isActive ? _activeAccent : _inactiveBarColor.withValues(alpha: 0.6),
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildCleanTooltip({
-    required int activeIndex,
-    required int barCount,
-    required double totalWidth,
-    required double barWidth,
-    required double barHeight,
-    required int stepValue,
-  }) {
-    final double spacing = (totalWidth - (barCount * barWidth)) / (barCount - 1);
-    final double barCenterX =
-        (activeIndex * (barWidth + spacing)) + (barWidth / 2);
+/// Thin vertical bar sparkline matching Apple Fitness aesthetic.
+class _ThinBarSparkline extends StatelessWidget {
+  const _ThinBarSparkline({required this.hourlySteps});
 
-    const double tooltipWidth = 52.0;
-    final double tooltipLeft = (barCenterX - (tooltipWidth / 2))
-        .clamp(0.0, totalWidth - tooltipWidth);
+  final List<int> hourlySteps;
 
-    return Positioned(
-      left: tooltipLeft,
-      bottom: 18 + barHeight + 3,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.0),
-            decoration: BoxDecoration(
-              color: AppColors.onyx,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: AppColors.platinum,
-                width: 1.0,
-              ),
-            ),
-            child: Text(
-              _formatNumber(stepValue),
-              style: const TextStyle(
-                fontFamily: 'JetBrains Mono',
-                fontSize: 11.0,
-                fontWeight: FontWeight.w700,
-                color: AppColors.pureWhite,
-                letterSpacing: 0.3,
-              ),
-            ),
+  @override
+  Widget build(BuildContext context) {
+    // 16 bars representing daily activity distribution
+    const int totalBars = 16;
+    final int maxVal = hourlySteps.isNotEmpty
+        ? hourlySteps.reduce((a, b) => a > b ? a : b)
+        : 1;
+
+    // Normalize data into 16 bar heights
+    final List<double> normalizedHeights = List.generate(totalBars, (index) {
+      if (hourlySteps.isEmpty) return 0.15;
+      final dataIdx = (index * hourlySteps.length) ~/ totalBars;
+      final val = hourlySteps[dataIdx.clamp(0, hourlySteps.length - 1)];
+      if (val <= 0) return 0.12;
+      return (val / (maxVal > 0 ? maxVal : 1)).clamp(0.18, 1.0);
+    });
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // 16 thin vertical lines
+        SizedBox(
+          height: 24,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: List.generate(totalBars, (i) {
+              final heightPct = normalizedHeights[i];
+              final bool hasActivity = i < (totalBars * 0.75); // up to current hour
+              return Container(
+                width: 2.2,
+                height: (heightPct * 24).clamp(3.0, 24.0),
+                decoration: BoxDecoration(
+                  color: hasActivity
+                      ? AppColors.pureWhite
+                      : AppColors.steel.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(1.2),
+                ),
+              );
+            }),
           ),
-          // Downward pointer caret
-          const CustomPaint(
-            size: Size(6, 3.5),
-            painter: _CaretPainter(color: AppColors.pureWhite),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 5),
+        // Timeline hour markers (Apple HIG minimum 11.0 pt)
+        const Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _SparklineTimeLabel('00'),
+            _SparklineTimeLabel('06'),
+            _SparklineTimeLabel('12'),
+            _SparklineTimeLabel('18'),
+          ],
+        ),
+      ],
     );
   }
 }
 
-class _TimeLabel extends StatelessWidget {
-  const _TimeLabel(this.text);
+class _SparklineTimeLabel extends StatelessWidget {
+  const _SparklineTimeLabel(this.text);
   final String text;
 
   @override
@@ -402,34 +215,9 @@ class _TimeLabel extends StatelessWidget {
       style: const TextStyle(
         fontFamily: 'JetBrains Mono',
         fontSize: 11.0,
-        color: AppColors.textSecondary,
         fontWeight: FontWeight.w500,
+        color: AppColors.textSecondary,
       ),
     );
   }
-}
-
-/// Downward pointing caret triangle for the tooltip.
-class _CaretPainter extends CustomPainter {
-  const _CaretPainter({required this.color});
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final path = Path()
-      ..moveTo(0, 0)
-      ..lineTo(size.width, 0)
-      ..lineTo(size.width / 2, size.height)
-      ..close();
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _CaretPainter oldDelegate) =>
-      oldDelegate.color != color;
 }

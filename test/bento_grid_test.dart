@@ -115,7 +115,7 @@ void main() {
       expect(find.text('Today'), findsOneWidget);
     });
 
-    testWidgets('StepsBentoCard renders step telemetry and peak badge',
+    testWidgets('StepsBentoCard renders minimal step count and triggers tap',
         (WidgetTester tester) async {
       const telemetry = DailyTelemetry(
         steps: 8420,
@@ -123,22 +123,31 @@ void main() {
         hourlySteps: [100, 200, 500, 3902, 300, 400],
       );
 
+      var tapped = false;
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.dark,
-          home: const Scaffold(
-            body: StepsBentoCard(telemetry: telemetry),
+          home: Scaffold(
+            body: StepsBentoCard(
+              telemetry: telemetry,
+              onTap: () => tapped = true,
+            ),
           ),
         ),
       );
 
-      expect(find.text('FOOTSTEPS'), findsOneWidget);
+      expect(find.text('Step Count'), findsOneWidget);
+      expect(find.text('Today'), findsOneWidget);
       expect(find.text('8,420'), findsOneWidget);
-      expect(find.text('+6.12 km'), findsOneWidget);
-      expect(find.text('3,902'), findsOneWidget); // Tooltip peak badge
+      expect(find.text('00'), findsOneWidget);
+      expect(find.text('18'), findsOneWidget);
+
+      await tester.tap(find.text('Step Count'));
+      await tester.pumpAndSettle();
+      expect(tapped, isTrue);
     });
 
-    testWidgets('CaloriesBentoCard, WaterBentoCard, and SleepBentoCard render metrics',
+    testWidgets('CaloriesBentoCard, WaterBentoCard, and SleepBentoCard render metrics and tap',
         (WidgetTester tester) async {
       const telemetry = DailyTelemetry(
         calories: 2390,
@@ -149,27 +158,80 @@ void main() {
         sleepGoalHours: 8.0,
       );
 
+      var calTapped = false;
+      var waterTapped = false;
+      var sleepTapped = false;
+
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.dark,
-          home: const Scaffold(
+          home: Scaffold(
             body: Column(
               children: [
-                CaloriesBentoCard(telemetry: telemetry),
-                WaterBentoCard(telemetry: telemetry),
-                SleepBentoCard(telemetry: telemetry),
+                CaloriesBentoCard(
+                  telemetry: telemetry,
+                  onTap: () => calTapped = true,
+                ),
+                WaterBentoCard(
+                  telemetry: telemetry,
+                  onTap: () => waterTapped = true,
+                ),
+                SleepBentoCard(
+                  telemetry: telemetry,
+                  onTap: () => sleepTapped = true,
+                ),
               ],
             ),
           ),
         ),
       );
 
-      expect(find.text('CALORIES'), findsOneWidget);
+      expect(find.text('Calories'), findsOneWidget);
       expect(find.text('2,390'), findsOneWidget);
-      expect(find.text('HYDRATION'), findsOneWidget);
+      expect(find.text('Hydration'), findsOneWidget);
       expect(find.text('2,750'), findsOneWidget);
-      expect(find.text('SLEEP'), findsOneWidget);
+      expect(find.text('Sleep'), findsOneWidget);
       expect(find.text('7.5'), findsOneWidget);
+
+      await tester.tap(find.text('Calories'));
+      await tester.pumpAndSettle();
+      expect(calTapped, isTrue);
+
+      await tester.tap(find.text('Hydration'));
+      await tester.pumpAndSettle();
+      expect(waterTapped, isTrue);
+
+      await tester.tap(find.text('Sleep'));
+      await tester.pumpAndSettle();
+      expect(sleepTapped, isTrue);
+    });
+
+    testWidgets('Tapping StepsBentoCard opens StepsDetailSheet modal',
+        (WidgetTester tester) async {
+      const telemetry = DailyTelemetry(
+        steps: 8420,
+        distanceKm: 6.12,
+        hourlySteps: [100, 200, 500, 3902, 300, 400],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.dark,
+            home: const Scaffold(
+              body: StepsBentoCard(telemetry: telemetry),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Step Count'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('DAILY ACTIVITY & MOVEMENT'), findsOneWidget);
+      expect(find.text('HOURLY DISTRIBUTION'), findsOneWidget);
+      expect(find.text('DISTANCE'), findsOneWidget);
+      expect(find.text('ACTIVE TIME'), findsOneWidget);
     });
 
     testWidgets('DailyWorkoutBentoCard renders targeted muscles and starts workout',

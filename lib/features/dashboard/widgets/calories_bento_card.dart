@@ -1,20 +1,22 @@
 /// Calories Bento Card for the LEON Dashboard.
 ///
-/// Clean, minimal, non-sloppy design without outer blur glows:
-/// - Daily caloric burn metric with custom formatted readout
-/// - Crisp circular radial donut progress ring chart
-/// - Milestone percentage completion readout
-/// - Tactical amber-orange styling
+/// Clean, minimal square card inspired by Apple Fitness:
+/// - "Calories" header with subtle circular chevron
+/// - "Today" caption
+/// - Bold hero caloric burn readout (e.g. 2,390 kcal)
+/// - Minimal thin progress bar and goal milestone percentage
+/// - Tap interaction opens the deep calories detail pop-up modal sheet
 library;
 
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/daily_telemetry_model.dart';
+import 'telemetry_detail_sheets.dart';
 
-/// Bento grid card displaying daily caloric burn with a clean radial progress ring.
+/// Minimal square Bento card displaying daily calories burned.
 class CaloriesBentoCard extends StatelessWidget {
   const CaloriesBentoCard({
     super.key,
@@ -25,7 +27,7 @@ class CaloriesBentoCard extends StatelessWidget {
   /// Telemetry data source.
   final DailyTelemetry telemetry;
 
-  /// Optional tap handler.
+  /// Optional card tap handler override.
   final VoidCallback? onTap;
 
   static const Color _cardBg = AppColors.charcoal;
@@ -42,218 +44,156 @@ class CaloriesBentoCard extends StatelessWidget {
     final progress = telemetry.caloriesProgress;
     final progressPct = (progress * 100).toInt();
 
-    return Container(
-      decoration: BoxDecoration(
-        color: _cardBg,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          if (onTap != null) {
+            onTap!();
+          } else {
+            showCaloriesDetailSheet(context, telemetry);
+          }
+        },
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: AppColors.steel.withValues(alpha: 0.5),
-          width: 1.0,
-        ),
-      ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // ── Header: Flame Icon & Label ────────────────────────────────────
-          Row(
-            children: [
-              Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  color: AppColors.steel.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColors.steel,
-                    width: 1,
-                  ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.local_fire_department_rounded,
-                    color: AppColors.pureWhite,
-                    size: 15,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  'CALORIES',
-                  style: AppTypography.labelSmall.copyWith(
-                    fontFamily: 'JetBrains Mono',
-                    fontSize: 11.0,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                    color: AppColors.textSecondary,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
+        child: Container(
+          decoration: BoxDecoration(
+            color: _cardBg,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: AppColors.steel.withValues(alpha: 0.5),
+              width: 1.0,
+            ),
           ),
-
-          const SizedBox(height: 8),
-
-          // ── Stat Numbers: 2,390 Kcal ──────────────────────────────────────
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                _formatNumber(telemetry.calories),
-                style: const TextStyle(
-                  fontFamily: 'JetBrains Mono',
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  letterSpacing: -0.2,
-                  height: 1.0,
-                ),
-              ),
-              const SizedBox(width: 3),
-              const Text(
-                'Kcal',
-                style: TextStyle(
-                  fontFamily: AppTypography.fontBody,
-                  fontSize: 11.0,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.platinum,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          // ── Donut Progress Ring (Clean, No Glow Blur) ─────────────────────
-          Center(
-            child: SizedBox(
-              width: 72,
-              height: 72,
-              child: Stack(
-                alignment: Alignment.center,
+              // ── Header Row: Title + Chevron ──────────────────────────────
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  CustomPaint(
-                    size: const Size(72, 72),
-                    painter: _DonutProgressPainter(
-                      progress: progress,
-                      trackColor: AppColors.steel.withValues(alpha: 0.4),
-                      progressColor: AppColors.pureWhite,
-                      secondaryColor: AppColors.platinum,
-                      strokeWidth: 6.0,
-                    ),
-                  ),
-                  // Percentage readout in the center
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        '$progressPct%',
-                        style: const TextStyle(
-                          fontFamily: 'JetBrains Mono',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                      const Text(
+                        'Calories',
+                        style: TextStyle(
+                          fontFamily: AppTypography.fontDisplay,
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.pureWhite,
+                          letterSpacing: 0.2,
                         ),
                       ),
-                      const Text(
-                        'BURNED',
-                        style: TextStyle(
+                      Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.08),
+                        ),
+                        child: const Icon(
+                          Icons.chevron_right_rounded,
+                          size: 14,
+                          color: AppColors.platinum,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Today',
+                    style: TextStyle(
+                      fontFamily: AppTypography.fontBody,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+
+              // ── Hero Stat: 2,390 kcal ────────────────────────────────────
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    _formatNumber(telemetry.calories),
+                    style: const TextStyle(
+                      fontFamily: 'JetBrains Mono',
+                      fontSize: 23,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.pureWhite,
+                      letterSpacing: -0.3,
+                      height: 1.0,
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  const Text(
+                    'kcal',
+                    style: TextStyle(
+                      fontFamily: AppTypography.fontBody,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+
+              // ── Thin Progress Bar & Goal Milestone ───────────────────────
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: SizedBox(
+                      height: 4,
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        backgroundColor: AppColors.steel.withValues(alpha: 0.4),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppColors.pureWhite,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 7),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '$progressPct% of goal',
+                        style: const TextStyle(
                           fontFamily: 'JetBrains Mono',
                           fontSize: 11.0,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: AppColors.textSecondary,
-                          letterSpacing: 0.4,
+                        ),
+                      ),
+                      Text(
+                        '${_formatNumber(telemetry.caloriesGoal)} kcal',
+                        style: const TextStyle(
+                          fontFamily: 'JetBrains Mono',
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
                   ),
                 ],
               ),
-            ),
+            ],
           ),
-
-          const SizedBox(height: 8),
-
-          // ── Goal Milestone ────────────────────────────────────────────────
-          Center(
-            child: Text(
-              'GOAL: ${_formatNumber(telemetry.caloriesGoal)} KCAL',
-              style: const TextStyle(
-                fontFamily: 'JetBrains Mono',
-                fontSize: 11.0,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
-                letterSpacing: 0.6,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
-  }
-}
-
-/// Custom painter for rendering the circular radial donut progress ring without blur glow.
-class _DonutProgressPainter extends CustomPainter {
-  const _DonutProgressPainter({
-    required this.progress,
-    required this.trackColor,
-    required this.progressColor,
-    required this.secondaryColor,
-    required this.strokeWidth,
-  });
-
-  final double progress;
-  final Color trackColor;
-  final Color progressColor;
-  final Color secondaryColor;
-  final double strokeWidth;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - strokeWidth) / 2;
-
-    // Background track ring
-    final trackPaint = Paint()
-      ..color = trackColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
-
-    canvas.drawCircle(center, radius, trackPaint);
-
-    if (progress <= 0) return;
-
-    // Clean active progress arc (no maskFilter blur)
-    final sweepAngle = (2 * math.pi) * progress.clamp(0.0, 1.0);
-    const startAngle = -math.pi / 2;
-
-    final progressRect = Rect.fromCircle(center: center, radius: radius);
-
-    final gradient = SweepGradient(
-      startAngle: 0.0,
-      endAngle: sweepAngle,
-      colors: [secondaryColor, progressColor],
-      transform: const GradientRotation(-math.pi / 2),
-    );
-
-    final progressPaint = Paint()
-      ..shader = gradient.createShader(progressRect)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(progressRect, startAngle, sweepAngle, false, progressPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _DonutProgressPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
-        oldDelegate.progressColor != progressColor ||
-        oldDelegate.trackColor != trackColor;
   }
 }

@@ -1,18 +1,22 @@
 /// Sleep Bento Card for the LEON Dashboard.
 ///
-/// Clean, minimal bento card designed for vertical stacking:
-/// - Sleep logged in hours (e.g. 7.5 hrs)
-/// - Clean horizontal progress gauge with daily target readout
-/// - Tactical indigo/purple styling without sloppy blur glows
+/// Clean, minimal square card inspired by Apple Fitness:
+/// - "Sleep" header with subtle circular chevron
+/// - "Last Night" caption
+/// - Bold hero sleep duration readout (e.g. 7.5 hrs)
+/// - Minimal thin progress bar and goal milestone percentage
+/// - Tap interaction opens the deep sleep detail pop-up modal sheet
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/daily_telemetry_model.dart';
+import 'telemetry_detail_sheets.dart';
 
-/// Compact Bento card displaying daily sleep duration in hours.
+/// Minimal square Bento card displaying daily sleep duration.
 class SleepBentoCard extends StatelessWidget {
   const SleepBentoCard({
     super.key,
@@ -23,11 +27,10 @@ class SleepBentoCard extends StatelessWidget {
   /// Telemetry data source.
   final DailyTelemetry telemetry;
 
-  /// Optional tap handler.
+  /// Optional card tap handler override.
   final VoidCallback? onTap;
 
   static const Color _cardBg = AppColors.charcoal;
-  static const Color _sleepBg = AppColors.steel;
 
   @override
   Widget build(BuildContext context) {
@@ -36,64 +39,81 @@ class SleepBentoCard extends StatelessWidget {
     final hoursStr = telemetry.sleepHours.toStringAsFixed(1);
     final goalHoursStr = telemetry.sleepGoalHours.toStringAsFixed(1);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: _cardBg,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          if (onTap != null) {
+            onTap!();
+          } else {
+            showSleepDetailSheet(context, telemetry);
+          }
+        },
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: AppColors.steel.withValues(alpha: 0.5),
-          width: 1.0,
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // ── Top Row: Moon Icon + Label + Value Readout ────────────────────
-          Row(
+        child: Container(
+          decoration: BoxDecoration(
+            color: _cardBg,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: AppColors.steel.withValues(alpha: 0.5),
+              width: 1.0,
+            ),
+          ),
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
+              // ── Header Row: Title + Chevron ──────────────────────────────
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      color: _sleepBg.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(7),
-                      border: Border.all(
-                        color: AppColors.steel,
-                        width: 1,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Sleep',
+                        style: TextStyle(
+                          fontFamily: AppTypography.fontDisplay,
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.pureWhite,
+                          letterSpacing: 0.2,
+                        ),
                       ),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.bedtime_rounded,
-                        color: AppColors.pureWhite,
-                        size: 13,
+                      Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.08),
+                        ),
+                        child: const Icon(
+                          Icons.chevron_right_rounded,
+                          size: 14,
+                          color: AppColors.platinum,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'SLEEP',
-                    style: AppTypography.labelSmall.copyWith(
-                      fontFamily: 'JetBrains Mono',
-                      fontSize: 11.0,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.1,
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Last Night',
+                    style: TextStyle(
+                      fontFamily: AppTypography.fontBody,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
                       color: AppColors.textSecondary,
                     ),
                   ),
                 ],
               ),
 
-              // 7.5 hrs stat
+              // ── Hero Stat: 7.5 hrs ───────────────────────────────────────
               Row(
-                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
@@ -101,70 +121,73 @@ class SleepBentoCard extends StatelessWidget {
                     hoursStr,
                     style: const TextStyle(
                       fontFamily: 'JetBrains Mono',
-                      fontSize: 15,
+                      fontSize: 23,
                       fontWeight: FontWeight.w800,
                       color: AppColors.pureWhite,
+                      letterSpacing: -0.3,
                       height: 1.0,
                     ),
                   ),
-                  const SizedBox(width: 2),
+                  const SizedBox(width: 3),
                   const Text(
                     'hrs',
                     style: TextStyle(
                       fontFamily: AppTypography.fontBody,
-                      fontSize: 11.0,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textSecondary,
                     ),
                   ),
                 ],
               ),
+
+              // ── Thin Progress Bar & Goal Milestone ───────────────────────
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: SizedBox(
+                      height: 4,
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        backgroundColor: AppColors.steel.withValues(alpha: 0.4),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppColors.pureWhite,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 7),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '$progressPct% of goal',
+                        style: const TextStyle(
+                          fontFamily: 'JetBrains Mono',
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      Text(
+                        '${goalHoursStr}h target',
+                        style: const TextStyle(
+                          fontFamily: 'JetBrains Mono',
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ],
           ),
-
-          const SizedBox(height: 7),
-
-          // ── Progress Bar ──────────────────────────────────────────────────
-          ClipRRect(
-            borderRadius: BorderRadius.circular(3),
-            child: SizedBox(
-              height: 5,
-              child: LinearProgressIndicator(
-                value: progress,
-                backgroundColor: AppColors.steel,
-                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.pureWhite),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 5),
-
-          // ── Goal Readout Row ──────────────────────────────────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '$hoursStr / $goalHoursStr hrs',
-                style: const TextStyle(
-                  fontFamily: 'JetBrains Mono',
-                  fontSize: 11.0,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                  letterSpacing: 0.4,
-                ),
-              ),
-              Text(
-                '$progressPct%',
-                style: const TextStyle(
-                  fontFamily: 'JetBrains Mono',
-                  fontSize: 11.0,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.pureWhite,
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }

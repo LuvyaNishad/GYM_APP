@@ -65,42 +65,20 @@ class DashboardScreen extends ConsumerWidget {
             ),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // ── Compact Footsteps Tracker Bento Card ───────────────────
-                StepsBentoCard(
-                  telemetry: telemetry,
-                ),
-                const SizedBox(height: 10),
-
-                // ── Split Bento Grid: Calories (Left) & Hydration/Sleep (Right) ─
-                IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        child: CaloriesBentoCard(
-                          telemetry: telemetry,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: WaterBentoCard(
-                                telemetry: telemetry,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Expanded(
-                              child: SleepBentoCard(
-                                telemetry: telemetry,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                // ── 4 Equal Square Bento Cards (2x2 Grid) ──────────────────
+                GridView.count(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 1.02,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    StepsBentoCard(telemetry: telemetry),
+                    CaloriesBentoCard(telemetry: telemetry),
+                    WaterBentoCard(telemetry: telemetry),
+                    SleepBentoCard(telemetry: telemetry),
+                  ],
                 ),
                 const SizedBox(height: 10),
 
