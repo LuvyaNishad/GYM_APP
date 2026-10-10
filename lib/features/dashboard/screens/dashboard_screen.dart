@@ -65,7 +65,17 @@ class DashboardScreen extends ConsumerWidget {
             ),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // ── 4 Equal Square Bento Cards (2x2 Grid) ──────────────────
+                // ── 1. Compact Daily Workout / Start Workout Bento Card ───────
+                DailyWorkoutBentoCard(
+                  activeSplit: activeSplit,
+                  muscleGroups: const ['CHEST', 'DELTOIDS', 'TRICEPS'],
+                  exerciseCount: 5,
+                  estimatedMinutes: 48,
+                  targetRpe: '8.5',
+                ),
+                const SizedBox(height: 12),
+
+                // ── 2. 4 Equal Square Bento Cards (2x2 Grid) ──────────────────
                 GridView.count(
                   crossAxisCount: 2,
                   mainAxisSpacing: 10,
@@ -79,16 +89,6 @@ class DashboardScreen extends ConsumerWidget {
                     WaterBentoCard(telemetry: telemetry),
                     SleepBentoCard(telemetry: telemetry),
                   ],
-                ),
-                const SizedBox(height: 10),
-
-                // ── Compact Daily Workout / Start Workout Bento Card ───────
-                DailyWorkoutBentoCard(
-                  activeSplit: activeSplit,
-                  muscleGroups: const ['CHEST', 'DELTOIDS', 'TRICEPS'],
-                  exerciseCount: 5,
-                  estimatedMinutes: 48,
-                  targetRpe: '8.5',
                 ),
               ]),
             ),

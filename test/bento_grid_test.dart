@@ -139,8 +139,7 @@ void main() {
       expect(find.text('Step Count'), findsOneWidget);
       expect(find.text('Today'), findsOneWidget);
       expect(find.text('8,420'), findsOneWidget);
-      expect(find.text('00'), findsOneWidget);
-      expect(find.text('18'), findsOneWidget);
+      expect(find.text('84%'), findsOneWidget);
 
       await tester.tap(find.text('Step Count'));
       await tester.pumpAndSettle();

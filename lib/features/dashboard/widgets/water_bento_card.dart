@@ -1,10 +1,10 @@
 /// Hydration / Water Bento Card for the LEON Dashboard.
 ///
-/// Clean, minimal square card inspired by Apple Fitness:
+/// Minimal square card:
 /// - "Hydration" header with subtle circular chevron
 /// - "Today" caption
 /// - Bold hero water intake readout (e.g. 2,750 ml)
-/// - Minimal thin progress bar and goal milestone percentage
+/// - Clean circle graph with percentage in between
 /// - Tap interaction opens the deep hydration detail pop-up modal sheet
 library;
 
@@ -14,9 +14,10 @@ import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/daily_telemetry_model.dart';
+import 'bento_donut_progress.dart';
 import 'telemetry_detail_sheets.dart';
 
-/// Minimal square Bento card displaying daily hydration intake.
+/// Minimal square Bento card displaying daily hydration intake with a circular progress ring.
 class WaterBentoCard extends StatelessWidget {
   const WaterBentoCard({
     super.key,
@@ -43,7 +44,6 @@ class WaterBentoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = telemetry.waterProgress;
     final progressPct = (progress * 100).toInt();
-    final goalLiters = (telemetry.waterGoalMl / 1000).toStringAsFixed(1);
 
     return Material(
       color: Colors.transparent,
@@ -118,76 +118,44 @@ class WaterBentoCard extends StatelessWidget {
                 ],
               ),
 
-              // ── Hero Stat: 2,750 ml ──────────────────────────────────────
+              // ── Bottom Row: Value + Circle Graph with % in between ─────────
               Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    _formatNumber(telemetry.waterMl),
-                    style: const TextStyle(
-                      fontFamily: 'JetBrains Mono',
-                      fontSize: 23,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.pureWhite,
-                      letterSpacing: -0.3,
-                      height: 1.0,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _formatNumber(telemetry.waterMl),
+                          style: const TextStyle(
+                            fontFamily: 'JetBrains Mono',
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.pureWhite,
+                            letterSpacing: -0.3,
+                            height: 1.0,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        const Text(
+                          'ml',
+                          style: TextStyle(
+                            fontFamily: AppTypography.fontBody,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 3),
-                  const Text(
-                    'ml',
-                    style: TextStyle(
-                      fontFamily: AppTypography.fontBody,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-
-              // ── Thin Progress Bar & Goal Milestone ───────────────────────
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(2),
-                    child: SizedBox(
-                      height: 4,
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        backgroundColor: AppColors.steel.withValues(alpha: 0.4),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          AppColors.pureWhite,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 7),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '$progressPct% of goal',
-                        style: const TextStyle(
-                          fontFamily: 'JetBrains Mono',
-                          fontSize: 11.0,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      Text(
-                        '${goalLiters}L target',
-                        style: const TextStyle(
-                          fontFamily: 'JetBrains Mono',
-                          fontSize: 11.0,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
+                  BentoDonutProgress(
+                    progress: progress,
+                    percentage: progressPct,
+                    size: 52,
                   ),
                 ],
               ),
