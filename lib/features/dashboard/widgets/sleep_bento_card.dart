@@ -149,7 +149,7 @@ class SleepBentoCard extends StatelessWidget {
                   BentoDonutProgress(
                     progress: progress,
                     percentage: progressPct,
-                    size: 52,
+                    size: 60,
                   ),
                 ],
               ),

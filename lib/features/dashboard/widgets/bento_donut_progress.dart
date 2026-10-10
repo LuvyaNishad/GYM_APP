@@ -12,8 +12,8 @@ class BentoDonutProgress extends StatelessWidget {
     super.key,
     required this.progress,
     required this.percentage,
-    this.size = 52.0,
-    this.strokeWidth = 4.5,
+    this.size = 60.0,
+    this.strokeWidth = 5.2,
     this.progressColor = AppColors.pureWhite,
   });
 
@@ -53,7 +53,7 @@ class BentoDonutProgress extends StatelessWidget {
             '$percentage%',
             style: const TextStyle(
               fontFamily: 'JetBrains Mono',
-              fontSize: 11.5,
+              fontSize: 13.0,
               fontWeight: FontWeight.w800,
               color: AppColors.pureWhite,
               letterSpacing: -0.2,

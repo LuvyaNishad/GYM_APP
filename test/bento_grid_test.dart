@@ -139,7 +139,8 @@ void main() {
       expect(find.text('Step Count'), findsOneWidget);
       expect(find.text('Today'), findsOneWidget);
       expect(find.text('8,420'), findsOneWidget);
-      expect(find.text('84%'), findsOneWidget);
+      expect(find.text('00'), findsOneWidget);
+      expect(find.text('18'), findsOneWidget);
 
       await tester.tap(find.text('Step Count'));
       await tester.pumpAndSettle();
@@ -187,10 +188,13 @@ void main() {
 
       expect(find.text('Calories'), findsOneWidget);
       expect(find.text('2,390'), findsOneWidget);
+      expect(find.text('79%'), findsOneWidget);
       expect(find.text('Hydration'), findsOneWidget);
       expect(find.text('2,750'), findsOneWidget);
+      expect(find.text('78%'), findsOneWidget);
       expect(find.text('Sleep'), findsOneWidget);
       expect(find.text('7.5'), findsOneWidget);
+      expect(find.text('93%'), findsOneWidget);
 
       await tester.tap(find.text('Calories'));
       await tester.pumpAndSettle();
