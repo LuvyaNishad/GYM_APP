@@ -1,13 +1,62 @@
-/// Reusable minimal Bar Progress widget for LEON Bento Cards.
+/// Reusable minimal Bar Progress widgets for LEON Bento Cards.
 ///
-/// Designed as a slim, sleek vertical capsule gauge that replaces bulky
-/// circular donut rings, taking significantly less horizontal width and
-/// maintaining Apple HIG contrast and typography standards.
+/// Designed with Apple HIG contrast and typography standards.
 library;
 
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+
+/// Clean horizontal progress bar for compact wellness cards.
+class BentoHorizontalBarProgress extends StatelessWidget {
+  const BentoHorizontalBarProgress({
+    super.key,
+    required this.progress,
+    this.barHeight = 5.0,
+    this.progressColor = AppColors.pureWhite,
+    this.trackColor,
+  });
+
+  /// Normalized completion progress between 0.0 and 1.0.
+  final double progress;
+
+  /// Thickness of the horizontal progress bar.
+  final double barHeight;
+
+  /// Active progress fill color.
+  final Color progressColor;
+
+  /// Inactive background track color.
+  final Color? trackColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveTrackColor =
+        trackColor ?? Colors.white.withValues(alpha: 0.12);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(barHeight / 2),
+      child: Container(
+        height: barHeight,
+        width: double.infinity,
+        color: effectiveTrackColor,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: FractionallySizedBox(
+            widthFactor: progress.clamp(0.0, 1.0),
+            child: Container(
+              height: barHeight,
+              decoration: BoxDecoration(
+                color: progressColor,
+                borderRadius: BorderRadius.circular(barHeight / 2),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 /// Clean vertical capsule progress bar with completion percentage displayed above.
 class BentoBarProgress extends StatelessWidget {

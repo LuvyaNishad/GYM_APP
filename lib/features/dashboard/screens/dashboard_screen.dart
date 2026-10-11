@@ -75,21 +75,38 @@ class DashboardScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
 
-                // ── 2. 4 Equal Square Bento Cards (2x2 Grid) ──────────────────
-                GridView.count(
-                  padding: EdgeInsets.zero,
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  childAspectRatio: 1.05,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    StepsBentoCard(telemetry: telemetry),
-                    CaloriesBentoCard(telemetry: telemetry),
-                    WaterBentoCard(telemetry: telemetry),
-                    SleepBentoCard(telemetry: telemetry),
-                  ],
+                // ── 2. Bento Activity & Wellness Rows ─────────────────────────
+                // Top Row: Steps + Calories (Height 154)
+                SizedBox(
+                  height: 154,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: StepsBentoCard(telemetry: telemetry),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: CaloriesBentoCard(telemetry: telemetry),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Bottom Row: Hydration + Sleep with less height & horizontal bars (Height 114)
+                SizedBox(
+                  height: 114,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: WaterBentoCard(telemetry: telemetry),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: SleepBentoCard(telemetry: telemetry),
+                      ),
+                    ],
+                  ),
                 ),
               ]),
             ),

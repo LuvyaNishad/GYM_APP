@@ -66,7 +66,7 @@ class WaterBentoCard extends StatelessWidget {
               width: 1.0,
             ),
           ),
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.fromLTRB(14, 13, 14, 14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -128,43 +128,58 @@ class WaterBentoCard extends StatelessWidget {
                 ],
               ),
 
-              // ── Bottom Row: Value + Slim Bar Progress ─────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
+              // ── Bottom Section: Value & % Row + Horizontal Bar ────────────
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _formatNumber(telemetry.waterMl),
-                          style: const TextStyle(
-                            fontFamily: 'JetBrains Mono',
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.pureWhite,
-                            letterSpacing: -0.3,
-                            height: 1.0,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Text(
+                            _formatNumber(telemetry.waterMl),
+                            style: const TextStyle(
+                              fontFamily: 'JetBrains Mono',
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.pureWhite,
+                              letterSpacing: -0.3,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        const Text(
-                          'ml',
-                          style: TextStyle(
-                            fontFamily: AppTypography.fontBody,
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
+                          const SizedBox(width: 4),
+                          const Text(
+                            'ml',
+                            style: TextStyle(
+                              fontFamily: AppTypography.fontBody,
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textSecondary,
+                            ),
                           ),
+                        ],
+                      ),
+                      Text(
+                        '$progressPct%',
+                        style: const TextStyle(
+                          fontFamily: 'JetBrains Mono',
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.pureWhite,
+                          letterSpacing: -0.2,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  BentoBarProgress(
+                  const SizedBox(height: 7),
+                  BentoHorizontalBarProgress(
                     progress: progress,
-                    percentage: progressPct,
                   ),
                 ],
               ),
