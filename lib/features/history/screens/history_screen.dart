@@ -44,8 +44,14 @@ class HistoryScreen extends ConsumerWidget {
         physics: const BouncingScrollPhysics(),
         slivers: [
           // ── 1. Corner-to-Corner Pinned Calendar Header (Like Home Page, No Notch) ──
-          const SliverToBoxAdapter(
-            child: LeonMonthlyCalendar(),
+          SliverToBoxAdapter(
+            child: LeonMonthlyCalendar(
+              onDateSelected: (_) {
+                if (ref.read(historyActiveSegmentProvider) != 0) {
+                  ref.read(historyActiveSegmentProvider.notifier).select(0);
+                }
+              },
+            ),
           ),
 
           // ── 2. Content Area Below Calendar ────────────────────────────────

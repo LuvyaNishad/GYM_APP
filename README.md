@@ -17,7 +17,7 @@
 [![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev)
 [![State](https://img.shields.io/badge/State-Riverpod_3-0553B1?style=flat-square&logo=flutter&logoColor=white)](https://riverpod.dev)
 [![Storage](https://img.shields.io/badge/Storage-Hive_CE_(Local--First)-F8981D?style=flat-square)](https://pub.dev/packages/hive_ce)
-[![Tests](https://img.shields.io/badge/Tests-54_Passing-00C853?style=flat-square)](./test)
+[![Tests](https://img.shields.io/badge/Tests-60_Passing-00C853?style=flat-square)](./test)
 [![Design](https://img.shields.io/badge/Design-Noguchi_Monochrome-FFFFFF?style=flat-square&labelColor=0F131B)](./lib/core/theme)
 
 </div>
@@ -68,15 +68,16 @@ Operating under a **local-first** architecture, every session, set, rep, and rou
 
 ### 5. History & Performance Hub (The Timeline Hub)
 - **Collapsible Monthly & Weekly Calendar Header:** Pinned tactical header with a custom notch grab handle (`—`). Expands to a full 6-row monthly calendar with quick jump pickers (Days, Months, Decade Years); collapses to a compact 1-week strip via single tap or vertical drag.
-- **Unified Color-Coded Day Highlighting:**
-  - 🟢 **Solid Emerald Green (`#00E676`):** Completed workout sessions
+- **Unified Color-Coded Day Highlighting & 100% Data Synchronization:**
+  - 🟢 **Solid Emerald Green (`#00E676`):** Completed workout sessions (always contains that day's session data)
   - ⚪ **Solid Pure White (`#FFFFFF`):** Current day (Today)
-  - 🔴 **Soft Red (`#FF5252`):** Missed scheduled sessions
-  - ⚫ **Slate Onyx (`#262D3D`):** Designated recovery/rest days
+  - 🔴 **Soft Red (`#FF5252`):** Missed scheduled sessions (displays clean empty state with zero workout cards)
+  - ⚫ **Slate Onyx (`#262D3D`):** Designated recovery/rest days (displays recovery notice with zero workout cards)
   - 🟢 **Dimmed Green:** Completed workouts in adjacent months
   - 🔵 **Electric Cyan Ring:** Active date filter selection
-- **Interactive Date Filtering:** 1-tap filtering from any calendar day to show workouts completed on that date, complete with an active filter badge and 1-tap clear action.
-- **Lifetime Tonnage Progress Tracker:** High-visibility progress bar tracking total lifetime kilograms lifted against milestone targets (e.g. `32.7K KG LIFTED`, target `36.0K KG`).
+- **Strict 1-Workout-Per-Day Rule:** Enforces exactly one tracked session per calendar day in both storage and presentation.
+- **Idempotent Date Selection:** Tapping a selected date keeps the date active without flip-flopping; cleared via 1-tap `[ CLEAR ]` or `[ SHOW ALL WORKOUTS ]`.
+- **Lifetime Tonnage Progress Tracker:** High-visibility progress bar tracking total lifetime kilograms lifted against milestone targets (e.g. `202.8K KG LIFTED`, target `204.0K KG`).
 - **Tri-Segment Performance Switcher:**
   - **`[ SESSIONS ]`**: Chronological workout logs with muscle group tags, session duration, set counts, tonnage, PR trophy badges (`2 PRS`), and expandable set-by-set accordions.
   - **`[ OVERLOAD ]`**: Progressive overload analytics featuring 1RM strength progression curves for key compound lifts (Bench Press, Squat, Deadlift, Overhead Press, Barbell Row) and volume load histories.

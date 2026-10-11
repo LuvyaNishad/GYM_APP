@@ -44,11 +44,27 @@ class WorkoutService {
       );
 
   /// Save a new or updated workout, keyed by [WorkoutModel.id].
-  Future<void> saveWorkout(WorkoutModel workout) => _hive.put(
-        AppConstants.hiveBoxWorkouts,
-        workout.id,
-        workout.toJson(),
-      );
+  /// Enforces strictly 1 workout per calendar day: deletes any prior workout
+  /// on the same calendar day before saving the latest session.
+  Future<void> saveWorkout(WorkoutModel workout) async {
+    final all = _hive.readAll(
+      AppConstants.hiveBoxWorkouts,
+      WorkoutModel.fromJson,
+    );
+    for (final existing in all) {
+      if (existing.date.year == workout.date.year &&
+          existing.date.month == workout.date.month &&
+          existing.date.day == workout.date.day &&
+          existing.id != workout.id) {
+        await _hive.delete(AppConstants.hiveBoxWorkouts, existing.id);
+      }
+    }
+    await _hive.put(
+      AppConstants.hiveBoxWorkouts,
+      workout.id,
+      workout.toJson(),
+    );
+  }
 
   /// Delete a workout by id. No-op when it doesn't exist.
   Future<void> deleteWorkout(String workoutId) =>

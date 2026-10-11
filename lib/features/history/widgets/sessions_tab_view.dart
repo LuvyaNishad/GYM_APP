@@ -171,51 +171,146 @@ class _SessionsTabViewState extends ConsumerState<SessionsTabView> {
 
         // ── Chronological Workout Log Cards ────────────────────────────────
         if (filteredWorkouts.isEmpty)
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 36),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.fitness_center_rounded,
-                    size: 32,
-                    color: AppColors.textSecondary.withValues(alpha: 0.4),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    selectedDate != null
-                        ? 'No workouts logged on ${_formatDate(selectedDate)}.'
-                        : 'No workouts found for $_selectedFilter.',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
-                      fontSize: 12,
-                    ),
-                  ),
-                  if (selectedDate != null) ...[
-                    const SizedBox(height: 8),
-                    GestureDetector(
-                      onTap: () {
-                        ref.read(selectedCalendarDateProvider.notifier).clear();
-                      },
-                      child: const Text(
-                        'Show All Workouts',
-                        style: TextStyle(
-                          fontFamily: 'JetBrains Mono',
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF00E5FF),
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
+          _buildEmptyState(
+            selectedDate: selectedDate,
+            selectedFilter: _selectedFilter,
+            onClearFilter: () {
+              ref.read(selectedCalendarDateProvider.notifier).clear();
+            },
           )
         else
           for (final workout in filteredWorkouts)
             WorkoutHistoryCard(workout: workout),
       ],
+    );
+  }
+
+  Widget _buildEmptyState({
+    required DateTime? selectedDate,
+    required String selectedFilter,
+    required VoidCallback onClearFilter,
+  }) {
+    if (selectedDate == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Column(
+            children: [
+              Icon(
+                Icons.fitness_center_rounded,
+                size: 34,
+                color: AppColors.textSecondary.withValues(alpha: 0.35),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'No workouts found for $selectedFilter.',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final isRest = selectedDate.weekday == DateTime.sunday ||
+        selectedDate.weekday == DateTime.wednesday;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final sel =
+        DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+    final isFuture = sel.isAfter(today);
+
+    final title = isFuture
+        ? 'UPCOMING DATE'
+        : isRest
+            ? 'SCHEDULED REST DAY'
+            : 'MISSED SESSION';
+    final subtitle = isFuture
+        ? 'No workouts scheduled yet for ${_formatDate(selectedDate)}'
+        : isRest
+            ? 'Rest & muscle recovery day. No workouts logged.'
+            : 'No workout was logged on ${_formatDate(selectedDate)}.';
+    final icon = isFuture
+        ? Icons.calendar_today_rounded
+        : isRest
+            ? Icons.pause_circle_outline_rounded
+            : Icons.event_busy_rounded;
+    final accentColor = isFuture
+        ? AppColors.textSecondary
+        : isRest
+            ? AppColors.textSecondary
+            : const Color(0xFFFF5252);
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      decoration: BoxDecoration(
+        color: AppColors.charcoal,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: accentColor.withValues(alpha: 0.35),
+          width: 1.0,
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            size: 32,
+            color: accentColor,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            style: TextStyle(
+              fontFamily: 'JetBrains Mono',
+              fontSize: 12.0,
+              fontWeight: FontWeight.w800,
+              color: accentColor,
+              letterSpacing: 1.0,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontFamily: 'Outfit',
+              fontSize: 12.0,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: onClearFilter,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00E5FF).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
+                  width: 1.0,
+                ),
+              ),
+              child: const Text(
+                'SHOW ALL WORKOUTS',
+                style: TextStyle(
+                  fontFamily: 'JetBrains Mono',
+                  fontSize: 11.0,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF00E5FF),
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

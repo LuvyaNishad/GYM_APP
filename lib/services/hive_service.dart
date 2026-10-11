@@ -99,7 +99,13 @@ class HiveService {
     T Function(Map<String, dynamic> json) fromJson,
   ) {
     final models = <T>[];
-    for (final raw in _documents(boxName).values) {
+    Box<String> box;
+    try {
+      box = _documents(boxName);
+    } catch (_) {
+      return models;
+    }
+    for (final raw in box.values) {
       try {
         models.add(fromJson(jsonDecode(raw) as Map<String, dynamic>));
       } catch (_) {
