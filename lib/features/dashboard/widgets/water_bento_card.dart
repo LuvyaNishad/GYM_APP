@@ -14,10 +14,10 @@ import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/daily_telemetry_model.dart';
-import 'bento_donut_progress.dart';
+import 'bento_bar_progress.dart';
 import 'telemetry_detail_sheets.dart';
 
-/// Minimal square Bento card displaying daily hydration intake with a circular progress ring.
+/// Minimal square Bento card displaying daily hydration intake with a slim progress bar.
 class WaterBentoCard extends StatelessWidget {
   const WaterBentoCard({
     super.key,
@@ -80,15 +80,25 @@ class WaterBentoCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text(
-                        'Hydration',
-                        style: TextStyle(
-                          fontFamily: AppTypography.fontDisplay,
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.pureWhite,
-                          letterSpacing: 0.2,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            '💧',
+                            style: TextStyle(fontSize: 14.0),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Hydration',
+                            style: TextStyle(
+                              fontFamily: AppTypography.fontDisplay,
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.pureWhite,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                        ],
                       ),
                       Container(
                         width: 20,
@@ -118,7 +128,7 @@ class WaterBentoCard extends StatelessWidget {
                 ],
               ),
 
-              // ── Bottom Row: Value + Circle Graph with % in between ─────────
+              // ── Bottom Row: Value + Slim Bar Progress ─────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -152,10 +162,9 @@ class WaterBentoCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  BentoDonutProgress(
+                  BentoBarProgress(
                     progress: progress,
                     percentage: progressPct,
-                    size: 60,
                   ),
                 ],
               ),

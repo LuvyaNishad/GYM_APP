@@ -80,15 +80,25 @@ class CaloriesBentoCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text(
-                        'Calories',
-                        style: TextStyle(
-                          fontFamily: AppTypography.fontDisplay,
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.pureWhite,
-                          letterSpacing: 0.2,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            '🔥',
+                            style: TextStyle(fontSize: 14.0),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Calories',
+                            style: TextStyle(
+                              fontFamily: AppTypography.fontDisplay,
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.pureWhite,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                        ],
                       ),
                       Container(
                         width: 20,

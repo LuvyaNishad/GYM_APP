@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:leon/features/dashboard/providers/dashboard_provider.dart';
 import 'package:leon/features/history/providers/history_provider.dart';
-import 'package:leon/models/workout_model.dart';
 
 void main() {
   group('History & Calendar Sync Tests', () {

@@ -14,10 +14,10 @@ import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/daily_telemetry_model.dart';
-import 'bento_donut_progress.dart';
+import 'bento_bar_progress.dart';
 import 'telemetry_detail_sheets.dart';
 
-/// Minimal square Bento card displaying daily sleep duration with a circular progress ring.
+/// Minimal square Bento card displaying daily sleep duration with a slim progress bar.
 class SleepBentoCard extends StatelessWidget {
   const SleepBentoCard({
     super.key,
@@ -74,15 +74,25 @@ class SleepBentoCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text(
-                        'Sleep',
-                        style: TextStyle(
-                          fontFamily: AppTypography.fontDisplay,
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.pureWhite,
-                          letterSpacing: 0.2,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            '💤',
+                            style: TextStyle(fontSize: 14.0),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Sleep',
+                            style: TextStyle(
+                              fontFamily: AppTypography.fontDisplay,
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.pureWhite,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                        ],
                       ),
                       Container(
                         width: 20,
@@ -112,7 +122,7 @@ class SleepBentoCard extends StatelessWidget {
                 ],
               ),
 
-              // ── Bottom Row: Value + Circle Graph with % in between ─────────
+              // ── Bottom Row: Value + Slim Bar Progress ─────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -146,10 +156,9 @@ class SleepBentoCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  BentoDonutProgress(
+                  BentoBarProgress(
                     progress: progress,
                     percentage: progressPct,
-                    size: 60,
                   ),
                 ],
               ),
