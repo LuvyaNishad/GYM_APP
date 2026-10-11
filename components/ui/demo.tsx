@@ -1,13 +1,15 @@
-import { Home, User, Briefcase, FileText } from 'lucide-react'
-import { NavBar } from "@/components/ui/tubelight-navbar"
+"use client";
 
-export function NavBarDemo() {
-  const navItems = [
-    { name: 'Home', url: '#', icon: Home },
-    { name: 'About', url: '#', icon: User },
-    { name: 'Projects', url: '#', icon: Briefcase },
-    { name: 'Resume', url: '#', icon: FileText }
-  ]
+import * as React from "react";
+import { Calendar } from "@/components/ui/calendar";
 
-  return <NavBar items={navItems} />
+const today = new Date();
+
+export function CalendarPreview() {
+  const [selected, setSelected] = React.useState<Date | undefined>(today);
+  return <Calendar selected={selected} onSelect={setSelected} />;
+}
+
+export default function Demo() {
+  return <CalendarPreview />;
 }

@@ -20,7 +20,15 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../shared/widgets/notched_header_painter.dart';
 import 'gym_contribution_chart.dart';
+
+enum DayStatus {
+  workedOut,
+  missed,
+  rest,
+  future,
+}
 
 /// Retractable calendar header for the dashboard with 3 distinct phases.
 class RetractableCalendarHeader extends StatefulWidget {
@@ -63,7 +71,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
   static const Color _cardBg = AppColors.charcoal; // #27262A
   static const Color _pillSlotBg = Color(0xFF1B1C22); // Sleek dark slot
   static const Color _todayAccent = AppColors.pureWhite; // Pure white for today
-  static const Color _loggedAccent = AppColors.platinum; // Platinum silver for logged gym days
+  static const Color _loggedAccent = Color(0xFF00E676); // Emerald green for logged gym days
   static const double _tabHeight = 18.0;
 
   @override
@@ -426,6 +434,27 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
     );
   }
 
+  DayStatus _getDayStatus(DateTime date, DateTime today) {
+    final d = DateTime(date.year, date.month, date.day);
+
+    final hasWorkout = widget.loggedWorkoutDates.any(
+      (w) => w.year == d.year && w.month == d.month && w.day == d.day,
+    );
+    if (hasWorkout) {
+      return DayStatus.workedOut;
+    }
+
+    if (d.isAfter(today) || d.isAtSameMomentAs(today)) {
+      return DayStatus.future;
+    }
+
+    if (d.weekday == DateTime.sunday || d.weekday == DateTime.wednesday) {
+      return DayStatus.rest;
+    }
+
+    return DayStatus.missed;
+  }
+
   Widget _buildWeeklyStrip(DateTime now) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -439,12 +468,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
             isToday: date.year == now.year &&
                 date.month == now.month &&
                 date.day == now.day,
-            isLogged: widget.loggedWorkoutDates.any(
-              (d) =>
-                  d.year == date.year &&
-                  d.month == date.month &&
-                  d.day == date.day,
-            ),
+            status: _getDayStatus(date, now),
           ),
       ],
     );
@@ -467,9 +491,18 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
     required DateTime date,
     required bool isSelected,
     required bool isToday,
-    required bool isLogged,
+    required DayStatus status,
   }) {
-    final isPreviousSession = isLogged && !isToday;
+    Color borderColor;
+    if (isSelected) {
+      borderColor = isToday
+          ? Colors.white
+          : (status == DayStatus.workedOut
+              ? _loggedAccent
+              : const Color(0xFF00E5FF));
+    } else {
+      borderColor = AppColors.steel.withValues(alpha: 0.35);
+    }
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -484,19 +517,10 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           color: _pillSlotBg,
-          border: isSelected
-              ? Border.all(
-                  color: isToday
-                      ? Colors.white
-                      : (isPreviousSession
-                          ? _loggedAccent
-                          : Colors.white.withValues(alpha: 0.6)),
-                  width: 1.5,
-                )
-              : Border.all(
-                  color: AppColors.steel.withValues(alpha: 0.35),
-                  width: 0.8,
-                ),
+          border: Border.all(
+            color: borderColor,
+            width: isSelected ? 1.5 : 0.8,
+          ),
         ),
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: Column(
@@ -508,21 +532,25 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
               style: TextStyle(
                 fontFamily: AppTypography.fontDisplay,
                 fontSize: 11.0,
-                fontWeight: (isToday || isPreviousSession || isSelected)
+                fontWeight: (isToday || status == DayStatus.workedOut || isSelected)
                     ? FontWeight.w700
                     : FontWeight.w500,
                 color: isToday
                     ? _todayAccent
-                    : (isPreviousSession
+                    : (status == DayStatus.workedOut
                         ? _loggedAccent
-                        : (isSelected ? Colors.white : AppColors.textSecondary)),
+                        : (status == DayStatus.missed
+                            ? const Color(0xFFFF5252)
+                            : (isSelected ? Colors.white : AppColors.textSecondary))),
               ),
             ),
 
-            // Date Number:
-            // - Today: Solid pure white badge with dark text
-            // - Previous logged sessions: Solid platinum silver badge with dark text
-            // - Unlogged / Rest days: Crisp mono numeral
+            // Date Number Badge matching monthly calendar color-coding:
+            // - Today: Solid pure white circle with dark text
+            // - Worked out: Solid emerald green circle with dark text
+            // - Missed: Soft red circle with red text
+            // - Rest: Subtle dark slate circle with secondary text
+            // - Future: Clean mono numeral
             if (isToday)
               Container(
                 width: 26,
@@ -543,7 +571,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                   ),
                 ),
               )
-            else if (isPreviousSession)
+            else if (status == DayStatus.workedOut)
               Container(
                 width: 26,
                 height: 26,
@@ -559,6 +587,54 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                       fontSize: 12.0,
                       fontWeight: FontWeight.w800,
                       color: AppColors.onyx,
+                    ),
+                  ),
+                ),
+              )
+            else if (status == DayStatus.missed)
+              Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFFF5252).withValues(alpha: 0.16),
+                  border: Border.all(
+                    color: const Color(0xFFFF5252).withValues(alpha: 0.45),
+                    width: 0.8,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    '${date.day}',
+                    style: const TextStyle(
+                      fontFamily: 'JetBrains Mono',
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFFF5252),
+                    ),
+                  ),
+                ),
+              )
+            else if (status == DayStatus.rest)
+              Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.onyx.withValues(alpha: 0.65),
+                  border: Border.all(
+                    color: AppColors.steel.withValues(alpha: 0.35),
+                    width: 0.8,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    '${date.day}',
+                    style: const TextStyle(
+                      fontFamily: 'JetBrains Mono',
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -580,131 +656,3 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
   }
 }
 
-/// Custom painter for the end-to-end header with a protruding
-/// center notch tab and grab handle pill (matching user design).
-class NotchedHeaderPainter extends CustomPainter {
-  const NotchedHeaderPainter({
-    required this.backgroundColor,
-    required this.borderColor,
-    required this.handleColor,
-    this.bottomRadius = 28.0,
-    this.tabWidth = 76.0,
-    this.tabHeight = 18.0,
-    this.tabCornerRadius = 8.0,
-    this.filletRadius = 10.0,
-  });
-
-  final Color backgroundColor;
-  final Color borderColor;
-  final Color handleColor;
-  final double bottomRadius;
-  final double tabWidth;
-  final double tabHeight;
-  final double tabCornerRadius;
-  final double filletRadius;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height - tabHeight; // main card bottom baseline
-    final cx = w / 2;
-    final halfTab = tabWidth / 2;
-
-    final fillPaint = Paint()
-      ..color = backgroundColor
-      ..style = PaintingStyle.fill;
-
-    final strokePaint = Paint()
-      ..color = borderColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    final handlePaint = Paint()
-      ..color = handleColor
-      ..style = PaintingStyle.fill;
-
-    // Full closed path for solid background fill
-    final path = Path();
-    path.moveTo(0, 0);
-    path.lineTo(w, 0);
-    path.lineTo(w, h - bottomRadius);
-    path.quadraticBezierTo(w, h, w - bottomRadius, h);
-
-    // Right shoulder fillet into center notch tab
-    path.lineTo(cx + halfTab + filletRadius, h);
-    path.quadraticBezierTo(
-      cx + halfTab, h,
-      cx + halfTab, h + filletRadius,
-    );
-    path.lineTo(cx + halfTab, h + tabHeight - tabCornerRadius);
-    path.quadraticBezierTo(
-      cx + halfTab, h + tabHeight,
-      cx + halfTab - tabCornerRadius, h + tabHeight,
-    );
-    path.lineTo(cx - halfTab + tabCornerRadius, h + tabHeight);
-    path.quadraticBezierTo(
-      cx - halfTab, h + tabHeight,
-      cx - halfTab, h + tabHeight - tabCornerRadius,
-    );
-    path.lineTo(cx - halfTab, h + filletRadius);
-    path.quadraticBezierTo(
-      cx - halfTab, h,
-      cx - halfTab - filletRadius, h,
-    );
-
-    // Bottom edge to bottom-left corner
-    path.lineTo(bottomRadius, h);
-    path.quadraticBezierTo(0, h, 0, h - bottomRadius);
-    path.close();
-
-    canvas.drawPath(path, fillPaint);
-
-    // Stroke along the bottom perimeter including the notch
-    final borderPath = Path();
-    borderPath.moveTo(0, h - bottomRadius);
-    borderPath.quadraticBezierTo(0, h, bottomRadius, h);
-    borderPath.lineTo(cx - halfTab - filletRadius, h);
-    borderPath.quadraticBezierTo(
-      cx - halfTab, h,
-      cx - halfTab, h + filletRadius,
-    );
-    borderPath.lineTo(cx - halfTab, h + tabHeight - tabCornerRadius);
-    borderPath.quadraticBezierTo(
-      cx - halfTab, h + tabHeight,
-      cx - halfTab + tabCornerRadius, h + tabHeight,
-    );
-    borderPath.lineTo(cx + halfTab - tabCornerRadius, h + tabHeight);
-    borderPath.quadraticBezierTo(
-      cx + halfTab, h + tabHeight,
-      cx + halfTab, h + tabHeight - tabCornerRadius,
-    );
-    borderPath.lineTo(cx + halfTab, h + filletRadius);
-    borderPath.quadraticBezierTo(
-      cx + halfTab, h,
-      cx + halfTab + filletRadius, h,
-    );
-    borderPath.lineTo(w - bottomRadius, h);
-    borderPath.quadraticBezierTo(w, h, w, h - bottomRadius);
-
-    canvas.drawPath(borderPath, strokePaint);
-
-    // Drag handle pill centered inside the protruding tab
-    final handleRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(
-        center: Offset(cx, h + (tabHeight / 2)),
-        width: 32.0,
-        height: 4.0,
-      ),
-      const Radius.circular(2.0),
-    );
-    canvas.drawRRect(handleRect, handlePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant NotchedHeaderPainter oldDelegate) {
-    return oldDelegate.backgroundColor != backgroundColor ||
-        oldDelegate.borderColor != borderColor ||
-        oldDelegate.handleColor != handleColor ||
-        oldDelegate.tabHeight != tabHeight;
-  }
-}

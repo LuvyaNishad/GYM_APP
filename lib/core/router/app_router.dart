@@ -8,7 +8,7 @@ import '../../features/dashboard/screens/dashboard_screen.dart';
 import '../../features/workout_builder/screens/workout_builder_screen.dart';
 import '../../features/workout_session/screens/workout_session_screen.dart';
 import '../../features/recovery/screens/recovery_screen.dart';
-import '../../features/analytics/screens/analytics_screen.dart';
+import '../../features/history/screens/history_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 // ── New features ──────────────────────────────────────────────────────────────
 import '../../features/onboarding/screens/onboarding_screen.dart';
@@ -76,7 +76,7 @@ final class AppRouter {
               path: AppConstants.routeAnalytics,
               name: 'analytics',
               builder: (BuildContext context, GoRouterState state) =>
-                  const AnalyticsScreen(),
+                  const HistoryScreen(),
             ),
             GoRoute(
               path: AppConstants.routeProfile,

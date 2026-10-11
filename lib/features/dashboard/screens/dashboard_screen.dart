@@ -59,7 +59,7 @@ class DashboardScreen extends ConsumerWidget {
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               16,
-              8,
+              28,
               16,
               AppShell.reservedBottomSpace + 16,
             ),
@@ -73,10 +73,11 @@ class DashboardScreen extends ConsumerWidget {
                   estimatedMinutes: 48,
                   targetRpe: '8.5',
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
 
                 // ── 2. 4 Equal Square Bento Cards (2x2 Grid) ──────────────────
                 GridView.count(
+                  padding: EdgeInsets.zero,
                   crossAxisCount: 2,
                   mainAxisSpacing: 10,
                   crossAxisSpacing: 10,

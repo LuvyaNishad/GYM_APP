@@ -66,7 +66,23 @@ Operating under a **local-first** architecture, every session, set, rep, and rou
 - **Exercise Detail Drawer:** Tactile bottom-up modal sheet detailing execution form, target anatomy, and viable alternatives.
 - **Custom Exercise Builder:** Create and save personalized exercises with tailored muscle assignments.
 
-### 5. Floating Tubelight Glass Navigation Pill
+### 5. History & Performance Hub (The Timeline Hub)
+- **Collapsible Monthly & Weekly Calendar Header:** Pinned tactical header with a custom notch grab handle (`—`). Expands to a full 6-row monthly calendar with quick jump pickers (Days, Months, Decade Years); collapses to a compact 1-week strip via single tap or vertical drag.
+- **Unified Color-Coded Day Highlighting:**
+  - 🟢 **Solid Emerald Green (`#00E676`):** Completed workout sessions
+  - ⚪ **Solid Pure White (`#FFFFFF`):** Current day (Today)
+  - 🔴 **Soft Red (`#FF5252`):** Missed scheduled sessions
+  - ⚫ **Slate Onyx (`#262D3D`):** Designated recovery/rest days
+  - 🟢 **Dimmed Green:** Completed workouts in adjacent months
+  - 🔵 **Electric Cyan Ring:** Active date filter selection
+- **Interactive Date Filtering:** 1-tap filtering from any calendar day to show workouts completed on that date, complete with an active filter badge and 1-tap clear action.
+- **Lifetime Tonnage Progress Tracker:** High-visibility progress bar tracking total lifetime kilograms lifted against milestone targets (e.g. `32.7K KG LIFTED`, target `36.0K KG`).
+- **Tri-Segment Performance Switcher:**
+  - **`[ SESSIONS ]`**: Chronological workout logs with muscle group tags, session duration, set counts, tonnage, PR trophy badges (`2 PRS`), and expandable set-by-set accordions.
+  - **`[ OVERLOAD ]`**: Progressive overload analytics featuring 1RM strength progression curves for key compound lifts (Bench Press, Squat, Deadlift, Overhead Press, Barbell Row) and volume load histories.
+  - **`[ RADAR ]`**: 6-axis Muscle Balance Radar Canvas mapping planned vs actual volume distribution with volume deficit diagnostics.
+
+### 6. Floating Tubelight Glass Navigation Pill
 - **Liquid Glassmorphism:** Custom stadium capsule featuring 40% translucent gunmetal tint, 18px hardware-accelerated Gaussian blur, and a subtle white hairline rim (`Colors.white.withValues(alpha: 0.16)`).
 - **Optical Depth Shadow:** Downward-offset elevation shadow that separates the glass capsule from scrolling cards without darkening the frosted face.
 - **Sliding Tubelight Emitter:** Top emitter element casting a smooth, linear ambient downlight curtain across the active tab column.
@@ -122,6 +138,7 @@ lib/
 │   ├── dashboard/          # Command Center, calendar header, health metrics
 │   ├── exercise_library/   # 150+ exercise database, search, detail modal sheet
 │   ├── health_tracking/    # Metric logging and health integrations
+│   ├── history/            # Collapsible notched calendar, overload curves, radar, session logs
 │   ├── onboarding/         # Initial setup and questionnaire
 │   ├── profile/            # User settings, units (kg/lbs), barbell configurations
 │   ├── recovery/           # Physiological readiness and soreness scoring
@@ -130,7 +147,7 @@ lib/
 ├── models/                 # Freezed models (Exercise, Workout, Split, SessionLog)
 ├── services/               # HiveService, WorkoutService, SplitService, PRDetection
 ├── shared/
-│   └── widgets/            # GlassCard, GlassNavPill, AppShell, LeonButton
+│   └── widgets/            # NotchedHeaderPainter, GlassCard, GlassNavPill, AppShell
 └── state/                  # Global Riverpod providers and application state
 ```
 
@@ -206,7 +223,7 @@ flutter test -j 1
 - [x] **Exercise Library:** 150+ categorized gym exercises with instant search, filters, and custom creator
 - [x] **Training Splits Hub:** PPL, Upper/Lower, Arnold, and Bro split presets with 6-axis Muscle Radar Balance
 - [x] **Liquid Glass Nav Pill:** Ethereal frosted glass capsule with true ambient linear downlight emitter
-- [ ] **Analytics & PR Tracker (Tab 3):** 1RM strength progression curves, tonnage load trends, and personal record trophy case
+- [x] **History & Performance Hub (Tab 3):** Collapsible notched calendar (1-week and full month), progressive overload 1RM analytics, 6-axis muscle balance radar, lifetime tonnage bar, and interactive session logs
 - [ ] **AI Photo Calorie Tracking:** Zero-cost multimodal food intake logging via Gemini Flash Vision with editable macro review sheet
 - [ ] **Health & Wearable Sync:** Bi-directional sync with Apple HealthKit and Google Health Connect
 

@@ -7,6 +7,7 @@ import '../widgets/active_session_header.dart';
 import '../widgets/exercise_picker_modal.dart';
 import '../widgets/exercise_sequence_card.dart';
 import '../widgets/floating_rest_timer_bar.dart';
+import '../../../services/workout_service.dart';
 import '../widgets/workout_summary_dialog.dart';
 
 /// Active Workout Session screen — "Active Mode."
@@ -98,7 +99,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       builder: (ctx) => WorkoutSummaryDialog(
         session: session,
         onConfirmedSave: () {
-          ref.read(activeSessionProvider.notifier).finishSession();
+          final workout =
+              ref.read(activeSessionProvider.notifier).finishSession();
+          ref.read(workoutServiceProvider).saveWorkout(workout);
           if (mounted) Navigator.of(context).maybePop();
         },
       ),
