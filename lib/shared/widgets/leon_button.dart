@@ -16,6 +16,7 @@ class LeonButton extends StatelessWidget {
     this.icon,
     this.isLoading = false,
     this.isDestructive = false,
+    this.isOutlined = false,
     this.width,
     this.height = 52,
   });
@@ -25,6 +26,7 @@ class LeonButton extends StatelessWidget {
   final IconData? icon;
   final bool isLoading;
   final bool isDestructive;
+  final bool isOutlined;
   final double? width;
   final double height;
 
@@ -34,13 +36,29 @@ class LeonButton extends StatelessWidget {
     final bool enabled = !isLoading && onPressed != null;
     final BorderRadius radius = BorderRadius.circular(height / 2);
 
+    final Color bgColor = isOutlined
+        ? Colors.white.withValues(alpha: 0.05)
+        : accent;
+    final Color fgColor = isOutlined
+        ? AppColors.textPrimary
+        : AppColors.background;
+    final Color iconColor = isOutlined
+        ? accent
+        : AppColors.background;
+
     return SizedBox(
       width: width,
       height: height,
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: radius,
-          boxShadow: enabled
+          border: isOutlined
+              ? Border.all(
+                  color: accent.withValues(alpha: 0.40),
+                  width: 1.5,
+                )
+              : null,
+          boxShadow: enabled && !isOutlined
               ? [
                   // No offset — a centred glow, not a shadow.
                   BoxShadow(
@@ -53,28 +71,31 @@ class LeonButton extends StatelessWidget {
         child: ElevatedButton.icon(
           onPressed: isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: accent,
-            foregroundColor: AppColors.background,
-            disabledBackgroundColor: accent.withValues(alpha: 0.30),
-            disabledForegroundColor: AppColors.background,
+            backgroundColor: bgColor,
+            foregroundColor: fgColor,
+            disabledBackgroundColor: bgColor.withValues(alpha: 0.30),
+            disabledForegroundColor: fgColor.withValues(alpha: 0.30),
             elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             shape: RoundedRectangleBorder(borderRadius: radius),
           ),
           icon: isLoading
-              ? const SizedBox(
+              ? SizedBox(
                   width: 18,
                   height: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: AppColors.background,
+                    color: fgColor,
                   ),
                 )
-              : (icon != null ? Icon(icon, size: 18) : const SizedBox.shrink()),
+              : (icon != null ? Icon(icon, size: 18, color: iconColor) : const SizedBox.shrink()),
           label: Text(
             label.toUpperCase(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: AppTypography.titleLarge.copyWith(
-              color: AppColors.background,
-              letterSpacing: 1.8,
+              color: fgColor,
+              letterSpacing: 1.5,
               fontSize: 13,
             ),
           ),

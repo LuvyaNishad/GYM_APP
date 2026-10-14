@@ -42,24 +42,24 @@ class OnboardingState {
   final List<String> injuries;
   final bool isCompleted;
 
-  // 15 onboarding pages in total (0: Splash, 1: Welcome, 2-13: Steps 1-12, 14: Ready)
-  static const int totalPages = 15;
+  // 7 onboarding pages in total:
+  // 0: Splash, 1: Welcome, 2: Step 1 (Goal & Exp), 3: Step 2 (Biometrics), 4: Step 3 (Split & Schedule), 5: Step 4 (Injuries & Gear), 6: Ready
+  static const int totalPages = 7;
 
   bool get isLastPage => currentPage == totalPages - 1;
 
-  /// Progress fraction for the top progress bar across the 12 survey steps (pages 2-13).
+  /// Progress fraction for the top progress bar across the 4 survey steps (pages 2-5).
   double get stepProgress {
     if (currentPage <= 1) return 0.0;
-    if (currentPage >= 14) return 1.0;
-    return (currentPage - 1) / 12.0;
+    if (currentPage >= 6) return 1.0;
+    return (currentPage - 1) / 4.0;
   }
 
-  /// Step label in format "01 / 12" through "12 / 12"
+  /// Step label in format "01 / 04" through "04 / 04"
   String get stepLabel {
-    if (currentPage < 2 || currentPage > 13) return '';
+    if (currentPage < 2 || currentPage > 5) return '';
     final stepNum = currentPage - 1;
-    final formatted = stepNum < 10 ? '0$stepNum' : '$stepNum';
-    return '$formatted / 12';
+    return '0$stepNum / 04';
   }
 
   OnboardingState copyWith({

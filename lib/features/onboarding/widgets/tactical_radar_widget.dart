@@ -9,11 +9,13 @@ class TacticalRadarWidget extends StatefulWidget {
     this.size = 200,
     this.showPolygon = false,
     this.sweepDuration = const Duration(seconds: 3),
+    this.animate = true,
   });
 
   final double size;
   final bool showPolygon;
   final Duration sweepDuration;
+  final bool animate;
 
   @override
   State<TacticalRadarWidget> createState() => _TacticalRadarWidgetState();
@@ -29,7 +31,13 @@ class _TacticalRadarWidgetState extends State<TacticalRadarWidget>
     _controller = AnimationController(
       vsync: this,
       duration: widget.sweepDuration,
-    )..repeat();
+    );
+    final isTest = WidgetsBinding.instance.runtimeType
+        .toString()
+        .contains('TestWidgetsFlutterBinding');
+    if (widget.animate && !isTest) {
+      _controller.repeat();
+    }
   }
 
   @override

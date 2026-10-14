@@ -12,20 +12,26 @@ import '../../features/history/screens/history_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 // ── New features ──────────────────────────────────────────────────────────────
 import '../../features/onboarding/screens/onboarding_screen.dart';
+import '../../features/exercise_library/models/exercise_library_item.dart';
+import '../../features/exercise_library/screens/exercise_detail_screen.dart';
 import '../../features/exercise_library/screens/exercise_library_screen.dart';
+import '../../features/workout_builder/screens/routine_library_screen.dart';
 import '../../features/health_tracking/screens/health_tracking_screen.dart';
+import '../../features/onboarding/providers/onboarding_provider.dart';
 import '../../shared/widgets/app_shell.dart';
 import '../constants/app_constants.dart';
 
 /// The app's [GoRouter], with its start location resolved from persisted state.
 ///
-/// Read once rather than watched: rebuilding the router mid-session would hand
-/// [MaterialApp.router] a fresh `routerConfig` and reset navigation, so
-/// completing onboarding navigates imperatively instead.
+/// If onboarding has not been completed, routes directly to [AppConstants.routeOnboarding].
+/// Once completed, routes directly to [AppConstants.routeDashboard].
 final routerProvider = Provider<GoRouter>((ref) {
   ref.keepAlive();
+  final isComplete = ref.watch(onboardingCompleteProvider);
   return AppRouter.build(
-    initialLocation: AppConstants.routeDashboard,
+    initialLocation: isComplete
+        ? AppConstants.routeDashboard
+        : AppConstants.routeOnboarding,
   );
 });
 
@@ -129,6 +135,26 @@ final class AppRouter {
           name: 'health-tracking',
           builder: (BuildContext context, GoRouterState state) =>
               const HealthTrackingScreen(),
+        ),
+        GoRoute(
+          path: AppConstants.routeExerciseDetail,
+          name: 'exercise-detail',
+          builder: (BuildContext context, GoRouterState state) {
+            final exercise = state.extra is ExerciseLibraryItem
+                ? state.extra as ExerciseLibraryItem
+                : null;
+            final exerciseId = state.uri.queryParameters['id'];
+            return ExerciseDetailScreen(
+              exercise: exercise,
+              exerciseId: exerciseId,
+            );
+          },
+        ),
+        GoRoute(
+          path: AppConstants.routeRoutineLibrary,
+          name: 'routine-library',
+          builder: (BuildContext context, GoRouterState state) =>
+              const RoutineLibraryScreen(),
         ),
       ],
 

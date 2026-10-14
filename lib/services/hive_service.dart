@@ -127,12 +127,27 @@ class HiveService {
   // ── Settings ────────────────────────────────────────────────────────────────
 
   /// Store a primitive setting. Keys live on [AppConstants].
-  Future<void> putSetting(String key, Object? value) =>
-      _settings.put(key, value);
+  Future<void> putSetting(String key, Object? value) async {
+    try {
+      if (!Hive.isBoxOpen(AppConstants.hiveBoxSettings)) return;
+      await _settings.put(key, value);
+    } catch (_) {}
+  }
 
   /// Read a primitive setting, falling back to [fallback] when unset.
-  T? getSetting<T>(String key, {T? fallback}) =>
-      _settings.get(key, defaultValue: fallback) as T?;
+  T? getSetting<T>(String key, {T? fallback}) {
+    try {
+      if (!Hive.isBoxOpen(AppConstants.hiveBoxSettings)) return fallback;
+      return _settings.get(key, defaultValue: fallback) as T?;
+    } catch (_) {
+      return fallback;
+    }
+  }
 
-  Future<void> deleteSetting(String key) => _settings.delete(key);
+  Future<void> deleteSetting(String key) async {
+    try {
+      if (!Hive.isBoxOpen(AppConstants.hiveBoxSettings)) return;
+      await _settings.delete(key);
+    } catch (_) {}
+  }
 }

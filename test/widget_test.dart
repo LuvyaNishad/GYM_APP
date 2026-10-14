@@ -4,12 +4,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:leon/core/theme/app_theme.dart';
 import 'package:leon/features/onboarding/providers/onboarding_provider.dart';
 import 'package:leon/features/onboarding/screens/onboarding_screen.dart';
+import 'package:leon/services/hive_service.dart';
+
+class _FakeHiveService extends HiveService {
+  @override
+  T? getSetting<T>(String key, {T? fallback}) => fallback;
+}
 
 void main() {
   testWidgets('LEON Onboarding Screen renders correctly', (WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          hiveServiceProvider.overrideWithValue(_FakeHiveService()),
           onboardingCompleteProvider.overrideWithValue(false),
         ],
         child: MaterialApp(

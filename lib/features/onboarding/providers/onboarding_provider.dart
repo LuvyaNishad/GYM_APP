@@ -4,17 +4,19 @@ import '../../../core/constants/app_constants.dart';
 import '../../../models/user_model.dart';
 import '../../../services/hive_service.dart';
 import '../models/onboarding_state.dart';
+import '../models/training_goal_config.dart';
 
 export '../models/onboarding_state.dart';
+export '../models/training_goal_config.dart';
 
 /// Whether the user has already finished onboarding, read straight from
 /// storage.
 final onboardingCompleteProvider = Provider<bool>((ref) {
   return ref.watch(hiveServiceProvider).getSetting<bool>(
             AppConstants.settingOnboardingComplete,
-            fallback: true,
+            fallback: false,
           ) ??
-      true;
+      false;
 });
 
 /// Manages the step-by-step progression through the 16-screen onboarding flow.
@@ -152,9 +154,28 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
       AppConstants.settingActiveSplitId,
       state.preferredSplit,
     );
+    await hive.putSetting(
+      AppConstants.settingPrimaryGoal,
+      state.primaryGoal,
+    );
+    await hive.putSetting(
+      AppConstants.settingTargetWeight,
+      state.targetWeight,
+    );
 
     ref.invalidate(onboardingCompleteProvider);
+    ref.invalidate(trainingGoalProvider);
     state = state.copyWith(isCompleted: true);
+  }
+
+  /// Update the active primary goal and persist immediately (e.g. from Profile screen).
+  Future<void> updatePrimaryGoal(String goal) async {
+    state = state.copyWith(primaryGoal: goal);
+    await ref.read(hiveServiceProvider).putSetting(
+          AppConstants.settingPrimaryGoal,
+          goal,
+        );
+    ref.invalidate(trainingGoalProvider);
   }
 
   /// Reset the onboarding flow (for re-onboarding / testing).
@@ -162,7 +183,11 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     await ref
         .read(hiveServiceProvider)
         .deleteSetting(AppConstants.settingOnboardingComplete);
+    await ref
+        .read(hiveServiceProvider)
+        .deleteSetting(AppConstants.settingPrimaryGoal);
     ref.invalidate(onboardingCompleteProvider);
+    ref.invalidate(trainingGoalProvider);
     state = const OnboardingState();
   }
 }
@@ -172,3 +197,19 @@ final onboardingProvider =
     NotifierProvider<OnboardingNotifier, OnboardingState>(
   OnboardingNotifier.new,
 );
+
+/// Global provider returning the user's active training goal string (e.g. 'BUILD MUSCLE', 'STRENGTH').
+final trainingGoalProvider = Provider<String>((ref) {
+  final hive = ref.watch(hiveServiceProvider);
+  final savedGoal = hive.getSetting<String>(AppConstants.settingPrimaryGoal);
+  if (savedGoal != null && savedGoal.isNotEmpty) {
+    return savedGoal;
+  }
+  return ref.watch(onboardingProvider.select((s) => s.primaryGoal));
+});
+
+/// Global provider exposing the active [TrainingGoalConfig] based on the user's primary goal.
+final trainingGoalConfigProvider = Provider<TrainingGoalConfig>((ref) {
+  final goal = ref.watch(trainingGoalProvider);
+  return TrainingGoalConfig.fromGoal(goal);
+});

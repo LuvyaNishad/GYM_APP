@@ -19,6 +19,8 @@ abstract final class AppConstants {
   // ── New Feature Routes ────────────────────────────────────────────────────
   static const String routeOnboarding = '/onboarding';
   static const String routeExerciseLibrary = '/exercise-library';
+  static const String routeExerciseDetail = '/exercise-detail';
+  static const String routeRoutineLibrary = '/routine-library';
   static const String routeHealthTracking = '/health-tracking';
 
   // ── Workout Defaults ──────────────────────────────────────────────────────
@@ -48,6 +50,9 @@ abstract final class AppConstants {
   static const String settingOnboardingComplete = 'onboarding_complete';
   static const String settingWeightUnit = 'weight_unit';
   static const String settingActiveSplitId = 'active_split_id';
+  static const String settingPrimaryGoal = 'primary_goal';
+  static const String settingTargetWeight = 'target_weight';
+  static const String settingActiveSessionData = 'active_session_data';
 
   // ── Animation Durations ───────────────────────────────────────────────────
   static const Duration animFast = Duration(milliseconds: 150);
