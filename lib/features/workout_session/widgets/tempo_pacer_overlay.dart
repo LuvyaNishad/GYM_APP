@@ -951,6 +951,8 @@ class _TacticalPerimeterPulseState extends State<_TacticalPerimeterPulse>
             phase: widget.state.phase,
             phaseProgress: widget.state.phaseProgress,
             pulseValue: _pulseController.value,
+            currentRep: widget.state.currentRep,
+            targetReps: widget.state.targetReps,
           ),
         );
       },
@@ -962,17 +964,36 @@ class _PerimeterPulsePainter extends CustomPainter {
   final TempoPhase phase;
   final double phaseProgress;
   final double pulseValue; // 0.0 -> 1.0 (breathing)
+  final int currentRep;
+  final int targetReps;
 
   _PerimeterPulsePainter({
     required this.phase,
     required this.phaseProgress,
     required this.pulseValue,
+    required this.currentRep,
+    required this.targetReps,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
+
+    // Rep progress: 0.0 at rep 1 to 1.0 at final target rep
+    final repProgress = targetReps > 1
+        ? ((currentRep - 1) / (targetReps - 1)).clamp(0.0, 1.0)
+        : 0.0;
+
+    // Progressive transition from Electric Cyan (rep 1) to Pure White (final rep)
+    final cyanToWhite = Color.lerp(
+      const Color(0xFF00E5FF),
+      AppColors.pureWhite,
+      repProgress,
+    )!;
+
+    // Peripheral radiance expands with rep fatigue
+    final repScale = 1.0 + (repProgress * 0.45);
 
     // Determine active phase color & pulse dynamics
     final Color baseColor;
@@ -987,28 +1008,28 @@ class _PerimeterPulsePainter extends CustomPainter {
         break;
 
       case TempoPhase.eccentric:
-        baseColor = const Color(0xFF00E5FF);
+        baseColor = cyanToWhite;
         final depthMultiplier = 0.20 + (phaseProgress * 0.35);
-        baseOpacity = depthMultiplier + (pulseValue * 0.20);
-        maxBorderWidth = 3.5 + (phaseProgress * 3.5) + (pulseValue * 2.0);
+        baseOpacity = (depthMultiplier + (pulseValue * 0.20)) * (1.0 + repProgress * 0.25);
+        maxBorderWidth = (3.5 + (phaseProgress * 3.5) + (pulseValue * 2.0)) * repScale;
         break;
 
       case TempoPhase.bottomHold:
-        baseColor = const Color(0xFFFFB300);
+        baseColor = Color.lerp(const Color(0xFFFFB300), AppColors.pureWhite, repProgress * 0.35)!;
         baseOpacity = 0.40 + (pulseValue * 0.35);
-        maxBorderWidth = 5.0 + (pulseValue * 3.0);
+        maxBorderWidth = (5.0 + (pulseValue * 3.0)) * repScale;
         break;
 
       case TempoPhase.concentric:
         baseColor = AppColors.pureWhite;
         baseOpacity = 0.50 + ((1.0 - phaseProgress) * 0.40);
-        maxBorderWidth = 6.0 + ((1.0 - phaseProgress) * 4.0);
+        maxBorderWidth = (6.0 + ((1.0 - phaseProgress) * 4.0)) * repScale;
         break;
 
       case TempoPhase.topHold:
-        baseColor = const Color(0xFF00E5FF);
+        baseColor = cyanToWhite;
         baseOpacity = 0.15 + (pulseValue * 0.15);
-        maxBorderWidth = 3.0;
+        maxBorderWidth = 3.0 * repScale;
         break;
 
       case TempoPhase.completed:
@@ -1026,12 +1047,12 @@ class _PerimeterPulsePainter extends CustomPainter {
       const Radius.circular(radius),
     );
 
-    // Outer bloom glow — single smooth pass
+    // Outer bloom glow — expands dynamically with reps
     final bloomPaint = Paint()
       ..color = baseColor.withValues(alpha: (baseOpacity * 0.35).clamp(0.0, 1.0))
       ..strokeWidth = maxBorderWidth * 3.5
       ..style = PaintingStyle.stroke
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18.0);
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, 18.0 * repScale);
     canvas.drawRRect(rrect, bloomPaint);
 
     // Mid glow pass
@@ -1039,7 +1060,7 @@ class _PerimeterPulsePainter extends CustomPainter {
       ..color = baseColor.withValues(alpha: (baseOpacity * 0.65).clamp(0.0, 1.0))
       ..strokeWidth = maxBorderWidth * 2.0
       ..style = PaintingStyle.stroke
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6.0);
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, 6.0 * repScale);
     canvas.drawRRect(rrect, glowPaint);
 
     // Core laser rail — crisp
@@ -1054,7 +1075,9 @@ class _PerimeterPulsePainter extends CustomPainter {
   bool shouldRepaint(covariant _PerimeterPulsePainter oldDelegate) {
     return oldDelegate.phase != phase ||
         oldDelegate.phaseProgress != phaseProgress ||
-        oldDelegate.pulseValue != pulseValue;
+        oldDelegate.pulseValue != pulseValue ||
+        oldDelegate.currentRep != currentRep ||
+        oldDelegate.targetReps != targetReps;
   }
 }
 
