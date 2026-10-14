@@ -1,226 +1,139 @@
 # LEON — Master Product & Development Roadmap (TODO.md)
 
-> **Purpose:** Master implementation tracker for LEON (Operational Fitness OS). Each task includes concrete architectural steps, files to touch, and test guidelines. Check off (`- [x]`) items as they are completed.
+> **Purpose:** Master implementation roadmap for LEON (Operational Fitness OS). Tracks active production milestones to bring the app from a local-first power tracker to a commercial-grade, multi-device fitness platform. Check off (`- [x]`) items as they are completed.
 
 ---
 
-## 📋 Epic 1: Goal Accommodation Architecture (Bulk, Cut, Strength, Muscle)
+## 🚀 Active Production Backlog (Remaining Features)
 
-Adapt the app dynamically according to the user's selected primary goal (`BUILD MUSCLE`, `STRENGTH`, `LOSE FAT`, `ATHLETIC`) and target weight set during onboarding.
+### ☁️ Epic 1: Cloud Sync & Multi-Device Backup `[P0]`
+Enable seamless cloud authentication and background synchronization so users can switch phones or access workouts across multiple devices without data loss.
 
-- [x] **1.1 Dynamic Goal Adaptation State & Service** `[P0]`
-  - **Objective:** Create a unified goal adaptation engine that exposes goal-specific metrics, default rest times, target rep ranges, and coaching cues.
+- [ ] **1.1 Cloud Authentication Provider (Apple ID & Google Sign-In)** `[P0]`
+  - **Objective:** Provide frictionless 1-tap sign-in while preserving anonymous guest-mode autonomy.
   - **How to do it:**
-    - Create `lib/features/onboarding/models/training_goal_config.dart` defining `TrainingGoalConfig` (rep ranges, default rest seconds, primary dashboard metric, summary cues).
-    - Map `primaryGoal` values:
-      - `BUILD MUSCLE`: 8–12 reps, 90–120s rest, Hypertrophy Volume target (10–20 direct sets/week/muscle).
-      - `STRENGTH`: 3–6 reps, 180s rest, 1RM PR & peak load tracker.
-      - `LOSE FAT`: 8–15 reps, 60–90s rest, Daily Steps (NEAT) & Weight Deficit pace (~0.5 kg/wk).
-      - `ATHLETIC`: 5–10 explosive reps, 90s rest, Muscle Balance & Work Capacity.
-    - Expose `trainingGoalConfigProvider` in `lib/features/onboarding/providers/onboarding_provider.dart`.
+    - Create `lib/features/authentication/services/auth_service.dart` integrating OAuth (Apple & Google).
+    - Allow immediate guest bypass; prompt cloud backup linking in the Account Profile screen.
+    - Persist user ID and auth token in secure storage (`flutter_secure_storage`).
+  - **Files:** `lib/features/authentication/`, `lib/features/profile/screens/profile_screen.dart`
 
-- [x] **1.2 Dynamic Dashboard Bento Metrics** `[P0]`
-  - **Objective:** Re-order and customize Dashboard metric cards based on the active training goal.
+- [ ] **1.2 Bidirectional Cloud Sync Engine (Hive ↔ Remote Backend)** `[P0]`
+  - **Objective:** Synchronize workouts, custom routines, body measurements, and profile biometrics to remote database (Supabase / Firebase Firestore).
   - **How to do it:**
-    - In `lib/features/dashboard/screens/dashboard_screen.dart` and `daily_workout_bento_card.dart`:
-      - If `LOSE FAT`: Elevate Step Count (10,000 steps target) and Calorie Deficit bar. Show Weight Loss progress bar (`Current 78 kg → Goal 74 kg`).
-      - If `BUILD MUSCLE`: Display Weekly Hypertrophy Direct Sets (`Chest 14/16`, `Back 12/16 sets`) and Caloric Surplus target.
-      - If `STRENGTH`: Display Big 3 / Big 4 Estimated 1RM PR highlights (Squat, Bench, Deadlift, OHP).
-      - If `ATHLETIC`: Feature the Muscle Balance Radar and Recovery readiness.
-
-- [x] **1.3 Goal-Aware Rest Timer & Input Hints in Active Workout** `[P0]`
-  - **Objective:** Auto-populate workout rest timers and rep placeholders according to goal.
-  - **How to do it:**
-    - In `lib/features/workout_session/providers/active_session_provider.dart`:
-      - Read `trainingGoalConfigProvider` upon `startSession()`.
-      - Set default rest timer duration to 180s (Strength), 90s (Muscle/Athletic), or 60s (Fat Loss).
-    - In `lib/features/workout_session/widgets/exercise_set_table.dart`:
-      - Update rep input placeholder text from generic `8` to goal-specific range (`3-5` for strength, `8-12` for hypertrophy).
-
-- [x] **1.4 Goal-Aware Post-Workout Summary Feedback** `[P1]`
-  - **Objective:** Congratulate users with goal-relevant achievements in the workout recap.
-  - **How to do it:**
-    - In `lib/features/workout_session/widgets/workout_summary_dialog.dart`:
-      - If `BUILD MUSCLE`: Calculate and display *"15 effective hypertrophy sets logged for Chest & Delts."*
-      - If `STRENGTH`: Highlight PRs and top sets: *"New estimated 1RM Bench: 102.5 kg (+2.5 kg)!"*
-      - If `LOSE FAT`: Display density and energy preservation: *"42 mins high-density training. Lean mass stimulus preserved."*
-
-- [x] **1.5 Goal Switching in Profile Settings** `[P1]`
-  - **Objective:** Let users change their primary goal anytime without resetting historical workout logs.
-  - **How to do it:**
-    - In `lib/features/profile/screens/profile_screen.dart`, add a "Training Goal" settings card with a selector modal for the 4 goals.
-    - Persist change to Hive `settings_box` and invalidate `trainingGoalConfigProvider`.
+    - Create `lib/services/sync_service.dart` with an offline change queue (`sync_queue_box`).
+    - Every local mutation generates a tombstone or timestamped event (`last_modified_utc`).
+    - Resolve conflicts using client-wins or last-write-wins timestamp heuristics.
+    - Update `SyncStatusIndicator` in app bar: Green (Synced), Amber (Syncing / Offline changes pending), Red (Sync error).
+  - **Files:** `lib/services/sync_service.dart`, `lib/shared/widgets/sync_status_indicator.dart`
 
 ---
 
-## 🏋️ Epic 2: Workout-First Active Mode Improvements (instructions.md Phase 1)
+### 📲 Epic 2: Lock Screen Live Activity & Persistent Notification Bar `[P0]`
+Deliver glanceable, hands-free rest interval countdowns directly on the lock screen and notification drawer while lifting or playing music.
 
-Eliminate gym-floor friction, prevent data loss during app interruptions, and provide low-friction set logging.
-
-- [x] **2.1 Active Workout Auto-Resume & Crash Protection** `[P0]`
-  - **Objective:** Persist active workout state to Hive after every set change and show a "Resume Workout" banner on app reopen.
+- [ ] **2.1 Android Foreground Service Persistent Notification** `[P0]`
+  - **Objective:** Keep the workout session and rest timer visible in Android notification drawer with instant quick actions.
   - **How to do it:**
-    - In `lib/features/workout_session/providers/active_session_provider.dart`:
-      - Add `_persistActiveSession()` to write `session.toJson()` into Hive `active_session_box` whenever sets/exercises mutate.
-      - Add `_restoreActiveSession()` on app startup.
-      - Clear the box only when "SAVE WORKOUT" or "DISCARD" is explicitly confirmed.
-    - In `lib/features/dashboard/screens/dashboard_screen.dart`:
-      - If `activeSession.isActive == true`, render an animated sticky banner: *"WORKOUT IN PROGRESS: Bench Press (Set 2/4) — RESUME"*.
-      - Tapping resumes `WorkoutSessionScreen` instantly.
+    - Implement a foreground service via `flutter_local_notifications` or custom platform channel.
+    - Notification layout: Exercise name (e.g., *"Barbell Bench Press — Set 3/4"*), live countdown progress bar, and action buttons (`+30s`, `Skip Rest`).
+    - Auto-dismisses when rest completes with haptic trigger.
+  - **Files:** `android/app/src/main/`, `lib/features/workout_session/services/notification_service.dart`
 
-- [x] **2.2 1-Tap Ghost Data Auto-Fill** `[P1]`
-  - **Objective:** Tapping the previous session's ghost reference instantly populates weight and reps for the current set.
+- [ ] **2.2 iOS Live Activity & Dynamic Island Widget** `[P0]`
+  - **Objective:** Native ActivityKit Live Activity widget on iPhone Lock Screen and Dynamic Island.
   - **How to do it:**
-    - In `lib/features/workout_session/widgets/exercise_set_table.dart`:
-      - Wrap ghost text widget (`80 kg × 8`) in an `InkWell`.
-      - On tap, trigger `notifier.updateWeight(setIndex, prevWeight)` and `notifier.updateReps(setIndex, prevReps)`.
-      - Trigger light haptic click (`HapticFeedback.selectionClick()`).
-
-- [x] **2.3 In-Workout Exercise Substitution Modal** `[P0]`
-  - **Objective:** When gym equipment is taken, allow 1-tap substitution with a matching exercise without losing completed workout sets.
-  - **How to do it:**
-    - Add a "Substitute" action button on `ExerciseSequenceCard` menu (`lib/features/workout_session/widgets/exercise_sequence_card.dart`).
-    - Open `ExerciseSubstitutionSheet`:
-      - Query `ExerciseLibrary` for exercises matching the same primary muscle group and available equipment.
-      - Display alternatives (e.g. *Barbell Bench Press $\rightarrow$ Dumbbell Bench Press, Machine Chest Press*).
-    - In `ActiveSessionNotifier`: add `substituteExercise(String oldId, Exercise newExercise)` which replaces the remaining uncompleted sets while preserving logged data.
-
-- [x] **2.4 Tactile Set Checkmark Feedback & Micro-Celebration** `[P1]`
-  - **Objective:** Provide instant, crisp physical confirmation when completing a set.
-  - **How to do it:**
-    - In `lib/features/workout_session/widgets/exercise_set_table.dart`:
-      - Call `HapticFeedback.mediumImpact()` when tapping set checkmark.
-      - Add a 180ms scale/bounce animation on the checkmark icon when transitioning from outline to solid cyan.
-
-- [x] **2.5 Background Rest Timer Notifications & Audio/Vibration Alerts** `[P1]`
-  - **Objective:** Notify user when rest time expires even if the screen is locked or music app is open.
-  - **How to do it:**
-    - Integrate `flutter_local_notifications` for foreground/background alerts.
-    - When rest timer reaches 0:
-      - Fire local notification: *"Rest complete! Next set: Bench Press (Set 3)"*.
-      - Trigger distinctive triple vibration (`HapticFeedback.vibrate()`).
-    - Add user toggle in Settings to enable/disable sound chime or keep it vibration-only for headphones.
+    - Create Swift Widget Extension using ActivityKit.
+    - Render compact Dynamic Island pill showing remaining rest seconds and next exercise.
+    - Expandable lock screen banner showing current set weight $\times$ reps and plate breakdown.
+  - **Files:** `ios/Runner/`, `ios/LeonLiveActivity/`
 
 ---
 
-## 📚 Epic 3: Routines & Exercise Discovery (instructions.md Phase 2)
+### 🔊 Epic 3: Rest Timer Audio Sound Pack & Headphone Ducking `[P1]`
+Provide crystal-clear auditory cues that play through gym headphones without disrupting music playback.
 
-Empower lifters to explore exercises, understand form, and build custom multi-week routines.
-
-- [x] **3.1 Full Exercise Detail & Form Guide Screen** `[P1]`
-  - **Objective:** Dedicated screen showing anatomical muscle highlights, step-by-step form cues, common pitfalls, and exercise PR history.
+- [ ] **3.1 Audio Asset Sound Pack Integration** `[P1]`
+  - **Objective:** Bundle low-latency audio sound cues for rest interval countdown (3, 2, 1, chime).
   - **How to do it:**
-    - Create `lib/features/exercise_library/screens/exercise_detail_screen.dart`.
-    - Route: `/exercise/:id` in `app_router.dart`.
-    - Content sections:
-      - Animated demonstration placeholder / vector visual.
-      - Target Muscles: Primary (e.g., Pectoralis Major) & Secondary (Triceps, Anterior Deltoid).
-      - Setup & Execution: Step 1, 2, 3 bullet points with bold keywords.
-      - Common Mistakes & Safety Tips (e.g., *"Don't flare elbows past 75°"*).
-      - History Tab: Personal bests (1RM, Max Volume, Max Reps) and line chart.
-      - CTA: *"Add to Today's Workout"* or *"Add to Routine"*.
-
-- [x] **3.2 Custom Routine Library & Template Builder** `[P1]`
-  - **Objective:** Allow users to create, clone, edit, and organize multiple saved workout routines (e.g., PPL, Upper/Lower, 5/3/1).
-  - **How to do it:**
-    - Create `lib/features/workout_builder/screens/routine_library_screen.dart`.
-    - Features:
-      - Tab for "Preset Splits" vs. "My Custom Routines".
-      - "Create New Routine" floating action button.
-      - Exercise selector with multi-select and drag-to-reorder (`ReorderableListView`).
-      - Routine metadata: Name, targeted muscle focus, estimated duration, days per week.
-      - Persist user routines to Hive `custom_routines_box`.
+    - Add crisp audio assets to `assets/audio/`:
+      - `rest_countdown_beep.wav`
+      - `rest_complete_chime.wav`
+      - `boxing_bell_round.wav`
+    - Use `audioplayers` with `AudioContext` set to duck background audio (`duckOthers: true`).
+    - Add setting toggle in Profile screen: `Sound Alerts: [Sound + Vibrate / Vibrate Only / Silent]`.
+  - **Files:** `lib/features/workout_session/providers/rest_timer_provider.dart`, `lib/features/profile/`
 
 ---
 
-## 📈 Epic 4: Understandable Analytics & Progress (instructions.md Phase 3)
+### 🥗 Epic 4: Nutrition & Macro Tracking System `[P1]`
+Elevate the daily Bento Grid from basic calorie/water counters to an intelligent macronutrient tracking powerhouse.
 
-Provide transparent, evidence-informed progress metrics without misleading fitness claims.
-
-- [x] **4.1 Scientific 1RM Progression Line Charts** `[P1]`
-  - **Objective:** Track true strength progression over time for major compound exercises.
+- [ ] **4.1 Macronutrient Breakdown Engine (Protein, Carbs, Fats)** `[P1]`
+  - **Objective:** Track daily macronutrient grams and compare against goal-calculated targets.
   - **How to do it:**
-    - Implement the standard Epley formula in `lib/core/utils/strength_math.dart`:
-      $$\text{1RM} = \text{weight} \times \left(1 + \frac{\text{reps}}{30}\right)$$
-    - In `lib/features/history/widgets/exercise_progress_chart.dart` / `overload_tab_view.dart`:
-      - Plot estimated 1RM over time using `fl_chart`.
-      - Clearly state the formula in a caption footnote per `instructions.md`.
-      - Filter by time ranges: 1M, 3M, 6M, 1Y, All.
+    - In `lib/features/health_tracking/models/nutrition_log_model.dart`, define daily macro entries.
+    - In Dashboard Bento Grid, expand `CaloriesBentoCard` to show horizontal segmented macro distribution bar (`P: 180g / C: 220g / F: 65g`).
+    - Auto-calculate macro targets based on user's goal (`BULKING` = 2.0g/kg protein, `CUTTING` = 2.4g/kg protein).
+  - **Files:** `lib/features/health_tracking/`, `lib/features/dashboard/widgets/`
 
-- [x] **4.2 Interactive Calendar Workout Log & Historical Editor** `[P1]`
-  - **Objective:** View past workout logs by date and allow retroactive edits for mistakes.
+- [ ] **4.2 Barcode Food Scanner (OpenFoodFacts API)** `[P2]`
+  - **Objective:** 1-tap camera barcode scanning to fetch nutrition facts instantly.
   - **How to do it:**
-    - In `lib/features/history/screens/history_screen.dart`:
-      - Add a collapsible month calendar widget. Days with completed workouts show cyan indicator dots.
-      - Tapping a day displays the workout log card (Exercises, Sets, Weights, Reps, RPE, Duration).
-      - Add an "Edit Workout" button that opens the session in an edit modal to fix typos or missing sets safely.
-
-- [x] **4.3 Explainable Metrics & Science Tooltips** `[P2]`
-  - **Objective:** Explain calculation origins for Muscle Radar and ECG Recovery scores.
-  - **How to do it:**
-    - Add an info icon (`Icons.info_outline`, size 16) beside:
-      - Muscle Balance Radar $\rightarrow$ Dialog: *"Calculated from total direct sets completed across Push, Pull, and Leg muscle groups over the past 7 days."*
-      - ECG Recovery Score $\rightarrow$ Dialog: *"Self-reported readiness estimate based on workout frequency, rest intervals, and logged sleep/hydration. Not a medical evaluation."*
+    - Integrate `mobile_scanner` package for instant camera barcode reading.
+    - Query free `world.openfoodfacts.org` REST API to fetch calories and macros.
+    - Render quick-confirm modal: portion size, logged meal (Breakfast, Lunch, Dinner, Snack).
+  - **Files:** `lib/features/health_tracking/screens/barcode_scanner_screen.dart`
 
 ---
 
-## 🤝 Epic 5: Sustainable Consistency & Habits (instructions.md Phase 4 & 5)
+### ⌚ Epic 5: Smartwatch Companion App (Wear OS & watchOS) `[P2]`
+Allow lifters to leave their phone on the gym bench and track sets directly from their wrist.
 
-Encourage consistent long-term training habits without shame mechanics or burnout.
-
-- [x] **5.1 No-Shame Weekly Consistency Widget** `[P1]`
-  - **Objective:** Replace fragile daily streak counters with a supportive weekly consistency tracker.
+- [ ] **5.1 Wear OS Standalone / Companion App** `[P2]`
+  - **Objective:** Wrist-based set logging, weight/rep incrementors, and vibration on rest expiry.
   - **How to do it:**
-    - In `lib/features/dashboard/widgets/weekly_consistency_card.dart` & `dashboard_screen.dart`:
-      - Display: `3 of 4 planned workouts completed this week (75%)`.
-      - Rolling 4-week compliance ring or bar chart.
-      - Supportive neutral messaging for missed days per `instructions.md` Section 1 ("Life happens. Resume when ready.").
+    - Build Flutter Wear OS module or native Kotlin Wear OS app communicating via Wearable Data Layer API.
+    - Stream active exercise, set checkoff, and real-time heart rate sensor data back to LEON mobile.
+  - **Files:** `android/wear/`
 
-- [x] **5.2 Recomposition & Body Measurement Tracker** `[P2]`
-  - **Objective:** Track body measurements (waist, arms, chest) and body fat % alongside weight.
+- [ ] **5.2 Apple Watch watchOS Companion** `[P2]`
+  - **Objective:** Swift WatchKit companion app communicating via `WatchConnectivity`.
   - **How to do it:**
-    - Expand `lib/features/health_tracking/screens/health_tracking_screen.dart`:
-      - Add "Measurements" tab: Waist, Arms, Chest, Thighs.
-      - Progress comparison: Delta over 30 days (`-2.0 cm waist`, `+1.0 cm arm`).
-      - Local encrypted storage for progress metrics.
-
-- [x] **5.3 Offline-First Synchronization Status Indicator** `[P2]`
-  - **Objective:** Clearly display local data safety state.
-  - **How to do it:**
-    - Add a subtle status dot in the App Bar:
-      - Green: *"Saved Locally & Synced"*.
-      - Amber: *"Saved Locally (Offline — Will Sync When Connected)"*.
-    - Guarantees zero data loss as required by `instructions.md` Section 10.
+    - Set logging view with Digital Crown scroll for weight adjustment.
+    - Taptic Engine rest completion alerts.
+  - **Files:** `ios/WatchApp/`
 
 ---
 
-## 🧪 Epic 6: Test Suite & Code Quality Gates
+### 📸 Epic 6: Social Workout Brag Cards (Story Exporter) `[P2]`
+Allow users to share high-contrast, aesthetic workout recaps to Instagram Stories, Twitter, and WhatsApp.
 
-Maintain rigorous test coverage and zero static analysis warnings throughout all additions.
-
-- [x] **6.1 Unit & Widget Tests for Dynamic Goals** `[P0]`
-  - Tested that selecting `BUILD MUSCLE`, `STRENGTH`, `LOSE FAT`, and `ATHLETIC` assigns goal-specific rest timers, rep placeholders, and reactive provider configurations.
-  - Test suites: `test/features/onboarding/training_goal_config_test.dart` and `test/features/workout_session/active_session_provider_test.dart`.
-- [x] **6.2 Session Persistence & Auto-Resume Tests** `[P0]`
-  - Verified active workout serialization to Hive, JSON roundtripping, auto-restore on launch, and sticky dashboard banner visibility.
-  - Test suites: `test/features/workout_session/active_session_provider_test.dart` and `test/features/workout_session/epic2_active_mode_test.dart`.
-- [x] **6.3 Exercise Substitution Flow Tests** `[P1]`
-  - Tested that substituting an exercise swaps uncompleted sets while preserving previously logged sets and updates active session state.
-  - Test suites: `test/features/workout_session/epic2_active_mode_test.dart` and `test/features/workout_session/active_session_provider_test.dart`.
-- [x] **6.4 Apple HIG Compliance Check** `[P0]`
-  - Verified that all UI widgets strictly enforce minimum $\ge 11.0$ pt font size, contrast $\ge 4.5:1$ WCAG AA, and standard gym terminology across all screens.
-  - Test suite: `test/core/apple_hig_compliance_test.dart` and static analysis `flutter analyze lib test` (0 issues).
+- [ ] **6.1 9:16 High-Res Story Image Generator** `[P2]`
+  - **Objective:** Generate a minimalist, cyberpunk-styled 1080×1920 image from completed workout data.
+  - **How to do it:**
+    - Wrap summary canvas in a `RepaintBoundary` with Noguchi Onyx background, glowing cyan accents, total tonnage, personal records (PRs), workout duration, and 6-axis Muscle Balance Radar.
+    - Convert boundary to PNG bytes and launch native share sheet using `share_plus`.
+  - **Files:** `lib/features/workout_session/widgets/workout_share_card.dart`
 
 ---
 
-## 🎯 Implementation Roadmap (Recommended Order)
+## 🏛️ Completed Milestones (Archived Log)
 
-1. **Sprint 1 (Immediate):**
-   - Epic 1: Goal Accommodation Engine (1.1, 1.2, 1.3)
-   - Epic 2: Active Workout Crash Recovery & 1-Tap Ghost Autofill (2.1, 2.2)
-2. **Sprint 2:**
-   - Epic 2: In-Workout Exercise Substitution (2.3) & Background Rest Timer (2.5)
-   - Epic 4: 1RM Progression & History Calendar Editor (4.1, 4.2)
-3. **Sprint 3:**
-   - Epic 3: Full Exercise Detail Form Guide (3.1) & Custom Routine Builder (3.2)
-   - Epic 5: Weekly Consistency (5.1) & Recomposition Tracking (5.2)
+All items below have been implemented, verified on Android emulator, HIG-validated, and pushed to `main`:
+
+- [x] **Goal Accommodation Architecture:** Dynamic goal engine (`BULKING`, `CUTTING`, `STRENGTH`, `MAINTENANCE`, `RECOMPOSITION`), 7-screen survey, goal-specific rep ranges, rest timers, and coaching cues.
+- [x] **Active Workout Crash Recovery & Auto-Resume:** Persistent Hive DB session storage, automatic state restoration on launch, sticky resume trigger on `DailyWorkoutBentoCard`.
+- [x] **1-Tap Previous Workout Ghost Data Auto-Fill:** Quick-fill weight/reps with haptic feedback.
+- [x] **In-Workout Exercise Substitution Sheet:** 1-tap exercise swap with agonist muscle matching while preserving completed sets.
+- [x] **Real-Time Sine-Wave Visual & Haptic Tempo Pacer:** Configurable cadence (`3-0-1-0`), animated sine wave canvas, and rhythmic vibration pulses.
+- [x] **Visual Barbell Plate Calculator:** Barbell sleeve graphic calculating Olympic 25kg/20kg/15kg/10kg/5kg/2.5kg/1.25kg plate distribution.
+- [x] **Dual Effort Picker:** Seamless switching between RIR (Reps in Reserve) and RPE (Rate of Perceived Exertion) with exertion color coding.
+- [x] **Scientific 1RM Progression & Epley Formula:** Automated 1RM calculation with interactive `fl_chart` curves and time range filters (1M, 3M, 6M, 1Y, ALL).
+- [x] **Interactive Collapsible Calendar & History Editor:** Collapsible 1-week strip / 6-row month calendar, 1-workout-per-day enforcement, color-coded days, and retroactive workout log editor modal.
+- [x] **Custom Routine Library & Template Builder:** Full multi-split creator, routine duplicator, drag-and-drop exercise reordering, and routine folders.
+- [x] **Full Exercise Detail & Form Guides:** 150+ exercises with anatomy tags, step-by-step cues, common mistakes, and interactive 1RM calculator.
+- [x] **Restored 2×2 Dashboard Bento Grid:** Clean, equal-sized square cards (Steps, Calories, Water, Sleep) with quick-increment dialogs.
+- [x] **Collapsed Available Splits:** Available splits start collapsed by default for zero visual clutter.
+- [x] **Body Measurements & Recomposition Tracker:** Log waist, chest, arms, thighs, and body fat % with 30-day delta indicators.
+- [x] **1-Page Athletic PDF Report Exporter:** Complete vector PDF report summarizing lift volume, PRs, and body metrics.
+- [x] **Apple HIG Strict Compliance:** Minimum 11.0 pt typography floor, $\ge 4.5:1$ contrast ratio, 2-accent color discipline (Electric Cyan `#00E5FF` & Amber `#FFB300`), and zero pseudo-military roleplay terms.
