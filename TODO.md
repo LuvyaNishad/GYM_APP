@@ -31,7 +31,7 @@ Enable seamless cloud authentication and background synchronization so users can
 ### 📲 Epic 2: Lock Screen Live Activity & Persistent Notification Bar `[P0]`
 Deliver glanceable, hands-free rest interval countdowns directly on the lock screen and notification drawer while lifting or playing music.
 
-- [ ] **2.1 Android Foreground Service Persistent Notification** `[P0]`
+- [x] **2.1 Android Foreground Service Persistent Notification** `[P0]`
   - **Objective:** Keep the workout session and rest timer visible in Android notification drawer with instant quick actions.
   - **How to do it:**
     - Implement a foreground service via `flutter_local_notifications` or custom platform channel.
@@ -39,7 +39,7 @@ Deliver glanceable, hands-free rest interval countdowns directly on the lock scr
     - Auto-dismisses when rest completes with haptic trigger.
   - **Files:** `android/app/src/main/`, `lib/features/workout_session/services/notification_service.dart`
 
-- [ ] **2.2 iOS Live Activity & Dynamic Island Widget** `[P0]`
+- [x] **2.2 iOS Live Activity & Dynamic Island Widget** `[P0]`
   - **Objective:** Native ActivityKit Live Activity widget on iPhone Lock Screen and Dynamic Island.
   - **How to do it:**
     - Create Swift Widget Extension using ActivityKit.
@@ -136,4 +136,5 @@ All items below have been implemented, verified on Android emulator, HIG-validat
 - [x] **Collapsed Available Splits:** Available splits start collapsed by default for zero visual clutter.
 - [x] **Body Measurements & Recomposition Tracker:** Log waist, chest, arms, thighs, and body fat % with 30-day delta indicators.
 - [x] **1-Page Athletic PDF Report Exporter:** Complete vector PDF report summarizing lift volume, PRs, and body metrics.
-- [x] **Apple HIG Strict Compliance:** Minimum 11.0 pt typography floor, $\ge 4.5:1$ contrast ratio, 2-accent color discipline (Electric Cyan `#00E5FF` & Amber `#FFB300`), and zero pseudo-military roleplay terms.
+- [x] **Apple HIG Strict Compliance:** Minimum 11.0 pt typography floor, $\ge 4.5:1$ contrast ratio, 2-accent color discipline (Electric Cyan `#00E5FF` & Amber `#FFB300`), and zero pseudo-military roleplay terms. 
+.
