@@ -182,12 +182,12 @@ class TempoPacerOverlay extends ConsumerWidget {
             ),
           ),
 
-          // Interactive Preset Pill with Selector
+          // Interactive Preset Pill with Selector (2-line layout)
           InkWell(
             onTap: () => _showPresetPicker(context, state, notifier),
             borderRadius: BorderRadius.circular(10),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: AppColors.charcoal,
                 borderRadius: BorderRadius.circular(10),
@@ -201,23 +201,42 @@ class TempoPacerOverlay extends ConsumerWidget {
                 children: [
                   const Icon(
                     Icons.speed_rounded,
-                    size: 14,
+                    size: 15,
                     color: Color(0xFF00E5FF),
                   ),
-                  const SizedBox(width: 5),
-                  Text(
-                    state.preset.shortName.toUpperCase(),
-                    style: const TextStyle(
-                      fontFamily: AppTypography.fontMono,
-                      fontSize: 11.0,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF00E5FF),
-                      letterSpacing: 0.4,
-                    ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        state.preset.shortTag,
+                        style: const TextStyle(
+                          fontFamily: AppTypography.fontMono,
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF00E5FF),
+                          letterSpacing: 0.6,
+                          height: 1.15,
+                        ),
+                      ),
+                      Text(
+                        '${state.preset.eccentricSeconds} ${state.preset.bottomHoldSeconds} ${state.preset.concentricSeconds}',
+                        style: const TextStyle(
+                          fontFamily: AppTypography.fontMono,
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.platinum,
+                          letterSpacing: 1.2,
+                          height: 1.15,
+                        ),
+                      ),
+                    ],
                   ),
+                  const SizedBox(width: 4),
                   const Icon(
                     Icons.arrow_drop_down,
-                    size: 16,
+                    size: 18,
                     color: Color(0xFF00E5FF),
                   ),
                 ],

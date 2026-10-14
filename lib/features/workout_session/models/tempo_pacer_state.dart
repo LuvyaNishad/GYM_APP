@@ -65,6 +65,11 @@ enum TempoPreset {
 
   int get totalCycleSeconds =>
       eccentricSeconds + bottomHoldSeconds + concentricSeconds + topHoldSeconds;
+
+  String get shortTag => shortName.split(' ').first.toUpperCase();
+
+  String get cadenceText =>
+      '$eccentricSeconds-$bottomHoldSeconds-$concentricSeconds';
 }
 
 /// The distinct biomechanical movement phases of a single repetition.
