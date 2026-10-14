@@ -80,8 +80,8 @@ class TempoPacerOverlay extends ConsumerWidget {
               child: _TacticalPerimeterPulse(state: state),
             ),
 
-            // ── 2. Main Content Within Safe Screen Area ─────────────────────
-            SafeArea(
+            // ── 2. Main Content ──────────────────────────────────────────────
+            Positioned.fill(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -100,7 +100,7 @@ class TempoPacerOverlay extends ConsumerWidget {
 
                   const Spacer(flex: 2),
 
-                  // Bottom Action Bar & Cadence Controls
+                  // Bottom Action Bar & Cadence Controls — flush to screen bottom
                   _buildBottomBar(context, state, notifier),
                 ],
               ),
@@ -583,8 +583,9 @@ class TempoPacerOverlay extends ConsumerWidget {
     TempoPacerState state,
     TempoPacerNotifier notifier,
   ) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      padding: EdgeInsets.fromLTRB(16, 12, 16, 16 + bottomPadding),
       decoration: BoxDecoration(
         color: const Color(0xFF161A23).withValues(alpha: 0.95),
         border: const Border(
@@ -962,29 +963,26 @@ class _PerimeterPulsePainter extends CustomPainter {
     switch (phase) {
       case TempoPhase.countdown:
         baseColor = const Color(0xFF00E5FF);
-        baseOpacity = 0.15 + (pulseValue * 0.15); // 0.15 -> 0.30
+        baseOpacity = 0.15 + (pulseValue * 0.15);
         maxBorderWidth = 3.0 + (pulseValue * 2.0);
         break;
 
       case TempoPhase.eccentric:
-        // Deepening Electric Cyan: swells with descent depth and rhythmic heartbeat
         baseColor = const Color(0xFF00E5FF);
-        final depthMultiplier = 0.20 + (phaseProgress * 0.35); // increases as you descend
+        final depthMultiplier = 0.20 + (phaseProgress * 0.35);
         baseOpacity = depthMultiplier + (pulseValue * 0.20);
         maxBorderWidth = 3.5 + (phaseProgress * 3.5) + (pulseValue * 2.0);
         break;
 
       case TempoPhase.bottomHold:
-        // Radiant Amber tension: fast micro-vibration
         baseColor = const Color(0xFFFFB300);
-        baseOpacity = 0.40 + (pulseValue * 0.35); // 0.40 -> 0.75 high intensity
+        baseOpacity = 0.40 + (pulseValue * 0.35);
         maxBorderWidth = 5.0 + (pulseValue * 3.0);
         break;
 
       case TempoPhase.concentric:
-        // Explosive Pure White / Cyan flash
         baseColor = AppColors.pureWhite;
-        baseOpacity = 0.50 + ((1.0 - phaseProgress) * 0.40); // spikes at start of drive
+        baseOpacity = 0.50 + ((1.0 - phaseProgress) * 0.40);
         maxBorderWidth = 6.0 + ((1.0 - phaseProgress) * 4.0);
         break;
 
@@ -1001,111 +999,36 @@ class _PerimeterPulsePainter extends CustomPainter {
         break;
     }
 
-    // ── 1. Atmospheric Ambient Edge Glow (Bloom Vignette) ───────────────────
-    const bloomDepth = 36.0;
-    final bloomAlpha = (baseOpacity * 0.50).clamp(0.0, 1.0);
+    // ── Single smooth rounded perimeter ─────────────────────────────────
+    const margin = 3.0;
+    const radius = 28.0; // smooth curved corners
+    final rrect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(margin, margin, w - margin * 2, h - margin * 2),
+      const Radius.circular(radius),
+    );
 
-    // Top Bloom
-    final topBloomShader = LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [baseColor.withValues(alpha: bloomAlpha), Colors.transparent],
-    ).createShader(Rect.fromLTWH(0, 0, w, bloomDepth));
-    canvas.drawRect(Rect.fromLTWH(0, 0, w, bloomDepth), Paint()..shader = topBloomShader);
+    // Outer bloom glow — single smooth pass
+    final bloomPaint = Paint()
+      ..color = baseColor.withValues(alpha: (baseOpacity * 0.35).clamp(0.0, 1.0))
+      ..strokeWidth = maxBorderWidth * 3.5
+      ..style = PaintingStyle.stroke
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18.0);
+    canvas.drawRRect(rrect, bloomPaint);
 
-    // Bottom Bloom
-    final bottomBloomShader = LinearGradient(
-      begin: Alignment.bottomCenter,
-      end: Alignment.topCenter,
-      colors: [baseColor.withValues(alpha: bloomAlpha), Colors.transparent],
-    ).createShader(Rect.fromLTWH(0, h - bloomDepth, w, bloomDepth));
-    canvas.drawRect(Rect.fromLTWH(0, h - bloomDepth, w, bloomDepth), Paint()..shader = bottomBloomShader);
-
-    // Left Bloom
-    final leftBloomShader = LinearGradient(
-      begin: Alignment.centerLeft,
-      end: Alignment.centerRight,
-      colors: [baseColor.withValues(alpha: bloomAlpha), Colors.transparent],
-    ).createShader(Rect.fromLTWH(0, 0, bloomDepth, h));
-    canvas.drawRect(Rect.fromLTWH(0, 0, bloomDepth, h), Paint()..shader = leftBloomShader);
-
-    // Right Bloom
-    final rightBloomShader = LinearGradient(
-      begin: Alignment.centerRight,
-      end: Alignment.centerLeft,
-      colors: [baseColor.withValues(alpha: bloomAlpha), Colors.transparent],
-    ).createShader(Rect.fromLTWH(w - bloomDepth, 0, bloomDepth, h));
-    canvas.drawRect(Rect.fromLTWH(w - bloomDepth, 0, bloomDepth, h), Paint()..shader = rightBloomShader);
-
-    // ── 2. The 4 Outer Continuous Screen Rails ──────────────────────────────
-    const margin = 3.0; // tight against screen bounds
-    final rect = Rect.fromLTWH(margin, margin, w - (margin * 2), h - (margin * 2));
-
-    // Outer Neon Glow Pass
+    // Mid glow pass
     final glowPaint = Paint()
       ..color = baseColor.withValues(alpha: (baseOpacity * 0.65).clamp(0.0, 1.0))
-      ..strokeWidth = maxBorderWidth * 2.2
+      ..strokeWidth = maxBorderWidth * 2.0
       ..style = PaintingStyle.stroke
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8.0);
-    canvas.drawRect(rect, glowPaint);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6.0);
+    canvas.drawRRect(rrect, glowPaint);
 
-    // Core Laser Rail Pass
+    // Core laser rail — crisp
     final railPaint = Paint()
       ..color = baseColor.withValues(alpha: baseOpacity.clamp(0.0, 1.0))
       ..strokeWidth = maxBorderWidth
       ..style = PaintingStyle.stroke;
-    canvas.drawRect(rect, railPaint);
-
-    // ── 3. High-Tech Tactical Corner Reticles ───────────────────────────────
-    const cornerSize = 42.0;
-    const bracketInset = 8.0;
-    final bracketPaint = Paint()
-      ..color = baseColor.withValues(alpha: (baseOpacity * 1.3).clamp(0.0, 1.0))
-      ..strokeWidth = maxBorderWidth + 1.5
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.square;
-
-    // Top-Left Corner
-    final tlPath = Path()
-      ..moveTo(bracketInset, bracketInset + cornerSize)
-      ..lineTo(bracketInset, bracketInset)
-      ..lineTo(bracketInset + cornerSize, bracketInset);
-    canvas.drawPath(tlPath, bracketPaint);
-
-    // Top-Right Corner
-    final trPath = Path()
-      ..moveTo(w - bracketInset - cornerSize, bracketInset)
-      ..lineTo(w - bracketInset, bracketInset)
-      ..lineTo(w - bracketInset, bracketInset + cornerSize);
-    canvas.drawPath(trPath, bracketPaint);
-
-    // Bottom-Left Corner
-    final blPath = Path()
-      ..moveTo(bracketInset, h - bracketInset - cornerSize)
-      ..lineTo(bracketInset, h - bracketInset)
-      ..lineTo(bracketInset + cornerSize, h - bracketInset);
-    canvas.drawPath(blPath, bracketPaint);
-
-    // Bottom-Right Corner
-    final brPath = Path()
-      ..moveTo(w - bracketInset - cornerSize, h - bracketInset)
-      ..lineTo(w - bracketInset, h - bracketInset)
-      ..lineTo(w - bracketInset, h - bracketInset - cornerSize);
-    canvas.drawPath(brPath, bracketPaint);
-
-    // ── 4. Mid-Rail Precision Telemetry Ticks ───────────────────────────────
-    final tickPaint = Paint()
-      ..color = baseColor.withValues(alpha: (baseOpacity * 0.85).clamp(0.0, 1.0))
-      ..strokeWidth = 2.0;
-
-    const tickFractions = [0.25, 0.50, 0.75];
-    for (final frac in tickFractions) {
-      final y = h * frac;
-      // Left rail tick
-      canvas.drawLine(Offset(margin, y), Offset(margin + 12, y), tickPaint);
-      // Right rail tick
-      canvas.drawLine(Offset(w - margin - 12, y), Offset(w - margin, y), tickPaint);
-    }
+    canvas.drawRRect(rrect, railPaint);
   }
 
   @override
