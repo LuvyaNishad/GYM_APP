@@ -114,7 +114,7 @@ class _WorkoutLifecycleObserverState
             orElse: () => currentExercise.sets.last,
           );
           notifs.showActiveWorkoutNotification(
-            splitName: session.splitName,
+            splitName: session.splitName.replaceAll('//', '●'),
             currentExerciseName: currentExercise?.name ?? 'Exercise',
             currentSet: currentSet?.setNumber ?? 1,
             totalSets: currentExercise?.sets.length ?? 4,

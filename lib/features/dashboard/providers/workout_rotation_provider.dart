@@ -111,7 +111,7 @@ class WorkoutRotationNotifier extends Notifier<WorkoutRotationState> {
     if (workouts.isEmpty) {
       const fallback = SplitWorkoutDay(
         id: 'fallback_push',
-        name: 'Push Day // Workout A',
+        name: 'Push Day ● Workout A',
         subtitle: 'Chest & Shoulders',
         targetMuscles: ['Chest', 'Shoulders', 'Triceps'],
         estimatedDurationMinutes: 48,
@@ -277,7 +277,7 @@ class WorkoutRotationNotifier extends Notifier<WorkoutRotationState> {
         day.exercises.map((e) => e.toActiveExerciseState()).toList();
 
     ref.read(activeSessionProvider.notifier).startSession(
-          splitName: '${state.split.shortName} // ${day.name.toUpperCase()}',
+          splitName: '${state.split.shortName} ● ${day.name.toUpperCase()}',
           initialExercises: activeExercises,
         );
 

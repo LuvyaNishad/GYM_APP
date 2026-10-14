@@ -92,7 +92,7 @@ void main() {
       expect(find.text('Set bench to 30-degree incline.'), findsOneWidget);
 
       // Coaching cues
-      expect(find.text('COACHING TIP // KEY CUE'), findsOneWidget);
+      expect(find.text('COACHING TIP ● KEY CUE'), findsOneWidget);
       expect(find.textContaining('Keep elbows tucked at 45 degrees'), findsOneWidget);
 
       // 1RM Calculator

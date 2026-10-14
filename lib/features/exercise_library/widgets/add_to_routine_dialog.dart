@@ -29,9 +29,9 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
 
   static const List<String> _destinations = [
     'Active Workout',
-    'Push Day // Workout A',
-    'Pull Day // Workout B',
-    'Leg Day // Workout C',
+    'Push Day ● Workout A',
+    'Pull Day ● Workout B',
+    'Leg Day ● Workout C',
   ];
 
   static const List<String> _repRanges = [

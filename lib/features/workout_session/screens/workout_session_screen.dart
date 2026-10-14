@@ -40,7 +40,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
             day.exercises.map((e) => e.toActiveExerciseState()).toList();
         ref.read(activeSessionProvider.notifier).startSession(
               splitName:
-                  '${rotation.split.shortName} // ${day.name.toUpperCase()}',
+                  '${rotation.split.shortName} ● ${day.name.toUpperCase()}',
               initialExercises: exercises,
             );
       }

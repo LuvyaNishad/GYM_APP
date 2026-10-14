@@ -63,7 +63,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
   /// Starts a new active workout session with planned exercises.
   void startSession({
-    String splitName = 'PUSH DAY // WORKOUT A',
+    String splitName = 'PUSH DAY ● WORKOUT A',
     List<ActiveExerciseState>? initialExercises,
   }) {
     _elapsedTicker?.cancel();

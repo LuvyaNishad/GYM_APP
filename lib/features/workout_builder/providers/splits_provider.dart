@@ -177,7 +177,7 @@ class SplitsNotifier extends Notifier<SplitsState> {
         day.exercises.map((e) => e.toActiveExerciseState()).toList();
 
     ref.read(activeSessionProvider.notifier).startSession(
-          splitName: '${state.activeSplit.shortName} // ${day.name.toUpperCase()}',
+          splitName: '${state.activeSplit.shortName} ● ${day.name.toUpperCase()}',
           initialExercises: activeExercises,
         );
 
@@ -187,7 +187,7 @@ class SplitsNotifier extends Notifier<SplitsState> {
   /// Starts a freestyle / empty active workout session with 0 exercises preloaded.
   void startEmptyWorkout(BuildContext context) {
     ref.read(activeSessionProvider.notifier).startSession(
-          splitName: 'FREESTYLE // UNSTRUCTURED SESSION',
+          splitName: 'FREESTYLE ● UNSTRUCTURED SESSION',
           initialExercises: const [],
         );
 

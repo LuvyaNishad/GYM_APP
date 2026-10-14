@@ -81,9 +81,10 @@ class _DailyWorkoutBentoCardState extends ConsumerState<DailyWorkoutBentoCard> {
     final day = rotation.selectedDay;
     final isSessionActive = activeSession.isActive;
 
-    final workoutTitle = isSessionActive
-        ? activeSession.splitName.toUpperCase()
-        : day.name.toUpperCase();
+    final rawTitle = isSessionActive
+        ? activeSession.splitName
+        : day.name;
+    final workoutTitle = rawTitle.replaceAll('//', '●').toUpperCase();
     final targetMuscles = day.targetMuscles.isNotEmpty
         ? day.targetMuscles
         : widget.muscleGroups;

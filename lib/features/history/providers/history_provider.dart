@@ -402,25 +402,25 @@ final muscleBalanceProvider = Provider<MuscleBalanceModel>((ref) {
       muscleName: 'Back & Lats',
       hoursSinceLastTrained: 74,
       status: RecoveryStatus.ready,
-      lastSessionName: 'Pull Day // Workout B',
+      lastSessionName: 'Pull Day ● Workout B',
     ),
     const MuscleRecoveryState(
       muscleName: 'Quads & Calves',
       hoursSinceLastTrained: 48,
       status: RecoveryStatus.ready,
-      lastSessionName: 'Leg Day // Workout A',
+      lastSessionName: 'Leg Day ● Workout A',
     ),
     const MuscleRecoveryState(
       muscleName: 'Chest & Triceps',
       hoursSinceLastTrained: 18,
       status: RecoveryStatus.recovering,
-      lastSessionName: 'Push Day // Workout A',
+      lastSessionName: 'Push Day ● Workout A',
     ),
     const MuscleRecoveryState(
       muscleName: 'Hamstrings',
       hoursSinceLastTrained: 146,
       status: RecoveryStatus.overdue,
-      lastSessionName: 'Leg Day // Workout A',
+      lastSessionName: 'Leg Day ● Workout A',
     ),
   ];
 
@@ -553,7 +553,7 @@ List<WorkoutModel> _buildSampleWorkoutHistory() {
         WorkoutModel(
           id: 'demo_push_a_$daysAgo',
           userId: 'guest_user',
-          name: 'PUSH DAY // WORKOUT A',
+          name: 'PUSH DAY ● WORKOUT A',
           date: DateTime(dayDate.year, dayDate.month, dayDate.day, 10, 30),
           durationSeconds: 3120, // 52 mins
           totalVolumeKg: (7850 - weekNum * 180).toDouble(),
@@ -613,7 +613,7 @@ List<WorkoutModel> _buildSampleWorkoutHistory() {
         WorkoutModel(
           id: 'demo_pull_a_$daysAgo',
           userId: 'guest_user',
-          name: 'PULL DAY // WORKOUT A',
+          name: 'PULL DAY ● WORKOUT A',
           date: DateTime(dayDate.year, dayDate.month, dayDate.day, 18, 15),
           durationSeconds: 2940, // 49 mins
           totalVolumeKg: (8240 - weekNum * 150).toDouble(),
@@ -656,7 +656,7 @@ List<WorkoutModel> _buildSampleWorkoutHistory() {
         WorkoutModel(
           id: 'demo_leg_a_$daysAgo',
           userId: 'guest_user',
-          name: 'LEG DAY // WORKOUT A',
+          name: 'LEG DAY ● WORKOUT A',
           date: DateTime(dayDate.year, dayDate.month, dayDate.day, 11, 0),
           durationSeconds: 3480, // 58 mins
           totalVolumeKg: (9450 - weekNum * 200).toDouble(),
@@ -693,12 +693,12 @@ List<WorkoutModel> _buildSampleWorkoutHistory() {
         ),
       );
     } else if (weekday == DateTime.friday) {
-      // PUSH DAY // WORKOUT B
+      // PUSH DAY ● WORKOUT B
       workouts.add(
         WorkoutModel(
           id: 'demo_push_b_$daysAgo',
           userId: 'guest_user',
-          name: 'PUSH DAY // WORKOUT B',
+          name: 'PUSH DAY ● WORKOUT B',
           date: DateTime(dayDate.year, dayDate.month, dayDate.day, 17, 30),
           durationSeconds: 2880, // 48 mins
           totalVolumeKg: (7120 - weekNum * 120).toDouble(),
@@ -728,12 +728,12 @@ List<WorkoutModel> _buildSampleWorkoutHistory() {
         ),
       );
     } else if (weekday == DateTime.saturday) {
-      // PULL DAY // WORKOUT B
+      // PULL DAY ● WORKOUT B
       workouts.add(
         WorkoutModel(
           id: 'demo_pull_b_$daysAgo',
           userId: 'guest_user',
-          name: 'PULL DAY // WORKOUT B',
+          name: 'PULL DAY ● WORKOUT B',
           date: DateTime(dayDate.year, dayDate.month, dayDate.day, 12, 15),
           durationSeconds: 3000, // 50 mins
           totalVolumeKg: (7500 - weekNum * 140).toDouble(),

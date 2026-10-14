@@ -135,7 +135,7 @@ class WorkoutNotificationService {
     try {
       await _plugin.show(
         WorkoutNotificationIds.restTimer,
-        'REST TIMER • $formattedTime',
+        'REST TIMER ● $formattedTime',
         'Next: $exerciseName (Set $setNumber)',
         notificationDetails,
       );
@@ -247,10 +247,12 @@ class WorkoutNotificationService {
       iOS: darwinDetails,
     );
 
+    final cleanSplitName = splitName.replaceAll('//', '●').trim();
+
     try {
       await _plugin.show(
         WorkoutNotificationIds.activeWorkout,
-        'WORKOUT IN PROGRESS: ${splitName.toUpperCase()}',
+        'WORKOUT IN PROGRESS: ${cleanSplitName.toUpperCase()}',
         '$currentExerciseName (Set $currentSet/$totalSets)$weightRepsText',
         notificationDetails,
       );

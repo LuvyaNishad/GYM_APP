@@ -445,7 +445,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'COACHING TIP // KEY CUE',
+                              'COACHING TIP ● KEY CUE',
                               style: AppTypography.titleLarge.copyWith(
                                 fontFamily: AppTypography.fontDisplay,
                                 fontSize: 12.0,

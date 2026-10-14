@@ -58,7 +58,7 @@ class DashboardScreen extends ConsumerWidget {
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               16,
-              8,
+              16,
               16,
               AppShell.reservedBottomSpace + 16,
             ),
@@ -66,7 +66,7 @@ class DashboardScreen extends ConsumerWidget {
               delegate: SliverChildListDelegate([
                 // ── 1. Compact Daily Workout / Start Workout Bento Card ───────
                 const DailyWorkoutBentoCard(),
-                const SizedBox(height: 8),
+                const SizedBox(height: 16),
 
                 // ── 2. 4 Equal Square Bento Cards (2x2 Grid) ──────────────────
                 GridView.count(

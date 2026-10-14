@@ -40,7 +40,7 @@ class _WorkoutDetailContent extends ConsumerWidget {
     final selectedDay = rotation.selectedDay;
     final split = rotation.split;
 
-    final title = '${selectedDay.name.toUpperCase()}${selectedDay.subtitle.isNotEmpty ? ' // ${selectedDay.subtitle.toUpperCase()}' : ''}';
+    final title = '${selectedDay.name.toUpperCase()}${selectedDay.subtitle.isNotEmpty ? ' ● ${selectedDay.subtitle.toUpperCase()}' : ''}';
 
     return Container(
       decoration: BoxDecoration(
@@ -162,7 +162,7 @@ class _WorkoutDetailContent extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'ROTATION DAYS // ${split.shortName}',
+                    'ROTATION DAYS ● ${split.shortName}',
                     style: const TextStyle(
                       fontFamily: 'JetBrains Mono',
                       fontSize: 11.0,
