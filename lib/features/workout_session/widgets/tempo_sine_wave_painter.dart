@@ -29,41 +29,167 @@ class TempoSineWaveWidget extends StatefulWidget {
 
 class _TempoSineWaveWidgetState extends State<TempoSineWaveWidget>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _rippleController;
+  late final AnimationController _tickerController;
+  final Stopwatch _phaseStopwatch = Stopwatch();
 
   @override
   void initState() {
     super.initState();
-    // Continuous 1-second looping pulse for ambient energy & sonar ripples
-    _rippleController = AnimationController(
+    // Continuous VSync animation ticker for 60/120 FPS buttery smooth curve motion
+    _tickerController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     )..repeat();
+
+    if (widget.state.isActive && !widget.state.isPaused) {
+      _phaseStopwatch.start();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant TempoSineWaveWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.state.phase != widget.state.phase ||
+        oldWidget.state.currentRep != widget.state.currentRep) {
+      _phaseStopwatch.reset();
+      if (widget.state.isActive && !widget.state.isPaused) {
+        _phaseStopwatch.start();
+      }
+    }
+
+    if (oldWidget.state.isPaused != widget.state.isPaused) {
+      if (widget.state.isPaused) {
+        _phaseStopwatch.stop();
+      } else {
+        _phaseStopwatch.start();
+      }
+    }
   }
 
   @override
   void dispose() {
-    _rippleController.dispose();
+    _tickerController.dispose();
+    _phaseStopwatch.stop();
     super.dispose();
+  }
+
+  int _getPhaseDurationMs(TempoPhase phase, TempoPreset preset, bool isConcentricFirst) {
+    switch (phase) {
+      case TempoPhase.countdown:
+        return 5000;
+      case TempoPhase.eccentric:
+        return preset.eccentricSeconds * 1000;
+      case TempoPhase.bottomHold:
+        return preset.bottomHoldSeconds * 1000;
+      case TempoPhase.concentric:
+        return preset.concentricSeconds * 1000;
+      case TempoPhase.topHold:
+        final holdSec = preset.topHoldSeconds > 0
+            ? preset.topHoldSeconds
+            : (isConcentricFirst ? preset.bottomHoldSeconds : 0);
+        return holdSec * 1000;
+      case TempoPhase.completed:
+        return 0;
+    }
+  }
+
+  double _computeCycleProgress(double phaseProgress) {
+    final state = widget.state;
+    final totalSec = state.preset.totalCycleSeconds;
+    if (totalSec <= 0) return 0.0;
+
+    double elapsedBefore = 0.0;
+    if (state.isConcentricFirst) {
+      final holdSec = state.preset.topHoldSeconds > 0
+          ? state.preset.topHoldSeconds
+          : state.preset.bottomHoldSeconds;
+      switch (state.phase) {
+        case TempoPhase.concentric:
+          elapsedBefore = 0.0;
+          break;
+        case TempoPhase.topHold:
+          elapsedBefore = state.preset.concentricSeconds.toDouble();
+          break;
+        case TempoPhase.eccentric:
+          elapsedBefore = (state.preset.concentricSeconds + holdSec).toDouble();
+          break;
+        default:
+          return 0.0;
+      }
+    } else {
+      switch (state.phase) {
+        case TempoPhase.eccentric:
+          elapsedBefore = 0.0;
+          break;
+        case TempoPhase.bottomHold:
+          elapsedBefore = state.preset.eccentricSeconds.toDouble();
+          break;
+        case TempoPhase.concentric:
+          elapsedBefore = (state.preset.eccentricSeconds + state.preset.bottomHoldSeconds).toDouble();
+          break;
+        case TempoPhase.topHold:
+          elapsedBefore = (state.preset.eccentricSeconds +
+                  state.preset.bottomHoldSeconds +
+                  state.preset.concentricSeconds)
+              .toDouble();
+          break;
+        default:
+          return 0.0;
+      }
+    }
+
+    final currentPhaseDuration = _getPhaseDurationMs(state.phase, state.preset, state.isConcentricFirst);
+    final currentPhaseSec = currentPhaseDuration / 1000.0;
+    final currentSec = elapsedBefore + (phaseProgress * currentPhaseSec);
+    return (currentSec / totalSec).clamp(0.0, 1.0);
+  }
+
+  double _getSmoothCycleProgress() {
+    final state = widget.state;
+    if (!state.isActive || state.phase == TempoPhase.countdown) return 0.0;
+    if (state.phase == TempoPhase.completed) return 1.0;
+    if (state.isPaused) return state.cycleProgress;
+
+    final phaseDurationMs = _getPhaseDurationMs(state.phase, state.preset, state.isConcentricFirst);
+    if (phaseDurationMs <= 0) return state.cycleProgress;
+
+    final elapsedMs = _phaseStopwatch.elapsedMilliseconds;
+    final phaseProg = (elapsedMs / phaseDurationMs).clamp(0.0, 1.0);
+    return _computeCycleProgress(phaseProg);
+  }
+
+  double _getSmoothPhaseProgress() {
+    final state = widget.state;
+    if (!state.isActive || state.phase == TempoPhase.countdown) return 0.0;
+    if (state.phase == TempoPhase.completed) return 1.0;
+    if (state.isPaused) return state.phaseProgress;
+
+    final phaseDurationMs = _getPhaseDurationMs(state.phase, state.preset, state.isConcentricFirst);
+    if (phaseDurationMs <= 0) return state.phaseProgress;
+
+    final elapsedMs = _phaseStopwatch.elapsedMilliseconds;
+    return (elapsedMs / phaseDurationMs).clamp(0.0, 1.0);
   }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _rippleController,
+      animation: _tickerController,
       builder: (context, _) {
+        final smoothCycleProgress = _getSmoothCycleProgress();
+        final smoothPhaseProgress = _getSmoothPhaseProgress();
+
         return SizedBox(
           height: widget.height,
           width: double.infinity,
           child: CustomPaint(
             painter: _BiomechanicalWavePainter(
-              cycleProgress: widget.state.cycleProgress,
-              phaseProgress: widget.state.phaseProgress,
+              cycleProgress: smoothCycleProgress,
+              phaseProgress: smoothPhaseProgress,
               phase: widget.state.phase,
               preset: widget.state.preset,
               isConcentricFirst: widget.state.isConcentricFirst,
-              phaseSecondsRemaining: widget.state.phaseSecondsRemaining,
-              pulseProgress: _rippleController.value,
+              pulseProgress: _tickerController.value,
             ),
           ),
         );
@@ -78,7 +204,6 @@ class _BiomechanicalWavePainter extends CustomPainter {
   final TempoPhase phase;
   final TempoPreset preset;
   final bool isConcentricFirst;
-  final int phaseSecondsRemaining;
   final double pulseProgress;
 
   _BiomechanicalWavePainter({
@@ -87,7 +212,6 @@ class _BiomechanicalWavePainter extends CustomPainter {
     required this.phase,
     required this.preset,
     this.isConcentricFirst = false,
-    required this.phaseSecondsRemaining,
     required this.pulseProgress,
   });
 
@@ -400,18 +524,6 @@ class _BiomechanicalWavePainter extends CustomPainter {
       ..color = AppColors.pureWhite
       ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(orbX, orbY), 4.5, orbCorePaint);
-
-    // Floating Target Tooltip Pill right above/below the orb
-    final isNearTop = orbY < (marginTop + 35);
-    final tooltipY = isNearTop ? orbY + 20 : orbY - 26;
-
-    _drawFloatingPill(
-      canvas,
-      center: Offset(orbX, tooltipY),
-      phase: phase,
-      secondsRemaining: phaseSecondsRemaining,
-      color: activeColor,
-    );
   }
 
   void _drawDashedVerticalLine(
@@ -433,75 +545,6 @@ class _BiomechanicalWavePainter extends CustomPainter {
       );
       currentY += dashHeight + dashSpace;
     }
-  }
-
-  void _drawFloatingPill(
-    Canvas canvas, {
-    required Offset center,
-    required TempoPhase phase,
-    required int secondsRemaining,
-    required Color color,
-  }) {
-    String text;
-    switch (phase) {
-      case TempoPhase.eccentric:
-        text = '↓ LOWER ${secondsRemaining}s';
-        break;
-      case TempoPhase.bottomHold:
-        text = '⚡ HOLD ${secondsRemaining}s';
-        break;
-      case TempoPhase.concentric:
-        text = isConcentricFirst ? '↑ LIFT ${secondsRemaining}s' : '↑ DRIVE';
-        break;
-      case TempoPhase.topHold:
-        text = '⚡ SQUEEZE ${secondsRemaining}s';
-        break;
-      case TempoPhase.countdown:
-        text = 'READY';
-        break;
-      case TempoPhase.completed:
-        text = 'DONE';
-        break;
-    }
-
-    final textSpan = TextSpan(
-      text: text,
-      style: const TextStyle(
-        fontFamily: AppTypography.fontMono,
-        fontSize: 11.0,
-        fontWeight: FontWeight.w800,
-        color: AppColors.onyx,
-        letterSpacing: 0.5,
-      ),
-    );
-    final textPainter = TextPainter(
-      text: textSpan,
-      textDirection: TextDirection.ltr,
-    )..layout();
-
-    final pillWidth = textPainter.width + 16.0;
-    const pillHeight = 22.0;
-    final pillRect = Rect.fromCenter(
-      center: center,
-      width: pillWidth,
-      height: pillHeight,
-    );
-
-    // Pill background
-    final pillPaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(pillRect, const Radius.circular(11.0)),
-      pillPaint,
-    );
-
-    // Text centered
-    textPainter.paint(
-      canvas,
-      Offset(center.dx - (textPainter.width / 2),
-          center.dy - (textPainter.height / 2)),
-    );
   }
 
   void _drawText(
@@ -537,7 +580,6 @@ class _BiomechanicalWavePainter extends CustomPainter {
         oldDelegate.phase != phase ||
         oldDelegate.preset != preset ||
         oldDelegate.isConcentricFirst != isConcentricFirst ||
-        oldDelegate.pulseProgress != pulseProgress ||
-        oldDelegate.phaseSecondsRemaining != phaseSecondsRemaining;
+        oldDelegate.pulseProgress != pulseProgress;
   }
 }

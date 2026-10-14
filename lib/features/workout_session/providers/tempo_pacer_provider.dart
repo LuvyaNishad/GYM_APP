@@ -11,13 +11,14 @@ final tempoPacerProvider =
 
 class TempoPacerNotifier extends Notifier<TempoPacerState> {
   Timer? _ticker;
-  int _phaseElapsedMs = 0;
+  final Stopwatch _phaseStopwatch = Stopwatch();
   int _lastTickSecond = -1;
 
   @override
   TempoPacerState build() {
     ref.onDispose(() {
       _ticker?.cancel();
+      _phaseStopwatch.stop();
     });
     return const TempoPacerState();
   }
@@ -33,7 +34,8 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
     bool skipCountdown = false,
   }) {
     _ticker?.cancel();
-    _phaseElapsedMs = 0;
+    _phaseStopwatch.reset();
+    _phaseStopwatch.start();
     _lastTickSecond = -1;
 
     final startPhase = skipCountdown
@@ -65,31 +67,33 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
   }
 
   void _startTicker() {
-    const tickIntervalMs = 30; // ~33 FPS continuous sine-wave resolution
+    const tickIntervalMs = 25; // Continuous metronome & phase monitor
     _ticker = Timer.periodic(
       const Duration(milliseconds: tickIntervalMs),
-      (_) => _onTick(tickIntervalMs),
+      (_) => _onTick(),
     );
   }
 
-  void _onTick(int deltaMs) {
+  void _onTick() {
     if (!state.isActive || state.isPaused) return;
 
+    final elapsedMs = _phaseStopwatch.elapsedMilliseconds;
+
     if (state.phase == TempoPhase.countdown) {
-      _phaseElapsedMs += deltaMs;
-      final remaining = (5 - (_phaseElapsedMs / 1000).floor()).clamp(0, 5);
+      final remaining = (5 - (elapsedMs / 1000).floor()).clamp(0, 5);
 
       if (remaining != state.countdownRemaining) {
         state = state.copyWith(
           countdownRemaining: remaining,
-          phaseProgress: (_phaseElapsedMs / 5000).clamp(0.0, 1.0),
+          phaseProgress: (elapsedMs / 5000).clamp(0.0, 1.0),
         );
         _playCountdownTick(remaining);
       }
 
-      if (_phaseElapsedMs >= 5000) {
+      if (elapsedMs >= 5000) {
         // Countdown finished -> Start Rep 1
-        _phaseElapsedMs = 0;
+        _phaseStopwatch.reset();
+        _phaseStopwatch.start();
         _lastTickSecond = -1;
         state = state.copyWith(
           phase: state.isConcentricFirst
@@ -106,7 +110,6 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
 
     if (state.phase == TempoPhase.completed) return;
 
-    _phaseElapsedMs += deltaMs;
     final phaseDurationMs = _currentPhaseDurationMs();
 
     if (phaseDurationMs <= 0) {
@@ -114,11 +117,11 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
       return;
     }
 
-    final rawProgress = (_phaseElapsedMs / phaseDurationMs).clamp(0.0, 1.0);
+    final rawProgress = (elapsedMs / phaseDurationMs).clamp(0.0, 1.0);
 
     // Audio/Haptic metronome ticks during eccentric descent (1 tick per second)
     if (state.phase == TempoPhase.eccentric) {
-      final currentSecond = (_phaseElapsedMs / 1000).floor();
+      final currentSecond = (elapsedMs / 1000).floor();
       if (currentSecond > _lastTickSecond && currentSecond < state.preset.eccentricSeconds) {
         _lastTickSecond = currentSecond;
         _playMetronomeTick();
@@ -132,7 +135,7 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
       cycleProgress: cycleProg,
     );
 
-    if (_phaseElapsedMs >= phaseDurationMs) {
+    if (elapsedMs >= phaseDurationMs) {
       _advancePhase();
     }
   }
@@ -210,7 +213,8 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
   }
 
   void _advancePhase() {
-    _phaseElapsedMs = 0;
+    _phaseStopwatch.reset();
+    _phaseStopwatch.start();
     _lastTickSecond = -1;
 
     if (state.isConcentricFirst) {
@@ -280,6 +284,9 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
   void _completeCurrentRep() {
     if (state.currentRep < state.targetReps) {
       // Advance to next repetition
+      _phaseStopwatch.reset();
+      _phaseStopwatch.start();
+      _lastTickSecond = -1;
       state = state.copyWith(
         currentRep: state.currentRep + 1,
         phase: state.isConcentricFirst
@@ -297,6 +304,7 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
 
   void _onAllRepsCompleted() {
     _ticker?.cancel();
+    _phaseStopwatch.stop();
     state = state.copyWith(
       phase: TempoPhase.completed,
       phaseProgress: 1.0,
@@ -338,11 +346,17 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
   /// Finishes immediately and logs the reps completed so far (for early failure).
   void finishEarlyAndRest() {
     _ticker?.cancel();
+    _phaseStopwatch.stop();
     _onAllRepsCompleted();
   }
 
   void togglePause() {
     if (!state.isActive) return;
+    if (state.isPaused) {
+      _phaseStopwatch.start();
+    } else {
+      _phaseStopwatch.stop();
+    }
     state = state.copyWith(isPaused: !state.isPaused);
     try {
       HapticFeedback.selectionClick();
@@ -380,6 +394,7 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
 
   void cancel() {
     _ticker?.cancel();
+    _phaseStopwatch.stop();
     state = state.copyWith(isActive: false);
     try {
       HapticFeedback.mediumImpact();
