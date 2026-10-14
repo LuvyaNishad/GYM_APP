@@ -173,7 +173,7 @@ class _BiomechanicalWavePainter extends CustomPainter {
     const marginLeft = 20.0;
     final marginRight = w - 20.0;
     const marginTop = 30.0;
-    final marginBottom = h - 36.0;
+    final marginBottom = h - 24.0;
     final trackWidth = marginRight - marginLeft;
     final trackHeight = marginBottom - marginTop;
 
@@ -182,25 +182,13 @@ class _BiomechanicalWavePainter extends CustomPainter {
     // ── 1. Phase Zone Backgrounds & Transition Coordinates ───────────────
     final double firstX;
     final double secondX;
-    final String firstLabel;
-    final String secondLabel;
-    final String thirdLabel;
-    final int holdSec = preset.topHoldSeconds > 0
-        ? preset.topHoldSeconds
-        : preset.bottomHoldSeconds;
 
     if (isConcentricFirst) {
       firstX = marginLeft + (_concentricFraction * trackWidth);
       secondX = firstX + (_holdFraction * trackWidth);
-      firstLabel = 'LIFT (${preset.concentricSeconds}s)';
-      secondLabel = 'HOLD (${holdSec}s)';
-      thirdLabel = 'LOWER (${preset.eccentricSeconds}s)';
     } else {
       firstX = marginLeft + (_eccFraction * trackWidth);
       secondX = firstX + (_holdFraction * trackWidth);
-      firstLabel = 'DESCENT (${preset.eccentricSeconds}s)';
-      secondLabel = 'HOLD (${holdSec}s)';
-      thirdLabel = 'DRIVE (${preset.concentricSeconds}s)';
     }
 
     // Subtle shaded zone for isometric hold
@@ -208,7 +196,7 @@ class _BiomechanicalWavePainter extends CustomPainter {
       final holdZonePaint = Paint()
         ..color = const Color(0xFFFFB300).withValues(alpha: 0.05);
       canvas.drawRect(
-        Rect.fromLTRB(firstX, marginTop - 10, secondX, marginBottom + 16),
+        Rect.fromLTRB(firstX, marginTop - 10, secondX, marginBottom),
         holdZonePaint,
       );
     }
@@ -247,7 +235,7 @@ class _BiomechanicalWavePainter extends CustomPainter {
     _drawText(
       canvas,
       text: isConcentricFirst ? 'FLOOR / START' : 'FULL DEPTH',
-      offset: Offset(marginLeft, marginBottom + 8),
+      offset: Offset(marginLeft, marginBottom + 6),
       color: AppColors.platinum.withValues(alpha: 0.70),
       fontSize: 11.0,
       isMono: true,
@@ -265,43 +253,6 @@ class _BiomechanicalWavePainter extends CustomPainter {
     if (_holdFraction > 0.0) {
       _drawDashedVerticalLine(canvas, secondX, marginTop, marginBottom, markerPaint);
     }
-
-    // Phase duration footers
-    final firstMidX = (marginLeft + firstX) / 2;
-    _drawCenteredText(
-      canvas,
-      text: firstLabel,
-      x: firstMidX,
-      y: marginBottom + 18,
-      color: isConcentricFirst
-          ? AppColors.pureWhite.withValues(alpha: 0.80)
-          : const Color(0xFF00E5FF).withValues(alpha: 0.70),
-      fontSize: 11.0,
-    );
-
-    if (_holdFraction > 0.0) {
-      final holdMidX = (firstX + secondX) / 2;
-      _drawCenteredText(
-        canvas,
-        text: secondLabel,
-        x: holdMidX,
-        y: marginBottom + 18,
-        color: const Color(0xFFFFB300).withValues(alpha: 0.85),
-        fontSize: 11.0,
-      );
-    }
-
-    final thirdMidX = (secondX + marginRight) / 2;
-    _drawCenteredText(
-      canvas,
-      text: thirdLabel,
-      x: thirdMidX,
-      y: marginBottom + 18,
-      color: isConcentricFirst
-          ? const Color(0xFF00E5FF).withValues(alpha: 0.70)
-          : AppColors.pureWhite.withValues(alpha: 0.80),
-      fontSize: 11.0,
-    );
 
     // ── 4. Full Wave Curve Construction ────────────────────────────────────
     const sampleSteps = 140;
@@ -593,34 +544,6 @@ class _BiomechanicalWavePainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout();
     textPainter.paint(canvas, offset);
-  }
-
-  void _drawCenteredText(
-    Canvas canvas, {
-    required String text,
-    required double x,
-    required double y,
-    required Color color,
-    required double fontSize,
-  }) {
-    final textSpan = TextSpan(
-      text: text,
-      style: TextStyle(
-        fontFamily: AppTypography.fontMono,
-        fontSize: fontSize,
-        fontWeight: FontWeight.w700,
-        color: color,
-        letterSpacing: 0.5,
-      ),
-    );
-    final textPainter = TextPainter(
-      text: textSpan,
-      textDirection: TextDirection.ltr,
-    )..layout();
-    textPainter.paint(
-      canvas,
-      Offset(x - (textPainter.width / 2), y),
-    );
   }
 
   @override

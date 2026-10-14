@@ -368,8 +368,6 @@ class TempoPacerOverlay extends ConsumerWidget {
 
   // ── Active Wave Pacer Stage ───────────────────────────────────────────────
   Widget _buildActiveWaveStage(BuildContext context, TempoPacerState state) {
-    final phaseColor = _getPhaseColor(state.phase);
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -385,7 +383,7 @@ class TempoPacerOverlay extends ConsumerWidget {
                 'REP ${state.currentRep.toString().padLeft(2, '0')}',
                 style: const TextStyle(
                   fontFamily: AppTypography.fontMono,
-                  fontSize: 56,
+                  fontSize: 64,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -1.0,
                   color: AppColors.pureWhite,
@@ -396,7 +394,7 @@ class TempoPacerOverlay extends ConsumerWidget {
                 '/ ${state.targetReps.toString().padLeft(2, '0')}',
                 style: const TextStyle(
                   fontFamily: AppTypography.fontMono,
-                  fontSize: 22,
+                  fontSize: 24,
                   fontWeight: FontWeight.w700,
                   color: AppColors.platinum,
                 ),
@@ -404,65 +402,7 @@ class TempoPacerOverlay extends ConsumerWidget {
             ],
           ),
 
-          const SizedBox(height: 10),
-
-          // Dynamic Phase Action Badge with Live Countdown
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-            decoration: BoxDecoration(
-              color: phaseColor.withValues(alpha: 0.16),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: phaseColor, width: 1.5),
-              boxShadow: [
-                BoxShadow(
-                  color: phaseColor.withValues(alpha: 0.25),
-                  blurRadius: 12,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  state.phase == TempoPhase.eccentric
-                      ? Icons.arrow_downward_rounded
-                      : state.phase == TempoPhase.bottomHold
-                          ? Icons.pause_rounded
-                          : Icons.arrow_upward_rounded,
-                  size: 16,
-                  color: phaseColor,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '${state.phaseLabel} • ${state.phaseSecondsRemaining}s',
-                  style: TextStyle(
-                    fontFamily: AppTypography.fontMono,
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w900,
-                    color: phaseColor,
-                    letterSpacing: 1.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // Real-time Coaching Cue
-          Text(
-            state.phaseCoachingNote,
-            style: const TextStyle(
-              fontFamily: AppTypography.fontBody,
-              fontSize: 13.0,
-              color: AppColors.platinum,
-            ),
-            textAlign: TextAlign.center,
-          ),
-
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
           // ── The Biomechanical Wave Track (Centerpiece) ────────────────────
           Container(
@@ -484,48 +424,8 @@ class TempoPacerOverlay extends ConsumerWidget {
             ),
             child: TempoSineWaveWidget(
               state: state,
-              height: 200,
+              height: 220,
             ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // Cadence Feedback telemetry strip
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                state.soundEnabled ? Icons.volume_up : Icons.volume_off,
-                size: 14,
-                color: AppColors.platinum,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                state.soundEnabled
-                    ? 'Audio Metronome Active (Music Safe)'
-                    : 'Audio Muted',
-                style: const TextStyle(
-                  fontFamily: AppTypography.fontBody,
-                  fontSize: 11.5,
-                  color: AppColors.platinum,
-                ),
-              ),
-              const SizedBox(width: 16),
-              const Icon(
-                Icons.vibration,
-                size: 14,
-                color: AppColors.platinum,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                state.hapticsEnabled ? 'Haptics ON' : 'Haptics Muted',
-                style: const TextStyle(
-                  fontFamily: AppTypography.fontBody,
-                  fontSize: 11.5,
-                  color: AppColors.platinum,
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -863,21 +763,6 @@ class TempoPacerOverlay extends ConsumerWidget {
         );
       },
     );
-  }
-
-  Color _getPhaseColor(TempoPhase phase) {
-    switch (phase) {
-      case TempoPhase.countdown:
-      case TempoPhase.eccentric:
-      case TempoPhase.topHold:
-        return const Color(0xFF00E5FF);
-      case TempoPhase.bottomHold:
-        return const Color(0xFFFFB300);
-      case TempoPhase.concentric:
-        return AppColors.pureWhite;
-      case TempoPhase.completed:
-        return const Color(0xFF10B981);
-    }
   }
 }
 
