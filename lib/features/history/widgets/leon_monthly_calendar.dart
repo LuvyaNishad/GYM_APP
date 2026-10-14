@@ -38,7 +38,7 @@ class LeonMonthlyCalendar extends ConsumerStatefulWidget {
   const LeonMonthlyCalendar({
     super.key,
     this.initialMonth,
-    this.initialCollapsed = false,
+    this.initialCollapsed = true,
     this.onDateSelected,
   });
 

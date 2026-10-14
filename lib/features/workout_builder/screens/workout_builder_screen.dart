@@ -79,17 +79,17 @@ class WorkoutBuilderScreen extends ConsumerWidget {
         children: [
           // ── Quick Freestyle Gym Session Bar ────────────────────────────────
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: AppColors.charcoal,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(color: AppColors.steel),
             ),
             child: Row(
               children: [
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: AppColors.onyx,
                     shape: BoxShape.circle,
@@ -97,11 +97,11 @@ class WorkoutBuilderScreen extends ConsumerWidget {
                   ),
                   child: const Icon(
                     Icons.flash_on_rounded,
-                    size: 18,
+                    size: 20,
                     color: AppColors.pureWhite,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,40 +109,40 @@ class WorkoutBuilderScreen extends ConsumerWidget {
                       Text(
                         'FREESTYLE WORKOUT',
                         style: AppTypography.monoSmall.copyWith(
-                          fontSize: 12.0,
+                          fontSize: 12.5,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.8,
                           color: AppColors.pureWhite,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 3),
                       Text(
                         'Start an empty session and log on the fly',
                         style: AppTypography.bodySmall.copyWith(
-                          fontSize: 11.5,
+                          fontSize: 12.0,
                           color: AppColors.platinum,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 ElevatedButton(
                   onPressed: () => notifier.startEmptyWorkout(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.pureWhite,
                     foregroundColor: AppColors.onyx,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 10),
-                    minimumSize: const Size(0, 38),
+                        horizontal: 16, vertical: 11),
+                    minimumSize: const Size(0, 42),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   child: Text(
                     'START',
                     style: AppTypography.monoSmall.copyWith(
-                      fontSize: 11.5,
+                      fontSize: 12.0,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 0.8,
                       color: AppColors.onyx,
@@ -153,14 +153,14 @@ class WorkoutBuilderScreen extends ConsumerWidget {
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
           // ── Active Program Spotlight Card ──────────────────────────────────
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: AppColors.charcoal,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(color: AppColors.steel, width: 1.0),
             ),
             child: Column(
@@ -176,26 +176,30 @@ class WorkoutBuilderScreen extends ConsumerWidget {
                         shape: BoxShape.circle,
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'ACTIVE TRAINING PROGRAM',
-                      style: AppTypography.monoSmall.copyWith(
-                        fontSize: 11.0,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.8,
-                        color: AppColors.platinum,
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'ACTIVE TRAINING PROGRAM',
+                        style: AppTypography.monoSmall.copyWith(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.6,
+                          color: AppColors.platinum,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(width: 8),
                     InkWell(
                       onTap: () => _showSwitchSplitModal(context, ref),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(8),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: AppColors.onyx,
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: AppColors.steel),
                         ),
                         child: Row(
@@ -218,21 +222,21 @@ class WorkoutBuilderScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Text(
                   activeSplit.name,
                   style: AppTypography.headlineSmall.copyWith(
-                    fontSize: 18.0,
+                    fontSize: 19.0,
                     fontWeight: FontWeight.w800,
-                    letterSpacing: 0.6,
+                    letterSpacing: 0.5,
                     color: AppColors.pureWhite,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
                   '${activeSplit.daysPerWeek} Days/Week · ${activeSplit.totalWorkouts} Workouts · ${activeSplit.totalWeeklySets} Total Weekly Sets',
                   style: AppTypography.monoSmall.copyWith(
-                    fontSize: 11.5,
+                    fontSize: 12.0,
                     color: AppColors.platinum,
                   ),
                 ),
@@ -240,7 +244,7 @@ class WorkoutBuilderScreen extends ConsumerWidget {
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
 
           // ── Section Title ──────────────────────────────────────────────────
           Row(

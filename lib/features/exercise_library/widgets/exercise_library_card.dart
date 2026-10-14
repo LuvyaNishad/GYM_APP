@@ -19,19 +19,19 @@ class ExerciseLibraryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           splashColor: AppColors.primary.withValues(alpha: 0.10),
           highlightColor: AppColors.primary.withValues(alpha: 0.05),
           child: Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: AppColors.charcoal,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: AppColors.steel,
                 width: 1.0,
@@ -53,7 +53,7 @@ class ExerciseLibraryCard extends StatelessWidget {
                             child: Text(
                               exercise.name,
                               style: AppTypography.headlineMedium.copyWith(
-                                fontSize: 15.5,
+                                fontSize: 17.0,
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 0.3,
                                 color: AppColors.pureWhite,
@@ -63,12 +63,12 @@ class ExerciseLibraryCard extends StatelessWidget {
                             ),
                           ),
                           if (exercise.isCustom) ...[
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                               decoration: BoxDecoration(
                                 color: AppColors.steel,
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(5),
                               ),
                               child: Text(
                                 'CUSTOM',
@@ -83,12 +83,12 @@ class ExerciseLibraryCard extends StatelessWidget {
                           ],
                         ],
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 8),
 
                       // Metadata Tags (Category, Type, Equipment, Difficulty)
                       Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
+                        spacing: 8,
+                        runSpacing: 6,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           _buildTag(
@@ -113,13 +113,13 @@ class ExerciseLibraryCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 8),
 
                       // Target Muscle Breakdown
                       Text(
                         'Target: ${exercise.primaryMusclesDisplay}',
                         style: AppTypography.bodySmall.copyWith(
-                          fontSize: 11.5,
+                          fontSize: 12.0,
                           fontWeight: FontWeight.w500,
                           color: AppColors.platinum,
                         ),
@@ -130,7 +130,7 @@ class ExerciseLibraryCard extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
 
                 // ── Quick Add (+) Action Button ──────────────────────────
                 Semantics(
@@ -140,12 +140,12 @@ class ExerciseLibraryCard extends StatelessWidget {
                     color: Colors.transparent,
                     child: InkWell(
                       onTap: onQuickAdd,
-                      borderRadius: BorderRadius.circular(22),
+                      borderRadius: BorderRadius.circular(24),
                       child: Container(
-                        width: 44,
-                        height: 44,
+                        width: 48,
+                        height: 48,
                         decoration: BoxDecoration(
-                          color: AppColors.steel,
+                          color: AppColors.onyx,
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: AppColors.steel,
@@ -154,7 +154,7 @@ class ExerciseLibraryCard extends StatelessWidget {
                         ),
                         child: const Icon(
                           Icons.add_rounded,
-                          size: 24,
+                          size: 26,
                           color: AppColors.pureWhite,
                         ),
                       ),
@@ -175,10 +175,10 @@ class ExerciseLibraryCard extends StatelessWidget {
     required bool isFilled,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: isFilled ? AppColors.steel : AppColors.onyx,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(
           color: AppColors.steel,
           width: 0.8,

@@ -35,10 +35,10 @@ class SplitCompactCard extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: AppColors.charcoal,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isActive ? AppColors.pureWhite : AppColors.steel,
           width: isActive ? 1.5 : 1.0,
@@ -59,40 +59,45 @@ class SplitCompactCard extends StatelessWidget {
           // ── Compact Header (Always visible) ────────────────────────────────
           InkWell(
             onTap: onToggleExpand,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Row 1: Split Number Badge, Full Title (no truncation), Expand Arrow
                   Row(
                     children: [
                       // Split Number Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                         decoration: BoxDecoration(
                           color: AppColors.onyx,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: AppColors.steel),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: AppColors.steel.withValues(alpha: 0.8),
+                          ),
                         ),
                         child: Text(
-                          '${splitIndex + 1}',
+                          '0${splitIndex + 1}',
                           style: AppTypography.monoSmall.copyWith(
-                            fontSize: 11.5,
+                            fontSize: 12.0,
                             fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
                             color: AppColors.pureWhite,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
 
                       // Title
                       Expanded(
                         child: Text(
                           split.name,
                           style: AppTypography.titleLarge.copyWith(
-                            fontSize: 15.0,
+                            fontSize: 17.0,
                             fontWeight: FontWeight.w800,
+                            letterSpacing: 0.3,
                             color: AppColors.pureWhite,
                           ),
                           maxLines: 1,
@@ -100,10 +105,41 @@ class SplitCompactCard extends StatelessWidget {
                         ),
                       ),
 
+                      const SizedBox(width: 10),
+                      AnimatedRotation(
+                        turns: isExpanded ? 0.5 : 0.0,
+                        duration: const Duration(milliseconds: 200),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: AppColors.onyx,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.steel.withValues(alpha: 0.6),
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            size: 20,
+                            color: AppColors.pureWhite,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Row 2: Status Pill & Metric Chips
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
                       // Status Badge
                       if (isActive)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                           decoration: BoxDecoration(
                             color: AppColors.pureWhite,
                             borderRadius: BorderRadius.circular(6),
@@ -134,69 +170,48 @@ class SplitCompactCard extends StatelessWidget {
                         )
                       else
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: AppColors.onyx,
                             borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: AppColors.steel),
+                            border: Border.all(
+                              color: AppColors.steel.withValues(alpha: 0.8),
+                            ),
                           ),
                           child: Text(
                             split.isCustom ? 'CUSTOM' : 'PRESET',
                             style: AppTypography.monoSmall.copyWith(
                               fontSize: 11.0,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.4,
                               color: AppColors.platinum,
                             ),
                           ),
                         ),
 
-                      const SizedBox(width: 8),
-                      AnimatedRotation(
-                        turns: isExpanded ? 0.5 : 0.0,
-                        duration: const Duration(milliseconds: 200),
-                        child: const Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 22,
-                          color: AppColors.platinum,
-                        ),
-                      ),
+                      // Metric Chip 1: Days/Week
+                      _buildMetricChip('${split.daysPerWeek} DAYS/WK'),
+
+                      // Metric Chip 2: Workouts
+                      _buildMetricChip('${split.totalWorkouts} WORKOUTS'),
+
+                      // Metric Chip 3: Weekly Sets
+                      _buildMetricChip('${split.totalWeeklySets} TOTAL SETS'),
                     ],
                   ),
 
                   const SizedBox(height: 10),
 
-                  // Metadata Row
-                  Row(
-                    children: [
-                      Text(
-                        '${split.daysPerWeek} DAYS/WK',
-                        style: AppTypography.monoSmall.copyWith(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.pureWhite,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text('•', style: TextStyle(color: AppColors.steel)),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${split.totalWorkouts} WORKOUTS',
-                        style: AppTypography.monoSmall.copyWith(
-                          fontSize: 11.5,
-                          color: AppColors.platinum,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text('•', style: TextStyle(color: AppColors.steel)),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${split.totalWeeklySets} WEEKLY SETS',
-                        style: AppTypography.monoSmall.copyWith(
-                          fontSize: 11.5,
-                          color: AppColors.platinum,
-                        ),
-                      ),
-                    ],
+                  // Row 3: Description Preview
+                  Text(
+                    split.description,
+                    style: AppTypography.bodySmall.copyWith(
+                      fontSize: 12.0,
+                      color: AppColors.platinum.withValues(alpha: 0.75),
+                      height: 1.35,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -299,6 +314,29 @@ class SplitCompactCard extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildMetricChip(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.onyx,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: AppColors.steel.withValues(alpha: 0.6),
+          width: 0.8,
+        ),
+      ),
+      child: Text(
+        text,
+        style: AppTypography.monoSmall.copyWith(
+          fontSize: 11.0,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.3,
+          color: AppColors.platinum,
+        ),
       ),
     );
   }
