@@ -131,7 +131,8 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       // Verify Account Header & Identity
       expect(find.text('ACCOUNT'), findsOneWidget);

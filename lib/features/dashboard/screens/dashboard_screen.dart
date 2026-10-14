@@ -31,7 +31,6 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userProfile = ref.watch(userProfileProvider);
-    final activeSplit = ref.watch(activeSplitProvider);
     final telemetry = ref.watch(dailyTelemetryProvider);
     final loggedWorkoutDates = ref.watch(loggedWorkoutDatesProvider);
 
@@ -59,54 +58,31 @@ class DashboardScreen extends ConsumerWidget {
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               16,
-              28,
+              8,
               16,
               AppShell.reservedBottomSpace + 16,
             ),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 // ── 1. Compact Daily Workout / Start Workout Bento Card ───────
-                DailyWorkoutBentoCard(
-                  activeSplit: activeSplit,
-                  muscleGroups: const ['CHEST', 'DELTOIDS', 'TRICEPS'],
-                  exerciseCount: 5,
-                  estimatedMinutes: 48,
-                  targetRpe: '8.5',
-                ),
-                const SizedBox(height: 12),
+                const DailyWorkoutBentoCard(),
+                const SizedBox(height: 8),
 
-                // ── 2. Bento Activity & Wellness Rows ─────────────────────────
-                // Top Row: Steps + Calories (Height 154)
-                SizedBox(
-                  height: 154,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: StepsBentoCard(telemetry: telemetry),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: CaloriesBentoCard(telemetry: telemetry),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // Bottom Row: Hydration + Sleep with less height & horizontal bars (Height 114)
-                SizedBox(
-                  height: 114,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: WaterBentoCard(telemetry: telemetry),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: SleepBentoCard(telemetry: telemetry),
-                      ),
-                    ],
-                  ),
+                // ── 2. 4 Equal Square Bento Cards (2x2 Grid) ──────────────────
+                GridView.count(
+                  padding: EdgeInsets.zero,
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 1.05,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    StepsBentoCard(telemetry: telemetry),
+                    CaloriesBentoCard(telemetry: telemetry),
+                    WaterBentoCard(telemetry: telemetry),
+                    SleepBentoCard(telemetry: telemetry),
+                  ],
                 ),
               ]),
             ),

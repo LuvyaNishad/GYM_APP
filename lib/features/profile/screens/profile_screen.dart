@@ -12,10 +12,14 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/app_shell.dart';
+import '../../onboarding/providers/onboarding_provider.dart';
+import '../../onboarding/widgets/goal_selector_sheet.dart';
 import '../models/account_profile_model.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/edit_biometrics_dialog.dart';
@@ -509,6 +513,8 @@ class _TrainingPreferencesCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final goalConfig = ref.watch(trainingGoalConfigProvider);
+
     return _GlassSectionContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -518,6 +524,37 @@ class _TrainingPreferencesCard extends ConsumerWidget {
             icon: Icons.fitness_center_rounded,
           ),
           const SizedBox(height: 12),
+
+          // Primary Training Goal Row
+          _PreferenceTile(
+            title: 'Primary Goal',
+            subtitle: '${goalConfig.displayName} · ${goalConfig.subtitle}',
+            trailing: InkWell(
+              onTap: () => showGoalSelectorSheet(context, ref),
+              borderRadius: BorderRadius.circular(6),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: goalConfig.accentColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: goalConfig.accentColor.withValues(alpha: 0.35),
+                  ),
+                ),
+                child: Text(
+                  'CHANGE',
+                  style: TextStyle(
+                    fontFamily: AppTypography.fontDisplay,
+                    fontSize: 11.0,
+                    fontWeight: FontWeight.w700,
+                    color: goalConfig.accentColor,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const Divider(color: AppColors.steel, height: 18),
 
           // Preferred Split Row
           _PreferenceTile(
@@ -1047,6 +1084,45 @@ class _AccountActionsCard extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
 
+          // Replay Onboarding Survey
+          InkWell(
+            onTap: () {
+              _showConfirmDialog(
+                context,
+                title: 'Replay Onboarding',
+                content:
+                    'This will restart the onboarding survey from the very beginning so you can retake the setup questions.',
+                onConfirm: () async {
+                  await ref.read(onboardingProvider.notifier).reset();
+                  if (context.mounted) {
+                    context.go(AppConstants.routeOnboarding);
+                  }
+                },
+              );
+            },
+            borderRadius: BorderRadius.circular(10),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.school_outlined,
+                      color: AppColors.primary, size: 20),
+                  SizedBox(width: 12),
+                  Text(
+                    'Replay Onboarding Survey',
+                    style: TextStyle(
+                      fontFamily: AppTypography.fontBody,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const Divider(color: AppColors.steel, height: 16),
+
           // Reset Profile Defaults
           InkWell(
             onTap: () {
@@ -1107,7 +1183,7 @@ class _AccountActionsCard extends ConsumerWidget {
                 context,
                 title: 'Clear Cache',
                 content:
-                    'Temporary telemetry cache and chart caches will be cleared without deleting your workout history.',
+                    'Temporary app cache and chart caches will be cleared without deleting your workout history.',
                 onConfirm: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(

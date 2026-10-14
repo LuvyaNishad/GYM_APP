@@ -158,7 +158,7 @@ class PdfReportService {
 
                 // ── 2. Training Telemetry Highlights ────────────────────────
                 pw.Text(
-                  'MONTHLY WORKOUT TELEMETRY',
+                  'MONTHLY WORKOUT ACTIVITY',
                   style: pw.TextStyle(
                     color: cyanAccent,
                     fontSize: 11,

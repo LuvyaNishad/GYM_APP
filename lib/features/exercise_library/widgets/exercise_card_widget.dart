@@ -68,7 +68,7 @@ class ExerciseCardWidget extends StatelessWidget {
                           'WARM-UP',
                           style: TextStyle(
                             fontFamily: 'JetBrainsMono',
-                            fontSize: 9,
+                            fontSize: 11,
                             color: Colors.orangeAccent,
                             letterSpacing: 1,
                           ),
@@ -82,7 +82,7 @@ class ExerciseCardWidget extends StatelessWidget {
                   style: const TextStyle(
                     fontFamily: 'JetBrainsMono',
                     fontSize: 11,
-                    color: Colors.white38,
+                    color: Color(0xFF94A3B8),
                     letterSpacing: 0.8,
                   ),
                 ),
@@ -104,7 +104,7 @@ class ExerciseCardWidget extends StatelessWidget {
                     'RPE',
                     style: TextStyle(
                       fontFamily: 'JetBrainsMono',
-                      fontSize: 8,
+                      fontSize: 11,
                       color: Color(0xFF00E5FF),
                       letterSpacing: 1,
                     ),

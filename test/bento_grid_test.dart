@@ -11,6 +11,7 @@ import 'package:leon/features/dashboard/widgets/retractable_calendar_header.dart
 import 'package:leon/features/dashboard/widgets/sleep_bento_card.dart';
 import 'package:leon/features/dashboard/widgets/steps_bento_card.dart';
 import 'package:leon/features/dashboard/widgets/water_bento_card.dart';
+import 'package:leon/features/dashboard/providers/workout_rotation_provider.dart';
 
 void main() {
   group('Dashboard Bento Grid & Retractable Header', () {
@@ -241,13 +242,17 @@ void main() {
         (WidgetTester tester) async {
       var commenced = false;
 
+      final container = ProviderContainer();
+      container.read(workoutRotationProvider.notifier).selectDayByIndex(0);
+      addTearDown(container.dispose);
+
       await tester.pumpWidget(
-        ProviderScope(
+        UncontrolledProviderScope(
+          container: container,
           child: MaterialApp(
             theme: AppTheme.dark,
             home: Scaffold(
               body: DailyWorkoutBentoCard(
-                muscleGroups: const ['CHEST', 'DELTOIDS', 'TRICEPS'],
                 onStartWorkout: () => commenced = true,
               ),
             ),
@@ -257,9 +262,9 @@ void main() {
 
       // Verify minimal surface: no TARGET RPE or telemetry bar clutter
       expect(find.text("TODAY'S WORKOUT"), findsOneWidget);
-      expect(find.text('PUSH DAY // WORKOUT A'), findsOneWidget);
+      expect(find.text('PUSH DAY A'), findsOneWidget);
       expect(find.text('CHEST'), findsOneWidget);
-      expect(find.text('DELTOIDS'), findsOneWidget);
+      expect(find.text('FRONT DELTS'), findsOneWidget);
       expect(find.text('TRICEPS'), findsOneWidget);
       expect(find.text('START WORKOUT'), findsOneWidget);
       expect(find.textContaining('TARGET RPE'), findsNothing);
@@ -280,7 +285,7 @@ void main() {
       expect(find.text('DURATION'), findsOneWidget);
       expect(find.text('TRAINING FOCUS'), findsOneWidget);
       expect(find.text('HYPERTROPHY'), findsOneWidget);
-      expect(find.text('PLANNED EXERCISE SEQUENCE'), findsOneWidget);
+      expect(find.textContaining('PLANNED EXERCISE SEQUENCE'), findsOneWidget);
     });
   });
 }

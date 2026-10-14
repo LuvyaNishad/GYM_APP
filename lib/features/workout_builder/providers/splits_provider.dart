@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../services/hive_service.dart';
 import '../../workout_session/providers/active_session_provider.dart';
 import '../data/split_presets.dart';
 import '../models/split_model.dart';
@@ -22,6 +23,12 @@ class SplitsState {
 
   TrainingSplitModel get activeSplit =>
       splits.firstWhere((s) => s.id == activeSplitId, orElse: () => splits.first);
+
+  List<TrainingSplitModel> get presetSplits =>
+      splits.where((s) => !s.isCustom).toList();
+
+  List<TrainingSplitModel> get customSplits =>
+      splits.where((s) => s.isCustom).toList();
 
   SplitsState copyWith({
     List<TrainingSplitModel>? splits,
@@ -44,10 +51,35 @@ class SplitsNotifier extends Notifier<SplitsState> {
   @override
   SplitsState build() {
     ref.keepAlive();
+    final hive = ref.watch(hiveServiceProvider);
+
+    List<TrainingSplitModel> customSplits = [];
+    try {
+      customSplits = hive.readAll<TrainingSplitModel>(
+        AppConstants.hiveBoxSplits,
+        TrainingSplitModel.fromJson,
+      );
+    } catch (_) {
+      customSplits = [];
+    }
+
+    final allSplits = [
+      ...kPresetSplits,
+      ...customSplits,
+    ];
+
+    final savedActiveId = hive.getSetting<String>(
+      AppConstants.settingActiveSplitId,
+      fallback: 'split_ppl',
+    ) ?? 'split_ppl';
+
+    final effectiveActiveId =
+        allSplits.any((s) => s.id == savedActiveId) ? savedActiveId : allSplits.first.id;
+
     return SplitsState(
-      splits: kPresetSplits,
-      activeSplitId: 'split_ppl',
-      expandedSplitId: 'split_ppl',
+      splits: allSplits,
+      activeSplitId: effectiveActiveId,
+      expandedSplitId: null,
       // Baseline 14-day logged volume showing real-world progress + small deficit in Hamstrings
       loggedVolume: const {
         'Chest': 16,
@@ -64,8 +96,70 @@ class SplitsNotifier extends Notifier<SplitsState> {
   void switchActiveSplit(String splitId) {
     state = state.copyWith(
       activeSplitId: splitId,
-      expandedSplitId: splitId,
+      clearExpanded: true,
     );
+    ref.read(hiveServiceProvider).putSetting(AppConstants.settingActiveSplitId, splitId);
+  }
+
+  /// Saves a custom training split to state and local storage.
+  Future<void> saveCustomSplit(TrainingSplitModel split) async {
+    final hive = ref.read(hiveServiceProvider);
+    await hive.put(AppConstants.hiveBoxSplits, split.id, split.toJson());
+
+    final current = List<TrainingSplitModel>.from(state.splits);
+    final idx = current.indexWhere((s) => s.id == split.id);
+    if (idx >= 0) {
+      current[idx] = split;
+    } else {
+      current.add(split);
+    }
+    state = state.copyWith(splits: current);
+  }
+
+  /// Duplicates an existing preset or custom split into a customizable user routine.
+  Future<TrainingSplitModel> duplicateSplit(String splitId) async {
+    final original = state.splits.firstWhere((s) => s.id == splitId);
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final newId = 'custom_split_$timestamp';
+
+    final clonedWorkouts = original.workouts.map((w) {
+      return w.copyWith(
+        id: '${w.id}_$timestamp',
+        exercises: w.exercises.map((e) => e.copyWith()).toList(),
+      );
+    }).toList();
+
+    final duplicated = TrainingSplitModel(
+      id: newId,
+      name: '${original.name} (Custom)',
+      shortName: '${original.shortName}*',
+      daysPerWeek: original.daysPerWeek,
+      description: 'Customized based on ${original.name}.',
+      isCustom: true,
+      workouts: clonedWorkouts,
+      plannedMuscleSets: Map<String, int>.from(original.plannedMuscleSets),
+    );
+
+    await saveCustomSplit(duplicated);
+    return duplicated;
+  }
+
+  /// Deletes a custom training split and falls back safely if it was active.
+  Future<void> deleteCustomSplit(String splitId) async {
+    final hive = ref.read(hiveServiceProvider);
+    await hive.delete(AppConstants.hiveBoxSplits, splitId);
+
+    final filtered = state.splits.where((s) => s.id != splitId).toList();
+    final newActive = state.activeSplitId == splitId
+        ? (filtered.isNotEmpty ? filtered.first.id : 'split_ppl')
+        : state.activeSplitId;
+
+    state = state.copyWith(
+      splits: filtered,
+      activeSplitId: newActive,
+      expandedSplitId: state.expandedSplitId == splitId ? newActive : state.expandedSplitId,
+    );
+    await hive.putSetting(AppConstants.settingActiveSplitId, newActive);
   }
 
   /// Toggles expansion of a compact split card.

@@ -21,6 +21,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/notched_header_painter.dart';
+import '../../../shared/widgets/sync_status_indicator.dart';
 import 'gym_contribution_chart.dart';
 
 enum DayStatus {
@@ -331,34 +332,41 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                             ),
                           ),
 
-                          // Profile avatar with 44pt accessible touch target
-                          GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              context.push(AppConstants.routeProfile);
-                            },
-                            child: Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.15),
-                                  width: 1.5,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SyncStatusIndicator(showLabel: true),
+                              const SizedBox(width: 8),
+                              // Profile avatar with 44pt accessible touch target
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  context.push(AppConstants.routeProfile);
+                                },
+                                child: Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.15),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: ClipOval(
+                                    child: widget.avatarUrl != null
+                                        ? Image.network(
+                                            widget.avatarUrl!,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) =>
+                                                _buildDefaultAvatar(),
+                                          )
+                                        : _buildDefaultAvatar(),
+                                  ),
                                 ),
                               ),
-                              child: ClipOval(
-                                child: widget.avatarUrl != null
-                                    ? Image.network(
-                                        widget.avatarUrl!,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            _buildDefaultAvatar(),
-                                      )
-                                    : _buildDefaultAvatar(),
-                              ),
-                            ),
+                            ],
                           ),
                         ],
                       ),

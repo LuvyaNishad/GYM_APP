@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../providers/splits_provider.dart';
@@ -58,6 +60,12 @@ class WorkoutBuilderScreen extends ConsumerWidget {
           ),
         ),
         actions: [
+          IconButton(
+            tooltip: 'Routine Library',
+            icon: const Icon(Icons.folder_copy_outlined,
+                size: 22, color: AppColors.pureWhite),
+            onPressed: () => context.push(AppConstants.routeRoutineLibrary),
+          ),
           IconButton(
             tooltip: 'Switch Active Split',
             icon: const Icon(Icons.swap_horiz_rounded,

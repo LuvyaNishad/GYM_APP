@@ -1,25 +1,30 @@
 /// Daily Workout / Start Workout Bento Card for the LEON Dashboard.
 ///
-/// Clean, minimal, low-cognitive-load card:
-/// - Today's routine status indicator badge
-/// - Daily targeted muscle groups display with tags
+/// Features:
+/// - Smart Workout Auto-Rotation based on completed workout history
+/// - Dynamic workout title, muscle tags, and context rationale
+/// - "COMPLETED TODAY" status if a session was already logged today
+/// - 1-Tap "ROTATE" cycle button to quickly flip through split days
 /// - Immediate high-contrast "START WORKOUT" action button
-/// - Tapping card body or info chevron reveals detailed workout telemetry modal
-///   (Target RPE, Planned Exercises, Estimated Duration, Hypertrophy focus)
+/// - Tapping card body opens in-depth Workout Detail Sheet with full exercise roster
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../models/split_model.dart';
+import '../../workout_session/providers/active_session_provider.dart';
+import '../providers/workout_rotation_provider.dart';
 import 'workout_detail_sheet.dart';
 
-/// Full-width Bento card for today's workout and launching the session.
-class DailyWorkoutBentoCard extends StatefulWidget {
+/// Full-width Bento card for today's auto-rotated workout and launching the session.
+class DailyWorkoutBentoCard extends ConsumerStatefulWidget {
   const DailyWorkoutBentoCard({
     super.key,
     this.activeSplit,
@@ -31,19 +36,19 @@ class DailyWorkoutBentoCard extends StatefulWidget {
     this.onTap,
   });
 
-  /// The active split assigned to the user.
+  /// Optional fallback split model.
   final SplitModel? activeSplit;
 
-  /// Muscle groups being targeted during today's workout session.
+  /// Optional fallback muscle groups.
   final List<String> muscleGroups;
 
-  /// Total number of planned exercises for the day.
+  /// Optional fallback exercise count.
   final int exerciseCount;
 
-  /// Estimated duration in minutes.
+  /// Optional fallback estimated minutes.
   final int estimatedMinutes;
 
-  /// Target Rate of Perceived Exertion (RPE).
+  /// Optional fallback target RPE.
   final String targetRpe;
 
   /// Callback when the start workout button is triggered.
@@ -53,10 +58,11 @@ class DailyWorkoutBentoCard extends StatefulWidget {
   final VoidCallback? onTap;
 
   @override
-  State<DailyWorkoutBentoCard> createState() => _DailyWorkoutBentoCardState();
+  ConsumerState<DailyWorkoutBentoCard> createState() =>
+      _DailyWorkoutBentoCardState();
 }
 
-class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
+class _DailyWorkoutBentoCardState extends ConsumerState<DailyWorkoutBentoCard> {
   static const Color _cardBg = AppColors.charcoal;
   bool _isPressed = false;
 
@@ -64,28 +70,32 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
     if (widget.onTap != null) {
       widget.onTap!();
     } else {
-      showWorkoutDetailSheet(
-        context,
-        activeSplit: widget.activeSplit,
-        muscleGroups: widget.muscleGroups,
-        exerciseCount: widget.exerciseCount,
-        estimatedMinutes: widget.estimatedMinutes,
-        targetRpe: widget.targetRpe,
-      );
+      showWorkoutDetailSheet(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final splitTitle =
-        widget.activeSplit?.name.toUpperCase() ?? 'PUSH DAY // WORKOUT A';
+    final activeSession = ref.watch(activeSessionProvider);
+    final rotation = ref.watch(workoutRotationProvider);
+    final day = rotation.selectedDay;
+    final isSessionActive = activeSession.isActive;
+
+    final workoutTitle = isSessionActive
+        ? activeSession.splitName.toUpperCase()
+        : day.name.toUpperCase();
+    final targetMuscles = day.targetMuscles.isNotEmpty
+        ? day.targetMuscles
+        : widget.muscleGroups;
 
     return Container(
       decoration: BoxDecoration(
         color: _cardBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.steel.withValues(alpha: 0.5),
+          color: isSessionActive
+              ? AppColors.primary.withValues(alpha: 0.6)
+              : AppColors.steel.withValues(alpha: 0.5),
           width: 1.0,
         ),
       ),
@@ -102,63 +112,154 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // ── Header: Active Status + Details Chevron ────────────────
+                // ── Header: Active Status + Rotation Position + Cycle Button ─
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: AppColors.steel.withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.steel,
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 5,
-                            height: 5,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: AppColors.pureWhite,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Status Pill
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: isSessionActive
+                                ? AppColors.primary.withValues(alpha: 0.15)
+                                : (rotation.isCompletedToday
+                                    ? AppColors.success.withValues(alpha: 0.15)
+                                    : AppColors.steel.withValues(alpha: 0.6)),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSessionActive
+                                  ? AppColors.primary.withValues(alpha: 0.6)
+                                  : (rotation.isCompletedToday
+                                      ? AppColors.success.withValues(alpha: 0.6)
+                                      : AppColors.steel),
+                              width: 1,
                             ),
                           ),
-                          const SizedBox(width: 5),
-                          Text(
-                            "TODAY'S WORKOUT",
-                            style: AppTypography.labelSmall.copyWith(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 5,
+                                height: 5,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: isSessionActive
+                                      ? AppColors.primary
+                                      : (rotation.isCompletedToday
+                                          ? AppColors.success
+                                          : AppColors.pureWhite),
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                isSessionActive
+                                    ? 'IN PROGRESS • ${activeSession.formattedElapsed}'
+                                    : (rotation.isCompletedToday
+                                        ? 'COMPLETED TODAY'
+                                        : "TODAY'S WORKOUT"),
+                                style: AppTypography.labelSmall.copyWith(
+                                  fontFamily: 'JetBrains Mono',
+                                  fontSize: 11.0,
+                                  color: isSessionActive
+                                      ? AppColors.primary
+                                      : (rotation.isCompletedToday
+                                          ? AppColors.success
+                                          : AppColors.pureWhite),
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // Day Index Pill
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            isSessionActive
+                                ? '${activeSession.completedSetCount}/${activeSession.totalSetCount} SETS'
+                                : 'DAY ${rotation.dayIndex + 1}/${rotation.totalDays}',
+                            style: const TextStyle(
                               fontFamily: 'JetBrains Mono',
                               fontSize: 11.0,
-                              color: AppColors.pureWhite,
                               fontWeight: FontWeight.w700,
-                              letterSpacing: 1.0,
+                              color: AppColors.platinum,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
 
-                    // Tap chevron for deep workout breakdown
-                    Container(
-                      width: 22,
-                      height: 22,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.06),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.chevron_right_rounded,
-                          size: 15,
-                          color: AppColors.textSecondary,
+                    // Quick Rotate Day Action + Details Chevron
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            ref
+                                .read(workoutRotationProvider.notifier)
+                                .cycleNextDay();
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.swap_horiz_rounded,
+                                  size: 14,
+                                  color: AppColors.primary,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'SWAP',
+                                  style: TextStyle(
+                                    fontFamily: 'JetBrains Mono',
+                                    fontSize: 11.0,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.06),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.chevron_right_rounded,
+                              size: 15,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -167,7 +268,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
 
                 // ── Workout Name ────────────────────────────────────────────
                 Text(
-                  splitTitle,
+                  workoutTitle,
                   style: AppTypography.headlineMedium.copyWith(
                     fontSize: 15,
                     letterSpacing: 0.6,
@@ -183,7 +284,7 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    for (final muscle in widget.muscleGroups)
+                    for (final muscle in targetMuscles)
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
@@ -232,10 +333,16 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                   onTapCancel: () => setState(() => _isPressed = false),
                   onTap: () {
                     HapticFeedback.heavyImpact();
+                    if (isSessionActive) {
+                      context.push(AppConstants.routeWorkoutSession);
+                      return;
+                    }
                     if (widget.onStartWorkout != null) {
                       widget.onStartWorkout!();
                     } else {
-                      context.push(AppConstants.routeWorkoutSession);
+                      ref
+                          .read(workoutRotationProvider.notifier)
+                          .startWorkout(context);
                     }
                   },
                   child: AnimatedScale(
@@ -244,20 +351,28 @@ class _DailyWorkoutBentoCardState extends State<DailyWorkoutBentoCard> {
                     child: Container(
                       height: 42,
                       decoration: BoxDecoration(
-                        color: AppColors.pureWhite,
+                        color: isSessionActive
+                            ? AppColors.primary
+                            : AppColors.pureWhite,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
-                            Icons.play_arrow_rounded,
+                          Icon(
+                            isSessionActive
+                                ? Icons.play_arrow_rounded
+                                : Icons.play_arrow_rounded,
                             color: AppColors.onyx,
                             size: 20,
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            'START WORKOUT',
+                            isSessionActive
+                                ? 'RESUME WORKOUT'
+                                : (rotation.isCompletedToday
+                                    ? 'START EXTRA WORKOUT'
+                                    : 'START WORKOUT'),
                             style: AppTypography.titleLarge.copyWith(
                               fontFamily: AppTypography.fontDisplay,
                               fontSize: 12.5,

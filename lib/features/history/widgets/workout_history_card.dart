@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../models/workout_model.dart';
+import 'edit_workout_sheet.dart';
 
 class WorkoutHistoryCard extends StatefulWidget {
   const WorkoutHistoryCard({
@@ -122,7 +123,7 @@ class _WorkoutHistoryCardState extends State<WorkoutHistoryCard> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text('🏆 ', style: TextStyle(fontSize: 10)),
+                                const Text('🏆 ', style: TextStyle(fontSize: 11)),
                                 Text(
                                   '$prCount PR${prCount > 1 ? 'S' : ''}',
                                   style: const TextStyle(
@@ -271,6 +272,46 @@ class _WorkoutHistoryCardState extends State<WorkoutHistoryCard> {
                         ],
                       ),
                     ),
+                  const SizedBox(height: 8),
+                  // Action Row: EDIT WORKOUT
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        EditWorkoutSheet.show(context, widget.workout);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: const Color(0xFF00E5FF).withValues(alpha: 0.6),
+                          width: 1.0,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      icon: const Icon(
+                        Icons.edit_note_rounded,
+                        size: 16,
+                        color: Color(0xFF00E5FF),
+                      ),
+                      label: const Text(
+                        'EDIT WORKOUT',
+                        style: TextStyle(
+                          fontFamily: 'JetBrains Mono',
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF00E5FF),
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ],
             ),

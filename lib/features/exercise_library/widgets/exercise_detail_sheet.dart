@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/exercise_library_item.dart';
@@ -181,7 +183,38 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
+
+                  // ── Full Guide & Form Breakdown Action ─────────────────
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      GoRouter.maybeOf(context)?.push(
+                        AppConstants.routeExerciseDetail,
+                        extra: _currentExercise,
+                      );
+                    },
+                    icon: const Icon(Icons.menu_book_rounded, size: 18, color: AppColors.pureWhite),
+                    label: Text(
+                      'FULL FORM GUIDE & 1RM CALCULATOR',
+                      style: AppTypography.labelSmall.copyWith(
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                        color: AppColors.pureWhite,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.pureWhite,
+                      side: const BorderSide(color: AppColors.steel, width: 1.0),
+                      minimumSize: const Size(double.infinity, 44),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
                   const Divider(color: AppColors.steel, height: 1),
                   const SizedBox(height: 16),
 

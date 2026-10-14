@@ -81,6 +81,34 @@ class PlannedExercise {
       restSeconds: restSeconds ?? this.restSeconds,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'exerciseId': exerciseId,
+      'exerciseName': exerciseName,
+      'muscleGroup': muscleGroup,
+      'equipment': equipment,
+      'targetSets': targetSets,
+      'repRange': repRange,
+      'targetRir': targetRir,
+      'targetWeightKg': targetWeightKg,
+      'restSeconds': restSeconds,
+    };
+  }
+
+  factory PlannedExercise.fromJson(Map<String, dynamic> json) {
+    return PlannedExercise(
+      exerciseId: json['exerciseId'] as String? ?? '',
+      exerciseName: json['exerciseName'] as String? ?? 'Exercise',
+      muscleGroup: json['muscleGroup'] as String? ?? 'General',
+      equipment: json['equipment'] as String? ?? 'barbell',
+      targetSets: (json['targetSets'] as num?)?.toInt() ?? 3,
+      repRange: json['repRange'] as String? ?? '8–12',
+      targetRir: (json['targetRir'] as num?)?.toDouble() ?? 2.0,
+      targetWeightKg: (json['targetWeightKg'] as num?)?.toDouble() ?? 60.0,
+      restSeconds: (json['restSeconds'] as num?)?.toInt() ?? 90,
+    );
+  }
 }
 
 /// A single training session/day within a training split.
@@ -124,6 +152,37 @@ class SplitWorkoutDay {
       exercises: exercises ?? this.exercises,
       estimatedDurationMinutes:
           estimatedDurationMinutes ?? this.estimatedDurationMinutes,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'subtitle': subtitle,
+      'targetMuscles': targetMuscles,
+      'isRestDay': isRestDay,
+      'exercises': exercises.map((e) => e.toJson()).toList(),
+      'estimatedDurationMinutes': estimatedDurationMinutes,
+    };
+  }
+
+  factory SplitWorkoutDay.fromJson(Map<String, dynamic> json) {
+    return SplitWorkoutDay(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      subtitle: json['subtitle'] as String? ?? '',
+      targetMuscles: (json['targetMuscles'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      isRestDay: json['isRestDay'] as bool? ?? false,
+      exercises: (json['exercises'] as List<dynamic>?)
+              ?.map((e) => PlannedExercise.fromJson(Map<String, dynamic>.from(e as Map)))
+              .toList() ??
+          const [],
+      estimatedDurationMinutes:
+          (json['estimatedDurationMinutes'] as num?)?.toInt() ?? 50,
     );
   }
 }
@@ -177,6 +236,37 @@ class TrainingSplitModel {
       isCustom: isCustom ?? this.isCustom,
       workouts: workouts ?? this.workouts,
       plannedMuscleSets: plannedMuscleSets ?? this.plannedMuscleSets,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'shortName': shortName,
+      'daysPerWeek': daysPerWeek,
+      'description': description,
+      'isCustom': isCustom,
+      'workouts': workouts.map((w) => w.toJson()).toList(),
+      'plannedMuscleSets': plannedMuscleSets,
+    };
+  }
+
+  factory TrainingSplitModel.fromJson(Map<String, dynamic> json) {
+    return TrainingSplitModel(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      shortName: json['shortName'] as String? ?? '',
+      daysPerWeek: (json['daysPerWeek'] as num?)?.toInt() ?? 4,
+      description: json['description'] as String? ?? '',
+      isCustom: json['isCustom'] as bool? ?? true,
+      workouts: (json['workouts'] as List<dynamic>?)
+              ?.map((w) => SplitWorkoutDay.fromJson(Map<String, dynamic>.from(w as Map)))
+              .toList() ??
+          const [],
+      plannedMuscleSets: (json['plannedMuscleSets'] as Map<dynamic, dynamic>?)
+              ?.map((k, v) => MapEntry(k.toString(), (v as num).toInt())) ??
+          const {},
     );
   }
 }

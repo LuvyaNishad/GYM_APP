@@ -4,6 +4,7 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/strength_math.dart';
 import '../../../models/workout_model.dart';
 import '../../../services/hive_service.dart';
 import '../models/exercise_progress_model.dart';
@@ -54,38 +55,81 @@ final selectedCalendarDateProvider =
     NotifierProvider<SelectedCalendarDate, DateTime?>(
         SelectedCalendarDate.new);
 
-/// Provider for all completed workouts, newest first.
-/// Enforces strictly 1 workout per calendar day.
-final historyWorkoutsProvider = Provider<List<WorkoutModel>>((ref) {
-  final hive = ref.watch(hiveServiceProvider);
-  List<WorkoutModel> stored = [];
-  try {
-    stored = hive.readAll(
-      AppConstants.hiveBoxWorkouts,
-      WorkoutModel.fromJson,
-    );
-  } catch (_) {
-    stored = [];
+/// Notifier for all completed workouts, newest first.
+/// Enforces strictly 1 workout per calendar day and supports historical edits.
+class HistoryWorkoutsNotifier extends Notifier<List<WorkoutModel>> {
+  @override
+  List<WorkoutModel> build() {
+    return _loadWorkouts();
   }
 
-  if (stored.isNotEmpty) {
-    // Deduplicate: strictly 1 workout per calendar day (keep newest for each day)
-    final Map<String, WorkoutModel> dayMap = {};
-    for (final w in stored) {
-      final key =
-          '${w.date.year}-${w.date.month.toString().padLeft(2, '0')}-${w.date.day.toString().padLeft(2, '0')}';
-      if (!dayMap.containsKey(key) || w.date.isAfter(dayMap[key]!.date)) {
-        dayMap[key] = w;
-      }
+  List<WorkoutModel> _loadWorkouts() {
+    final hive = ref.watch(hiveServiceProvider);
+    List<WorkoutModel> stored = [];
+    try {
+      stored = hive.readAll(
+        AppConstants.hiveBoxWorkouts,
+        WorkoutModel.fromJson,
+      );
+    } catch (_) {
+      stored = [];
     }
-    final deduplicated = dayMap.values.toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
-    return deduplicated;
+
+    if (stored.isNotEmpty) {
+      // Deduplicate: strictly 1 workout per calendar day (keep newest for each day)
+      final Map<String, WorkoutModel> dayMap = {};
+      for (final w in stored) {
+        final key =
+            '${w.date.year}-${w.date.month.toString().padLeft(2, '0')}-${w.date.day.toString().padLeft(2, '0')}';
+        if (!dayMap.containsKey(key) || w.date.isAfter(dayMap[key]!.date)) {
+          dayMap[key] = w;
+        }
+      }
+      final deduplicated = dayMap.values.toList()
+        ..sort((a, b) => b.date.compareTo(a.date));
+      return deduplicated;
+    }
+
+    // Realistic sample history dataset if fresh install or guest mode
+    return _buildSampleWorkoutHistory();
   }
 
-  // Realistic sample history dataset if fresh install or guest mode
-  return _buildSampleWorkoutHistory();
-});
+  /// Updates a historical workout in Hive and synchronizes state.
+  Future<void> updateWorkout(WorkoutModel updated) async {
+    final hive = ref.read(hiveServiceProvider);
+    try {
+      await hive.put(
+        AppConstants.hiveBoxWorkouts,
+        updated.id,
+        updated.toJson(),
+      );
+    } catch (_) {}
+
+    state = [
+      for (final w in state)
+        if (w.id == updated.id) updated else w,
+    ];
+  }
+
+  /// Deletes a historical workout from Hive and local state.
+  Future<void> deleteWorkout(String workoutId) async {
+    final hive = ref.read(hiveServiceProvider);
+    try {
+      await hive.delete(AppConstants.hiveBoxWorkouts, workoutId);
+    } catch (_) {}
+
+    state = state.where((w) => w.id != workoutId).toList();
+  }
+
+  /// Re-syncs from persistent storage.
+  void refresh() {
+    state = _loadWorkouts();
+  }
+}
+
+final historyWorkoutsProvider =
+    NotifierProvider<HistoryWorkoutsNotifier, List<WorkoutModel>>(
+        HistoryWorkoutsNotifier.new);
 
 /// Computes streak, compliance, tonnage, and gamification ranks.
 final historySummaryProvider = Provider<HistorySummaryModel>((ref) {
@@ -186,8 +230,8 @@ final availableOverloadExercisesProvider = Provider<List<ExerciseProgressModel>>
       }
 
       if (maxWeight > 0) {
-        // Epley e1RM formula
-        final e1rm = maxWeight * (1 + maxReps / 30.0);
+        // Epley e1RM formula via StrengthMath utility
+        final e1rm = StrengthMath.calculateEpley1RM(maxWeight, maxReps);
         pointsByEx.putIfAbsent(key, () => []).add(
               StrengthDataPoint(
                 date: w.date,

@@ -46,8 +46,8 @@ class HealthMetricCard extends StatelessWidget {
                     label,
                     style: const TextStyle(
                       fontFamily: 'JetBrainsMono',
-                      fontSize: 9,
-                      color: Colors.white38,
+                      fontSize: 11,
+                      color: Color(0xFF94A3B8),
                       letterSpacing: 1.5,
                     ),
                   ),
@@ -70,8 +70,8 @@ class HealthMetricCard extends StatelessWidget {
                 unit,
                 style: const TextStyle(
                   fontFamily: 'JetBrainsMono',
-                  fontSize: 10,
-                  color: Colors.white24,
+                  fontSize: 11,
+                  color: Color(0xFF94A3B8),
                 ),
               ),
             ],

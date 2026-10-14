@@ -157,12 +157,17 @@ void main() {
       expect(find.text('FREESTYLE WORKOUT'), findsOneWidget);
       expect(find.text('ACTIVE TRAINING PROGRAM'), findsOneWidget);
 
-      // Split Cards
+      // Split Cards are initially collapsed
       expect(find.byType(SplitCompactCard), findsWidgets);
       expect(find.text('CURRENT PROGRAM'), findsOneWidget);
       expect(find.text('Push Pull Legs (PPL)'), findsWidgets);
+      expect(find.byType(SplitDayWorkoutCard), findsNothing);
 
-      // Day-by-Day workout cards in expanded PPL
+      // Tap on Push Pull Legs (PPL) card header to expand
+      await tester.tap(find.text('CURRENT PROGRAM'));
+      await tester.pumpAndSettle();
+
+      // Day-by-Day workout cards are now revealed in expanded PPL
       expect(find.byType(SplitDayWorkoutCard), findsWidgets);
       expect(find.text('DAY-BY-DAY ROTATION'), findsOneWidget);
       expect(find.text('PUSH DAY A'), findsOneWidget);

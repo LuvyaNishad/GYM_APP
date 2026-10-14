@@ -76,15 +76,28 @@ class MuscleRadarTabView extends ConsumerWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'MUSCLE SYMMETRY RADAR',
-                        style: const TextStyle(
-                          fontFamily: 'JetBrains Mono',
-                          fontSize: 12.0,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.pureWhite,
-                          letterSpacing: 0.8,
-                        ),
+                      Row(
+                        children: [
+                          const Text(
+                            'MUSCLE SYMMETRY RADAR',
+                            style: TextStyle(
+                              fontFamily: 'JetBrains Mono',
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.pureWhite,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          GestureDetector(
+                            onTap: () => _showMuscleRadarInfoDialog(context),
+                            child: const Icon(
+                              Icons.info_outline_rounded,
+                              size: 15,
+                              color: Color(0xFF00E5FF),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -407,5 +420,56 @@ class MuscleRadarTabView extends ConsumerWidget {
       case RecoveryStatus.overdue:
         return 'OVERDUE / DEFICIT';
     }
+  }
+
+  void _showMuscleRadarInfoDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.onyx,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.steel),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.hub_outlined, color: Color(0xFF00E5FF), size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'MUSCLE BALANCE SCIENCE',
+              style: AppTypography.headlineSmall.copyWith(
+                fontSize: 14.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.8,
+                color: AppColors.pureWhite,
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Calculated from total direct sets completed across Push, Pull, and Leg muscle groups over the past 7 days.\n\nBalanced training volume prevents joint impingement, promotes postural stability, and ensures proportional physique development.',
+          style: TextStyle(
+            fontFamily: AppTypography.fontBody,
+            fontSize: 12.5,
+            color: AppColors.textSecondary,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text(
+              'UNDERSTOOD',
+              style: TextStyle(
+                fontFamily: 'JetBrains Mono',
+                fontSize: 12.0,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF00E5FF),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -126,7 +126,8 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text('SUBSTITUTE EXERCISE'), findsOneWidget);
       expect(find.text('Current: Barbell Bench Press'), findsOneWidget);
@@ -227,7 +228,8 @@ void main() {
 
       // Tap 3-dot menu
       await tester.tap(find.byIcon(Icons.more_vert));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       // Menu option 'Substitute Exercise' is visible
       expect(find.text('Substitute Exercise'), findsOneWidget);

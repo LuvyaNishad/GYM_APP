@@ -10,6 +10,7 @@ import 'package:leon/features/exercise_library/widgets/exercise_detail_sheet.dar
 import 'package:leon/features/exercise_library/widgets/add_to_routine_dialog.dart';
 import 'package:leon/features/exercise_library/screens/exercise_library_screen.dart';
 import 'package:leon/features/exercise_library/screens/custom_exercise_creator_screen.dart';
+import 'package:leon/features/workout_session/providers/active_session_provider.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -171,8 +172,7 @@ void main() {
 
       // Tap ADD TO WORKOUT
       await tester.tap(find.text('ADD TO WORKOUT'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
       expect(addedToWorkout, isTrue);
     });
   });
@@ -199,7 +199,13 @@ void main() {
 
       // Tap CONFIRM & ADD
       await tester.tap(find.text('CONFIRM & ADD'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Reset active session ticker so test completes cleanly
+      final element = tester.element(find.byType(ScaffoldMessenger));
+      final container = ProviderScope.containerOf(element);
+      container.read(activeSessionProvider.notifier).cancelSession();
     });
   });
 

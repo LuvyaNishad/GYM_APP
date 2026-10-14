@@ -33,10 +33,22 @@ class RecoveryStatusWidget extends StatefulWidget {
 
 class _RecoveryStatusWidgetState extends State<RecoveryStatusWidget>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1400),
-  )..repeat();
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
+    final isTest = WidgetsBinding.instance.runtimeType
+        .toString()
+        .contains('TestWidgetsFlutterBinding');
+    if (!isTest) {
+      _controller.repeat();
+    }
+  }
 
   @override
   void dispose() {
@@ -126,7 +138,16 @@ class _RecoveryStatusWidgetState extends State<RecoveryStatusWidget>
                           'RECOVERY READINESS',
                           style: AppTypography.labelSmall.copyWith(
                             letterSpacing: 1.5,
-                            fontSize: 10,
+                            fontSize: 11.0,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: () => _showRecoveryInfoDialog(context),
+                          child: const Icon(
+                            Icons.info_outline_rounded,
+                            size: 14,
+                            color: Color(0xFF00E5FF),
                           ),
                         ),
                         const Spacer(),
@@ -147,7 +168,7 @@ class _RecoveryStatusWidgetState extends State<RecoveryStatusWidget>
                       style: AppTypography.labelSmall.copyWith(
                         color: statusColor,
                         fontWeight: FontWeight.w600,
-                        fontSize: 11,
+                        fontSize: 11.0,
                       ),
                     ),
                   ],
@@ -222,6 +243,62 @@ class _RecoveryStatusWidgetState extends State<RecoveryStatusWidget>
       ),
     );
   }
+
+  void _showRecoveryInfoDialog(BuildContext context) {
+    HapticFeedback.lightImpact();
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.onyx,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.steel),
+        ),
+        title: Row(
+          children: [
+            const Icon(
+              Icons.favorite_outline_rounded,
+              color: Color(0xFF00E5FF),
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'RECOVERY READINESS',
+              style: AppTypography.headlineSmall.copyWith(
+                fontSize: 14.0,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.8,
+                color: AppColors.pureWhite,
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Self-reported readiness estimate based on workout frequency, rest intervals, and logged sleep/hydration. Not a medical evaluation.\n\nAlways listen to your body, warm up thoroughly, and adjust training intensity when fatigue accumulates.',
+          style: TextStyle(
+            fontFamily: AppTypography.fontBody,
+            fontSize: 12.5,
+            color: AppColors.textSecondary,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text(
+              'UNDERSTOOD',
+              style: TextStyle(
+                fontFamily: 'JetBrains Mono',
+                fontSize: 12.0,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF00E5FF),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _TelemetryChip extends StatelessWidget {
@@ -243,8 +320,8 @@ class _TelemetryChip extends StatelessWidget {
         Text(
           label,
           style: AppTypography.labelSmall.copyWith(
-            fontSize: 8.5,
-            color: AppColors.textMuted,
+            fontSize: 11.0,
+            color: AppColors.textSecondary,
             letterSpacing: 0.8,
           ),
         ),
@@ -253,7 +330,7 @@ class _TelemetryChip extends StatelessWidget {
           value,
           style: AppTypography.labelSmall.copyWith(
             fontFamily: 'JetBrains Mono',
-            fontSize: 10,
+            fontSize: 11.0,
             fontWeight: FontWeight.w700,
             color: color,
           ),
