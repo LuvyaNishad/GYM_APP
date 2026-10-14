@@ -15,6 +15,7 @@ void main() {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
       final container = ProviderContainer();
+      container.read(activeSessionProvider.notifier).startSession();
       addTearDown(() {
         container.read(activeSessionProvider.notifier).cancelSession();
         container.dispose();
@@ -57,6 +58,7 @@ void main() {
 
       // Cancel session ticker so no timers remain pending
       container.read(activeSessionProvider.notifier).cancelSession();
+      await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
     });
   });

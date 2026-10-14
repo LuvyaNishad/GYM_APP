@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../onboarding/providers/onboarding_provider.dart';
 import '../models/active_session_state.dart';
 
 /// Modal dialog displaying post-workout telemetry and performance summary.
-class WorkoutSummaryDialog extends StatelessWidget {
+class WorkoutSummaryDialog extends ConsumerWidget {
   const WorkoutSummaryDialog({
     super.key,
     required this.session,
@@ -25,7 +27,8 @@ class WorkoutSummaryDialog extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final goalConfig = ref.watch(trainingGoalConfigProvider);
     final minutes = session.elapsedSeconds ~/ 60;
     final seconds = session.elapsedSeconds % 60;
     final durationStr = '${minutes}m ${seconds}s';
@@ -134,7 +137,82 @@ class WorkoutSummaryDialog extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
+
+          // Goal Alignment Coaching Banner
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.charcoal,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: goalConfig.accentColor.withValues(alpha: 0.35),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: goalConfig.accentColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    goalConfig.type == TrainingGoalType.strength
+                        ? Icons.bolt_rounded
+                        : (goalConfig.type == TrainingGoalType.loseFat
+                            ? Icons.local_fire_department_rounded
+                            : (goalConfig.type == TrainingGoalType.athletic
+                                ? Icons.speed_rounded
+                                : Icons.fitness_center_rounded)),
+                    size: 16,
+                    color: goalConfig.accentColor,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'GOAL: ${goalConfig.displayName}',
+                            style: AppTypography.monoSmall.copyWith(
+                              fontSize: 11.0,
+                              fontWeight: FontWeight.w700,
+                              color: goalConfig.accentColor,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            '${session.completedSetCount} SETS LOGGED',
+                            style: AppTypography.monoSmall.copyWith(
+                              fontSize: 11.0,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.platinum,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        goalConfig.completionFeedback,
+                        style: AppTypography.bodySmall.copyWith(
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.pureWhite,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
 
           // Exercise Tally List Preview
           Container(

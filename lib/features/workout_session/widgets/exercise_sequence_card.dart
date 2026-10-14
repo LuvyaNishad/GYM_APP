@@ -7,6 +7,7 @@ import '../models/active_session_state.dart';
 import '../providers/active_session_provider.dart';
 import 'exercise_picker_modal.dart';
 import 'exercise_set_table.dart';
+import 'exercise_substitution_sheet.dart';
 
 /// Interactive Sequence Card representing an exercise in the active workout.
 ///
@@ -70,7 +71,7 @@ class ExerciseSequenceCard extends ConsumerWidget {
                 onTap: onToggleExpand,
                 borderRadius: BorderRadius.circular(16),
                 child: Padding(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   child: Row(
                     children: [
                       // Reorder Drag Handle
@@ -185,7 +186,12 @@ class ExerciseSequenceCard extends ConsumerWidget {
                           ),
                         ),
                         onSelected: (value) {
-                          if (value == 'replace') {
+                          if (value == 'substitute') {
+                            showExerciseSubstitutionSheet(
+                              context: context,
+                              currentExercise: exercise,
+                            );
+                          } else if (value == 'replace') {
                             showModalBottomSheet(
                               context: context,
                               backgroundColor: Colors.transparent,
@@ -205,14 +211,34 @@ class ExerciseSequenceCard extends ConsumerWidget {
                         },
                         itemBuilder: (ctx) => [
                           PopupMenuItem(
+                            value: 'substitute',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.cached_rounded, size: 18, color: AppColors.primary),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    'Substitute Exercise',
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: AppColors.pureWhite,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
                             value: 'replace',
                             child: Row(
                               children: [
                                 const Icon(Icons.swap_horiz, size: 18, color: AppColors.pureWhite),
                                 const SizedBox(width: 10),
-                                Text(
-                                  'Replace Exercise',
-                                  style: AppTypography.bodySmall.copyWith(color: AppColors.pureWhite),
+                                Expanded(
+                                  child: Text(
+                                    'Replace Exercise',
+                                    style: AppTypography.bodySmall.copyWith(color: AppColors.pureWhite),
+                                  ),
                                 ),
                               ],
                             ),
@@ -223,9 +249,11 @@ class ExerciseSequenceCard extends ConsumerWidget {
                               children: [
                                 const Icon(Icons.delete_outline, size: 18, color: AppColors.danger),
                                 const SizedBox(width: 10),
-                                Text(
-                                  'Remove Exercise',
-                                  style: AppTypography.bodySmall.copyWith(color: AppColors.danger),
+                                Expanded(
+                                  child: Text(
+                                    'Remove Exercise',
+                                    style: AppTypography.bodySmall.copyWith(color: AppColors.danger),
+                                  ),
                                 ),
                               ],
                             ),

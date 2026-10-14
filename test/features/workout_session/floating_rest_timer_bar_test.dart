@@ -30,11 +30,15 @@ void main() {
       container.read(activeSessionProvider.notifier).startSession(
         splitName: 'PUSH DAY // WORKOUT A',
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text('PUSH DAY // WORKOUT A'), findsOneWidget);
       expect(find.text('FINISH'), findsOneWidget);
       expect(find.textContaining('SETS'), findsOneWidget);
+
+      container.read(activeSessionProvider.notifier).cancelSession();
+      await tester.pump();
     });
   });
 

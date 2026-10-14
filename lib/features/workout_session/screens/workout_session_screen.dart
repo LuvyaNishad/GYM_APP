@@ -8,6 +8,7 @@ import '../widgets/exercise_picker_modal.dart';
 import '../widgets/exercise_sequence_card.dart';
 import '../widgets/floating_rest_timer_bar.dart';
 import '../../../services/workout_service.dart';
+import '../../dashboard/providers/workout_rotation_provider.dart';
 import '../../history/providers/history_provider.dart';
 import '../widgets/workout_summary_dialog.dart';
 
@@ -33,8 +34,14 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final session = ref.read(activeSessionProvider);
       if (!session.isActive) {
+        final rotation = ref.read(workoutRotationProvider);
+        final day = rotation.selectedDay;
+        final exercises =
+            day.exercises.map((e) => e.toActiveExerciseState()).toList();
         ref.read(activeSessionProvider.notifier).startSession(
-              splitName: 'PUSH DAY // WORKOUT A',
+              splitName:
+                  '${rotation.split.shortName} // ${day.name.toUpperCase()}',
+              initialExercises: exercises,
             );
       }
     });

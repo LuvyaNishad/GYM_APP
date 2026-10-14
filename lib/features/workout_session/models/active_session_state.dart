@@ -103,6 +103,36 @@ class ActiveSetState {
         isWarmup,
         isPr,
       );
+
+  Map<String, dynamic> toJson() => {
+        'setNumber': setNumber,
+        'weightKg': weightKg,
+        'reps': reps,
+        'rir': rir,
+        'rpe': rpe,
+        'isCompleted': isCompleted,
+        'isWarmup': isWarmup,
+        'isPr': isPr,
+        'previousWeightKg': previousWeightKg,
+        'previousReps': previousReps,
+        'previousRir': previousRir,
+        'previousRpe': previousRpe,
+      };
+
+  factory ActiveSetState.fromJson(Map<String, dynamic> json) => ActiveSetState(
+        setNumber: json['setNumber'] as int? ?? 1,
+        weightKg: (json['weightKg'] as num?)?.toDouble() ?? 0.0,
+        reps: json['reps'] as int? ?? 0,
+        rir: (json['rir'] as num?)?.toDouble() ?? 2.0,
+        rpe: (json['rpe'] as num?)?.toDouble() ?? 8.0,
+        isCompleted: json['isCompleted'] as bool? ?? false,
+        isWarmup: json['isWarmup'] as bool? ?? false,
+        isPr: json['isPr'] as bool? ?? false,
+        previousWeightKg: (json['previousWeightKg'] as num?)?.toDouble(),
+        previousReps: json['previousReps'] as int?,
+        previousRir: (json['previousRir'] as num?)?.toDouble(),
+        previousRpe: (json['previousRpe'] as num?)?.toDouble(),
+      );
 }
 
 /// An exercise in the active workout sequence.
@@ -185,6 +215,33 @@ class ActiveExerciseState {
         muscleGroup,
         sets,
       );
+
+  Map<String, dynamic> toJson() => {
+        'exerciseId': exerciseId,
+        'name': name,
+        'muscleGroup': muscleGroup,
+        'equipment': equipment,
+        'sets': sets.map((s) => s.toJson()).toList(),
+        'notes': notes,
+        'supersetGroupId': supersetGroupId,
+        'restDurationSeconds': restDurationSeconds,
+      };
+
+  factory ActiveExerciseState.fromJson(Map<String, dynamic> json) =>
+      ActiveExerciseState(
+        exerciseId: json['exerciseId'] as String? ?? '',
+        name: json['name'] as String? ?? '',
+        muscleGroup: json['muscleGroup'] as String? ?? 'push',
+        equipment: json['equipment'] as String? ?? 'barbell',
+        sets: (json['sets'] as List<dynamic>?)
+                ?.map((s) => ActiveSetState.fromJson(
+                    Map<String, dynamic>.from(s as Map)))
+                .toList() ??
+            const [],
+        notes: json['notes'] as String?,
+        supersetGroupId: json['supersetGroupId'] as String?,
+        restDurationSeconds: json['restDurationSeconds'] as int? ?? 90,
+      );
 }
 
 /// Full state of an in-progress workout session.
@@ -256,6 +313,34 @@ class ActiveSessionState {
           : (expandedExerciseId ?? this.expandedExerciseId),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'workoutId': workoutId,
+        'splitName': splitName,
+        'startTime': startTime.toIso8601String(),
+        'elapsedSeconds': elapsedSeconds,
+        'isActive': isActive,
+        'isPaused': isPaused,
+        'exercises': exercises.map((e) => e.toJson()).toList(),
+        'expandedExerciseId': expandedExerciseId,
+      };
+
+  factory ActiveSessionState.fromJson(Map<String, dynamic> json) =>
+      ActiveSessionState(
+        workoutId: json['workoutId'] as String? ?? '',
+        splitName: json['splitName'] as String? ?? "TODAY'S WORKOUT",
+        startTime: DateTime.tryParse(json['startTime'] as String? ?? '') ??
+            DateTime.now(),
+        elapsedSeconds: json['elapsedSeconds'] as int? ?? 0,
+        isActive: json['isActive'] as bool? ?? false,
+        isPaused: json['isPaused'] as bool? ?? false,
+        exercises: (json['exercises'] as List<dynamic>?)
+                ?.map((e) => ActiveExerciseState.fromJson(
+                    Map<String, dynamic>.from(e as Map)))
+                .toList() ??
+            const [],
+        expandedExerciseId: json['expandedExerciseId'] as String?,
+      );
 }
 
 /// State for the floating countdown rest timer.

@@ -88,8 +88,8 @@ void main() {
       );
 
       expect(find.textContaining('PLATE CALCULATOR'), findsOneWidget);
-      expect(find.textContaining('100.0 KG'), findsOneWidget);
-      expect(find.textContaining('40.0 KG PER SIDE'), findsOneWidget);
+      expect(find.textContaining('APPLY 100 KG'), findsOneWidget);
+      expect(find.textContaining('40 KG EACH SIDE'), findsOneWidget);
     });
   });
 }

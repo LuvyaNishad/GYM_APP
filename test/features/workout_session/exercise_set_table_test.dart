@@ -36,7 +36,8 @@ void main() {
 
       // Start session
       container.read(activeSessionProvider.notifier).startSession();
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       // Verify headers
       expect(find.text('SET'), findsOneWidget);
@@ -61,7 +62,8 @@ void main() {
 
       // Tap Add Set
       await tester.tap(find.text('ADD SET'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(container.read(activeSessionProvider).exercises.first.sets.length, 5);
 

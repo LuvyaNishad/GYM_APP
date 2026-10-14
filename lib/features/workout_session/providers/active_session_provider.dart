@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../models/workout_model.dart';
+import '../../../services/hive_service.dart';
+import '../../onboarding/providers/onboarding_provider.dart';
 import '../models/active_session_state.dart';
 import 'rest_timer_provider.dart';
 
@@ -15,7 +18,47 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     ref.onDispose(() {
       _elapsedTicker?.cancel();
     });
+
+    // Auto-resume previously interrupted / in-progress workout session
+    try {
+      final savedData = ref.read(hiveServiceProvider).getSetting<Map>(
+            AppConstants.settingActiveSessionData,
+          );
+      if (savedData != null) {
+        final restored = ActiveSessionState.fromJson(
+          Map<String, dynamic>.from(savedData),
+        );
+        if (restored.isActive) {
+          if (!restored.isPaused) {
+            _startElapsedTicker();
+          }
+          return restored;
+        }
+      }
+    } catch (_) {}
+
     return ActiveSessionState(startTime: DateTime.now());
+  }
+
+  void _persistActiveSession() {
+    try {
+      if (state.isActive) {
+        ref.read(hiveServiceProvider).putSetting(
+              AppConstants.settingActiveSessionData,
+              state.toJson(),
+            );
+      } else {
+        _clearActiveSession();
+      }
+    } catch (_) {}
+  }
+
+  void _clearActiveSession() {
+    try {
+      ref.read(hiveServiceProvider).deleteSetting(
+            AppConstants.settingActiveSessionData,
+          );
+    } catch (_) {}
   }
 
   /// Starts a new active workout session with planned exercises.
@@ -25,7 +68,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   }) {
     _elapsedTicker?.cancel();
 
-    final exercises = initialExercises ?? _buildDefaultPushWorkout();
+    final goalConfig = ref.read(trainingGoalConfigProvider);
+    final exercises = initialExercises ?? _buildDefaultPushWorkout(goalConfig);
 
     state = ActiveSessionState(
       workoutId: 'wkt_${DateTime.now().microsecondsSinceEpoch}',
@@ -39,6 +83,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     );
 
     _startElapsedTicker();
+    _persistActiveSession();
   }
 
   void _startElapsedTicker() {
@@ -90,6 +135,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     updatedExercises[exIndex] = updatedExercise;
 
     state = state.copyWith(exercises: updatedExercises);
+    _persistActiveSession();
 
     if (targetCompleted) {
       try {
@@ -151,6 +197,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     updatedExercises[exIndex] = exercise.copyWith(sets: updatedSets);
 
     state = state.copyWith(exercises: updatedExercises);
+    _persistActiveSession();
   }
 
   /// Adds a new set to an exercise copying the previous set's load.
@@ -177,6 +224,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     updatedExercises[exIndex] = exercise.copyWith(sets: updatedSets);
 
     state = state.copyWith(exercises: updatedExercises);
+    _persistActiveSession();
   }
 
   /// Removes a set from an exercise.
@@ -198,6 +246,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     updatedExercises[exIndex] = exercise.copyWith(sets: renumberedSets);
 
     state = state.copyWith(exercises: updatedExercises);
+    _persistActiveSession();
   }
 
   /// Generates 3 progressive ramp-up warmup sets before working sets.
@@ -241,6 +290,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     updatedExercises[exIndex] = exercise.copyWith(sets: updatedSets);
 
     state = state.copyWith(exercises: updatedExercises);
+    _persistActiveSession();
   }
 
   /// Adds a new exercise to the sequence.
@@ -250,6 +300,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       exercises: updatedExercises,
       expandedExerciseId: exercise.exerciseId,
     );
+    _persistActiveSession();
   }
 
   /// Removes an exercise from the workout sequence.
@@ -262,6 +313,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
           ? (updatedExercises.isNotEmpty ? updatedExercises.first.exerciseId : null)
           : state.expandedExerciseId,
     );
+    _persistActiveSession();
   }
 
   /// Reorders exercise positions in the sequence.
@@ -279,6 +331,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     updated.insert(targetIndex, moved);
 
     state = state.copyWith(exercises: updated);
+    _persistActiveSession();
   }
 
   /// Replaces an exercise at a given position.
@@ -293,12 +346,45 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       exercises: updated,
       expandedExerciseId: newExercise.exerciseId,
     );
+    _persistActiveSession();
+  }
+
+  /// Substitutes an exercise with a library alternative while preserving completed sets.
+  void substituteExercise({
+    required String oldExerciseId,
+    required String newExerciseId,
+    required String newName,
+    required String newMuscleGroup,
+    String newEquipment = 'barbell',
+    int? newRestSeconds,
+  }) {
+    final index = state.exercises.indexWhere((e) => e.exerciseId == oldExerciseId);
+    if (index == -1) return;
+
+    final existing = state.exercises[index];
+    final updated = existing.copyWith(
+      exerciseId: newExerciseId,
+      name: newName,
+      muscleGroup: newMuscleGroup,
+      equipment: newEquipment,
+      restDurationSeconds: newRestSeconds ?? existing.restDurationSeconds,
+    );
+
+    final updatedExercises = List<ActiveExerciseState>.from(state.exercises);
+    updatedExercises[index] = updated;
+
+    state = state.copyWith(
+      exercises: updatedExercises,
+      expandedExerciseId: newExerciseId,
+    );
+    _persistActiveSession();
   }
 
   /// Finishes the active workout session, returns the compiled WorkoutModel, and halts timer.
   WorkoutModel finishSession({String userId = 'guest_user'}) {
     _elapsedTicker?.cancel();
     ref.read(restTimerProvider.notifier).skip();
+    _clearActiveSession();
 
     final workoutModel = WorkoutModel(
       id: state.workoutId,
@@ -336,56 +422,87 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   void cancelSession() {
     _elapsedTicker?.cancel();
     ref.read(restTimerProvider.notifier).skip();
+    _clearActiveSession();
     state = ActiveSessionState(startTime: DateTime.now());
   }
 
-  static List<ActiveExerciseState> _buildDefaultPushWorkout() {
+  static List<ActiveExerciseState> _buildDefaultPushWorkout([
+    TrainingGoalConfig? goalConfig,
+  ]) {
+    final goalType = goalConfig?.type ?? TrainingGoalType.buildMuscle;
+    final int compoundRest = goalConfig?.defaultRestSeconds ?? 120;
+    final int secondaryRest = goalType == TrainingGoalType.strength
+        ? 150
+        : (goalType == TrainingGoalType.loseFat ? 60 : 90);
+    final int accessoryRest = goalType == TrainingGoalType.strength
+        ? 120
+        : (goalType == TrainingGoalType.loseFat ? 45 : 60);
+
+    // Goal-specific rep schemes:
+    final int compoundReps = goalType == TrainingGoalType.strength
+        ? 5
+        : (goalType == TrainingGoalType.loseFat
+            ? 12
+            : (goalType == TrainingGoalType.athletic ? 8 : 8));
+
+    final int secondaryReps = goalType == TrainingGoalType.strength
+        ? 6
+        : (goalType == TrainingGoalType.loseFat
+            ? 12
+            : (goalType == TrainingGoalType.athletic ? 8 : 10));
+
+    final int accessoryReps = goalType == TrainingGoalType.strength
+        ? 8
+        : (goalType == TrainingGoalType.loseFat
+            ? 15
+            : (goalType == TrainingGoalType.athletic ? 10 : 12));
+
     return [
       ActiveExerciseState(
         exerciseId: 'ex_bench_press',
         name: 'Barbell Bench Press',
         muscleGroup: 'Chest',
         equipment: 'barbell',
-        restDurationSeconds: 120,
+        restDurationSeconds: compoundRest,
         sets: [
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 1,
             weightKg: 80.0,
-            reps: 8,
+            reps: compoundReps,
             rir: 2.0,
             rpe: 8.0,
             previousWeightKg: 80.0,
-            previousReps: 8,
+            previousReps: compoundReps,
             previousRir: 2.0,
           ),
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 2,
             weightKg: 80.0,
-            reps: 8,
+            reps: compoundReps,
             rir: 2.0,
             rpe: 8.0,
             previousWeightKg: 80.0,
-            previousReps: 8,
+            previousReps: compoundReps,
             previousRir: 2.0,
           ),
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 3,
             weightKg: 82.5,
-            reps: 6,
+            reps: (compoundReps - 1).clamp(1, 99),
             rir: 1.0,
             rpe: 9.0,
             previousWeightKg: 80.0,
-            previousReps: 7,
+            previousReps: compoundReps,
             previousRir: 1.0,
           ),
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 4,
             weightKg: 82.5,
-            reps: 6,
+            reps: (compoundReps - 1).clamp(1, 99),
             rir: 1.0,
             rpe: 9.0,
             previousWeightKg: 80.0,
-            previousReps: 6,
+            previousReps: compoundReps,
             previousRir: 0.0,
           ),
         ],
@@ -395,34 +512,34 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         name: 'Incline Dumbbell Press',
         muscleGroup: 'Chest',
         equipment: 'dumbbell',
-        restDurationSeconds: 90,
+        restDurationSeconds: secondaryRest,
         sets: [
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 1,
             weightKg: 32.0,
-            reps: 10,
+            reps: secondaryReps,
             rir: 2.0,
             rpe: 8.0,
             previousWeightKg: 30.0,
-            previousReps: 10,
+            previousReps: secondaryReps,
           ),
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 2,
             weightKg: 32.0,
-            reps: 9,
+            reps: (secondaryReps - 1).clamp(1, 99),
             rir: 1.0,
             rpe: 9.0,
             previousWeightKg: 32.0,
-            previousReps: 8,
+            previousReps: secondaryReps,
           ),
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 3,
             weightKg: 34.0,
-            reps: 8,
+            reps: (secondaryReps - 2).clamp(1, 99),
             rir: 1.0,
             rpe: 9.0,
             previousWeightKg: 32.0,
-            previousReps: 8,
+            previousReps: secondaryReps,
           ),
         ],
       ),
@@ -431,34 +548,34 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         name: 'Standing Overhead Press',
         muscleGroup: 'Shoulders',
         equipment: 'barbell',
-        restDurationSeconds: 120,
+        restDurationSeconds: compoundRest,
         sets: [
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 1,
             weightKg: 50.0,
-            reps: 8,
+            reps: compoundReps,
             rir: 2.0,
             rpe: 8.0,
             previousWeightKg: 50.0,
-            previousReps: 8,
+            previousReps: compoundReps,
           ),
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 2,
             weightKg: 50.0,
-            reps: 8,
+            reps: compoundReps,
             rir: 2.0,
             rpe: 8.0,
             previousWeightKg: 50.0,
-            previousReps: 7,
+            previousReps: compoundReps,
           ),
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 3,
             weightKg: 52.5,
-            reps: 6,
+            reps: (compoundReps - 2).clamp(1, 99),
             rir: 1.0,
             rpe: 9.0,
             previousWeightKg: 50.0,
-            previousReps: 6,
+            previousReps: compoundReps,
           ),
         ],
       ),
@@ -467,34 +584,34 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         name: 'Cable Lateral Raise',
         muscleGroup: 'Shoulders',
         equipment: 'cable',
-        restDurationSeconds: 60,
+        restDurationSeconds: accessoryRest,
         sets: [
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 1,
             weightKg: 12.0,
-            reps: 12,
+            reps: accessoryReps,
             rir: 2.0,
             rpe: 8.0,
             previousWeightKg: 10.0,
-            previousReps: 14,
+            previousReps: accessoryReps,
           ),
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 2,
             weightKg: 12.0,
-            reps: 12,
+            reps: accessoryReps,
             rir: 1.0,
             rpe: 9.0,
             previousWeightKg: 12.0,
-            previousReps: 11,
+            previousReps: accessoryReps,
           ),
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 3,
             weightKg: 14.0,
-            reps: 10,
+            reps: (accessoryReps - 2).clamp(1, 99),
             rir: 0.0,
             rpe: 10.0,
             previousWeightKg: 12.0,
-            previousReps: 10,
+            previousReps: accessoryReps,
           ),
         ],
       ),
@@ -503,34 +620,34 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         name: 'Tricep Rope Pushdown',
         muscleGroup: 'Triceps',
         equipment: 'cable',
-        restDurationSeconds: 60,
+        restDurationSeconds: accessoryRest,
         sets: [
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 1,
             weightKg: 25.0,
-            reps: 12,
+            reps: accessoryReps,
             rir: 2.0,
             rpe: 8.0,
             previousWeightKg: 25.0,
-            previousReps: 12,
+            previousReps: accessoryReps,
           ),
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 2,
             weightKg: 25.0,
-            reps: 11,
+            reps: (accessoryReps - 1).clamp(1, 99),
             rir: 1.0,
             rpe: 9.0,
             previousWeightKg: 25.0,
-            previousReps: 10,
+            previousReps: accessoryReps,
           ),
-          const ActiveSetState(
+          ActiveSetState(
             setNumber: 3,
             weightKg: 27.5,
-            reps: 9,
+            reps: (accessoryReps - 3).clamp(1, 99),
             rir: 0.0,
             rpe: 10.0,
             previousWeightKg: 25.0,
-            previousReps: 9,
+            previousReps: accessoryReps,
           ),
         ],
       ),

@@ -147,7 +147,10 @@ class FloatingRestTimerBar extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Row(
+                            Wrap(
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 8,
+                              runSpacing: 2,
                               children: [
                                 Text(
                                   restState.formattedTime,
@@ -158,7 +161,6 @@ class FloatingRestTimerBar extends ConsumerWidget {
                                     letterSpacing: 1.2,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
                                 if (isLowTime)
                                   Container(
                                     padding: const EdgeInsets.symmetric(

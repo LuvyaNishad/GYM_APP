@@ -1,8 +1,29 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:leon/core/constants/app_constants.dart';
 import 'package:leon/features/workout_session/models/active_session_state.dart';
 import 'package:leon/features/workout_session/providers/active_session_provider.dart';
 import 'package:leon/features/workout_session/providers/rest_timer_provider.dart';
+import 'package:leon/services/hive_service.dart';
+
+class _FakeHiveService extends HiveService {
+  final Map<String, dynamic> settings = {};
+
+  @override
+  Future<void> putSetting(String key, Object? value) async {
+    settings[key] = value;
+  }
+
+  @override
+  T? getSetting<T>(String key, {T? fallback}) {
+    return (settings[key] as T?) ?? fallback;
+  }
+
+  @override
+  Future<void> deleteSetting(String key) async {
+    settings.remove(key);
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +54,52 @@ void main() {
         isCompleted: true,
       );
       expect(set.volumeKg, 640.0);
+    });
+
+    test('ActiveSessionState serialization roundtrip preserves all session, exercise, and set fields', () {
+      final now = DateTime.now();
+      final original = ActiveSessionState(
+        workoutId: 'test_123',
+        splitName: 'LEGS // QUAD FOCUS',
+        startTime: now,
+        elapsedSeconds: 540,
+        isActive: true,
+        isPaused: false,
+        expandedExerciseId: 'ex_1',
+        exercises: [
+          const ActiveExerciseState(
+            exerciseId: 'ex_1',
+            name: 'Barbell Back Squat',
+            muscleGroup: 'quads',
+            equipment: 'barbell',
+            restDurationSeconds: 180,
+            sets: [
+              ActiveSetState(
+                setNumber: 1,
+                weightKg: 100.0,
+                reps: 5,
+                rir: 2.0,
+                rpe: 8.0,
+                isCompleted: true,
+                previousWeightKg: 95.0,
+                previousReps: 5,
+              ),
+            ],
+          ),
+        ],
+      );
+
+      final json = original.toJson();
+      final restored = ActiveSessionState.fromJson(json);
+
+      expect(restored.workoutId, original.workoutId);
+      expect(restored.splitName, original.splitName);
+      expect(restored.elapsedSeconds, original.elapsedSeconds);
+      expect(restored.isActive, original.isActive);
+      expect(restored.exercises.length, 1);
+      expect(restored.exercises.first.name, 'Barbell Back Squat');
+      expect(restored.exercises.first.sets.first.weightKg, 100.0);
+      expect(restored.exercises.first.sets.first.isCompleted, isTrue);
     });
   });
 
@@ -93,9 +160,15 @@ void main() {
 
   group('ActiveSessionNotifier', () {
     late ProviderContainer container;
+    late _FakeHiveService fakeHive;
 
     setUp(() {
-      container = ProviderContainer();
+      fakeHive = _FakeHiveService();
+      container = ProviderContainer(
+        overrides: [
+          hiveServiceProvider.overrideWithValue(fakeHive),
+        ],
+      );
     });
 
     tearDown(() {
@@ -187,6 +260,66 @@ void main() {
       final reorderedState = container.read(activeSessionProvider);
       expect(reorderedState.exercises[0].exerciseId, initialSecond);
       expect(reorderedState.exercises[1].exerciseId, initialFirst);
+    });
+
+    test('persists session to Hive on mutation and auto-restores on new container', () {
+      final sessionNotifier = container.read(activeSessionProvider.notifier);
+      sessionNotifier.startSession(splitName: 'Upper Body Blast');
+
+      // Verify stored in fakeHive
+      expect(fakeHive.settings.containsKey(AppConstants.settingActiveSessionData), isTrue);
+
+      // Create a brand new container reading from the same fakeHive
+      final secondContainer = ProviderContainer(
+        overrides: [
+          hiveServiceProvider.overrideWithValue(fakeHive),
+        ],
+      );
+      addTearDown(secondContainer.dispose);
+
+      final restoredState = secondContainer.read(activeSessionProvider);
+      expect(restoredState.isActive, isTrue);
+      expect(restoredState.splitName, 'Upper Body Blast');
+      expect(restoredState.exercises, isNotEmpty);
+
+      // Clean up ticker
+      secondContainer.read(activeSessionProvider.notifier).cancelSession();
+    });
+
+    test('substituteExercise swaps exercise details while preserving logged completed sets', () {
+      final sessionNotifier = container.read(activeSessionProvider.notifier);
+      sessionNotifier.startSession();
+
+      final firstEx = container.read(activeSessionProvider).exercises.first;
+      // Complete first set
+      sessionNotifier.logSet(exerciseId: firstEx.exerciseId, setIndex: 0, completed: true);
+
+      // Substitute with dumbbell variation
+      sessionNotifier.substituteExercise(
+        oldExerciseId: firstEx.exerciseId,
+        newExerciseId: 'db_press_alt',
+        newName: 'Dumbbell Incline Press',
+        newMuscleGroup: 'chest',
+        newEquipment: 'dumbbells',
+        newRestSeconds: 90,
+      );
+
+      final updatedState = container.read(activeSessionProvider);
+      final substituted = updatedState.exercises.first;
+      expect(substituted.name, 'Dumbbell Incline Press');
+      expect(substituted.equipment, 'dumbbells');
+      expect(substituted.restDurationSeconds, 90);
+      // Completed set remains intact!
+      expect(substituted.sets.first.isCompleted, isTrue);
+    });
+
+    test('finishSession and cancelSession clear persisted storage', () {
+      final sessionNotifier = container.read(activeSessionProvider.notifier);
+      sessionNotifier.startSession();
+      expect(fakeHive.settings.containsKey(AppConstants.settingActiveSessionData), isTrue);
+
+      sessionNotifier.cancelSession();
+      expect(fakeHive.settings.containsKey(AppConstants.settingActiveSessionData), isFalse);
     });
   });
 }

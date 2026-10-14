@@ -42,9 +42,10 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
         // Timer reached zero
         _ticker?.cancel();
         state = state.copyWith(remainingSeconds: 0, isRunning: false);
-        // Haptic notification when rest interval ends
+        // Haptic & auditory alert notification when rest interval ends
         try {
           HapticFeedback.heavyImpact();
+          SystemSound.play(SystemSoundType.alert);
         } catch (_) {}
       }
     });
