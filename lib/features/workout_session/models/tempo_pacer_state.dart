@@ -150,6 +150,19 @@ class TempoPacerState {
     );
   }
 
+  /// Whether this movement starts from the bottom (lift/pull first) vs top (descent first).
+  bool get isConcentricFirst {
+    final n = exerciseName?.toLowerCase() ?? '';
+    return n.contains('deadlift') ||
+        n.contains('curl') ||
+        n.contains('pull') ||
+        n.contains('row') ||
+        n.contains('chin') ||
+        n.contains('raise') ||
+        n.contains('clean') ||
+        n.contains('snatch');
+  }
+
   /// Live remaining seconds in the current phase for HUD countdown readouts.
   int get phaseSecondsRemaining {
     switch (phase) {
@@ -165,44 +178,50 @@ class TempoPacerState {
         final rem = (preset.concentricSeconds * (1.0 - phaseProgress)).ceil();
         return rem <= 0 ? 1 : rem;
       case TempoPhase.topHold:
-        final rem = (preset.topHoldSeconds * (1.0 - phaseProgress)).ceil();
+        final rem = ((preset.topHoldSeconds > 0
+                    ? preset.topHoldSeconds
+                    : preset.bottomHoldSeconds) *
+                (1.0 - phaseProgress))
+            .ceil();
         return rem <= 0 ? 1 : rem;
       case TempoPhase.completed:
         return 0;
     }
   }
 
-  /// Label for the current active movement phase.
+  /// Label for the current active movement phase with clear biomechanical wording.
   String get phaseLabel {
     switch (phase) {
       case TempoPhase.countdown:
         return 'GET IN POSITION';
       case TempoPhase.eccentric:
-        return 'LOWER CONTROLLED';
+        return 'LOWER CONTROLLED • ECCENTRIC';
       case TempoPhase.bottomHold:
         return 'HOLD & STRETCH';
       case TempoPhase.concentric:
-        return 'EXPLODE & DRIVE';
+        return isConcentricFirst
+            ? 'EXPLODE & LIFT • CONCENTRIC'
+            : 'EXPLODE & DRIVE • CONCENTRIC';
       case TempoPhase.topHold:
-        return 'LOCKOUT & BREATHE';
+        return 'PEAK CONTRACTION • HOLD';
       case TempoPhase.completed:
         return 'SET COMPLETE';
     }
   }
 
-  /// Coaching instruction subtitle for beginners.
+  /// Coaching instruction subtitle for lifters.
   String get phaseCoachingNote {
     switch (phase) {
       case TempoPhase.countdown:
         return 'Grip bar and brace your core';
       case TempoPhase.eccentric:
-        return 'Resist gravity smoothly for ${preset.eccentricSeconds}s';
+        return 'Resist gravity smoothly for ${preset.eccentricSeconds}s (Eccentric)';
       case TempoPhase.bottomHold:
         return 'Freeze motion without bouncing';
       case TempoPhase.concentric:
-        return 'Push with maximum intent';
+        return 'Push with maximum intent for ${preset.concentricSeconds}s (Concentric)';
       case TempoPhase.topHold:
-        return 'Brief breath reset';
+        return 'Squeeze peak contraction';
       case TempoPhase.completed:
         return 'Reps finished — auto-logging rest';
     }

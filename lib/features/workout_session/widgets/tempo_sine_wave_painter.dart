@@ -61,6 +61,7 @@ class _TempoSineWaveWidgetState extends State<TempoSineWaveWidget>
               phaseProgress: widget.state.phaseProgress,
               phase: widget.state.phase,
               preset: widget.state.preset,
+              isConcentricFirst: widget.state.isConcentricFirst,
               phaseSecondsRemaining: widget.state.phaseSecondsRemaining,
               pulseProgress: _rippleController.value,
             ),
@@ -76,6 +77,7 @@ class _BiomechanicalWavePainter extends CustomPainter {
   final double phaseProgress;
   final TempoPhase phase;
   final TempoPreset preset;
+  final bool isConcentricFirst;
   final int phaseSecondsRemaining;
   final double pulseProgress;
 
@@ -84,6 +86,7 @@ class _BiomechanicalWavePainter extends CustomPainter {
     required this.phaseProgress,
     required this.phase,
     required this.preset,
+    this.isConcentricFirst = false,
     required this.phaseSecondsRemaining,
     required this.pulseProgress,
   });
@@ -91,15 +94,38 @@ class _BiomechanicalWavePainter extends CustomPainter {
   // Normalized phase fractions within one rep
   double get _eccFraction =>
       preset.eccentricSeconds / preset.totalCycleSeconds;
-  double get _bottomHoldFraction =>
-      preset.bottomHoldSeconds / preset.totalCycleSeconds;
+  double get _holdFraction =>
+      (preset.topHoldSeconds > 0
+          ? preset.topHoldSeconds
+          : preset.bottomHoldSeconds) /
+      preset.totalCycleSeconds;
   double get _concentricFraction =>
       preset.concentricSeconds / preset.totalCycleSeconds;
 
   /// Returns normalized Y in [0.0, 1.0] where 1.0 is TOP (Lockout) and 0.0 is BOTTOM (Full Depth).
   double _getYForCycleProgress(double t) {
+    if (isConcentricFirst) {
+      final concEnd = _concentricFraction;
+      final holdEnd = concEnd + _holdFraction;
+
+      if (t <= 0.0) {
+        return 0.0; // starts at bottom / floor
+      } else if (t <= concEnd) {
+        // Concentric drive: smooth ascent from bottom (0.0) to top (1.0)
+        final localT = (t / concEnd).clamp(0.0, 1.0);
+        return 0.5 - 0.5 * math.cos(localT * math.pi);
+      } else if (t <= holdEnd) {
+        // Peak contraction hold at top (1.0)
+        return 1.0;
+      } else {
+        // Eccentric lowering: smooth descent from top (1.0) back to bottom (0.0)
+        final localT = ((t - holdEnd) / (1.0 - holdEnd)).clamp(0.0, 1.0);
+        return 0.5 + 0.5 * math.cos(localT * math.pi);
+      }
+    }
+
     final eccEnd = _eccFraction;
-    final bottomEnd = eccEnd + _bottomHoldFraction;
+    final bottomEnd = eccEnd + _holdFraction;
     final concEnd = bottomEnd + _concentricFraction;
 
     if (t <= 0.0) {
@@ -114,7 +140,6 @@ class _BiomechanicalWavePainter extends CustomPainter {
     } else if (t <= concEnd) {
       // Concentric ascent: explosive drive from bottom (0.0) to top (1.0)
       final localT = ((t - bottomEnd) / (concEnd - bottomEnd)).clamp(0.0, 1.0);
-      // Explosive acceleration: starts steep then eases into lockout
       return 0.5 - 0.5 * math.cos(localT * math.pi);
     } else {
       // Top hold / reset: lockout (1.0)
@@ -154,18 +179,36 @@ class _BiomechanicalWavePainter extends CustomPainter {
 
     final activeColor = _getPhaseColor();
 
-    // ── 1. Phase Zone Backgrounds ──────────────────────────────────────────
-    final eccX = marginLeft + (_eccFraction * trackWidth);
-    final bottomX = eccX + (_bottomHoldFraction * trackWidth);
-    final concX = bottomX + (_concentricFraction * trackWidth);
+    // ── 1. Phase Zone Backgrounds & Transition Coordinates ───────────────
+    final double firstX;
+    final double secondX;
+    final String firstLabel;
+    final String secondLabel;
+    final String thirdLabel;
+    final int holdSec = preset.topHoldSeconds > 0
+        ? preset.topHoldSeconds
+        : preset.bottomHoldSeconds;
 
-    // Subtle shaded zones
-    if (_bottomHoldFraction > 0.0) {
-      // Amber tint for bottom hold / isometric stretch zone
+    if (isConcentricFirst) {
+      firstX = marginLeft + (_concentricFraction * trackWidth);
+      secondX = firstX + (_holdFraction * trackWidth);
+      firstLabel = 'LIFT (${preset.concentricSeconds}s)';
+      secondLabel = 'HOLD (${holdSec}s)';
+      thirdLabel = 'LOWER (${preset.eccentricSeconds}s)';
+    } else {
+      firstX = marginLeft + (_eccFraction * trackWidth);
+      secondX = firstX + (_holdFraction * trackWidth);
+      firstLabel = 'DESCENT (${preset.eccentricSeconds}s)';
+      secondLabel = 'HOLD (${holdSec}s)';
+      thirdLabel = 'DRIVE (${preset.concentricSeconds}s)';
+    }
+
+    // Subtle shaded zone for isometric hold
+    if (_holdFraction > 0.0) {
       final holdZonePaint = Paint()
         ..color = const Color(0xFFFFB300).withValues(alpha: 0.05);
       canvas.drawRect(
-        Rect.fromLTRB(eccX, marginTop - 10, bottomX, marginBottom + 16),
+        Rect.fromLTRB(firstX, marginTop - 10, secondX, marginBottom + 16),
         holdZonePaint,
       );
     }
@@ -203,7 +246,7 @@ class _BiomechanicalWavePainter extends CustomPainter {
 
     _drawText(
       canvas,
-      text: 'FULL DEPTH',
+      text: isConcentricFirst ? 'FLOOR / START' : 'FULL DEPTH',
       offset: Offset(marginLeft, marginBottom + 8),
       color: AppColors.platinum.withValues(alpha: 0.70),
       fontSize: 11.0,
@@ -218,27 +261,29 @@ class _BiomechanicalWavePainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     // Draw dashed vertical lines at phase boundaries
-    _drawDashedVerticalLine(canvas, eccX, marginTop, marginBottom, markerPaint);
-    if (_bottomHoldFraction > 0.0) {
-      _drawDashedVerticalLine(canvas, bottomX, marginTop, marginBottom, markerPaint);
+    _drawDashedVerticalLine(canvas, firstX, marginTop, marginBottom, markerPaint);
+    if (_holdFraction > 0.0) {
+      _drawDashedVerticalLine(canvas, secondX, marginTop, marginBottom, markerPaint);
     }
 
     // Phase duration footers
-    final eccMidX = (marginLeft + eccX) / 2;
+    final firstMidX = (marginLeft + firstX) / 2;
     _drawCenteredText(
       canvas,
-      text: 'DESCENT (${preset.eccentricSeconds}s)',
-      x: eccMidX,
+      text: firstLabel,
+      x: firstMidX,
       y: marginBottom + 18,
-      color: const Color(0xFF00E5FF).withValues(alpha: 0.70),
+      color: isConcentricFirst
+          ? AppColors.pureWhite.withValues(alpha: 0.80)
+          : const Color(0xFF00E5FF).withValues(alpha: 0.70),
       fontSize: 11.0,
     );
 
-    if (_bottomHoldFraction > 0.0) {
-      final holdMidX = (eccX + bottomX) / 2;
+    if (_holdFraction > 0.0) {
+      final holdMidX = (firstX + secondX) / 2;
       _drawCenteredText(
         canvas,
-        text: 'HOLD (${preset.bottomHoldSeconds}s)',
+        text: secondLabel,
         x: holdMidX,
         y: marginBottom + 18,
         color: const Color(0xFFFFB300).withValues(alpha: 0.85),
@@ -246,13 +291,15 @@ class _BiomechanicalWavePainter extends CustomPainter {
       );
     }
 
-    final concMidX = (bottomX + concX) / 2;
+    final thirdMidX = (secondX + marginRight) / 2;
     _drawCenteredText(
       canvas,
-      text: 'DRIVE (${preset.concentricSeconds}s)',
-      x: concMidX,
+      text: thirdLabel,
+      x: thirdMidX,
       y: marginBottom + 18,
-      color: AppColors.pureWhite.withValues(alpha: 0.80),
+      color: isConcentricFirst
+          ? const Color(0xFF00E5FF).withValues(alpha: 0.70)
+          : AppColors.pureWhite.withValues(alpha: 0.80),
       fontSize: 11.0,
     );
 
@@ -469,10 +516,10 @@ class _BiomechanicalWavePainter extends CustomPainter {
         text = '⚡ HOLD ${secondsRemaining}s';
         break;
       case TempoPhase.concentric:
-        text = '↑ DRIVE';
+        text = isConcentricFirst ? '↑ LIFT ${secondsRemaining}s' : '↑ DRIVE';
         break;
       case TempoPhase.topHold:
-        text = 'RESET';
+        text = '⚡ SQUEEZE ${secondsRemaining}s';
         break;
       case TempoPhase.countdown:
         text = 'READY';
@@ -582,6 +629,7 @@ class _BiomechanicalWavePainter extends CustomPainter {
         oldDelegate.phaseProgress != phaseProgress ||
         oldDelegate.phase != phase ||
         oldDelegate.preset != preset ||
+        oldDelegate.isConcentricFirst != isConcentricFirst ||
         oldDelegate.pulseProgress != pulseProgress ||
         oldDelegate.phaseSecondsRemaining != phaseSecondsRemaining;
   }

@@ -36,13 +36,19 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
     _phaseElapsedMs = 0;
     _lastTickSecond = -1;
 
+    final startPhase = skipCountdown
+        ? (TempoPacerState(exerciseName: exerciseName).isConcentricFirst
+            ? TempoPhase.concentric
+            : TempoPhase.eccentric)
+        : TempoPhase.countdown;
+
     state = TempoPacerState(
       isActive: true,
       isPaused: false,
       countdownRemaining: skipCountdown ? 0 : 5,
       currentRep: 1,
       targetReps: targetReps,
-      phase: skipCountdown ? TempoPhase.eccentric : TempoPhase.countdown,
+      phase: startPhase,
       phaseProgress: 0.0,
       cycleProgress: 0.0,
       preset: preset,
@@ -82,11 +88,13 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
       }
 
       if (_phaseElapsedMs >= 5000) {
-        // Countdown finished -> Start Rep 1 Eccentric
+        // Countdown finished -> Start Rep 1
         _phaseElapsedMs = 0;
         _lastTickSecond = -1;
         state = state.copyWith(
-          phase: TempoPhase.eccentric,
+          phase: state.isConcentricFirst
+              ? TempoPhase.concentric
+              : TempoPhase.eccentric,
           countdownRemaining: 0,
           phaseProgress: 0.0,
           cycleProgress: 0.0,
@@ -140,7 +148,10 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
       case TempoPhase.concentric:
         return state.preset.concentricSeconds * 1000;
       case TempoPhase.topHold:
-        return state.preset.topHoldSeconds * 1000;
+        final holdSec = state.preset.topHoldSeconds > 0
+            ? state.preset.topHoldSeconds
+            : (state.isConcentricFirst ? state.preset.bottomHoldSeconds : 0);
+        return holdSec * 1000;
       case TempoPhase.completed:
         return 0;
     }
@@ -151,26 +162,46 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
     if (totalSec <= 0) return 0.0;
 
     double elapsedBefore = 0.0;
-    switch (state.phase) {
-      case TempoPhase.eccentric:
-        elapsedBefore = 0.0;
-        break;
-      case TempoPhase.bottomHold:
-        elapsedBefore = state.preset.eccentricSeconds.toDouble();
-        break;
-      case TempoPhase.concentric:
-        elapsedBefore = (state.preset.eccentricSeconds +
-                state.preset.bottomHoldSeconds)
-            .toDouble();
-        break;
-      case TempoPhase.topHold:
-        elapsedBefore = (state.preset.eccentricSeconds +
-                state.preset.bottomHoldSeconds +
-                state.preset.concentricSeconds)
-            .toDouble();
-        break;
-      default:
-        return 0.0;
+    if (state.isConcentricFirst) {
+      final holdSec = state.preset.topHoldSeconds > 0
+          ? state.preset.topHoldSeconds
+          : state.preset.bottomHoldSeconds;
+      switch (state.phase) {
+        case TempoPhase.concentric:
+          elapsedBefore = 0.0;
+          break;
+        case TempoPhase.topHold:
+          elapsedBefore = state.preset.concentricSeconds.toDouble();
+          break;
+        case TempoPhase.eccentric:
+          elapsedBefore =
+              (state.preset.concentricSeconds + holdSec).toDouble();
+          break;
+        default:
+          return 0.0;
+      }
+    } else {
+      switch (state.phase) {
+        case TempoPhase.eccentric:
+          elapsedBefore = 0.0;
+          break;
+        case TempoPhase.bottomHold:
+          elapsedBefore = state.preset.eccentricSeconds.toDouble();
+          break;
+        case TempoPhase.concentric:
+          elapsedBefore = (state.preset.eccentricSeconds +
+                  state.preset.bottomHoldSeconds)
+              .toDouble();
+          break;
+        case TempoPhase.topHold:
+          elapsedBefore = (state.preset.eccentricSeconds +
+                  state.preset.bottomHoldSeconds +
+                  state.preset.concentricSeconds)
+              .toDouble();
+          break;
+        default:
+          return 0.0;
+      }
     }
 
     final currentPhaseSec = _currentPhaseDurationMs() / 1000.0;
@@ -181,6 +212,37 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
   void _advancePhase() {
     _phaseElapsedMs = 0;
     _lastTickSecond = -1;
+
+    if (state.isConcentricFirst) {
+      final holdSec = state.preset.topHoldSeconds > 0
+          ? state.preset.topHoldSeconds
+          : state.preset.bottomHoldSeconds;
+
+      switch (state.phase) {
+        case TempoPhase.concentric:
+          if (holdSec > 0) {
+            state = state.copyWith(phase: TempoPhase.topHold, phaseProgress: 0.0);
+            _playTurnaroundSnap();
+          } else {
+            state = state.copyWith(phase: TempoPhase.eccentric, phaseProgress: 0.0);
+            _playDrivePulse();
+          }
+          break;
+
+        case TempoPhase.topHold:
+          state = state.copyWith(phase: TempoPhase.eccentric, phaseProgress: 0.0);
+          _playDrivePulse();
+          break;
+
+        case TempoPhase.eccentric:
+          _completeCurrentRep();
+          break;
+
+        default:
+          break;
+      }
+      return;
+    }
 
     switch (state.phase) {
       case TempoPhase.eccentric:
@@ -220,7 +282,9 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
       // Advance to next repetition
       state = state.copyWith(
         currentRep: state.currentRep + 1,
-        phase: TempoPhase.eccentric,
+        phase: state.isConcentricFirst
+            ? TempoPhase.concentric
+            : TempoPhase.eccentric,
         phaseProgress: 0.0,
         cycleProgress: 0.0,
       );
