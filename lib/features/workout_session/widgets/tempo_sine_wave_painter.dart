@@ -179,7 +179,7 @@ class _BiomechanicalWavePainter extends CustomPainter {
 
     final activeColor = _getPhaseColor();
 
-    // ── 1. Phase Zone Backgrounds & Transition Coordinates ───────────────
+    // ── 1. Phase Zone Transition Coordinates ─────────────────────────────
     final double firstX;
     final double secondX;
 
@@ -191,16 +191,6 @@ class _BiomechanicalWavePainter extends CustomPainter {
       secondX = firstX + (_holdFraction * trackWidth);
     }
 
-    // Subtle shaded zone for isometric hold
-    if (_holdFraction > 0.0) {
-      final holdZonePaint = Paint()
-        ..color = const Color(0xFFFFB300).withValues(alpha: 0.05);
-      canvas.drawRect(
-        Rect.fromLTRB(firstX, marginTop - 10, secondX, marginBottom),
-        holdZonePaint,
-      );
-    }
-
     // ── 2. Horizontal Datum Lines (LOCKOUT & DEPTH) ────────────────────────
     final datumPaint = Paint()
       ..color = AppColors.steel.withValues(alpha: 0.35)
@@ -209,24 +199,39 @@ class _BiomechanicalWavePainter extends CustomPainter {
 
     // Top Lockout datum line
     canvas.drawLine(
-      Offset(marginLeft - 8, marginTop),
-      Offset(marginRight + 8, marginTop),
+      Offset(marginLeft, marginTop),
+      Offset(marginRight, marginTop),
       datumPaint,
     );
 
     // Bottom Depth datum line
     canvas.drawLine(
-      Offset(marginLeft - 8, marginBottom),
-      Offset(marginRight + 8, marginBottom),
+      Offset(marginLeft, marginBottom),
+      Offset(marginRight, marginBottom),
       datumPaint,
     );
+
+    // Precision corner reticle calipers
+    final caliperPaint = Paint()
+      ..color = const Color(0xFF00E5FF).withValues(alpha: 0.40)
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    // Top-left caliper
+    canvas.drawLine(Offset(marginLeft, marginTop - 6), Offset(marginLeft, marginTop + 6), caliperPaint);
+    // Top-right caliper
+    canvas.drawLine(Offset(marginRight, marginTop - 6), Offset(marginRight, marginTop + 6), caliperPaint);
+    // Bottom-left caliper
+    canvas.drawLine(Offset(marginLeft, marginBottom - 6), Offset(marginLeft, marginBottom + 6), caliperPaint);
+    // Bottom-right caliper
+    canvas.drawLine(Offset(marginRight, marginBottom - 6), Offset(marginRight, marginBottom + 6), caliperPaint);
 
     // Datum text badges
     _drawText(
       canvas,
       text: 'LOCKOUT',
-      offset: Offset(marginLeft, marginTop - 18),
-      color: AppColors.platinum.withValues(alpha: 0.70),
+      offset: Offset(marginLeft + 4, marginTop - 18),
+      color: const Color(0xFF94A3B8),
       fontSize: 11.0,
       isMono: true,
       fontWeight: FontWeight.w700,
@@ -235,8 +240,8 @@ class _BiomechanicalWavePainter extends CustomPainter {
     _drawText(
       canvas,
       text: isConcentricFirst ? 'FLOOR / START' : 'FULL DEPTH',
-      offset: Offset(marginLeft, marginBottom + 6),
-      color: AppColors.platinum.withValues(alpha: 0.70),
+      offset: Offset(marginLeft + 4, marginBottom + 6),
+      color: const Color(0xFF94A3B8),
       fontSize: 11.0,
       isMono: true,
       fontWeight: FontWeight.w700,
@@ -353,28 +358,7 @@ class _BiomechanicalWavePainter extends CustomPainter {
       canvas.drawPath(pastPath, highlightPaint);
     }
 
-    // ── 7. Vertical Energetic Equalizer Filaments Beneath Curve ───────────
-    final filamentCount = 18;
-    final filamentSpacing = trackWidth / (filamentCount - 1);
-    final filamentPaint = Paint()..strokeWidth = 1.0;
-
-    for (int i = 0; i < filamentCount; i++) {
-      final fx = marginLeft + (i * filamentSpacing);
-      final ft = (fx - marginLeft) / trackWidth;
-      final fy = marginBottom - (_getYForCycleProgress(ft) * trackHeight);
-
-      if (ft <= cycleProgress) {
-        // Active illuminated filament
-        filamentPaint.color = activeColor.withValues(alpha: 0.18);
-        canvas.drawLine(Offset(fx, fy), Offset(fx, marginBottom), filamentPaint);
-      } else {
-        // Faint guide filament
-        filamentPaint.color = AppColors.steel.withValues(alpha: 0.10);
-        canvas.drawLine(Offset(fx, fy), Offset(fx, marginBottom), filamentPaint);
-      }
-    }
-
-    // ── 8. Active Kinetic Energy Orb & Sonar Pulse ────────────────────────
+    // ── 7. Active Kinetic Energy Orb & Sonar Pulse ────────────────────────
     final orbNormX = cycleProgress.clamp(0.0, 1.0);
     final orbX = marginLeft + (orbNormX * trackWidth);
     final orbNormY = _getYForCycleProgress(orbNormX);

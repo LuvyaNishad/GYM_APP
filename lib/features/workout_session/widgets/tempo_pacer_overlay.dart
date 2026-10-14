@@ -98,7 +98,7 @@ class TempoPacerOverlay extends ConsumerWidget {
                   else
                     _buildActiveWaveStage(context, state),
 
-                  const Spacer(flex: 2),
+                  const Spacer(flex: 1),
 
                   // Bottom Action Bar & Cadence Controls — flush to screen bottom
                   _buildBottomBar(context, state, notifier),
@@ -404,28 +404,10 @@ class TempoPacerOverlay extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
-          // ── The Biomechanical Wave Track (Centerpiece) ────────────────────
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F131B).withValues(alpha: 0.90),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: AppColors.steel.withValues(alpha: 0.70),
-                width: 1.2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.60),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: TempoSineWaveWidget(
-              state: state,
-              height: 220,
-            ),
+          // ── The Biomechanical Wave Track (Seamless HUD Instrument) ────────
+          TempoSineWaveWidget(
+            state: state,
+            height: 230,
           ),
         ],
       ),
