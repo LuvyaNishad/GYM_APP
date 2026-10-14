@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
+import 'features/workout_session/providers/active_session_provider.dart';
+import 'features/workout_session/providers/rest_timer_provider.dart';
+import 'features/workout_session/services/notification_service.dart';
 import 'services/hive_service.dart';
 import 'state/app_providers.dart';
 
@@ -54,10 +57,82 @@ class LeonApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       routerConfig: ref.watch(routerProvider),
-      builder: (BuildContext context, Widget? child) =>
-          ready ? (child ?? const SizedBox.shrink()) : const _BootstrapLoader(),
+      builder: (BuildContext context, Widget? child) => ready
+          ? _WorkoutLifecycleObserver(child: child ?? const SizedBox.shrink())
+          : const _BootstrapLoader(),
     );
   }
+}
+
+/// Observer monitoring app lifecycle changes to trigger background/lockscreen notifications.
+class _WorkoutLifecycleObserver extends ConsumerStatefulWidget {
+  const _WorkoutLifecycleObserver({required this.child});
+  final Widget child;
+
+  @override
+  ConsumerState<_WorkoutLifecycleObserver> createState() =>
+      _WorkoutLifecycleObserverState();
+}
+
+class _WorkoutLifecycleObserverState
+    extends ConsumerState<_WorkoutLifecycleObserver>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Request notification permissions for Android 13+ and iOS on startup
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(workoutNotificationServiceProvider).requestPermissions();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    final session = ref.read(activeSessionProvider);
+    final restTimer = ref.read(restTimerProvider);
+    final notifs = ref.read(workoutNotificationServiceProvider);
+
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.inactive) {
+      // App was minimized to the background
+      if (session.isActive) {
+        // If rest timer is NOT running, show the active workout progress notification
+        if (!restTimer.isRunning) {
+          final currentExercise =
+              session.exercises.isNotEmpty ? session.exercises.first : null;
+          final currentSet = currentExercise?.sets.firstWhere(
+            (s) => !s.isCompleted,
+            orElse: () => currentExercise.sets.last,
+          );
+          notifs.showActiveWorkoutNotification(
+            splitName: session.splitName,
+            currentExerciseName: currentExercise?.name ?? 'Exercise',
+            currentSet: currentSet?.setNumber ?? 1,
+            totalSets: currentExercise?.sets.length ?? 4,
+            weightKg: currentSet?.weightKg,
+            reps: currentSet?.reps,
+          );
+        }
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      // App brought back to foreground
+      if (!restTimer.isRunning) {
+        notifs.cancelActiveWorkoutNotification();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// Minimal splash shown while bootstrap is still in flight.

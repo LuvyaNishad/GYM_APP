@@ -199,6 +199,76 @@ class WorkoutNotificationService {
     }
   }
 
+  /// Shows or updates the persistent notification when the app is minimized with an active workout.
+  Future<void> showActiveWorkoutNotification({
+    required String splitName,
+    required String currentExerciseName,
+    required int currentSet,
+    required int totalSets,
+    double? weightKg,
+    int? reps,
+  }) async {
+    if (!_isInitialized || kIsWeb) return;
+
+    final weightRepsText = (weightKg != null && reps != null)
+        ? ' • ${weightKg.toStringAsFixed(1)} kg × $reps'
+        : '';
+
+    final androidDetails = AndroidNotificationDetails(
+      'leon_active_workout',
+      'Active Workout Session',
+      channelDescription: 'Persistent status bar indicator while workout is in progress',
+      importance: Importance.low,
+      priority: Priority.low,
+      onlyAlertOnce: true,
+      ongoing: true,
+      autoCancel: false,
+      color: AppColors.primary,
+      colorized: true,
+      category: AndroidNotificationCategory.workout,
+      actions: const <AndroidNotificationAction>[
+        AndroidNotificationAction(
+          'open_workout',
+          'Resume Workout',
+          showsUserInterface: true,
+          cancelNotification: false,
+        ),
+      ],
+    );
+
+    const darwinDetails = DarwinNotificationDetails(
+      presentAlert: false,
+      presentBadge: false,
+      presentSound: false,
+    );
+
+    final notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: darwinDetails,
+    );
+
+    try {
+      await _plugin.show(
+        WorkoutNotificationIds.activeWorkout,
+        'WORKOUT IN PROGRESS: ${splitName.toUpperCase()}',
+        '$currentExerciseName (Set $currentSet/$totalSets)$weightRepsText',
+        notificationDetails,
+      );
+    } catch (e) {
+      debugPrint('[WorkoutNotificationService] Error showing active workout notification: $e');
+    }
+  }
+
+  /// Cancels the active workout notification.
+  Future<void> cancelActiveWorkoutNotification() async {
+    if (!_isInitialized || kIsWeb) return;
+    try {
+      await _plugin.cancel(WorkoutNotificationIds.activeWorkout);
+    } catch (e) {
+      debugPrint('[WorkoutNotificationService] Error canceling active workout notification: $e');
+    }
+  }
+
   /// Cancels all LEON workout notifications.
   Future<void> cancelAll() async {
     if (!_isInitialized || kIsWeb) return;
