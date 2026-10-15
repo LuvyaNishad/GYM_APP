@@ -211,5 +211,44 @@ void main() {
       expect(container.read(splitsProvider).activeSplit.name, equals('Push Pull Legs (Machine Focus)'));
       expect(fakeHive.settings[AppConstants.settingActiveSplitId], equals('split_ppl_machine'));
     });
+
+    testWidgets('Create routine sheet exercises can be reordered using drag start handles', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final fakeHive = FakeHiveService();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            hiveServiceProvider.overrideWithValue(fakeHive),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.dark,
+            home: const RoutineLibraryScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // Open new routine sheet
+      await tester.tap(find.text('NEW ROUTINE'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 350));
+
+      // Verify drag start listeners are present for exercises
+      expect(find.byType(ReorderableDragStartListener), findsWidgets);
+      expect(find.byIcon(Icons.drag_indicator_rounded), findsWidgets);
+      expect(find.text('Barbell Bench Press'), findsWidgets);
+      expect(find.text('Barbell Bent-Over Row'), findsWidgets);
+
+      // Verify ReorderableListView exists with custom drag handles
+      final reorderableList = tester.widget<ReorderableListView>(find.byType(ReorderableListView).first);
+      expect(reorderableList.buildDefaultDragHandles, isFalse);
+    });
   });
 }

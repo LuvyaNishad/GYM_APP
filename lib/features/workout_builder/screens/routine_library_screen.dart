@@ -535,6 +535,37 @@ class _RoutineLibraryScreenState extends ConsumerState<RoutineLibraryScreen>
   }
 }
 
+/// Draft models for routine customization to maintain stable keys and direct item mutation during reordering.
+class _ExerciseDraft {
+  _ExerciseDraft({
+    required this.uid,
+    required this.exercise,
+  });
+
+  final String uid;
+  PlannedExercise exercise;
+}
+
+class _DayDraft {
+  _DayDraft({
+    required this.id,
+    required this.name,
+    required this.subtitle,
+    required this.targetMuscles,
+    required this.exercises,
+    this.isRestDay = false,
+  });
+
+  final String id;
+  String name;
+  String subtitle;
+  List<String> targetMuscles;
+  final List<_ExerciseDraft> exercises;
+  bool isRestDay;
+
+  int get totalSets => exercises.fold(0, (sum, e) => sum + e.exercise.targetSets);
+}
+
 /// Modal Sheet for creating or editing a custom training split template with interactive exercise management.
 class _CreateRoutineSheet extends ConsumerStatefulWidget {
   const _CreateRoutineSheet({this.initialSplit});
@@ -548,7 +579,10 @@ class _CreateRoutineSheet extends ConsumerStatefulWidget {
 class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
   late final TextEditingController _nameController;
   late int _daysPerWeek;
-  late List<SplitWorkoutDay> _workouts;
+  late List<_DayDraft> _workouts;
+  int _draftCounter = 0;
+
+  String _nextDraftUid() => 'draft_ex_${++_draftCounter}_${DateTime.now().microsecondsSinceEpoch}';
 
   @override
   void initState() {
@@ -558,8 +592,16 @@ class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
       _nameController = TextEditingController(text: init.name);
       _daysPerWeek = init.daysPerWeek;
       _workouts = init.workouts.map((w) {
-        return w.copyWith(
-          exercises: w.exercises.map((e) => e.copyWith()).toList(),
+        return _DayDraft(
+          id: w.id,
+          name: w.name,
+          subtitle: w.subtitle,
+          targetMuscles: List<String>.from(w.targetMuscles),
+          isRestDay: w.isRestDay,
+          exercises: w.exercises.map((e) => _ExerciseDraft(
+            uid: _nextDraftUid(),
+            exercise: e.copyWith(),
+          )).toList(),
         );
       }).toList();
     } else {
@@ -575,29 +617,35 @@ class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
     super.dispose();
   }
 
-  List<SplitWorkoutDay> _generateDefaultDays(int days) {
-    final list = <SplitWorkoutDay>[];
+  List<_DayDraft> _generateDefaultDays(int days) {
+    final list = <_DayDraft>[];
     for (int i = 1; i <= days; i++) {
       list.add(
-        SplitWorkoutDay(
+        _DayDraft(
           id: 'day_$i',
           name: 'Workout Day $i',
           subtitle: 'Target Muscles',
           targetMuscles: ['Chest', 'Back'],
           exercises: [
-            const PlannedExercise(
-              exerciseId: 'barbell-bench-press',
-              exerciseName: 'Barbell Bench Press',
-              muscleGroup: 'Chest',
-              targetSets: 3,
-              repRange: '8–12',
+            _ExerciseDraft(
+              uid: _nextDraftUid(),
+              exercise: const PlannedExercise(
+                exerciseId: 'barbell-bench-press',
+                exerciseName: 'Barbell Bench Press',
+                muscleGroup: 'Chest',
+                targetSets: 3,
+                repRange: '8–12',
+              ),
             ),
-            const PlannedExercise(
-              exerciseId: 'barbell-bent-over-row',
-              exerciseName: 'Barbell Bent-Over Row',
-              muscleGroup: 'Back',
-              targetSets: 3,
-              repRange: '8–12',
+            _ExerciseDraft(
+              uid: _nextDraftUid(),
+              exercise: const PlannedExercise(
+                exerciseId: 'barbell-bent-over-row',
+                exerciseName: 'Barbell Bent-Over Row',
+                muscleGroup: 'Back',
+                targetSets: 3,
+                repRange: '8–12',
+              ),
             ),
           ],
         ),
@@ -614,22 +662,22 @@ class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
       builder: (ctx) => ExercisePickerModal(
         onExerciseSelected: (selected) {
           setState(() {
-            final day = _workouts[dayIdx];
-            final currentExercises = List<PlannedExercise>.from(day.exercises);
             final cleanId = 'ex_${selected.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_')}';
-            currentExercises.add(
-              PlannedExercise(
-                exerciseId: cleanId,
-                exerciseName: selected.name,
-                muscleGroup: selected.muscleGroup,
-                equipment: selected.equipment,
-                targetSets: 3,
-                repRange: '8–12',
-                targetWeightKg: selected.sets.isNotEmpty ? selected.sets.first.weightKg : 50.0,
-                restSeconds: selected.restDurationSeconds,
+            _workouts[dayIdx].exercises.add(
+              _ExerciseDraft(
+                uid: _nextDraftUid(),
+                exercise: PlannedExercise(
+                  exerciseId: cleanId,
+                  exerciseName: selected.name,
+                  muscleGroup: selected.muscleGroup,
+                  equipment: selected.equipment,
+                  targetSets: 3,
+                  repRange: '8–12',
+                  targetWeightKg: selected.sets.isNotEmpty ? selected.sets.first.weightKg : 50.0,
+                  restSeconds: selected.restDurationSeconds,
+                ),
               ),
             );
-            _workouts[dayIdx] = day.copyWith(exercises: currentExercises);
           });
         },
       ),
@@ -650,7 +698,8 @@ class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
     };
     for (final w in _workouts) {
       if (w.isRestDay) continue;
-      for (final ex in w.exercises) {
+      for (final draft in w.exercises) {
+        final ex = draft.exercise;
         final m = ex.muscleGroup;
         if (muscleSets.containsKey(m)) {
           muscleSets[m] = (muscleSets[m] ?? 0) + ex.targetSets;
@@ -663,15 +712,26 @@ class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
     final isNew = widget.initialSplit == null;
     final id = widget.initialSplit?.id ?? 'custom_split_${DateTime.now().millisecondsSinceEpoch}';
 
+    final finalWorkouts = _workouts.map((d) {
+      return SplitWorkoutDay(
+        id: d.id,
+        name: d.name,
+        subtitle: d.subtitle,
+        targetMuscles: d.targetMuscles,
+        isRestDay: d.isRestDay,
+        exercises: d.exercises.map((e) => e.exercise).toList(),
+      );
+    }).toList();
+
     final updatedSplit = TrainingSplitModel(
       id: id,
       name: name,
       shortName: name.length > 5 ? name.substring(0, 5).toUpperCase() : name.toUpperCase(),
-      daysPerWeek: _workouts.where((w) => !w.isRestDay).length,
+      daysPerWeek: finalWorkouts.where((w) => !w.isRestDay).length,
       description: widget.initialSplit?.description ??
-          'Custom routine with ${_workouts.where((w) => !w.isRestDay).length} training days per week.',
+          'Custom routine with ${finalWorkouts.where((w) => !w.isRestDay).length} training days per week.',
       isCustom: true,
-      workouts: _workouts,
+      workouts: finalWorkouts,
       plannedMuscleSets: muscleSets,
     );
 
@@ -930,18 +990,26 @@ class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
                         ReorderableListView(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
+                          buildDefaultDragHandles: false,
+                          proxyDecorator: (child, index, animation) {
+                            return Material(
+                              color: Colors.transparent,
+                              elevation: 6,
+                              shadowColor: Colors.black.withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(8),
+                              child: child,
+                            );
+                          },
                           onReorderItem: (oldIndex, newIndex) {
                             setState(() {
-                              final currentExercises = List<PlannedExercise>.from(day.exercises);
-                              final item = currentExercises.removeAt(oldIndex);
-                              currentExercises.insert(newIndex, item);
-                              _workouts[idx] = day.copyWith(exercises: currentExercises);
+                              final item = day.exercises.removeAt(oldIndex);
+                              day.exercises.insert(newIndex, item);
                             });
                           },
                           children: [
                             for (int eIdx = 0; eIdx < day.exercises.length; eIdx++)
                               Container(
-                                key: ValueKey('${day.id}_${day.exercises[eIdx].exerciseId}_$eIdx'),
+                                key: ValueKey(day.exercises[eIdx].uid),
                                 margin: const EdgeInsets.only(bottom: 6),
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                                 decoration: BoxDecoration(
@@ -951,18 +1019,25 @@ class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(
-                                      Icons.drag_indicator_rounded,
-                                      size: 18,
-                                      color: AppColors.platinum,
+                                    ReorderableDragStartListener(
+                                      index: eIdx,
+                                      child: Container(
+                                        padding: const EdgeInsets.fromLTRB(2, 6, 8, 6),
+                                        color: Colors.transparent,
+                                        child: const Icon(
+                                          Icons.drag_indicator_rounded,
+                                          size: 20,
+                                          color: AppColors.platinum,
+                                        ),
+                                      ),
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 4),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            day.exercises[eIdx].exerciseName,
+                                            day.exercises[eIdx].exercise.exerciseName,
                                             style: const TextStyle(
                                               fontSize: 12.5,
                                               fontWeight: FontWeight.w700,
@@ -973,7 +1048,7 @@ class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
-                                            '${day.exercises[eIdx].muscleGroup} · ${day.exercises[eIdx].equipment}',
+                                            '${day.exercises[eIdx].exercise.muscleGroup} · ${day.exercises[eIdx].exercise.equipment}',
                                             style: const TextStyle(
                                               fontSize: 11.0,
                                               color: AppColors.platinum,
@@ -985,13 +1060,11 @@ class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
                                     // Sets Decrement
                                     InkWell(
                                       onTap: () {
-                                        if (day.exercises[eIdx].targetSets > 1) {
+                                        if (day.exercises[eIdx].exercise.targetSets > 1) {
                                           setState(() {
-                                            final currentExercises = List<PlannedExercise>.from(day.exercises);
-                                            currentExercises[eIdx] = currentExercises[eIdx].copyWith(
-                                              targetSets: currentExercises[eIdx].targetSets - 1,
+                                            day.exercises[eIdx].exercise = day.exercises[eIdx].exercise.copyWith(
+                                              targetSets: day.exercises[eIdx].exercise.targetSets - 1,
                                             );
-                                            _workouts[idx] = day.copyWith(exercises: currentExercises);
                                           });
                                         }
                                       },
@@ -1002,7 +1075,7 @@ class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
                                       ),
                                     ),
                                     Text(
-                                      '${day.exercises[eIdx].targetSets}s',
+                                      '${day.exercises[eIdx].exercise.targetSets}s',
                                       style: const TextStyle(
                                         fontFamily: 'JetBrains Mono',
                                         fontSize: 11.5,
@@ -1013,13 +1086,11 @@ class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
                                     // Sets Increment
                                     InkWell(
                                       onTap: () {
-                                        if (day.exercises[eIdx].targetSets < 10) {
+                                        if (day.exercises[eIdx].exercise.targetSets < 10) {
                                           setState(() {
-                                            final currentExercises = List<PlannedExercise>.from(day.exercises);
-                                            currentExercises[eIdx] = currentExercises[eIdx].copyWith(
-                                              targetSets: currentExercises[eIdx].targetSets + 1,
+                                            day.exercises[eIdx].exercise = day.exercises[eIdx].exercise.copyWith(
+                                              targetSets: day.exercises[eIdx].exercise.targetSets + 1,
                                             );
-                                            _workouts[idx] = day.copyWith(exercises: currentExercises);
                                           });
                                         }
                                       },
@@ -1034,13 +1105,11 @@ class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
                                     InkWell(
                                       onTap: () {
                                         final ranges = ['6–8', '8–12', '10–15', '12–20'];
-                                        final curr = day.exercises[eIdx].repRange;
+                                        final curr = day.exercises[eIdx].exercise.repRange;
                                         final nextIdx = (ranges.indexOf(curr) + 1) % ranges.length;
                                         setState(() {
-                                          final currentExercises = List<PlannedExercise>.from(day.exercises);
-                                          currentExercises[eIdx] =
-                                              currentExercises[eIdx].copyWith(repRange: ranges[nextIdx]);
-                                          _workouts[idx] = day.copyWith(exercises: currentExercises);
+                                          day.exercises[eIdx].exercise =
+                                              day.exercises[eIdx].exercise.copyWith(repRange: ranges[nextIdx]);
                                         });
                                       },
                                       child: Container(
@@ -1051,7 +1120,7 @@ class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
                                           border: Border.all(color: AppColors.steel.withValues(alpha: 0.6)),
                                         ),
                                         child: Text(
-                                          day.exercises[eIdx].repRange,
+                                          day.exercises[eIdx].exercise.repRange,
                                           style: const TextStyle(
                                             fontFamily: 'JetBrains Mono',
                                             fontSize: 11.0,
@@ -1071,9 +1140,7 @@ class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
                                       padding: EdgeInsets.zero,
                                       onPressed: () {
                                         setState(() {
-                                          final currentExercises = List<PlannedExercise>.from(day.exercises);
-                                          currentExercises.removeAt(eIdx);
-                                          _workouts[idx] = day.copyWith(exercises: currentExercises);
+                                          day.exercises.removeAt(eIdx);
                                         });
                                       },
                                     ),
@@ -1114,12 +1181,12 @@ class _CreateRoutineSheetState extends ConsumerState<_CreateRoutineSheet> {
                   setState(() {
                     final nextNum = _workouts.length + 1;
                     _workouts.add(
-                      SplitWorkoutDay(
+                      _DayDraft(
                         id: 'day_${DateTime.now().millisecondsSinceEpoch}',
                         name: 'Workout Day $nextNum',
                         subtitle: 'Target Muscles',
                         targetMuscles: ['Chest', 'Arms'],
-                        exercises: const [],
+                        exercises: [],
                       ),
                     );
                   });
