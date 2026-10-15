@@ -3,8 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../workout_builder/models/split_model.dart';
+import '../../workout_builder/providers/splits_provider.dart';
 import '../../workout_session/providers/active_session_provider.dart';
 import '../models/exercise_library_item.dart';
+
+class _RoutineDestination {
+  const _RoutineDestination({
+    required this.id,
+    required this.label,
+    this.splitId,
+    this.dayId,
+    this.isLiveSession = false,
+  });
+
+  final String id;
+  final String label;
+  final String? splitId;
+  final String? dayId;
+  final bool isLiveSession;
+}
 
 /// Modal dialog allowing the user to configure and add an exercise to a specific
 /// training day or directly into the currently active workout session.
@@ -21,18 +39,11 @@ class AddToRoutineDialog extends ConsumerStatefulWidget {
 }
 
 class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
-  String _selectedDestination = 'Active Workout';
+  String? _selectedDestinationId;
   int _targetSets = 3;
   String _targetRepRange = '8-12 reps';
   late int _restSeconds;
   final double _defaultWeight = 60.0;
-
-  static const List<String> _destinations = [
-    'Active Workout',
-    'Push Day ● Workout A',
-    'Pull Day ● Workout B',
-    'Leg Day ● Workout C',
-  ];
 
   static const List<String> _repRanges = [
     '5-8 reps',
@@ -49,9 +60,11 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
     _restSeconds = widget.exercise.defaultRestSeconds;
   }
 
-  void _onConfirm() {
-    final activeSession = ref.read(activeSessionProvider);
-    final activeNotifier = ref.read(activeSessionProvider.notifier);
+  Future<void> _onConfirm(List<_RoutineDestination> destinations) async {
+    final destination = destinations.firstWhere(
+      (d) => d.id == _selectedDestinationId,
+      orElse: () => destinations.first,
+    );
 
     int defaultReps = 10;
     if (_targetRepRange.startsWith('5-8')) defaultReps = 6;
@@ -59,7 +72,10 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
     if (_targetRepRange.startsWith('12-15')) defaultReps = 12;
     if (_targetRepRange.startsWith('15-20')) defaultReps = 15;
 
-    if (_selectedDestination == 'Active Workout') {
+    if (destination.isLiveSession) {
+      final activeSession = ref.read(activeSessionProvider);
+      final activeNotifier = ref.read(activeSessionProvider.notifier);
+
       if (!activeSession.isActive) {
         // Start workout if not started
         activeNotifier.startSession(splitName: 'CUSTOM WORKOUT');
@@ -73,32 +89,132 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
       );
 
       activeNotifier.addExercise(activeExercise);
+    } else {
+      // Adding to a training split day
+      final splitsNotifier = ref.read(splitsProvider.notifier);
+      final splitsState = ref.read(splitsProvider);
+      final targetSplit = splitsState.splits.firstWhere(
+        (s) => s.id == destination.splitId,
+        orElse: () => splitsState.activeSplit,
+      );
+
+      TrainingSplitModel workingSplit;
+      if (!targetSplit.isCustom) {
+        // Fork preset split to a customizable user split
+        workingSplit = await splitsNotifier.duplicateSplit(targetSplit.id);
+      } else {
+        workingSplit = targetSplit;
+      }
+
+      final cleanId = 'ex_${widget.exercise.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_')}';
+      final newPlanned = PlannedExercise(
+        exerciseId: cleanId,
+        exerciseName: widget.exercise.name,
+        muscleGroup: widget.exercise.category,
+        equipment: widget.exercise.primaryEquipment,
+        targetSets: _targetSets,
+        repRange: _targetRepRange.replaceAll(' reps', ''),
+        targetWeightKg: _defaultWeight,
+        restSeconds: _restSeconds,
+      );
+
+      final targetDayName = destination.label.contains(': ')
+          ? destination.label.split(': ').last.trim().toLowerCase()
+          : '';
+
+      final updatedWorkouts = workingSplit.workouts.map((w) {
+        if (w.id == destination.dayId || (targetDayName.isNotEmpty && w.name.toLowerCase() == targetDayName)) {
+          final exercises = List<PlannedExercise>.from(w.exercises)..add(newPlanned);
+          return w.copyWith(exercises: exercises);
+        }
+        return w;
+      }).toList();
+
+      final muscleSets = <String, int>{
+        'Chest': 0,
+        'Back': 0,
+        'Shoulders': 0,
+        'Quads': 0,
+        'Hamstrings': 0,
+        'Arms': 0,
+      };
+      for (final w in updatedWorkouts) {
+        if (w.isRestDay) continue;
+        for (final ex in w.exercises) {
+          final m = ex.muscleGroup;
+          if (muscleSets.containsKey(m)) {
+            muscleSets[m] = (muscleSets[m] ?? 0) + ex.targetSets;
+          } else {
+            muscleSets[m] = ex.targetSets;
+          }
+        }
+      }
+
+      final updatedSplit = workingSplit.copyWith(
+        workouts: updatedWorkouts,
+        plannedMuscleSets: muscleSets,
+      );
+
+      await splitsNotifier.saveCustomSplit(updatedSplit);
+      splitsNotifier.switchActiveSplit(updatedSplit.id);
     }
 
-    Navigator.of(context).pop();
+    if (mounted) {
+      Navigator.of(context).pop();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AppColors.charcoal,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: AppColors.steel, width: 1),
-        ),
-        content: Text(
-          'Added ${widget.exercise.name} ($_targetSets sets) to $_selectedDestination',
-          style: AppTypography.bodySmall.copyWith(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w600,
-            color: AppColors.pureWhite,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.charcoal,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: const BorderSide(color: AppColors.steel, width: 1),
+          ),
+          content: Text(
+            'Added ${widget.exercise.name} ($_targetSets sets) to ${destination.label}',
+            style: AppTypography.bodySmall.copyWith(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: AppColors.pureWhite,
+            ),
           ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final splitsState = ref.watch(splitsProvider);
+    final activeSplit = splitsState.activeSplit;
+
+    final destinations = <_RoutineDestination>[
+      const _RoutineDestination(
+        id: 'active_workout',
+        label: 'Active Workout Session (Now)',
+        isLiveSession: true,
+      ),
+      for (final day in activeSplit.workouts.where((w) => !w.isRestDay))
+        _RoutineDestination(
+          id: 'active_${activeSplit.id}_${day.id}',
+          label: '${activeSplit.shortName}: ${day.name}',
+          splitId: activeSplit.id,
+          dayId: day.id,
+        ),
+      for (final customSplit in splitsState.customSplits.where((s) => s.id != activeSplit.id))
+        for (final day in customSplit.workouts.where((w) => !w.isRestDay))
+          _RoutineDestination(
+            id: 'custom_${customSplit.id}_${day.id}',
+            label: '${customSplit.shortName}: ${day.name}',
+            splitId: customSplit.id,
+            dayId: day.id,
+          ),
+    ];
+
+    final currentSelectedId = destinations.any((d) => d.id == _selectedDestinationId)
+        ? _selectedDestinationId!
+        : destinations.first.id;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -178,15 +294,15 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
-                        value: _selectedDestination,
+                        value: currentSelectedId,
                         isExpanded: true,
                         dropdownColor: AppColors.charcoal,
                         icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.platinum),
-                        items: _destinations.map((dest) {
+                        items: destinations.map((dest) {
                           return DropdownMenuItem<String>(
-                            value: dest,
+                            value: dest.id,
                             child: Text(
-                              dest,
+                              dest.label,
                               style: AppTypography.bodySmall.copyWith(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
@@ -196,7 +312,7 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                           );
                         }).toList(),
                         onChanged: (val) {
-                          if (val != null) setState(() => _selectedDestination = val);
+                          if (val != null) setState(() => _selectedDestinationId = val);
                         },
                       ),
                     ),
@@ -323,7 +439,7 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
 
                   // ── Confirm / Action Button ────────────────────────────
                   FilledButton(
-                    onPressed: _onConfirm,
+                    onPressed: () => _onConfirm(destinations),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.pureWhite,
                       foregroundColor: AppColors.onyx,

@@ -178,5 +178,38 @@ void main() {
       // Should be saved in fake Hive
       expect(fakeHive.documents[AppConstants.hiveBoxSplits], isNotEmpty);
     });
+
+    test('Push Pull Legs (Machine Focus) preset includes all 4 machine exercises and can be activated', () {
+      final fakeHive = FakeHiveService();
+      final container = ProviderContainer(
+        overrides: [
+          hiveServiceProvider.overrideWithValue(fakeHive),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final state = container.read(splitsProvider);
+      final pplMachine = state.presetSplits.firstWhere((s) => s.id == 'split_ppl_machine');
+
+      expect(pplMachine.name, equals('Push Pull Legs (Machine Focus)'));
+
+      // Check Push Day A exercises
+      final pushDay = pplMachine.workouts.firstWhere((w) => w.name == 'Push Day A');
+      final pushExNames = pushDay.exercises.map((e) => e.exerciseName).toList();
+      expect(pushExNames, contains('Machine Chest Press'));
+      expect(pushExNames, contains('Machine Shoulder Press'));
+      expect(pushExNames, contains('Machine Chest Fly'));
+
+      // Check Pull Day A exercises
+      final pullDay = pplMachine.workouts.firstWhere((w) => w.name == 'Pull Day A');
+      final pullExNames = pullDay.exercises.map((e) => e.exerciseName).toList();
+      expect(pullExNames, contains('Machine Rear Delt Fly'));
+
+      // Switch active split to PPL Machine Focus
+      container.read(splitsProvider.notifier).switchActiveSplit(pplMachine.id);
+      expect(container.read(splitsProvider).activeSplitId, equals('split_ppl_machine'));
+      expect(container.read(splitsProvider).activeSplit.name, equals('Push Pull Legs (Machine Focus)'));
+      expect(fakeHive.settings[AppConstants.settingActiveSplitId], equals('split_ppl_machine'));
+    });
   });
 }

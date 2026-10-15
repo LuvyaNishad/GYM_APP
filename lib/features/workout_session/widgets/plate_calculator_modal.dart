@@ -295,7 +295,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'BARBELL TOOLS',
+                'PLATE CALCULATOR',
                 style: AppTypography.headlineSmall.copyWith(
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
@@ -1064,7 +1064,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
         percentage: '50%',
         weightKg: (((_totalWeightKg * 0.50) / 2.5).round() * 2.5).clamp(_barWeightKg, 500.0),
         targetReps: '5 Reps',
-        focus: 'Establish bar path & cadence',
+        focus: 'Establish bar path & tempo',
       ),
       _WarmupTier(
         tierNumber: 3,

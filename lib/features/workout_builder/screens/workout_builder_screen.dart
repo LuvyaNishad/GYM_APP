@@ -244,7 +244,63 @@ class WorkoutBuilderScreen extends ConsumerWidget {
             ),
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 16),
+
+          // ── Routine Library & Customizer Banner ────────────────────────────
+          InkWell(
+            onTap: () => context.push(AppConstants.routeRoutineLibrary),
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.charcoal,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.steel),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+                    ),
+                    child: const Icon(Icons.tune_rounded, size: 18, color: AppColors.primary),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'CUSTOMIZE ROUTINES & SPLITS',
+                          style: AppTypography.monoSmall.copyWith(
+                            fontSize: 12.0,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.6,
+                            color: AppColors.pureWhite,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Add your exercises, adjust sets & build your default PPL',
+                          style: AppTypography.bodySmall.copyWith(
+                            fontSize: 11.5,
+                            color: AppColors.platinum,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.platinum),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
 
           // ── Section Title ──────────────────────────────────────────────────
           Row(
