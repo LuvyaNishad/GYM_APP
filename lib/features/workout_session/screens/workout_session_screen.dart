@@ -286,64 +286,16 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                               sessionState.exercises[index - 1].supersetGroupId ==
                                   exercise.supersetGroupId;
 
-                          final card = ExerciseSequenceCard(
+                          return ExerciseSequenceCard(
                             key: ValueKey(exercise.exerciseId),
                             exercise: exercise,
                             index: index,
                             isExpanded: isExpanded,
+                            isLinkedWithPrevious: hasPrevSuperset,
                             onToggleExpand: () {
                               notifier.toggleExerciseExpand(exercise.exerciseId);
                             },
                           );
-
-                          if (hasPrevSuperset) {
-                            return Column(
-                              key: ValueKey(exercise.exerciseId),
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 32, top: 2, bottom: 2),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 2.5,
-                                        height: 14,
-                                        color: const Color(0xFF00E5FF),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 6, vertical: 1.5),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF00E5FF)
-                                              .withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(4),
-                                          border: Border.all(
-                                            color: const Color(0xFF00E5FF)
-                                                .withValues(alpha: 0.40),
-                                            width: 1.0,
-                                          ),
-                                        ),
-                                        child: const Text(
-                                          'LINKED SUPERSET',
-                                          style: TextStyle(
-                                            fontFamily: AppTypography.fontMono,
-                                            fontSize: 11.0,
-                                            fontWeight: FontWeight.w800,
-                                            color: Color(0xFF00E5FF),
-                                            letterSpacing: 0.8,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                card,
-                              ],
-                            );
-                          }
-
-                          return card;
                         },
                       ),
               ),

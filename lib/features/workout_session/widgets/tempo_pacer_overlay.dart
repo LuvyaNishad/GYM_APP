@@ -639,39 +639,48 @@ class TempoPacerOverlay extends ConsumerWidget {
   ) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: const Color(0xFF161A23),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'SELECT REPETITION TEMPO',
-                      style: TextStyle(
-                        fontFamily: AppTypography.fontDisplay,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.pureWhite,
-                        letterSpacing: 0.8,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.sizeOf(ctx).height * 0.75,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'SELECT REPETITION TEMPO',
+                        style: TextStyle(
+                          fontFamily: AppTypography.fontDisplay,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.pureWhite,
+                          letterSpacing: 0.8,
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      icon: const Icon(Icons.close, color: AppColors.platinum, size: 20),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                ...TempoPreset.values.map((preset) {
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(Icons.close, color: AppColors.platinum, size: 20),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Flexible(
+                    child: ListView(
+                      shrinkWrap: true,
+                      physics: const BouncingScrollPhysics(),
+                      children: TempoPreset.values.map((preset) {
                   final isSelected = state.preset == preset;
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8),
@@ -738,8 +747,11 @@ class TempoPacerOverlay extends ConsumerWidget {
                       ),
                     ),
                   );
-                }),
-              ],
+                }).toList(),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );

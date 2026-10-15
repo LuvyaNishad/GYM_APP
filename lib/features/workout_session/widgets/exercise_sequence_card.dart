@@ -23,12 +23,14 @@ class ExerciseSequenceCard extends ConsumerWidget {
     required this.exercise,
     required this.index,
     required this.isExpanded,
+    this.isLinkedWithPrevious = false,
     required this.onToggleExpand,
   });
 
   final ActiveExerciseState exercise;
   final int index;
   final bool isExpanded;
+  final bool isLinkedWithPrevious;
   final VoidCallback onToggleExpand;
 
   @override
@@ -44,25 +46,24 @@ class ExerciseSequenceCard extends ConsumerWidget {
             ? AppColors.pureWhite.withValues(alpha: 0.50)
             : AppColors.steel);
 
-    return Container(
+    final cardBorderColor = isSuperset
+        ? const Color(0xFF00E5FF)
+        : borderColor;
+
+    final cardWidget = Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(16),
-        border: Border(
-          top: BorderSide(color: borderColor, width: isExpanded ? 1.5 : 1.0),
-          right: BorderSide(color: borderColor, width: isExpanded ? 1.5 : 1.0),
-          bottom: BorderSide(color: borderColor, width: isExpanded ? 1.5 : 1.0),
-          left: BorderSide(
-            color: isSuperset ? const Color(0xFF00E5FF) : borderColor,
-            width: isSuperset ? 3.5 : (isExpanded ? 1.5 : 1.0),
-          ),
+        border: Border.all(
+          color: cardBorderColor,
+          width: isExpanded || isSuperset ? 1.5 : 1.0,
         ),
-        boxShadow: isExpanded
+        boxShadow: isExpanded || isSuperset
             ? [
                 BoxShadow(
                   color: isSuperset
-                      ? const Color(0xFF00E5FF).withValues(alpha: 0.12)
+                      ? const Color(0xFF00E5FF).withValues(alpha: 0.15)
                       : AppColors.pureWhite.withValues(alpha: 0.08),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
@@ -376,6 +377,53 @@ class ExerciseSequenceCard extends ConsumerWidget {
         ),
       ),
     );
+
+    if (isLinkedWithPrevious) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 32, top: 0, bottom: 6),
+            child: Row(
+              children: [
+                Container(
+                  width: 2.5,
+                  height: 14,
+                  color: const Color(0xFF00E5FF),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 6, vertical: 1.5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: const Color(0xFF00E5FF).withValues(alpha: 0.40),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: const Text(
+                    'LINKED SUPERSET',
+                    style: TextStyle(
+                      fontFamily: AppTypography.fontMono,
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF00E5FF),
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          cardWidget,
+        ],
+      );
+    }
+
+    return cardWidget;
   }
 
   void _showPairSupersetSheet(BuildContext context, WidgetRef ref) {
