@@ -184,6 +184,7 @@ class ActiveExerciseState {
     List<ActiveSetState>? sets,
     String? notes,
     String? supersetGroupId,
+    bool clearSupersetGroup = false,
     int? restDurationSeconds,
   }) {
     return ActiveExerciseState(
@@ -193,7 +194,7 @@ class ActiveExerciseState {
       equipment: equipment ?? this.equipment,
       sets: sets ?? this.sets,
       notes: notes ?? this.notes,
-      supersetGroupId: supersetGroupId ?? this.supersetGroupId,
+      supersetGroupId: clearSupersetGroup ? null : (supersetGroupId ?? this.supersetGroupId),
       restDurationSeconds: restDurationSeconds ?? this.restDurationSeconds,
     );
   }

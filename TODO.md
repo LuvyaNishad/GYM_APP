@@ -9,33 +9,33 @@
 ### ⏱️ Active Feedback & Biomechanical Enhancements `[Next Up / Immediate]`
 Items surfaced directly from user feedback, UX refinements, and gym biomechanics testing:
 
-- [ ] **0.1 Exercise-Aware Phase Cadences & Timespans** `[P0 - ON HOLD per User]`
+- [x] **0.1 Exercise-Aware Phase Cadences & Timespans** `[P0 - Complete]`
   - **Objective:** Move beyond static `3-0-1-0` presets by dynamically tailoring phase durations to exercise biomechanics.
   - **Logic:**
     - Heavy Compounds (Squat, Bench Press, Romanian Deadlift): `3-1-1-0` (3s controlled descent, 1s stable pause, 1s explosive drive).
-    - Explosive Lifts (Power Clean, Snatch, Push Press): `1-0-X-0` (Fast reposition, explosive concentric drive).
+    - Explosive Lifts (Power Clean, Snatch, Push Press): `1-0-1-0` (Fast reposition, explosive concentric drive).
     - Hypertrophy Isolations (Bicep Curls, Lateral Raises, Leg Extensions): `2-1-2-1` or `3-0-2-1` (Strict peak contraction hold and controlled eccentric).
-  - **Files:** `lib/features/workout_session/providers/tempo_pacer_provider.dart`, `lib/features/workout_session/models/tempo_preset.dart`
+  - **Files:** `lib/features/workout_session/providers/tempo_pacer_provider.dart`, `lib/features/workout_session/models/tempo_pacer_state.dart`, `lib/features/workout_session/widgets/tempo_sine_wave_painter.dart`
 
-- [ ] **0.2 Automated Rest Transition on Tempo Set Completion** `[P1]`
-  - **Objective:** Seamlessly transition to the floating rest timer bar the instant the target rep count is reached during tempo pacing.
-  - **Files:** `lib/features/workout_session/screens/workout_session_screen.dart`, `lib/features/workout_session/widgets/tempo_pacer_overlay.dart`
+- [x] **0.2 Automated Rest Transition on Tempo Set Completion** `[P1 - Complete]`
+  - **Objective:** Seamlessly transition to the floating rest timer bar the instant the target rep count is reached during tempo pacing or when tapping "FINISH SET & REST".
+  - **Files:** `lib/features/workout_session/providers/tempo_pacer_provider.dart`, `lib/features/workout_session/widgets/tempo_pacer_overlay.dart`
 
-- [ ] **0.3 Barbell Warmup Pyramid Set Calculator** `[P1]`
-  - **Objective:** Inside the Barbell Plate Calculator modal, add a "Warmup Sets" tab that auto-computes optimal ramp-up sets for the active working weight.
-  - **Progression:** Empty Bar (20kg × 10) $\rightarrow$ 50% (5×) $\rightarrow$ 70% (3×) $\rightarrow$ 85% (1×) $\rightarrow$ Working Set with Olympic plate sleeve visualization for each.
-  - **Files:** `lib/features/workout_session/widgets/plate_calculator_dialog.dart`
+- [x] **0.3 Barbell Warmup Pyramid Set Calculator** `[P1 - Complete]`
+  - **Objective:** Inside the Barbell Plate Calculator modal, added "WARMUP PYRAMID" segmented tab that auto-computes optimal ramp-up sets for the active working weight.
+  - **Progression:** Empty Bar (20kg × 10) $\rightarrow$ 50% (5×) $\rightarrow$ 70% (3×) $\rightarrow$ 85% (1×) $\rightarrow$ 100% Working Set with colored Olympic bumper plate chips and 1-tap "LOAD" button.
+  - **Files:** `lib/features/workout_session/widgets/plate_calculator_modal.dart`
 
-- [ ] **0.4 Exercise-Specific Default Rest Timers** `[P2]`
-  - **Objective:** Auto-set rest duration when loading exercises into active workout:
+- [x] **0.4 Exercise-Specific Default Rest Timers** `[P2 - Complete]`
+  - **Objective:** Auto-set rest duration when loading exercises into active workout and exercise catalog:
     - Heavy Compounds: 180s (3:00)
     - Moderate Compounds: 120s (2:00)
     - Accessories & Isolations: 60s–90s
-  - **Files:** `lib/models/exercise_model.dart`, `lib/features/workout_session/providers/rest_timer_provider.dart`
+  - **Files:** `lib/features/exercise_library/models/exercise_library_item.dart`, `lib/features/workout_session/widgets/exercise_picker_modal.dart`, `lib/features/workout_builder/models/split_model.dart`
 
-- [ ] **0.5 Superset & Giant Set Grouping** `[P2]`
-  - **Objective:** Ability to link exercises as antagonistic supersets (e.g., Incline Dumbbell Press + Chest-Supported Row) in Workout Builder and Session Screen with alternating set execution.
-  - **Files:** `lib/features/workout_builder/`, `lib/features/workout_session/`
+- [x] **0.5 Superset & Giant Set Grouping** `[P2 - Complete]`
+  - **Objective:** Ability to link exercises as antagonistic supersets (e.g., Incline Dumbbell Press + Chest-Supported Row) in Workout Builder and Active Session Screen with alternating set execution and linked Cyan bracket UI.
+  - **Files:** `lib/features/workout_builder/models/split_model.dart`, `lib/features/workout_session/providers/active_session_provider.dart`, `lib/features/workout_session/widgets/exercise_sequence_card.dart`, `lib/features/workout_session/screens/workout_session_screen.dart`
 
 ---
 

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../exercise_library/models/exercise_library_item.dart';
 import '../../workout_session/models/active_session_state.dart';
 
 /// Status indicating volume sufficiency for hypertrophy/recovery.
@@ -21,6 +22,7 @@ class PlannedExercise {
     this.targetRir = 2.0,
     this.targetWeightKg = 60.0,
     this.restSeconds = 90,
+    this.supersetGroupId,
   });
 
   final String exerciseId;
@@ -32,6 +34,7 @@ class PlannedExercise {
   final double targetRir;
   final double targetWeightKg;
   final int restSeconds;
+  final String? supersetGroupId;
 
   /// Converts this planned exercise into active session state with pre-populated sets.
   ActiveExerciseState toActiveExerciseState() {
@@ -54,6 +57,7 @@ class PlannedExercise {
       muscleGroup: muscleGroup,
       equipment: equipment,
       sets: sets,
+      supersetGroupId: supersetGroupId,
       restDurationSeconds: restSeconds,
     );
   }
@@ -68,6 +72,7 @@ class PlannedExercise {
     double? targetRir,
     double? targetWeightKg,
     int? restSeconds,
+    String? supersetGroupId,
   }) {
     return PlannedExercise(
       exerciseId: exerciseId ?? this.exerciseId,
@@ -79,6 +84,7 @@ class PlannedExercise {
       targetRir: targetRir ?? this.targetRir,
       targetWeightKg: targetWeightKg ?? this.targetWeightKg,
       restSeconds: restSeconds ?? this.restSeconds,
+      supersetGroupId: supersetGroupId ?? this.supersetGroupId,
     );
   }
 
@@ -93,20 +99,32 @@ class PlannedExercise {
       'targetRir': targetRir,
       'targetWeightKg': targetWeightKg,
       'restSeconds': restSeconds,
+      'supersetGroupId': supersetGroupId,
     };
   }
 
   factory PlannedExercise.fromJson(Map<String, dynamic> json) {
+    final name = json['exerciseName'] as String? ?? 'Exercise';
+    final muscle = json['muscleGroup'] as String? ?? 'General';
+    final rawRest = (json['restSeconds'] as num?)?.toInt();
+    final computedRest = rawRest != null && rawRest != 90
+        ? rawRest
+        : ExerciseLibraryItem.defaultRestForExercise(
+            name: name,
+            category: muscle,
+          );
+
     return PlannedExercise(
       exerciseId: json['exerciseId'] as String? ?? '',
-      exerciseName: json['exerciseName'] as String? ?? 'Exercise',
-      muscleGroup: json['muscleGroup'] as String? ?? 'General',
+      exerciseName: name,
+      muscleGroup: muscle,
       equipment: json['equipment'] as String? ?? 'barbell',
       targetSets: (json['targetSets'] as num?)?.toInt() ?? 3,
       repRange: json['repRange'] as String? ?? '8–12',
       targetRir: (json['targetRir'] as num?)?.toDouble() ?? 2.0,
       targetWeightKg: (json['targetWeightKg'] as num?)?.toDouble() ?? 60.0,
-      restSeconds: (json['restSeconds'] as num?)?.toInt() ?? 90,
+      restSeconds: computedRest,
+      supersetGroupId: json['supersetGroupId'] as String?,
     );
   }
 }

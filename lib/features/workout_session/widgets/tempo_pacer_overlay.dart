@@ -20,7 +20,7 @@ class TempoPacerOverlay extends ConsumerWidget {
     required int setIndex,
     required int targetReps,
     double? weightKg,
-    TempoPreset preset = TempoPreset.controlled,
+    TempoPreset? preset,
   }) {
     showModalBottomSheet(
       context: context,
@@ -955,7 +955,7 @@ class _TempoPacerModalLauncher extends ConsumerStatefulWidget {
   final int setIndex;
   final int targetReps;
   final double? weightKg;
-  final TempoPreset preset;
+  final TempoPreset? preset;
 
   const _TempoPacerModalLauncher({
     required this.exerciseName,
@@ -963,7 +963,7 @@ class _TempoPacerModalLauncher extends ConsumerStatefulWidget {
     required this.setIndex,
     required this.targetReps,
     this.weightKg,
-    this.preset = TempoPreset.controlled,
+    this.preset,
   });
 
   @override

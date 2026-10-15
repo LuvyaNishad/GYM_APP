@@ -36,6 +36,7 @@ class ExerciseSequenceCard extends ConsumerWidget {
     final notifier = ref.read(activeSessionProvider.notifier);
     final isDone = exercise.isFullyCompleted;
     final topSet = exercise.topCompletedSet;
+    final isSuperset = exercise.supersetGroupId != null;
 
     final borderColor = isExpanded
         ? AppColors.pureWhite
@@ -48,11 +49,21 @@ class ExerciseSequenceCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor, width: isExpanded ? 1.5 : 1.0),
+        border: Border(
+          top: BorderSide(color: borderColor, width: isExpanded ? 1.5 : 1.0),
+          right: BorderSide(color: borderColor, width: isExpanded ? 1.5 : 1.0),
+          bottom: BorderSide(color: borderColor, width: isExpanded ? 1.5 : 1.0),
+          left: BorderSide(
+            color: isSuperset ? const Color(0xFF00E5FF) : borderColor,
+            width: isSuperset ? 3.5 : (isExpanded ? 1.5 : 1.0),
+          ),
+        ),
         boxShadow: isExpanded
             ? [
                 BoxShadow(
-                  color: AppColors.pureWhite.withValues(alpha: 0.08),
+                  color: isSuperset
+                      ? const Color(0xFF00E5FF).withValues(alpha: 0.12)
+                      : AppColors.pureWhite.withValues(alpha: 0.08),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -141,6 +152,32 @@ class ExerciseSequenceCard extends ConsumerWidget {
                               runSpacing: 2,
                               crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
+                                if (isSuperset)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(color: const Color(0xFF00E5FF), width: 1.0),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.bolt, size: 12, color: Color(0xFF00E5FF)),
+                                        SizedBox(width: 2),
+                                        Text(
+                                          'SUPERSET',
+                                          style: TextStyle(
+                                            fontFamily: AppTypography.fontMono,
+                                            fontSize: 11.0,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF00E5FF),
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 Text(
                                   exercise.muscleGroup.toUpperCase(),
                                   style: AppTypography.monoSmall.copyWith(
@@ -191,6 +228,10 @@ class ExerciseSequenceCard extends ConsumerWidget {
                               context: context,
                               currentExercise: exercise,
                             );
+                          } else if (value == 'pair_superset') {
+                            _showPairSupersetSheet(context, ref);
+                          } else if (value == 'unlink_superset') {
+                            notifier.unlinkSuperset(exercise.exerciseId);
                           } else if (value == 'replace') {
                             showModalBottomSheet(
                               context: context,
@@ -210,6 +251,44 @@ class ExerciseSequenceCard extends ConsumerWidget {
                           }
                         },
                         itemBuilder: (ctx) => [
+                          if (isSuperset)
+                            PopupMenuItem(
+                              value: 'unlink_superset',
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.link_off, size: 18, color: Color(0xFFFFB300)),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      'Unlink from Superset',
+                                      style: AppTypography.bodySmall.copyWith(
+                                        color: AppColors.pureWhite,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            PopupMenuItem(
+                              value: 'pair_superset',
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.link, size: 18, color: Color(0xFF00E5FF)),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      'Pair as Superset...',
+                                      style: AppTypography.bodySmall.copyWith(
+                                        color: AppColors.pureWhite,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           PopupMenuItem(
                             value: 'substitute',
                             child: Row(
@@ -296,6 +375,128 @@ class ExerciseSequenceCard extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showPairSupersetSheet(BuildContext context, WidgetRef ref) {
+    final session = ref.read(activeSessionProvider);
+    final availablePartners = session.exercises
+        .where((e) => e.exerciseId != exercise.exerciseId)
+        .toList();
+
+    if (availablePartners.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Add at least one more exercise to workout to pair as a superset.'),
+          backgroundColor: AppColors.charcoal,
+        ),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.onyx,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(color: AppColors.steel),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'PAIR AS SUPERSET',
+                      style: TextStyle(
+                        fontFamily: AppTypography.fontDisplay,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.pureWhite,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: AppColors.platinum, size: 20),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                Text(
+                  'Select an exercise to pair with "${exercise.name}":',
+                  style: const TextStyle(
+                    fontFamily: AppTypography.fontBody,
+                    fontSize: 12.0,
+                    color: AppColors.platinum,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ...availablePartners.map((partner) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: InkWell(
+                      onTap: () {
+                        ref.read(activeSessionProvider.notifier).createSuperset(
+                              exercise.exerciseId,
+                              partner.exerciseId,
+                            );
+                        Navigator.pop(ctx);
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: AppColors.charcoal,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.steel),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.fitness_center, size: 18, color: Color(0xFF00E5FF)),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    partner.name,
+                                    style: const TextStyle(
+                                      fontFamily: AppTypography.fontBody,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.pureWhite,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${partner.muscleGroup.toUpperCase()} • ${partner.sets.length} SETS',
+                                    style: const TextStyle(
+                                      fontFamily: AppTypography.fontMono,
+                                      fontSize: 11.0,
+                                      color: AppColors.platinum,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.add_link, color: Color(0xFF00E5FF), size: 20),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -86,6 +86,11 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     _persistActiveSession();
   }
 
+  /// Starts an empty active workout session with no initial exercises.
+  void startEmptySession({String splitName = 'CUSTOM WORKOUT'}) {
+    startSession(splitName: splitName, initialExercises: const []);
+  }
+
   void _startElapsedTicker() {
     _elapsedTicker?.cancel();
     _elapsedTicker = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -134,7 +139,31 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     final updatedExercises = List<ActiveExerciseState>.from(state.exercises);
     updatedExercises[exIndex] = updatedExercise;
 
-    state = state.copyWith(exercises: updatedExercises);
+    // Check for superset partner transition
+    String? nextExpandedId = state.expandedExerciseId;
+    int restDurationToUse = exercise.restDurationSeconds;
+
+    if (targetCompleted && exercise.supersetGroupId != null) {
+      final partner = updatedExercises.firstWhere(
+        (e) => e.supersetGroupId == exercise.supersetGroupId && e.exerciseId != exercise.exerciseId,
+        orElse: () => exercise,
+      );
+
+      if (partner.exerciseId != exercise.exerciseId) {
+        final partnerHasIncomplete = partner.sets.any((s) => !s.isCompleted);
+        if (partnerHasIncomplete) {
+          // Switch active view directly to superset partner
+          nextExpandedId = partner.exerciseId;
+          // Intermediate transition rest between superset pairings (default 60s or half duration)
+          restDurationToUse = (exercise.restDurationSeconds / 2).clamp(45.0, 90.0).toInt();
+        }
+      }
+    }
+
+    state = state.copyWith(
+      exercises: updatedExercises,
+      expandedExerciseId: nextExpandedId,
+    );
     _persistActiveSession();
 
     if (targetCompleted) {
@@ -146,7 +175,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       final restState = ref.read(restTimerProvider);
       if (restState.autoStart) {
         ref.read(restTimerProvider.notifier).startTimer(
-              durationSeconds: exercise.restDurationSeconds,
+              durationSeconds: restDurationToUse,
               exerciseName: exercise.name,
               setNumber: currentSet.setNumber,
             );
@@ -346,6 +375,55 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       exercises: updated,
       expandedExerciseId: newExercise.exerciseId,
     );
+    _persistActiveSession();
+  }
+
+  /// Pairs two exercises together into an antagonistic or agonist superset group.
+  void createSuperset(String exerciseIdA, String exerciseIdB) {
+    if (exerciseIdA == exerciseIdB) return;
+    final indexA = state.exercises.indexWhere((e) => e.exerciseId == exerciseIdA);
+    final indexB = state.exercises.indexWhere((e) => e.exerciseId == exerciseIdB);
+    if (indexA == -1 || indexB == -1) return;
+
+    final groupId = 'ss_${DateTime.now().microsecondsSinceEpoch}';
+    final updatedList = List<ActiveExerciseState>.from(state.exercises);
+
+    // Update superset groupId
+    updatedList[indexA] = updatedList[indexA].copyWith(supersetGroupId: groupId);
+    updatedList[indexB] = updatedList[indexB].copyWith(supersetGroupId: groupId);
+
+    // Position them adjacent to each other in sequence
+    final exB = updatedList.removeAt(updatedList.indexWhere((e) => e.exerciseId == exerciseIdB));
+    final newIndexA = updatedList.indexWhere((e) => e.exerciseId == exerciseIdA);
+    updatedList.insert(newIndexA + 1, exB);
+
+    state = state.copyWith(exercises: updatedList);
+    _persistActiveSession();
+  }
+
+  /// Removes an exercise from its superset group.
+  void unlinkSuperset(String exerciseId) {
+    final exIndex = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
+    if (exIndex == -1) return;
+
+    final exercise = state.exercises[exIndex];
+    final groupId = exercise.supersetGroupId;
+    if (groupId == null) return;
+
+    final updated = List<ActiveExerciseState>.from(state.exercises);
+    updated[exIndex] = exercise.copyWith(clearSupersetGroup: true);
+
+    // If only one exercise remains with this groupId, unlink it too
+    final remainingWithGroup = updated.where((e) => e.supersetGroupId == groupId).toList();
+    if (remainingWithGroup.length <= 1) {
+      for (int i = 0; i < updated.length; i++) {
+        if (updated[i].supersetGroupId == groupId) {
+          updated[i] = updated[i].copyWith(clearSupersetGroup: true);
+        }
+      }
+    }
+
+    state = state.copyWith(exercises: updated);
     _persistActiveSession();
   }
 

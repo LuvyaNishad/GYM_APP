@@ -188,10 +188,88 @@ class ExerciseLibraryItem {
         'alternatives': alternatives,
       };
 
+  /// Determines default neuromuscular rest period based on exercise mechanics & fatigue profile.
+  static int defaultRestForExercise({
+    required String name,
+    String? exerciseType,
+    String? category,
+    String? movementPattern,
+  }) {
+    final n = name.toLowerCase();
+    final type = exerciseType?.toLowerCase() ?? '';
+    final pattern = movementPattern?.toLowerCase() ?? '';
+
+    // 1. Heavy Compounds: 180s (3:00)
+    if (n.contains('squat') ||
+        n.contains('deadlift') ||
+        n.contains('bench press') ||
+        n.contains('overhead press') ||
+        n.contains('military press') ||
+        n.contains('clean') ||
+        n.contains('snatch') ||
+        pattern == 'squat' ||
+        pattern == 'hinge') {
+      return 180;
+    }
+
+    // 2. Moderate Compounds: 120s (2:00)
+    if (type.contains('compound') ||
+        n.contains('row') ||
+        n.contains('pull-up') ||
+        n.contains('chin-up') ||
+        n.contains('dip') ||
+        n.contains('lunge') ||
+        n.contains('leg press') ||
+        n.contains('hip thrust') ||
+        n.contains('press') ||
+        n.contains('pulldown') ||
+        pattern == 'horizontal_push' ||
+        pattern == 'vertical_push' ||
+        pattern == 'horizontal_pull' ||
+        pattern == 'vertical_pull') {
+      return 120;
+    }
+
+    // 3. Short Isolations & Small Accessories: 60s (1:00)
+    if (n.contains('lateral raise') ||
+        n.contains('face pull') ||
+        n.contains('rear delt') ||
+        n.contains('shrug') ||
+        n.contains('wrist') ||
+        n.contains('crunch') ||
+        n.contains('plank') ||
+        n.contains('calf')) {
+      return 60;
+    }
+
+    // 4. Standard Isolations: 90s (1:30)
+    if (type.contains('isolation') ||
+        n.contains('curl') ||
+        n.contains('extension') ||
+        n.contains('pushdown') ||
+        n.contains('fly') ||
+        n.contains('kickback')) {
+      return 90;
+    }
+
+    return 90;
+  }
+
   factory ExerciseLibraryItem.fromJson(Map<String, dynamic> json) {
+    final rawRest = (json['default_rest_seconds'] as num?)?.toInt();
+    final name = json['name'] as String? ?? '';
+    final computedRest = rawRest != null && rawRest != 90
+        ? rawRest
+        : defaultRestForExercise(
+            name: name,
+            exerciseType: json['exercise_type'] as String?,
+            category: json['category'] as String?,
+            movementPattern: json['movement_pattern'] as String?,
+          );
+
     return ExerciseLibraryItem(
       id: json['id'] as String? ?? '',
-      name: json['name'] as String? ?? '',
+      name: name,
       category: json['category'] as String? ?? 'General',
       subCategory: json['sub_category'] as String? ?? '',
       description: json['description'] as String? ?? '',
@@ -207,7 +285,7 @@ class ExerciseLibraryItem {
       coachingNotes: json['coaching_notes'] as String? ?? '',
       safetyNotes: json['safety_notes'] as String? ?? '',
       loggingSuggestions: json['logging_suggestions'] as String? ?? '',
-      defaultRestSeconds: (json['default_rest_seconds'] as num?)?.toInt() ?? 90,
+      defaultRestSeconds: computedRest,
       isCustom: json['is_custom'] as bool? ?? false,
       alternatives: (json['alternatives'] as List?)?.map((e) => e.toString()).toList() ?? const [],
     );

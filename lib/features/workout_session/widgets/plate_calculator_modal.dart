@@ -74,9 +74,35 @@ class PlateCalculatorModal extends StatefulWidget {
   State<PlateCalculatorModal> createState() => _PlateCalculatorModalState();
 }
 
+enum _PlateCalcTab {
+  plates,
+  warmupPyramid,
+}
+
+class _WarmupTier {
+  const _WarmupTier({
+    required this.tierNumber,
+    required this.name,
+    required this.percentage,
+    required this.weightKg,
+    required this.targetReps,
+    required this.focus,
+    this.isWorkingSet = false,
+  });
+
+  final int tierNumber;
+  final String name;
+  final String percentage;
+  final double weightKg;
+  final String targetReps;
+  final String focus;
+  final bool isWorkingSet;
+}
+
 class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
   late double _totalWeightKg;
   late double _barWeightKg;
+  _PlateCalcTab _selectedTab = _PlateCalcTab.plates;
 
   @override
   void initState() {
@@ -269,7 +295,7 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'PLATE CALCULATOR',
+                'BARBELL TOOLS',
                 style: AppTypography.headlineSmall.copyWith(
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
@@ -284,6 +310,108 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
                 constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
               ),
             ],
+          ),
+          const SizedBox(height: 10),
+
+          // ── Mode Switcher Tab ─────────────────────────────────────────────
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: AppColors.charcoal,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.steel),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedTab = _PlateCalcTab.plates);
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _selectedTab == _PlateCalcTab.plates
+                            ? AppColors.steel.withValues(alpha: 0.6)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.calculate_outlined,
+                            size: 14,
+                            color: _selectedTab == _PlateCalcTab.plates
+                                ? AppColors.pureWhite
+                                : AppColors.platinum,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'PLATE RACK',
+                            style: AppTypography.monoSmall.copyWith(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w800,
+                              color: _selectedTab == _PlateCalcTab.plates
+                                  ? AppColors.pureWhite
+                                  : AppColors.platinum,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedTab = _PlateCalcTab.warmupPyramid);
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _selectedTab == _PlateCalcTab.warmupPyramid
+                            ? const Color(0xFF00E5FF).withValues(alpha: 0.20)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                        border: _selectedTab == _PlateCalcTab.warmupPyramid
+                            ? Border.all(color: const Color(0xFF00E5FF), width: 1.0)
+                            : null,
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.fitness_center,
+                            size: 14,
+                            color: _selectedTab == _PlateCalcTab.warmupPyramid
+                                ? const Color(0xFF00E5FF)
+                                : AppColors.platinum,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'WARMUP PYRAMID',
+                            style: AppTypography.monoSmall.copyWith(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w800,
+                              color: _selectedTab == _PlateCalcTab.warmupPyramid
+                                  ? const Color(0xFF00E5FF)
+                                  : AppColors.platinum,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 10),
 
@@ -443,127 +571,131 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
           ),
           const SizedBox(height: 12),
 
-          // ── PLATES PER SIDE SUMMARY WITH 1-TAP REMOVE ─────────────────────
-          Row(
-            children: [
-              Text(
-                'LOAD ON EACH SIDE:',
-                style: AppTypography.monoSmall.copyWith(
-                  fontSize: 11.0,
-                  color: AppColors.platinum,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.8,
-                ),
-              ),
-              const Spacer(),
-              if (platesPerSide.isNotEmpty)
+          if (_selectedTab == _PlateCalcTab.warmupPyramid) ...[
+            _buildWarmupPyramidView(),
+          ] else ...[
+            // ── PLATES PER SIDE SUMMARY WITH 1-TAP REMOVE ─────────────────────
+            Row(
+              children: [
                 Text(
-                  'Tap (✕) to remove',
+                  'LOAD ON EACH SIDE:',
+                  style: AppTypography.monoSmall.copyWith(
+                    fontSize: 11.0,
+                    color: AppColors.platinum,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const Spacer(),
+                if (platesPerSide.isNotEmpty)
+                  Text(
+                    'Tap (✕) to remove',
+                    style: AppTypography.monoSmall.copyWith(
+                      fontSize: 11.0,
+                      color: AppColors.platinum.withValues(alpha: 0.7),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            if (platesPerSide.isEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'No plates needed — lift the empty bar (${_barWeightKg.toInt()} kg)',
+                  style: AppTypography.monoSmall.copyWith(
+                    fontSize: 11.5,
+                    color: AppColors.platinum,
+                  ),
+                ),
+              )
+            else
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final entry in platesPerSide.entries)
+                    _buildLoadedPlateChip(entry.key, entry.value),
+                ],
+              ),
+            const SizedBox(height: 12),
+
+            // ── INTERACTIVE PLATE RACK (1-TAP TO ADD TO BOTH SIDES) ───────────
+            Row(
+              children: [
+                Text(
+                  'TAP TO ADD PAIR (+2×):',
+                  style: AppTypography.monoSmall.copyWith(
+                    fontSize: 11.0,
+                    color: AppColors.platinum,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  'Loads 1 plate per side',
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 11.0,
                     color: AppColors.platinum.withValues(alpha: 0.7),
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          if (platesPerSide.isEmpty)
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'No plates needed — lift the empty bar (${_barWeightKg.toInt()} kg)',
-                style: AppTypography.monoSmall.copyWith(
-                  fontSize: 11.5,
-                  color: AppColors.platinum,
-                ),
-              ),
-            )
-          else
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (final entry in platesPerSide.entries)
-                  _buildLoadedPlateChip(entry.key, entry.value),
               ],
             ),
-          const SizedBox(height: 12),
-
-          // ── INTERACTIVE PLATE RACK (1-TAP TO ADD TO BOTH SIDES) ───────────
-          Row(
-            children: [
-              Text(
-                'TAP TO ADD PAIR (+2×):',
-                style: AppTypography.monoSmall.copyWith(
-                  fontSize: 11.0,
-                  color: AppColors.platinum,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.8,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                'Loads 1 plate per side',
-                style: AppTypography.monoSmall.copyWith(
-                  fontSize: 11.0,
-                  color: AppColors.platinum.withValues(alpha: 0.7),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              for (final plate in kOlympicPlates)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: _buildPlateAddButton(plate),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                for (final plate in kOlympicPlates)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: _buildPlateAddButton(plate),
+                    ),
                   ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            // ── QUICK STEPPERS (-10, -5, +5, +10) ─────────────────────────────
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildAdjustChip(label: '-10 kg', onTap: () => _adjustWeight(-10.0)),
+                _buildAdjustChip(label: '-5 kg', onTap: () => _adjustWeight(-5.0)),
+                _buildAdjustChip(label: '+5 kg', onTap: () => _adjustWeight(5.0)),
+                _buildAdjustChip(label: '+10 kg', onTap: () => _adjustWeight(10.0)),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // ── APPLY / DONE BUTTON ───────────────────────────────────────────
+            FilledButton.icon(
+              onPressed: () {
+                widget.onWeightSelected?.call(_totalWeightKg);
+                Navigator.of(context).maybePop();
+              },
+              icon: const Icon(Icons.check, size: 18, color: AppColors.onPrimary),
+              label: Text(
+                'APPLY ${_totalWeightKg % 1 == 0 ? _totalWeightKg.toInt() : _totalWeightKg.toStringAsFixed(1)} KG',
+                style: AppTypography.monoSmall.copyWith(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.0,
+                  color: AppColors.onPrimary,
                 ),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          // ── QUICK STEPPERS (-10, -5, +5, +10) ─────────────────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildAdjustChip(label: '-10 kg', onTap: () => _adjustWeight(-10.0)),
-              _buildAdjustChip(label: '-5 kg', onTap: () => _adjustWeight(-5.0)),
-              _buildAdjustChip(label: '+5 kg', onTap: () => _adjustWeight(5.0)),
-              _buildAdjustChip(label: '+10 kg', onTap: () => _adjustWeight(10.0)),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // ── APPLY / DONE BUTTON ───────────────────────────────────────────
-          FilledButton.icon(
-            onPressed: () {
-              widget.onWeightSelected?.call(_totalWeightKg);
-              Navigator.of(context).maybePop();
-            },
-            icon: const Icon(Icons.check, size: 18, color: AppColors.onPrimary),
-            label: Text(
-              'APPLY ${_totalWeightKg % 1 == 0 ? _totalWeightKg.toInt() : _totalWeightKg.toStringAsFixed(1)} KG',
-              style: AppTypography.monoSmall.copyWith(
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.0,
-                color: AppColors.onPrimary,
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
+                minimumSize: const Size.fromHeight(46),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.onPrimary,
-              minimumSize: const Size.fromHeight(46),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
+          ],
         ],
       ),
     ),
@@ -911,6 +1043,292 @@ class _PlateCalculatorModalState extends State<PlateCalculatorModal> {
             color: AppColors.pureWhite,
           ),
         ),
+      ),
+    );
+  }
+
+  // ── Multi-Stage Barbell Warmup Pyramid Builder ─────────────────────────────
+  Widget _buildWarmupPyramidView() {
+    final stages = [
+      _WarmupTier(
+        tierNumber: 1,
+        name: 'Empty Bar Warmup',
+        percentage: 'BAR',
+        weightKg: _barWeightKg,
+        targetReps: '10 Reps',
+        focus: 'Mobility & joint lubrication',
+      ),
+      _WarmupTier(
+        tierNumber: 2,
+        name: 'Initial Ramp',
+        percentage: '50%',
+        weightKg: (((_totalWeightKg * 0.50) / 2.5).round() * 2.5).clamp(_barWeightKg, 500.0),
+        targetReps: '5 Reps',
+        focus: 'Establish bar path & cadence',
+      ),
+      _WarmupTier(
+        tierNumber: 3,
+        name: 'Working Potentiation',
+        percentage: '70%',
+        weightKg: (((_totalWeightKg * 0.70) / 2.5).round() * 2.5).clamp(_barWeightKg, 500.0),
+        targetReps: '3 Reps',
+        focus: 'Acceleration & abdominal bracing',
+      ),
+      _WarmupTier(
+        tierNumber: 4,
+        name: 'Neural Primer',
+        percentage: '85%',
+        weightKg: (((_totalWeightKg * 0.85) / 2.5).round() * 2.5).clamp(_barWeightKg, 500.0),
+        targetReps: '1 Rep',
+        focus: 'CNS potentiator (zero fatigue)',
+      ),
+      _WarmupTier(
+        tierNumber: 5,
+        name: 'Working Set',
+        percentage: '100%',
+        weightKg: _totalWeightKg,
+        targetReps: 'Target Reps',
+        focus: 'Target performance load',
+        isWorkingSet: true,
+      ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'PROGRESSIVE PYRAMID TIERS',
+              style: AppTypography.monoSmall.copyWith(
+                fontSize: 11.0,
+                color: AppColors.platinum,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.8,
+              ),
+            ),
+            Text(
+              'Tap LOAD to set weight',
+              style: AppTypography.monoSmall.copyWith(
+                fontSize: 11.0,
+                color: AppColors.platinum.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        for (final tier in stages) ...[
+          _buildWarmupTierCard(tier),
+          const SizedBox(height: 8),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildWarmupTierCard(_WarmupTier tier) {
+    final plates = calculatePlatesPerSide(
+      totalWeightKg: tier.weightKg,
+      barWeightKg: _barWeightKg,
+    );
+    final isCurrentWeight = (_totalWeightKg - tier.weightKg).abs() < 0.1;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: tier.isWorkingSet
+            ? const Color(0xFF00E5FF).withValues(alpha: 0.08)
+            : AppColors.charcoal,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: tier.isWorkingSet
+              ? const Color(0xFF00E5FF)
+              : (isCurrentWeight ? AppColors.pureWhite : AppColors.steel),
+          width: tier.isWorkingSet || isCurrentWeight ? 1.5 : 1.0,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Tier percentage pill
+          Container(
+            width: 48,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: tier.isWorkingSet
+                  ? const Color(0xFF00E5FF).withValues(alpha: 0.18)
+                  : AppColors.onyx,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: tier.isWorkingSet
+                    ? const Color(0xFF00E5FF)
+                    : AppColors.steel,
+              ),
+            ),
+            alignment: Alignment.center,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  tier.percentage,
+                  style: TextStyle(
+                    fontFamily: AppTypography.fontMono,
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.w900,
+                    color: tier.isWorkingSet
+                        ? const Color(0xFF00E5FF)
+                        : AppColors.pureWhite,
+                  ),
+                ),
+                Text(
+                  'SET ${tier.tierNumber}',
+                  style: TextStyle(
+                    fontFamily: AppTypography.fontMono,
+                    fontSize: 11.0,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.platinum.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // Details: Name, Load, Reps, Plates
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      '${tier.weightKg % 1 == 0 ? tier.weightKg.toInt() : tier.weightKg.toStringAsFixed(1)} KG',
+                      style: const TextStyle(
+                        fontFamily: AppTypography.fontMono,
+                        fontSize: 15.0,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.pureWhite,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '• ${tier.targetReps}',
+                      style: const TextStyle(
+                        fontFamily: AppTypography.fontMono,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF00E5FF),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  tier.focus,
+                  style: const TextStyle(
+                    fontFamily: AppTypography.fontBody,
+                    fontSize: 11.0,
+                    color: AppColors.platinum,
+                  ),
+                ),
+                const SizedBox(height: 6),
+
+                // Plates required per side
+                if (plates.isEmpty)
+                  Text(
+                    'Empty bar (${_barWeightKg.toInt()} kg)',
+                    style: const TextStyle(
+                      fontFamily: AppTypography.fontMono,
+                      fontSize: 11.0,
+                      color: AppColors.platinum,
+                    ),
+                  )
+                else
+                  Wrap(
+                    spacing: 4,
+                    runSpacing: 4,
+                    children: [
+                      for (final entry in plates.entries)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: getPlateColor(entry.key),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: getPlateBorderColor(entry.key), width: 1.0),
+                          ),
+                          child: Text(
+                            '${entry.value}×${entry.key % 1 == 0 ? entry.key.toInt() : entry.key}k',
+                            style: TextStyle(
+                              fontFamily: AppTypography.fontMono,
+                              fontSize: 11.0,
+                              fontWeight: FontWeight.w900,
+                              color: entry.key == 5.0 ? Colors.black : Colors.white,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // Actions: PREVIEW on bar & LOAD into set
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FilledButton(
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  widget.onWeightSelected?.call(tier.weightKg);
+                  Navigator.of(context).maybePop();
+                },
+                style: FilledButton.styleFrom(
+                  backgroundColor: tier.isWorkingSet
+                      ? const Color(0xFF00E5FF)
+                      : AppColors.pureWhite,
+                  foregroundColor: AppColors.onyx,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  minimumSize: const Size(60, 34),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                child: const Text(
+                  'LOAD',
+                  style: TextStyle(
+                    fontFamily: AppTypography.fontMono,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.onyx,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              InkWell(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _totalWeightKg = tier.weightKg);
+                },
+                borderRadius: BorderRadius.circular(4),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  child: Text(
+                    isCurrentWeight ? 'VIEWING' : 'PREVIEW',
+                    style: TextStyle(
+                      fontFamily: AppTypography.fontMono,
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w700,
+                      color: isCurrentWeight
+                          ? const Color(0xFF00E5FF)
+                          : AppColors.platinum,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

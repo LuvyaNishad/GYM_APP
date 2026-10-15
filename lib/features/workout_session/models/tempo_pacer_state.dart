@@ -12,6 +12,26 @@ enum TempoPreset {
     concentricSeconds: 1,
     topHoldSeconds: 0,
   ),
+  compoundStrength(
+    id: 'compoundStrength',
+    name: 'Heavy Compound',
+    shortName: 'Compound 3-1-1',
+    description: '3s Controlled Descent • 1s Pause • 1s Explosive Drive',
+    eccentricSeconds: 3,
+    bottomHoldSeconds: 1,
+    concentricSeconds: 1,
+    topHoldSeconds: 0,
+  ),
+  isolationPump(
+    id: 'isolationPump',
+    name: 'Isolation Squeeze',
+    shortName: 'Isolation 2-1-2-1',
+    description: '2s Lower • 1s Stretch • 2s Squeeze • 1s Peak Hold',
+    eccentricSeconds: 2,
+    bottomHoldSeconds: 1,
+    concentricSeconds: 2,
+    topHoldSeconds: 1,
+  ),
   hypertrophy(
     id: 'hypertrophy',
     name: 'Muscle Growth (TUT)',
@@ -35,9 +55,9 @@ enum TempoPreset {
   explosive(
     id: 'explosive',
     name: 'Explosive Power',
-    shortName: 'Power 2-0-1',
-    description: '2s Lower • Maximum Speed Drive',
-    eccentricSeconds: 2,
+    shortName: 'Power 1-0-1',
+    description: '1s Lower • Fast Speed Drive',
+    eccentricSeconds: 1,
     bottomHoldSeconds: 0,
     concentricSeconds: 1,
     topHoldSeconds: 0,
@@ -68,8 +88,55 @@ enum TempoPreset {
 
   String get shortTag => shortName.split(' ').first.toUpperCase();
 
-  String get cadenceText =>
-      '$eccentricSeconds-$bottomHoldSeconds-$concentricSeconds';
+  String get cadenceText => topHoldSeconds > 0
+      ? '$eccentricSeconds-$bottomHoldSeconds-$concentricSeconds-$topHoldSeconds'
+      : '$eccentricSeconds-$bottomHoldSeconds-$concentricSeconds';
+
+  /// Determines the optimal biomechanical tempo preset for a given exercise.
+  static TempoPreset defaultForExercise(String? exerciseName) {
+    if (exerciseName == null || exerciseName.trim().isEmpty) {
+      return TempoPreset.controlled;
+    }
+    final n = exerciseName.toLowerCase();
+    // Explosive Olympic / Power
+    if (n.contains('clean') ||
+        n.contains('snatch') ||
+        n.contains('push press') ||
+        n.contains('swing') ||
+        n.contains('jump') ||
+        n.contains('slam')) {
+      return TempoPreset.explosive;
+    }
+    // Isolation / Peak Contraction movements
+    if (n.contains('curl') ||
+        n.contains('lateral raise') ||
+        n.contains('front raise') ||
+        n.contains('rear delt') ||
+        n.contains('fly') ||
+        n.contains('extension') ||
+        n.contains('pushdown') ||
+        n.contains('calf') ||
+        n.contains('face pull') ||
+        n.contains('kickback') ||
+        n.contains('shrug')) {
+      return TempoPreset.isolationPump;
+    }
+    // Heavy Compound movements
+    if (n.contains('squat') ||
+        n.contains('deadlift') ||
+        n.contains('bench press') ||
+        n.contains('overhead press') ||
+        n.contains('press') ||
+        n.contains('row') ||
+        n.contains('pull-up') ||
+        n.contains('chin-up') ||
+        n.contains('pulldown') ||
+        n.contains('lunge') ||
+        n.contains('dip')) {
+      return TempoPreset.compoundStrength;
+    }
+    return TempoPreset.controlled;
+  }
 }
 
 /// The distinct biomechanical movement phases of a single repetition.

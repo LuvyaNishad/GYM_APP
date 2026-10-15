@@ -84,10 +84,7 @@ class _TempoSineWaveWidgetState extends State<TempoSineWaveWidget>
       case TempoPhase.concentric:
         return preset.concentricSeconds * 1000;
       case TempoPhase.topHold:
-        final holdSec = preset.topHoldSeconds > 0
-            ? preset.topHoldSeconds
-            : (isConcentricFirst ? preset.bottomHoldSeconds : 0);
-        return holdSec * 1000;
+        return preset.topHoldSeconds * 1000;
       case TempoPhase.completed:
         return 0;
     }
@@ -100,9 +97,6 @@ class _TempoSineWaveWidgetState extends State<TempoSineWaveWidget>
 
     double elapsedBefore = 0.0;
     if (state.isConcentricFirst) {
-      final holdSec = state.preset.topHoldSeconds > 0
-          ? state.preset.topHoldSeconds
-          : state.preset.bottomHoldSeconds;
       switch (state.phase) {
         case TempoPhase.concentric:
           elapsedBefore = 0.0;
@@ -111,7 +105,13 @@ class _TempoSineWaveWidgetState extends State<TempoSineWaveWidget>
           elapsedBefore = state.preset.concentricSeconds.toDouble();
           break;
         case TempoPhase.eccentric:
-          elapsedBefore = (state.preset.concentricSeconds + holdSec).toDouble();
+          elapsedBefore = (state.preset.concentricSeconds + state.preset.topHoldSeconds).toDouble();
+          break;
+        case TempoPhase.bottomHold:
+          elapsedBefore = (state.preset.concentricSeconds +
+                  state.preset.topHoldSeconds +
+                  state.preset.eccentricSeconds)
+              .toDouble();
           break;
         default:
           return 0.0;
@@ -218,19 +218,19 @@ class _BiomechanicalWavePainter extends CustomPainter {
   // Normalized phase fractions within one rep
   double get _eccFraction =>
       preset.eccentricSeconds / preset.totalCycleSeconds;
-  double get _holdFraction =>
-      (preset.topHoldSeconds > 0
-          ? preset.topHoldSeconds
-          : preset.bottomHoldSeconds) /
-      preset.totalCycleSeconds;
+  double get _bottomHoldFraction =>
+      preset.bottomHoldSeconds / preset.totalCycleSeconds;
   double get _concentricFraction =>
       preset.concentricSeconds / preset.totalCycleSeconds;
+  double get _topHoldFraction =>
+      preset.topHoldSeconds / preset.totalCycleSeconds;
 
   /// Returns normalized Y in [0.0, 1.0] where 1.0 is TOP (Lockout) and 0.0 is BOTTOM (Full Depth).
   double _getYForCycleProgress(double t) {
     if (isConcentricFirst) {
       final concEnd = _concentricFraction;
-      final holdEnd = concEnd + _holdFraction;
+      final topHoldEnd = concEnd + _topHoldFraction;
+      final eccEnd = topHoldEnd + _eccFraction;
 
       if (t <= 0.0) {
         return 0.0; // starts at bottom / floor
@@ -238,18 +238,21 @@ class _BiomechanicalWavePainter extends CustomPainter {
         // Concentric drive: smooth ascent from bottom (0.0) to top (1.0)
         final localT = (t / concEnd).clamp(0.0, 1.0);
         return 0.5 - 0.5 * math.cos(localT * math.pi);
-      } else if (t <= holdEnd) {
+      } else if (t <= topHoldEnd) {
         // Peak contraction hold at top (1.0)
         return 1.0;
-      } else {
+      } else if (t <= eccEnd) {
         // Eccentric lowering: smooth descent from top (1.0) back to bottom (0.0)
-        final localT = ((t - holdEnd) / (1.0 - holdEnd)).clamp(0.0, 1.0);
+        final localT = ((t - topHoldEnd) / (eccEnd - topHoldEnd)).clamp(0.0, 1.0);
         return 0.5 + 0.5 * math.cos(localT * math.pi);
+      } else {
+        // Bottom hold / pause at stretch
+        return 0.0;
       }
     }
 
     final eccEnd = _eccFraction;
-    final bottomEnd = eccEnd + _holdFraction;
+    final bottomEnd = eccEnd + _bottomHoldFraction;
     final concEnd = bottomEnd + _concentricFraction;
 
     if (t <= 0.0) {
@@ -303,19 +306,7 @@ class _BiomechanicalWavePainter extends CustomPainter {
 
     final activeColor = _getPhaseColor();
 
-    // ── 1. Phase Zone Transition Coordinates ─────────────────────────────
-    final double firstX;
-    final double secondX;
-
-    if (isConcentricFirst) {
-      firstX = marginLeft + (_concentricFraction * trackWidth);
-      secondX = firstX + (_holdFraction * trackWidth);
-    } else {
-      firstX = marginLeft + (_eccFraction * trackWidth);
-      secondX = firstX + (_holdFraction * trackWidth);
-    }
-
-    // ── 2. Horizontal Datum Lines (LOCKOUT & DEPTH) ────────────────────────
+    // ── 1. Horizontal Datum Lines (LOCKOUT & DEPTH) ────────────────────────
     final datumPaint = Paint()
       ..color = AppColors.steel.withValues(alpha: 0.35)
       ..strokeWidth = 1.0
@@ -371,16 +362,34 @@ class _BiomechanicalWavePainter extends CustomPainter {
       fontWeight: FontWeight.w700,
     );
 
-    // ── 3. Vertical Phase Transition Markers ──────────────────────────────
+    // ── 2. Vertical Phase Transition Markers ──────────────────────────────
     final markerPaint = Paint()
       ..color = AppColors.steel.withValues(alpha: 0.30)
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
-    // Draw dashed vertical lines at phase boundaries
-    _drawDashedVerticalLine(canvas, firstX, marginTop, marginBottom, markerPaint);
-    if (_holdFraction > 0.0) {
-      _drawDashedVerticalLine(canvas, secondX, marginTop, marginBottom, markerPaint);
+    if (isConcentricFirst) {
+      final firstX = marginLeft + (_concentricFraction * trackWidth);
+      final secondX = firstX + (_topHoldFraction * trackWidth);
+      final thirdX = secondX + (_eccFraction * trackWidth);
+      _drawDashedVerticalLine(canvas, firstX, marginTop, marginBottom, markerPaint);
+      if (_topHoldFraction > 0.0) {
+        _drawDashedVerticalLine(canvas, secondX, marginTop, marginBottom, markerPaint);
+      }
+      if (_bottomHoldFraction > 0.0) {
+        _drawDashedVerticalLine(canvas, thirdX, marginTop, marginBottom, markerPaint);
+      }
+    } else {
+      final firstX = marginLeft + (_eccFraction * trackWidth);
+      final secondX = firstX + (_bottomHoldFraction * trackWidth);
+      final thirdX = secondX + (_concentricFraction * trackWidth);
+      _drawDashedVerticalLine(canvas, firstX, marginTop, marginBottom, markerPaint);
+      if (_bottomHoldFraction > 0.0) {
+        _drawDashedVerticalLine(canvas, secondX, marginTop, marginBottom, markerPaint);
+      }
+      if (_topHoldFraction > 0.0) {
+        _drawDashedVerticalLine(canvas, thirdX, marginTop, marginBottom, markerPaint);
+      }
     }
 
     // ── 4. Full Wave Curve Construction ────────────────────────────────────
