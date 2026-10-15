@@ -21,6 +21,8 @@ const List<ExerciseTemplate> kExerciseCatalog = [
   // Chest
   ExerciseTemplate(name: 'Barbell Bench Press', muscleGroup: 'Chest', equipment: 'barbell', defaultRestSeconds: 180),
   ExerciseTemplate(name: 'Incline Dumbbell Press', muscleGroup: 'Chest', equipment: 'dumbbell', defaultRestSeconds: 120),
+  ExerciseTemplate(name: 'Machine Chest Press', muscleGroup: 'Chest', equipment: 'machine', defaultRestSeconds: 120),
+  ExerciseTemplate(name: 'Machine Chest Fly', muscleGroup: 'Chest', equipment: 'machine', defaultRestSeconds: 60),
   ExerciseTemplate(name: 'Dips (Chest Focus)', muscleGroup: 'Chest', equipment: 'bodyweight', defaultRestSeconds: 120),
   ExerciseTemplate(name: 'Cable Chest Fly', muscleGroup: 'Chest', equipment: 'cable', defaultRestSeconds: 60),
   ExerciseTemplate(name: 'Push-Ups', muscleGroup: 'Chest', equipment: 'bodyweight', defaultRestSeconds: 60),
@@ -33,7 +35,9 @@ const List<ExerciseTemplate> kExerciseCatalog = [
   ExerciseTemplate(name: 'Single-Arm Dumbbell Row', muscleGroup: 'Back', equipment: 'dumbbell', defaultRestSeconds: 90),
   // Shoulders
   ExerciseTemplate(name: 'Standing Overhead Press', muscleGroup: 'Shoulders', equipment: 'barbell', defaultRestSeconds: 180),
+  ExerciseTemplate(name: 'Machine Shoulder Press', muscleGroup: 'Shoulders', equipment: 'machine', defaultRestSeconds: 120),
   ExerciseTemplate(name: 'Dumbbell Shoulder Press', muscleGroup: 'Shoulders', equipment: 'dumbbell', defaultRestSeconds: 120),
+  ExerciseTemplate(name: 'Machine Rear Delt Fly', muscleGroup: 'Shoulders', equipment: 'machine', defaultRestSeconds: 60),
   ExerciseTemplate(name: 'Cable Lateral Raise', muscleGroup: 'Shoulders', equipment: 'cable', defaultRestSeconds: 60),
   ExerciseTemplate(name: 'Dumbbell Lateral Raise', muscleGroup: 'Shoulders', equipment: 'dumbbell', defaultRestSeconds: 60),
   ExerciseTemplate(name: 'Face Pull', muscleGroup: 'Shoulders', equipment: 'cable', defaultRestSeconds: 60),

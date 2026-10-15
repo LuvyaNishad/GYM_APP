@@ -634,7 +634,56 @@
     "alternatives": [
       "barbell-bench-press",
       "dumbbell-bench-press",
+      "machine-chest-fly",
       "dumbbell-fly"
+    ]
+  },
+  {
+    "id": "machine-chest-fly",
+    "name": "Machine Chest Fly",
+    "category": "Chest",
+    "sub_category": "Chest",
+    "description": "Machine Chest Fly is an isolation machine movement providing continuous tension through horizontal adduction for peak pectoral contraction.",
+    "primary_muscles": [
+      "pectoralis major"
+    ],
+    "secondary_muscles": [
+      "anterior deltoids"
+    ],
+    "equipment": [
+      "pec deck machine",
+      "chest fly machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "horizontal_push",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "chest",
+      "isolation",
+      "machine",
+      "fly",
+      "pec-deck",
+      "machine-chest-fly",
+      "hypertrophy",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Adjust seat height so the handles or arm pads align with your mid-chest",
+      "Plant feet firmly, sit upright against the back pad, and keep a soft bend in your elbows",
+      "Squeeze your chest muscles to bring the handles together in front of your sternum",
+      "Hold the peak contraction for 1 second, then open your arms under control over 2-3 seconds"
+    ],
+    "coaching_notes": "Do not let your shoulders roll forward. Lead the movement from your elbows and maximize the inner chest squeeze.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "pec-deck-fly",
+      "cable-crossover",
+      "dumbbell-fly",
+      "machine-chest-press"
     ]
   },
   {
@@ -1603,8 +1652,58 @@
     "is_custom": false,
     "alternatives": [
       "standing-barbell-overhead-press",
+      "machine-shoulder-press",
       "arnold-press",
       "dumbbell-lateral-raise"
+    ]
+  },
+  {
+    "id": "machine-shoulder-press",
+    "name": "Machine Shoulder Press",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Machine Shoulder Press is a compound vertical push exercise providing guided, stable overhead pressing to build shoulder strength and deltoid mass.",
+    "primary_muscles": [
+      "anterior deltoids",
+      "medial deltoids"
+    ],
+    "secondary_muscles": [
+      "triceps",
+      "upper trapezius"
+    ],
+    "equipment": [
+      "shoulder press machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "vertical_push",
+    "exercise_type": "compound",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "compound",
+      "machine",
+      "press",
+      "overhead-press",
+      "machine-shoulder-press",
+      "hypertrophy",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Adjust the seat so the handles sit at roughly ear or chin level with your feet planted flat",
+      "Grip the handles firmly with knuckles facing upward and brace your core against the back pad",
+      "Press the weight vertically overhead until arms are nearly fully extended without locking elbows hard",
+      "Lower the handles under control over 2-3 seconds until you feel a deep stretch in your deltoids"
+    ],
+    "coaching_notes": "Maintain back contact with the pad throughout the movement. Avoid flaring elbows excessively wide to protect the rotator cuff.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 120,
+    "is_custom": false,
+    "alternatives": [
+      "seated-dumbbell-shoulder-press",
+      "standing-barbell-overhead-press",
+      "smith-machine-overhead-press",
+      "arnold-press"
     ]
   },
   {
@@ -1883,8 +1982,59 @@
     "default_rest_seconds": 90,
     "is_custom": false,
     "alternatives": [
+      "machine-rear-delt-fly",
       "bent-over-rear-delt-fly",
       "face-pull"
+    ]
+  },
+  {
+    "id": "machine-rear-delt-fly",
+    "name": "Machine Rear Delt Fly",
+    "category": "Shoulders",
+    "sub_category": "Shoulders",
+    "description": "Machine Rear Delt Fly is an isolation movement targeting the posterior deltoids and upper back stabilizers using a dedicated reverse fly machine.",
+    "primary_muscles": [
+      "rear deltoids"
+    ],
+    "secondary_muscles": [
+      "rhomboids",
+      "middle trapezius",
+      "infraspinatus"
+    ],
+    "equipment": [
+      "reverse pec deck machine",
+      "rear delt fly machine"
+    ],
+    "primary_equipment": "machine",
+    "movement_pattern": "horizontal_pull",
+    "exercise_type": "isolation",
+    "difficulty": "beginner to intermediate",
+    "tags": [
+      "shoulders",
+      "isolation",
+      "machine",
+      "rear-delt",
+      "reverse-pec-deck",
+      "machine-rear-delt-fly",
+      "hypertrophy",
+      "gym",
+      "exercise-library"
+    ],
+    "instructions": [
+      "Adjust the seat so the handles are level with your shoulders when seated facing the pad",
+      "Chest firmly against the pad, grasp handles with a neutral or overhand grip with a slight bend in your elbows",
+      "Pull the handles out and back in a wide arc focusing on squeezing your rear delts",
+      "Pause for a brief contraction at the end range, then return slowly under control without letting weights slam"
+    ],
+    "coaching_notes": "Avoid shrugging with your upper traps. Keep your neck relaxed and drive outward through the back of your elbows.",
+    "logging_suggestions": "record sets, reps, load (if applicable), and rest; for timed holds/carries, record duration or distance.",
+    "default_rest_seconds": 60,
+    "is_custom": false,
+    "alternatives": [
+      "reverse-pec-deck",
+      "face-pull",
+      "bent-over-rear-delt-fly",
+      "cable-rear-delt-fly"
     ]
   },
   {
