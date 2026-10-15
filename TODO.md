@@ -1,10 +1,43 @@
 # LEON — Master Product & Development Roadmap (TODO.md)
 
-> **Purpose:** Master implementation roadmap for LEON (Operational Fitness OS). Tracks active production milestones to bring the app from a local-first power tracker to a commercial-grade, multi-device fitness platform. Check off (`- [x]`) items as they are completed.
+> **Purpose:** Master implementation roadmap for LEON (Operational Fitness OS). Tracks active production milestones, pending user feedback/holds, and planned epics to bring the app from a local-first power tracker to a commercial-grade, multi-device fitness platform. Check off (`- [x]`) items as they are completed.
 
 ---
 
-## 🚀 Active Production Backlog (Remaining Features)
+## 🚀 Active Production Backlog (Remaining Tasks)
+
+### ⏱️ Active Feedback & Biomechanical Enhancements `[Next Up / Immediate]`
+Items surfaced directly from user feedback, UX refinements, and gym biomechanics testing:
+
+- [ ] **0.1 Exercise-Aware Phase Cadences & Timespans** `[P0 - ON HOLD per User]`
+  - **Objective:** Move beyond static `3-0-1-0` presets by dynamically tailoring phase durations to exercise biomechanics.
+  - **Logic:**
+    - Heavy Compounds (Squat, Bench Press, Romanian Deadlift): `3-1-1-0` (3s controlled descent, 1s stable pause, 1s explosive drive).
+    - Explosive Lifts (Power Clean, Snatch, Push Press): `1-0-X-0` (Fast reposition, explosive concentric drive).
+    - Hypertrophy Isolations (Bicep Curls, Lateral Raises, Leg Extensions): `2-1-2-1` or `3-0-2-1` (Strict peak contraction hold and controlled eccentric).
+  - **Files:** `lib/features/workout_session/providers/tempo_pacer_provider.dart`, `lib/features/workout_session/models/tempo_preset.dart`
+
+- [ ] **0.2 Automated Rest Transition on Tempo Set Completion** `[P1]`
+  - **Objective:** Seamlessly transition to the floating rest timer bar the instant the target rep count is reached during tempo pacing.
+  - **Files:** `lib/features/workout_session/screens/workout_session_screen.dart`, `lib/features/workout_session/widgets/tempo_pacer_overlay.dart`
+
+- [ ] **0.3 Barbell Warmup Pyramid Set Calculator** `[P1]`
+  - **Objective:** Inside the Barbell Plate Calculator modal, add a "Warmup Sets" tab that auto-computes optimal ramp-up sets for the active working weight.
+  - **Progression:** Empty Bar (20kg × 10) $\rightarrow$ 50% (5×) $\rightarrow$ 70% (3×) $\rightarrow$ 85% (1×) $\rightarrow$ Working Set with Olympic plate sleeve visualization for each.
+  - **Files:** `lib/features/workout_session/widgets/plate_calculator_dialog.dart`
+
+- [ ] **0.4 Exercise-Specific Default Rest Timers** `[P2]`
+  - **Objective:** Auto-set rest duration when loading exercises into active workout:
+    - Heavy Compounds: 180s (3:00)
+    - Moderate Compounds: 120s (2:00)
+    - Accessories & Isolations: 60s–90s
+  - **Files:** `lib/models/exercise_model.dart`, `lib/features/workout_session/providers/rest_timer_provider.dart`
+
+- [ ] **0.5 Superset & Giant Set Grouping** `[P2]`
+  - **Objective:** Ability to link exercises as antagonistic supersets (e.g., Incline Dumbbell Press + Chest-Supported Row) in Workout Builder and Session Screen with alternating set execution.
+  - **Files:** `lib/features/workout_builder/`, `lib/features/workout_session/`
+
+---
 
 ### ☁️ Epic 1: Cloud Sync & Multi-Device Backup `[P0]`
 Enable seamless cloud authentication and background synchronization so users can switch phones or access workouts across multiple devices without data loss.
@@ -28,36 +61,16 @@ Enable seamless cloud authentication and background synchronization so users can
 
 ---
 
-### 📲 Epic 2: Lock Screen Live Activity & Persistent Notification Bar `[P0]`
-Deliver glanceable, hands-free rest interval countdowns directly on the lock screen and notification drawer while lifting or playing music.
-
-- [x] **2.1 Android Foreground Service Persistent Notification** `[P0]`
-  - **Objective:** Keep the workout session and rest timer visible in Android notification drawer with instant quick actions.
-  - **How to do it:**
-    - Implement a foreground service via `flutter_local_notifications` or custom platform channel.
-    - Notification layout: Exercise name (e.g., *"Barbell Bench Press — Set 3/4"*), live countdown progress bar, and action buttons (`+30s`, `Skip Rest`).
-    - Auto-dismisses when rest completes with haptic trigger.
-  - **Files:** `android/app/src/main/`, `lib/features/workout_session/services/notification_service.dart`
-
-- [x] **2.2 iOS Live Activity & Dynamic Island Widget** `[P0]`
-  - **Objective:** Native ActivityKit Live Activity widget on iPhone Lock Screen and Dynamic Island.
-  - **How to do it:**
-    - Create Swift Widget Extension using ActivityKit.
-    - Render compact Dynamic Island pill showing remaining rest seconds and next exercise.
-    - Expandable lock screen banner showing current set weight $\times$ reps and plate breakdown.
-  - **Files:** `ios/Runner/`, `ios/LeonLiveActivity/`
-
----
-
 ### 🔊 Epic 3: Rest Timer Audio Sound Pack & Headphone Ducking `[P1]`
 Provide crystal-clear auditory cues that play through gym headphones without disrupting music playback.
 
 - [ ] **3.1 Audio Asset Sound Pack Integration** `[P1]`
-  - **Objective:** Bundle low-latency audio sound cues for rest interval countdown (3, 2, 1, chime).
+  - **Objective:** Bundle low-latency audio sound cues for rest interval countdown (3, 2, 1, chime) and tempo metronome clicks.
   - **How to do it:**
     - Add crisp audio assets to `assets/audio/`:
       - `rest_countdown_beep.wav`
       - `rest_complete_chime.wav`
+      - `metronome_woodblock.wav`
       - `boxing_bell_round.wav`
     - Use `audioplayers` with `AudioContext` set to duck background audio (`duckOthers: true`).
     - Add setting toggle in Profile screen: `Sound Alerts: [Sound + Vibrate / Vibrate Only / Silent]`.
@@ -121,11 +134,17 @@ Allow users to share high-contrast, aesthetic workout recaps to Instagram Storie
 
 All items below have been implemented, verified on Android emulator, HIG-validated, and pushed to `main`:
 
+- [x] **Buttery-Smooth VSync Hardware Stopwatch Motion:** Upgraded `_BiomechanicalWavePainter` to calculate exact sub-millisecond progress on display VSync using hardware `Stopwatch`, eliminating periodic timer jitter.
+- [x] **Decluttered Kinetic Dot:** Removed trailing tooltip text pill from the kinetic orb, keeping the luminous core, aura, and radar ripple ring clean and unobscured.
+- [x] **Seamless OLED HUD & Dynamic Rep-Expansion Glow:** Removed rigid box borders around the wave graph, extended the HUD flush to the screen base, and added a progressive Electric Cyan $\rightarrow$ Pure White perimeter glow that pulsates and expands as reps advance.
+- [x] **Exercise-Aware Starting Phase:** Biomechanical detection to begin with concentric lift (`↑ DRIVE`) for bottom-start exercises (Deadlift, Barbell Row, Pull-ups) and eccentric descent (`↓ LOWER`) for top-start exercises (Squat, Bench Press, Shoulder Press).
+- [x] **Two-Line Cadence Header:** Split the tempo dropdown selector into an uncluttered 2-line title and numbers layout (`CONTROL` / `3 0 1`).
+- [x] **Android Foreground Service Persistent Notification:** Notification drawer workout persistence with live countdown and `+30s`/`Skip Rest` actions.
+- [x] **iOS Live Activity & Dynamic Island Widget:** ActivityKit widget with compact Dynamic Island pill and lock screen banner.
 - [x] **Goal Accommodation Architecture:** Dynamic goal engine (`BULKING`, `CUTTING`, `STRENGTH`, `MAINTENANCE`, `RECOMPOSITION`), 7-screen survey, goal-specific rep ranges, rest timers, and coaching cues.
 - [x] **Active Workout Crash Recovery & Auto-Resume:** Persistent Hive DB session storage, automatic state restoration on launch, sticky resume trigger on `DailyWorkoutBentoCard`.
 - [x] **1-Tap Previous Workout Ghost Data Auto-Fill:** Quick-fill weight/reps with haptic feedback.
 - [x] **In-Workout Exercise Substitution Sheet:** 1-tap exercise swap with agonist muscle matching while preserving completed sets.
-- [x] **Real-Time Sine-Wave Visual & Haptic Tempo Pacer:** Configurable cadence (`3-0-1-0`), animated sine wave canvas, and rhythmic vibration pulses.
 - [x] **Visual Barbell Plate Calculator:** Barbell sleeve graphic calculating Olympic 25kg/20kg/15kg/10kg/5kg/2.5kg/1.25kg plate distribution.
 - [x] **Dual Effort Picker:** Seamless switching between RIR (Reps in Reserve) and RPE (Rate of Perceived Exertion) with exertion color coding.
 - [x] **Scientific 1RM Progression & Epley Formula:** Automated 1RM calculation with interactive `fl_chart` curves and time range filters (1M, 3M, 6M, 1Y, ALL).
@@ -136,5 +155,4 @@ All items below have been implemented, verified on Android emulator, HIG-validat
 - [x] **Collapsed Available Splits:** Available splits start collapsed by default for zero visual clutter.
 - [x] **Body Measurements & Recomposition Tracker:** Log waist, chest, arms, thighs, and body fat % with 30-day delta indicators.
 - [x] **1-Page Athletic PDF Report Exporter:** Complete vector PDF report summarizing lift volume, PRs, and body metrics.
-- [x] **Apple HIG Strict Compliance:** Minimum 11.0 pt typography floor, $\ge 4.5:1$ contrast ratio, 2-accent color discipline (Electric Cyan `#00E5FF` & Amber `#FFB300`), and zero pseudo-military roleplay terms. 
-.
+- [x] **Apple HIG Strict Compliance:** Minimum 11.0 pt typography floor, $\ge 4.5:1$ contrast ratio, 2-accent color discipline (Electric Cyan `#00E5FF` & Amber `#FFB300`), and zero pseudo-military roleplay terms.
