@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../providers/splits_provider.dart';
+import '../widgets/active_split_detail_sheet.dart';
 import '../widgets/split_compact_card.dart';
 import '../widgets/switch_split_bottom_sheet.dart';
 
@@ -43,6 +45,10 @@ class WorkoutBuilderScreen extends ConsumerWidget {
     final state = ref.watch(splitsProvider);
     final notifier = ref.read(splitsProvider.notifier);
     final activeSplit = state.activeSplit;
+    final sortedSplits = [
+      activeSplit,
+      ...state.splits.where((s) => s.id != activeSplit.id),
+    ];
 
     return Scaffold(
       backgroundColor: AppColors.onyx,
@@ -155,92 +161,139 @@ class WorkoutBuilderScreen extends ConsumerWidget {
 
           const SizedBox(height: 20),
 
-          // ── Active Program Spotlight Card ──────────────────────────────────
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.charcoal,
+          // ── Active Program Spotlight Card (Tap to View Stats & Rotation) ─
+          Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(18),
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                showActiveSplitDetailSheet(context);
+              },
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.steel, width: 1.0),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: AppColors.pureWhite,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'ACTIVE TRAINING PROGRAM',
-                        style: AppTypography.monoSmall.copyWith(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.6,
-                          color: AppColors.platinum,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    InkWell(
-                      onTap: () => _showSwitchSplitModal(context, ref),
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.onyx,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.steel),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.tune,
-                                size: 12, color: AppColors.pureWhite),
-                            const SizedBox(width: 4),
-                            Text(
-                              'SWITCH SPLIT',
-                              style: AppTypography.monoSmall.copyWith(
-                                fontSize: 11.0,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.pureWhite,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+              splashColor: AppColors.primary.withValues(alpha: 0.12),
+              highlightColor: AppColors.primary.withValues(alpha: 0.06),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.charcoal,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.45),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.05),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  activeSplit.name,
-                  style: AppTypography.headlineSmall.copyWith(
-                    fontSize: 19.0,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.5,
-                    color: AppColors.pureWhite,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'ACTIVE TRAINING PROGRAM',
+                            style: AppTypography.monoSmall.copyWith(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.6,
+                              color: AppColors.platinum,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        InkWell(
+                          onTap: () => _showSwitchSplitModal(context, ref),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.onyx,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.steel),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.tune,
+                                    size: 12, color: AppColors.pureWhite),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'SWITCH SPLIT',
+                                  style: AppTypography.monoSmall.copyWith(
+                                    fontSize: 11.0,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.pureWhite,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      activeSplit.name,
+                      style: AppTypography.headlineSmall.copyWith(
+                        fontSize: 19.0,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                        color: AppColors.pureWhite,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${activeSplit.daysPerWeek} Days/Week · ${activeSplit.totalWorkouts} Workouts · ${activeSplit.totalWeeklySets} Total Weekly Sets',
+                      style: AppTypography.monoSmall.copyWith(
+                        fontSize: 12.0,
+                        color: AppColors.platinum,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    const Divider(color: AppColors.steel, height: 1),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Icon(Icons.radar, size: 15, color: AppColors.primary),
+                        const SizedBox(width: 8),
+                        Text(
+                          'VIEW RADAR & ROTATION',
+                          style: AppTypography.monoSmall.copyWith(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.6,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        const Spacer(),
+                        const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 13,
+                          color: AppColors.primary,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  '${activeSplit.daysPerWeek} Days/Week · ${activeSplit.totalWorkouts} Workouts · ${activeSplit.totalWeeklySets} Total Weekly Sets',
-                  style: AppTypography.monoSmall.copyWith(
-                    fontSize: 12.0,
-                    color: AppColors.platinum,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
 
@@ -326,18 +379,18 @@ class WorkoutBuilderScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
 
-          // ── Compact Expandable Splits List ─────────────────────────────────
-          for (int i = 0; i < state.splits.length; i++) ...[
+          // ── Compact Expandable Splits List (Active split pinned first) ─────
+          for (int i = 0; i < sortedSplits.length; i++) ...[
             SplitCompactCard(
-              split: state.splits[i],
+              split: sortedSplits[i],
               splitIndex: i,
-              isActive: state.splits[i].id == state.activeSplitId,
-              isExpanded: state.splits[i].id == state.expandedSplitId,
+              isActive: sortedSplits[i].id == state.activeSplitId,
+              isExpanded: sortedSplits[i].id == state.expandedSplitId,
               loggedVolume: state.loggedVolume,
               onToggleExpand: () =>
-                  notifier.toggleExpandSplit(state.splits[i].id),
+                  notifier.toggleExpandSplit(sortedSplits[i].id),
               onSetActive: () =>
-                  notifier.switchActiveSplit(state.splits[i].id),
+                  notifier.switchActiveSplit(sortedSplits[i].id),
               onStartDayWorkout: (day) =>
                   notifier.startWorkoutFromDay(context, day),
               onAutoTuneMuscle: (muscle) {
