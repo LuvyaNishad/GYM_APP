@@ -51,9 +51,9 @@ class BentoDonutProgress extends StatelessWidget {
           ),
           Text(
             '$percentage%',
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'JetBrains Mono',
-              fontSize: 13.0,
+              fontSize: (size * 0.21).clamp(11.0, 16.0),
               fontWeight: FontWeight.w800,
               color: AppColors.pureWhite,
               letterSpacing: -0.2,

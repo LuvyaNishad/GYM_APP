@@ -85,31 +85,31 @@ class WaterBentoCard extends StatelessWidget {
                         children: [
                           const Text(
                             '💧',
-                            style: TextStyle(fontSize: 14.0),
+                            style: TextStyle(fontSize: 15.5),
                           ),
                           const SizedBox(width: 6),
                           const Text(
                             'Water',
                             style: TextStyle(
                               fontFamily: AppTypography.fontDisplay,
-                              fontSize: 14.0,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.w800,
                               color: AppColors.pureWhite,
-                              letterSpacing: 0.2,
+                              letterSpacing: 0.3,
                             ),
                           ),
                         ],
                       ),
                       Container(
-                        width: 20,
-                        height: 20,
+                        width: 22,
+                        height: 22,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white.withValues(alpha: 0.08),
                         ),
                         child: const Icon(
                           Icons.chevron_right_rounded,
-                          size: 14,
+                          size: 15,
                           color: AppColors.platinum,
                         ),
                       ),
@@ -137,10 +137,10 @@ class WaterBentoCard extends StatelessWidget {
                             _formatNumber(telemetry.waterMl),
                             style: const TextStyle(
                               fontFamily: 'JetBrains Mono',
-                              fontSize: 20,
+                              fontSize: 24,
                               fontWeight: FontWeight.w800,
                               color: AppColors.pureWhite,
-                              letterSpacing: -0.3,
+                              letterSpacing: -0.4,
                             ),
                           ),
                           const SizedBox(width: 4),
@@ -159,7 +159,7 @@ class WaterBentoCard extends StatelessWidget {
                         '$progressPct%',
                         style: const TextStyle(
                           fontFamily: 'JetBrains Mono',
-                          fontSize: 12.0,
+                          fontSize: 13.0,
                           fontWeight: FontWeight.w700,
                           color: AppColors.pureWhite,
                           letterSpacing: -0.2,
@@ -167,9 +167,14 @@ class WaterBentoCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 7),
-                  BentoHorizontalBarProgress(
-                    progress: progress,
+                  const SizedBox(height: 8),
+                  FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: 0.72,
+                    child: BentoHorizontalBarProgress(
+                      progress: progress,
+                      barHeight: 3.5,
+                    ),
                   ),
                 ],
               ),

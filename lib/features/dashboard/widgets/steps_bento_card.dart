@@ -81,31 +81,31 @@ class StepsBentoCard extends StatelessWidget {
                         children: [
                           const Text(
                             '👟',
-                            style: TextStyle(fontSize: 14.0),
+                            style: TextStyle(fontSize: 15.5),
                           ),
                           const SizedBox(width: 6),
                           const Text(
                             'Steps',
                             style: TextStyle(
                               fontFamily: AppTypography.fontDisplay,
-                              fontSize: 14.0,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.w800,
                               color: AppColors.pureWhite,
-                              letterSpacing: 0.2,
+                              letterSpacing: 0.3,
                             ),
                           ),
                         ],
                       ),
                       Container(
-                        width: 20,
-                        height: 20,
+                        width: 22,
+                        height: 22,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white.withValues(alpha: 0.08),
                         ),
                         child: const Icon(
                           Icons.chevron_right_rounded,
-                          size: 14,
+                          size: 15,
                           color: AppColors.platinum,
                         ),
                       ),
@@ -119,10 +119,10 @@ class StepsBentoCard extends StatelessWidget {
                 _formatNumber(telemetry.steps),
                 style: const TextStyle(
                   fontFamily: 'JetBrains Mono',
-                  fontSize: 22,
+                  fontSize: 24,
                   fontWeight: FontWeight.w800,
                   color: AppColors.pureWhite,
-                  letterSpacing: -0.3,
+                  letterSpacing: -0.4,
                   height: 1.0,
                 ),
               ),
@@ -164,9 +164,9 @@ class _SlimBarGraph extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // 16 slim vertical lines
+        // 16 slim vertical lines (increased height from 24 to 35)
         SizedBox(
-          height: 24,
+          height: 35,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -174,13 +174,13 @@ class _SlimBarGraph extends StatelessWidget {
               final heightPct = normalizedHeights[i];
               final bool hasActivity = i < (totalBars * 0.75);
               return Container(
-                width: 2.2,
-                height: (heightPct * 24).clamp(3.0, 24.0),
+                width: 2.5,
+                height: (heightPct * 35).clamp(4.0, 35.0),
                 decoration: BoxDecoration(
                   color: hasActivity
                       ? AppColors.pureWhite
                       : AppColors.steel.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(1.2),
+                  borderRadius: BorderRadius.circular(1.5),
                 ),
               );
             }),

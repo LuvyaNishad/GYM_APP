@@ -85,31 +85,31 @@ class CaloriesBentoCard extends StatelessWidget {
                         children: [
                           const Text(
                             '🔥',
-                            style: TextStyle(fontSize: 14.0),
+                            style: TextStyle(fontSize: 15.5),
                           ),
                           const SizedBox(width: 6),
                           const Text(
                             'Calories',
                             style: TextStyle(
                               fontFamily: AppTypography.fontDisplay,
-                              fontSize: 14.0,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.w800,
                               color: AppColors.pureWhite,
-                              letterSpacing: 0.2,
+                              letterSpacing: 0.3,
                             ),
                           ),
                         ],
                       ),
                       Container(
-                        width: 20,
-                        height: 20,
+                        width: 22,
+                        height: 22,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white.withValues(alpha: 0.08),
                         ),
                         child: const Icon(
                           Icons.chevron_right_rounded,
-                          size: 14,
+                          size: 15,
                           color: AppColors.platinum,
                         ),
                       ),
@@ -132,10 +132,10 @@ class CaloriesBentoCard extends StatelessWidget {
                           _formatNumber(telemetry.calories),
                           style: const TextStyle(
                             fontFamily: 'JetBrains Mono',
-                            fontSize: 22,
+                            fontSize: 24,
                             fontWeight: FontWeight.w800,
                             color: AppColors.pureWhite,
-                            letterSpacing: -0.3,
+                            letterSpacing: -0.4,
                             height: 1.0,
                           ),
                         ),
@@ -155,7 +155,7 @@ class CaloriesBentoCard extends StatelessWidget {
                   BentoDonutProgress(
                     progress: progress,
                     percentage: progressPct,
-                    size: 60,
+                    size: 70,
                   ),
                 ],
               ),
