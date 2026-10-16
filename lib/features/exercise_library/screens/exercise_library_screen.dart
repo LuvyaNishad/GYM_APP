@@ -132,7 +132,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                   onChanged: notifier.setSearchQuery,
                   style: AppTypography.bodyMedium.copyWith(color: AppColors.pureWhite, fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: 'Search 156 exercises, muscles, equipment...',
+                    hintText: 'Search ${state.allExercises.length} exercises, muscles, equipment...',
                     hintStyle: AppTypography.bodySmall.copyWith(
                       color: AppColors.textMuted,
                       fontSize: 13,

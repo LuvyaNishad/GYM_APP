@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../exercise_library/providers/exercise_library_provider.dart';
 import '../models/active_session_state.dart';
 
 class ExerciseTemplate {
@@ -62,7 +64,7 @@ const List<ExerciseTemplate> kExerciseCatalog = [
 ];
 
 /// Modal sheet to search and pick an exercise to add or replace.
-class ExercisePickerModal extends StatefulWidget {
+class ExercisePickerModal extends ConsumerStatefulWidget {
   const ExercisePickerModal({
     super.key,
     required this.onExerciseSelected,
@@ -71,10 +73,10 @@ class ExercisePickerModal extends StatefulWidget {
   final void Function(ActiveExerciseState exercise) onExerciseSelected;
 
   @override
-  State<ExercisePickerModal> createState() => _ExercisePickerModalState();
+  ConsumerState<ExercisePickerModal> createState() => _ExercisePickerModalState();
 }
 
-class _ExercisePickerModalState extends State<ExercisePickerModal> {
+class _ExercisePickerModalState extends ConsumerState<ExercisePickerModal> {
   String _selectedCategory = 'ALL';
   String _searchQuery = '';
 
@@ -90,7 +92,21 @@ class _ExercisePickerModalState extends State<ExercisePickerModal> {
 
   @override
   Widget build(BuildContext context) {
-    final filtered = kExerciseCatalog.where((e) {
+    final libraryState = ref.watch(exerciseLibraryProvider);
+    final allLibraryExercises = libraryState.allExercises;
+
+    final List<ExerciseTemplate> catalog = allLibraryExercises.isNotEmpty
+        ? allLibraryExercises
+            .map((e) => ExerciseTemplate(
+                  name: e.name,
+                  muscleGroup: e.category,
+                  equipment: e.primaryEquipment,
+                  defaultRestSeconds: e.defaultRestSeconds,
+                ))
+            .toList()
+        : kExerciseCatalog;
+
+    final filtered = catalog.where((e) {
       final matchesCategory = _selectedCategory == 'ALL' ||
           e.muscleGroup.toUpperCase() == _selectedCategory;
       final matchesSearch = _searchQuery.isEmpty ||
