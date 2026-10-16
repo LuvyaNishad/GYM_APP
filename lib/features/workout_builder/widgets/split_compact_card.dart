@@ -19,6 +19,7 @@ class SplitCompactCard extends StatelessWidget {
     required this.onSetActive,
     required this.onStartDayWorkout,
     this.onAutoTuneMuscle,
+    this.onCustomize,
   });
 
   final TrainingSplitModel split;
@@ -30,6 +31,7 @@ class SplitCompactCard extends StatelessWidget {
   final VoidCallback onSetActive;
   final void Function(SplitWorkoutDay day) onStartDayWorkout;
   final void Function(String muscle)? onAutoTuneMuscle;
+  final VoidCallback? onCustomize;
 
   @override
   Widget build(BuildContext context) {
@@ -248,34 +250,67 @@ class SplitCompactCard extends StatelessWidget {
 
                   const SizedBox(height: 14),
 
-                  // "Set as Active Program" action if currently inactive
-                  if (!isActive) ...[
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
-                          onSetActive();
-                        },
-                        icon: const Icon(Icons.check, size: 16, color: AppColors.onyx),
-                        label: Text(
-                          'SET AS ACTIVE TRAINING PROGRAM',
-                          style: AppTypography.monoSmall.copyWith(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.6,
-                            color: AppColors.onyx,
+                  // Quick actions: Set Active and/or Customize Routine
+                  if (!isActive || onCustomize != null) ...[
+                    Row(
+                      children: [
+                        if (!isActive)
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                HapticFeedback.lightImpact();
+                                onSetActive();
+                              },
+                              icon: const Icon(Icons.check, size: 16, color: AppColors.onyx),
+                              label: Text(
+                                onCustomize != null ? 'SET ACTIVE' : 'SET AS ACTIVE PROGRAM',
+                                style: AppTypography.monoSmall.copyWith(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.6,
+                                  color: AppColors.onyx,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.pureWhite,
+                                foregroundColor: AppColors.onyx,
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.pureWhite,
-                          foregroundColor: AppColors.onyx,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                        if (!isActive && onCustomize != null)
+                          const SizedBox(width: 8),
+                        if (onCustomize != null)
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                HapticFeedback.lightImpact();
+                                onCustomize!();
+                              },
+                              icon: const Icon(Icons.tune_rounded, size: 15, color: AppColors.pureWhite),
+                              label: Text(
+                                'CUSTOMIZE',
+                                style: AppTypography.monoSmall.copyWith(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.6,
+                                  color: AppColors.pureWhite,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.pureWhite,
+                                side: const BorderSide(color: AppColors.steel),
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
+                      ],
                     ),
                     const SizedBox(height: 16),
                   ],

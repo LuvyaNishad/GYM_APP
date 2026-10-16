@@ -11,9 +11,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../workout_builder/models/split_model.dart';
+import '../../workout_builder/widgets/create_routine_sheet.dart';
 import '../providers/workout_rotation_provider.dart';
 
 /// Displays the detailed Workout Overview modal bottom sheet.
@@ -411,46 +414,134 @@ class _WorkoutDetailContent extends ConsumerWidget {
 
               const SizedBox(height: 20),
 
-              // ── Start Workout Action Button ───────────────────────────────
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.heavyImpact();
-                  Navigator.of(context).pop();
-                  ref
-                      .read(workoutRotationProvider.notifier)
-                      .startWorkout(context);
-                },
-                child: Container(
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppColors.pureWhite,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.play_arrow_rounded,
-                        color: AppColors.onyx,
-                        size: 22,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        rotation.isCompletedToday
-                            ? 'START EXTRA WORKOUT'
-                            : 'START WORKOUT',
-                        style: AppTypography.titleLarge.copyWith(
-                          fontFamily: AppTypography.fontDisplay,
-                          fontSize: 13.0,
-                          color: AppColors.onyx,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.2,
+              // ── Action Buttons Row: START WORKOUT / LOGS & EDIT ROUTINE ──
+              if (rotation.isCompletedToday) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.of(context).pop();
+                          context.go(AppConstants.routeAnalytics);
+                        },
+                        icon: const Icon(Icons.history_rounded, size: 16, color: AppColors.pureWhite),
+                        label: Text(
+                          'VIEW WORKOUT LOG',
+                          style: AppTypography.monoSmall.copyWith(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                            color: AppColors.pureWhite,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.pureWhite,
+                          side: const BorderSide(color: AppColors.steel),
+                          minimumSize: const Size.fromHeight(48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 3,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          HapticFeedback.heavyImpact();
+                          Navigator.of(context).pop();
+                          ref.read(workoutRotationProvider.notifier).startWorkout(context);
+                        },
+                        icon: const Icon(Icons.play_arrow_rounded, color: AppColors.onyx, size: 20),
+                        label: Text(
+                          'EXTRA WORKOUT',
+                          style: AppTypography.titleLarge.copyWith(
+                            fontFamily: AppTypography.fontDisplay,
+                            fontSize: 12.0,
+                            color: AppColors.onyx,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.pureWhite,
+                          foregroundColor: AppColors.onyx,
+                          minimumSize: const Size.fromHeight(48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+              ] else ...[
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 5,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          HapticFeedback.heavyImpact();
+                          Navigator.of(context).pop();
+                          ref.read(workoutRotationProvider.notifier).startWorkout(context);
+                        },
+                        icon: const Icon(Icons.play_arrow_rounded, color: AppColors.onyx, size: 22),
+                        label: Text(
+                          'START WORKOUT',
+                          style: AppTypography.titleLarge.copyWith(
+                            fontFamily: AppTypography.fontDisplay,
+                            fontSize: 12.5,
+                            color: AppColors.onyx,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.pureWhite,
+                          foregroundColor: AppColors.onyx,
+                          minimumSize: const Size.fromHeight(48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 4,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.of(context).pop();
+                          showCreateRoutineSheet(context, initialSplit: split);
+                        },
+                        icon: const Icon(Icons.tune_rounded, size: 16, color: AppColors.pureWhite),
+                        label: Text(
+                          'EDIT ROUTINE',
+                          style: AppTypography.monoSmall.copyWith(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                            color: AppColors.pureWhite,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.pureWhite,
+                          side: const BorderSide(color: AppColors.steel),
+                          minimumSize: const Size.fromHeight(48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),

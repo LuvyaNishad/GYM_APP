@@ -88,21 +88,36 @@ class ExerciseSetTable extends ConsumerWidget {
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.charcoal,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: AppColors.steel,
+              InkWell(
+                onTap: () => _showRestDurationPicker(context, exercise, notifier),
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.charcoal,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: AppColors.steel,
+                    ),
                   ),
-                ),
-                child: Text(
-                  'REST: ${exercise.restDurationSeconds}s',
-                  style: AppTypography.monoSmall.copyWith(
-                    fontSize: 11.0,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.platinum,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.timer_outlined,
+                        size: 11.0,
+                        color: AppColors.platinum,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'REST: ${exercise.restDurationSeconds}s',
+                        style: AppTypography.monoSmall.copyWith(
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.platinum,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -246,10 +261,10 @@ class ExerciseSetTable extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () => notifier.addWarmupSets(exercise.exerciseId),
+                      onPressed: () => _showWarmupOptionsSheet(context, exercise.exerciseId, notifier),
                       icon: const Icon(Icons.fitness_center, size: 16, color: AppColors.platinum),
                       label: Text(
-                        'WARMUP SETS',
+                        '+ WARMUP',
                         style: AppTypography.monoSmall.copyWith(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w700,
@@ -402,25 +417,45 @@ class ExerciseSetTable extends ConsumerWidget {
           // 1. SET Index badge
           SizedBox(
             width: 38,
+            height: 38,
             child: InkWell(
               onTap: () => _showSetOptionsSheet(context, setIndex, notifier),
               borderRadius: BorderRadius.circular(6),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                height: 38,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
                   color: AppColors.charcoal,
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                    color: AppColors.steel,
+                    color: set.setType == ActiveSetType.failure
+                        ? AppColors.pureWhite
+                        : (set.setType == ActiveSetType.dropSet
+                            ? const Color(0xFF00E5FF)
+                            : (set.isWarmup ? AppColors.platinum : AppColors.steel)),
+                    width: set.setType == ActiveSetType.failure ||
+                            set.setType == ActiveSetType.dropSet
+                        ? 1.5
+                        : 1.0,
                   ),
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  set.isWarmup ? 'W' : '${set.setNumber}',
+                  set.setType == ActiveSetType.warmup
+                      ? 'W'
+                      : (set.setType == ActiveSetType.dropSet
+                          ? 'D'
+                          : (set.setType == ActiveSetType.failure
+                              ? 'F'
+                              : '${set.setNumber}')),
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.pureWhite,
+                    color: set.setType == ActiveSetType.dropSet
+                        ? const Color(0xFF00E5FF)
+                        : (set.isWarmup
+                            ? AppColors.platinum
+                            : AppColors.pureWhite),
                   ),
                 ),
               ),
@@ -692,10 +727,99 @@ class ExerciseSetTable extends ConsumerWidget {
       builder: (ctx) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'SET ${set.setNumber} OPTIONS',
+                      style: AppTypography.titleLarge.copyWith(
+                        fontFamily: AppTypography.fontDisplay,
+                        fontSize: 15.0,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.pureWhite,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: AppColors.platinum, size: 20),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'SET TYPE CLASSIFICATION',
+                  style: AppTypography.monoSmall.copyWith(
+                    fontSize: 11.0,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.platinum,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildSetTypeChip(
+                      label: 'Normal (${set.setNumber})',
+                      isSelected: set.setType == ActiveSetType.normal,
+                      onTap: () {
+                        notifier.updateSetValues(
+                          exerciseId: exercise.exerciseId,
+                          setIndex: setIndex,
+                          setType: ActiveSetType.normal,
+                        );
+                        Navigator.of(ctx).pop();
+                      },
+                    ),
+                    _buildSetTypeChip(
+                      label: 'Warm-up (W)',
+                      isSelected: set.setType == ActiveSetType.warmup,
+                      onTap: () {
+                        notifier.updateSetValues(
+                          exerciseId: exercise.exerciseId,
+                          setIndex: setIndex,
+                          setType: ActiveSetType.warmup,
+                        );
+                        Navigator.of(ctx).pop();
+                      },
+                    ),
+                    _buildSetTypeChip(
+                      label: 'Drop Set (D)',
+                      isSelected: set.setType == ActiveSetType.dropSet,
+                      onTap: () {
+                        notifier.updateSetValues(
+                          exerciseId: exercise.exerciseId,
+                          setIndex: setIndex,
+                          setType: ActiveSetType.dropSet,
+                        );
+                        Navigator.of(ctx).pop();
+                      },
+                    ),
+                    _buildSetTypeChip(
+                      label: 'Failure (F)',
+                      isSelected: set.setType == ActiveSetType.failure,
+                      onTap: () {
+                        notifier.updateSetValues(
+                          exerciseId: exercise.exerciseId,
+                          setIndex: setIndex,
+                          setType: ActiveSetType.failure,
+                          rir: 0.0,
+                          rpe: 10.0,
+                        );
+                        Navigator.of(ctx).pop();
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                const Divider(height: 1, color: AppColors.steel),
                 ListTile(
                   leading: const Icon(Icons.speed, color: Color(0xFF00E5FF)),
                   title: Text(
@@ -725,24 +849,6 @@ class ExerciseSetTable extends ConsumerWidget {
                     );
                   },
                 ),
-                ListTile(
-                  leading: Icon(
-                    set.isWarmup ? Icons.fitness_center : Icons.whatshot,
-                    color: AppColors.pureWhite,
-                  ),
-                  title: Text(
-                    set.isWarmup ? 'Convert to Working Set' : 'Convert to Warm-up Set',
-                    style: AppTypography.bodyMedium.copyWith(color: AppColors.pureWhite),
-                  ),
-                  onTap: () {
-                    notifier.updateSetValues(
-                      exerciseId: exercise.exerciseId,
-                      setIndex: setIndex,
-                      isWarmup: !set.isWarmup,
-                    );
-                    Navigator.of(ctx).pop();
-                  },
-                ),
                 if (exercise.sets.length > 1)
                   ListTile(
                     leading: const Icon(Icons.delete_outline, color: AppColors.danger),
@@ -755,6 +861,260 @@ class ExerciseSetTable extends ConsumerWidget {
                       Navigator.of(ctx).pop();
                     },
                   ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSetTypeChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.pureWhite.withValues(alpha: 0.15)
+              : AppColors.charcoal,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? AppColors.pureWhite : AppColors.steel,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.monoSmall.copyWith(
+            fontSize: 11.5,
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+            color: isSelected ? AppColors.pureWhite : AppColors.platinum,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showWarmupOptionsSheet(
+    BuildContext context,
+    String exerciseId,
+    ActiveSessionNotifier notifier,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.onyx,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(color: AppColors.steel),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'ADD WARMUP SETS',
+                      style: AppTypography.titleLarge.copyWith(
+                        fontFamily: AppTypography.fontDisplay,
+                        fontSize: 15.0,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.pureWhite,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: AppColors.platinum, size: 20),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.charcoal,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.steel),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      '1x',
+                      style: TextStyle(
+                        fontFamily: AppTypography.fontMono,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.pureWhite,
+                        fontSize: 12.0,
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    'Quick Warmup (50% Load)',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.pureWhite,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    '1 set • 10 reps at half working weight',
+                    style: TextStyle(
+                      fontFamily: AppTypography.fontBody,
+                      fontSize: 11.5,
+                      color: AppColors.platinum,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    notifier.addSingleWarmupSet(exerciseId);
+                  },
+                ),
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.charcoal,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.steel),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      '3x',
+                      style: TextStyle(
+                        fontFamily: AppTypography.fontMono,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.pureWhite,
+                        fontSize: 12.0,
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    '3-Stage Ramp Up (40% • 60% • 80%)',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.pureWhite,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    '3 sets • Progressive neuromuscular ramp',
+                    style: TextStyle(
+                      fontFamily: AppTypography.fontBody,
+                      fontSize: 11.5,
+                      color: AppColors.platinum,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    notifier.addWarmupSets(exerciseId);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showRestDurationPicker(
+    BuildContext context,
+    ActiveExerciseState exercise,
+    ActiveSessionNotifier notifier,
+  ) {
+    const durations = [30, 45, 60, 90, 120, 150, 180, 240];
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.onyx,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(color: AppColors.steel),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'REST INTERVAL FOR ${exercise.name.toUpperCase()}',
+                        style: AppTypography.titleLarge.copyWith(
+                          fontFamily: AppTypography.fontDisplay,
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.pureWhite,
+                          letterSpacing: 0.8,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: AppColors.platinum, size: 20),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: durations.map((seconds) {
+                    final isSelected = exercise.restDurationSeconds == seconds;
+                    final minutes = seconds ~/ 60;
+                    final rem = seconds % 60;
+                    final timeLabel = minutes > 0
+                        ? (rem > 0 ? '$minutes min $rem s' : '$minutes min')
+                        : '$seconds s';
+
+                    return InkWell(
+                      onTap: () {
+                        notifier.updateExerciseRestDuration(exercise.exerciseId, seconds);
+                        Navigator.of(ctx).pop();
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.pureWhite.withValues(alpha: 0.15)
+                              : AppColors.charcoal,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected ? AppColors.pureWhite : AppColors.steel,
+                            width: isSelected ? 1.5 : 1.0,
+                          ),
+                        ),
+                        child: Text(
+                          timeLabel,
+                          style: AppTypography.monoSmall.copyWith(
+                            fontSize: 12.0,
+                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                            color: isSelected ? AppColors.pureWhite : AppColors.platinum,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
               ],
             ),
           ),

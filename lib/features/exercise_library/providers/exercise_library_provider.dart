@@ -12,6 +12,7 @@ class ExerciseFilterState {
     this.selectedEquipment = 'All',
     this.selectedType = 'All',
     this.selectedDifficulty = 'All',
+    this.onlyCustom = false,
   });
 
   final String searchQuery;
@@ -19,6 +20,7 @@ class ExerciseFilterState {
   final String selectedEquipment;
   final String selectedType;
   final String selectedDifficulty;
+  final bool onlyCustom;
 
   int get activeFiltersCount {
     int count = 0;
@@ -26,6 +28,7 @@ class ExerciseFilterState {
     if (selectedEquipment != 'All') count++;
     if (selectedType != 'All') count++;
     if (selectedDifficulty != 'All') count++;
+    if (onlyCustom) count++;
     return count;
   }
 
@@ -37,6 +40,7 @@ class ExerciseFilterState {
     String? selectedEquipment,
     String? selectedType,
     String? selectedDifficulty,
+    bool? onlyCustom,
   }) {
     return ExerciseFilterState(
       searchQuery: searchQuery ?? this.searchQuery,
@@ -44,6 +48,7 @@ class ExerciseFilterState {
       selectedEquipment: selectedEquipment ?? this.selectedEquipment,
       selectedType: selectedType ?? this.selectedType,
       selectedDifficulty: selectedDifficulty ?? this.selectedDifficulty,
+      onlyCustom: onlyCustom ?? this.onlyCustom,
     );
   }
 }
@@ -124,12 +129,21 @@ class ExerciseLibraryNotifier extends Notifier<ExerciseLibraryState> {
       equipment: newFilter.selectedEquipment,
       exerciseType: newFilter.selectedType,
       difficulty: newFilter.selectedDifficulty,
+      onlyCustom: newFilter.onlyCustom,
     );
 
     state = state.copyWith(
       filter: newFilter,
       filteredExercises: filtered,
     );
+  }
+
+  void toggleOnlyCustom() {
+    _applyFilter(state.filter.copyWith(onlyCustom: !state.filter.onlyCustom));
+  }
+
+  void setOnlyCustom(bool onlyCustom) {
+    _applyFilter(state.filter.copyWith(onlyCustom: onlyCustom));
   }
 
   void setSearchQuery(String query) {

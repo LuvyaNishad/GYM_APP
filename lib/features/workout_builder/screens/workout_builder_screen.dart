@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../providers/splits_provider.dart';
 import '../widgets/active_split_detail_sheet.dart';
+import '../widgets/create_routine_sheet.dart';
 import '../widgets/split_compact_card.dart';
 import '../widgets/switch_split_bottom_sheet.dart';
 
@@ -393,6 +394,8 @@ class WorkoutBuilderScreen extends ConsumerWidget {
                   notifier.switchActiveSplit(sortedSplits[i].id),
               onStartDayWorkout: (day) =>
                   notifier.startWorkoutFromDay(context, day),
+              onCustomize: () =>
+                  showCreateRoutineSheet(context, initialSplit: sortedSplits[i]),
               onAutoTuneMuscle: (muscle) {
                 notifier.autoFixLaggingMuscle(muscle);
                 ScaffoldMessenger.of(context).showSnackBar(

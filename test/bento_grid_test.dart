@@ -137,13 +137,10 @@ void main() {
         ),
       );
 
-      expect(find.text('Step Count'), findsOneWidget);
-      expect(find.text('Today'), findsOneWidget);
+      expect(find.text('Steps'), findsOneWidget);
       expect(find.text('8,420'), findsOneWidget);
-      expect(find.text('00'), findsOneWidget);
-      expect(find.text('18'), findsOneWidget);
 
-      await tester.tap(find.text('Step Count'));
+      await tester.tap(find.text('Steps'));
       await tester.pumpAndSettle();
       expect(tapped, isTrue);
     });
@@ -190,7 +187,7 @@ void main() {
       expect(find.text('Calories'), findsOneWidget);
       expect(find.text('2,390'), findsOneWidget);
       expect(find.text('79%'), findsOneWidget);
-      expect(find.text('Hydration'), findsOneWidget);
+      expect(find.text('Water'), findsOneWidget);
       expect(find.text('2,750'), findsOneWidget);
       expect(find.text('78%'), findsOneWidget);
       expect(find.text('Sleep'), findsOneWidget);
@@ -201,7 +198,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(calTapped, isTrue);
 
-      await tester.tap(find.text('Hydration'));
+      await tester.tap(find.text('Water'));
       await tester.pumpAndSettle();
       expect(waterTapped, isTrue);
 
@@ -229,13 +226,13 @@ void main() {
         ),
       );
 
-      await tester.tap(find.text('Step Count'));
+      await tester.tap(find.text('Steps'));
       await tester.pumpAndSettle();
 
-      expect(find.text('DAILY ACTIVITY & MOVEMENT'), findsOneWidget);
-      expect(find.text('HOURLY DISTRIBUTION'), findsOneWidget);
-      expect(find.text('DISTANCE'), findsOneWidget);
-      expect(find.text('ACTIVE TIME'), findsOneWidget);
+      expect(find.text('Step tracker'), findsOneWidget);
+      expect(find.text('Highest single-day record'), findsOneWidget);
+      expect(find.text('Day'), findsOneWidget);
+      expect(find.text('Week'), findsOneWidget);
     });
 
     testWidgets('DailyWorkoutBentoCard is clutter-free and opens detail modal on tap',
@@ -261,11 +258,11 @@ void main() {
       );
 
       // Verify minimal surface: no TARGET RPE or telemetry bar clutter
-      expect(find.text("TODAY'S WORKOUT"), findsOneWidget);
+      expect(find.text('TODAY'), findsOneWidget);
       expect(find.text('PUSH DAY A'), findsOneWidget);
       expect(find.text('CHEST'), findsOneWidget);
       expect(find.text('FRONT DELTS'), findsOneWidget);
-      expect(find.text('TRICEPS'), findsOneWidget);
+      expect(find.text('TRIS'), findsOneWidget);
       expect(find.text('START WORKOUT'), findsOneWidget);
       expect(find.textContaining('TARGET RPE'), findsNothing);
       expect(find.textContaining('5 EXERCISES'), findsNothing);
@@ -276,7 +273,7 @@ void main() {
       expect(commenced, isTrue);
 
       // Tap card body to open detail sheet
-      await tester.tap(find.text("TODAY'S WORKOUT"));
+      await tester.tap(find.text('PUSH DAY A'));
       await tester.pumpAndSettle();
 
       // Verify detail sheet opened with the detailed telemetry

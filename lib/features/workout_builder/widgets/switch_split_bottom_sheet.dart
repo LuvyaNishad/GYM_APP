@@ -40,6 +40,9 @@ class _SwitchSplitBottomSheetState extends State<SwitchSplitBottomSheet> {
     return SafeArea(
       top: false,
       child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
         decoration: const BoxDecoration(
           color: AppColors.onyx,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -156,12 +159,16 @@ class _SwitchSplitBottomSheetState extends State<SwitchSplitBottomSheet> {
                         children: [
                           Row(
                             children: [
-                              Text(
-                                split.name,
-                                style: AppTypography.titleLarge.copyWith(
-                                  fontSize: 14.0,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.pureWhite,
+                              Expanded(
+                                child: Text(
+                                  split.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTypography.titleLarge.copyWith(
+                                    fontSize: 14.0,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.pureWhite,
+                                  ),
                                 ),
                               ),
                               if (split.id == widget.activeSplitId) ...[

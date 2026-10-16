@@ -171,18 +171,20 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Initially, EDIT WORKOUT is hidden
-      expect(find.text('EDIT WORKOUT'), findsNothing);
+      // Initially, action buttons are hidden
+      expect(find.text('EDIT'), findsNothing);
+      expect(find.text('REPEAT WORKOUT'), findsNothing);
 
       // Tap to expand
       await tester.tap(find.text('UPPER BODY STRENGTH'));
       await tester.pumpAndSettle();
 
-      // In expanded state, EDIT WORKOUT is visible
-      expect(find.text('EDIT WORKOUT'), findsOneWidget);
+      // In expanded state, REPEAT WORKOUT and EDIT are visible
+      expect(find.text('REPEAT WORKOUT'), findsOneWidget);
+      expect(find.text('EDIT'), findsOneWidget);
 
-      // Tap EDIT WORKOUT to open sheet
-      await tester.tap(find.text('EDIT WORKOUT'));
+      // Tap EDIT to open sheet
+      await tester.tap(find.text('EDIT'));
       await tester.pumpAndSettle();
 
       expect(find.text('EDIT WORKOUT LOG'), findsOneWidget);

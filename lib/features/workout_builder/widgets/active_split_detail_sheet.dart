@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../providers/splits_provider.dart';
+import 'create_routine_sheet.dart';
 import 'muscle_balance_card.dart';
 import 'split_day_workout_card.dart';
 import 'switch_split_bottom_sheet.dart';
@@ -237,7 +236,7 @@ class ActiveSplitDetailSheet extends ConsumerWidget {
                           child: OutlinedButton.icon(
                             onPressed: () {
                               Navigator.of(context).pop();
-                              context.push(AppConstants.routeRoutineLibrary);
+                              showCreateRoutineSheet(context, initialSplit: split);
                             },
                             icon: const Icon(Icons.tune_rounded, size: 16),
                             label: Text(

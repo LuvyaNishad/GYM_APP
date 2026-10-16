@@ -391,6 +391,73 @@ class _BentoStartWorkoutButtonState
 
   @override
   Widget build(BuildContext context) {
+    if (widget.isCompletedToday && !widget.isSessionActive) {
+      return Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                context.go(AppConstants.routeAnalytics);
+              },
+              icon: const Icon(Icons.history_rounded, size: 16, color: AppColors.pureWhite),
+              label: Text(
+                'VIEW LOGS',
+                style: AppTypography.monoSmall.copyWith(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                  color: AppColors.pureWhite,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.pureWhite,
+                side: const BorderSide(color: AppColors.steel),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 3,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                HapticFeedback.heavyImpact();
+                if (widget.onStartWorkout != null) {
+                  widget.onStartWorkout!();
+                } else {
+                  ref.read(workoutRotationProvider.notifier).startWorkout(context);
+                }
+              },
+              icon: const Icon(Icons.play_arrow_rounded, color: AppColors.onyx, size: 18),
+              label: Text(
+                'EXTRA WORKOUT',
+                style: AppTypography.titleLarge.copyWith(
+                  fontFamily: AppTypography.fontDisplay,
+                  fontSize: 11.5,
+                  color: AppColors.onyx,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.6,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.pureWhite,
+                foregroundColor: AppColors.onyx,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) => setState(() => _isPressed = false),
@@ -428,11 +495,7 @@ class _BentoStartWorkoutButtonState
               ),
               const SizedBox(width: 6),
               Text(
-                widget.isSessionActive
-                    ? 'RESUME WORKOUT'
-                    : (widget.isCompletedToday
-                        ? 'START EXTRA WORKOUT'
-                        : 'START WORKOUT'),
+                widget.isSessionActive ? 'RESUME WORKOUT' : 'START WORKOUT',
                 style: AppTypography.titleLarge.copyWith(
                   fontFamily: AppTypography.fontDisplay,
                   fontSize: 12.5,

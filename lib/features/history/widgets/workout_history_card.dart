@@ -3,13 +3,17 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../models/workout_model.dart';
+import '../../workout_session/models/active_session_state.dart';
+import '../../workout_session/providers/active_session_provider.dart';
+import '../../workout_session/screens/workout_session_screen.dart';
 import 'edit_workout_sheet.dart';
 
-class WorkoutHistoryCard extends StatefulWidget {
+class WorkoutHistoryCard extends ConsumerStatefulWidget {
   const WorkoutHistoryCard({
     super.key,
     required this.workout,
@@ -20,10 +24,10 @@ class WorkoutHistoryCard extends StatefulWidget {
   final bool initiallyExpanded;
 
   @override
-  State<WorkoutHistoryCard> createState() => _WorkoutHistoryCardState();
+  ConsumerState<WorkoutHistoryCard> createState() => _WorkoutHistoryCardState();
 }
 
-class _WorkoutHistoryCardState extends State<WorkoutHistoryCard> {
+class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
   late bool _isExpanded;
 
   @override
@@ -52,6 +56,158 @@ class _WorkoutHistoryCardState extends State<WorkoutHistoryCard> {
       return '$k' 'K KG';
     }
     return '$intVol KG';
+  }
+
+  String _generateWorkoutSummary(WorkoutModel w) {
+    final buffer = StringBuffer();
+    buffer.writeln('LEON WORKOUT SUMMARY 🏋️');
+    buffer.writeln(w.name.toUpperCase());
+    buffer.writeln('${_formatDate(w.date)} • ${_formatDuration(w.durationSeconds)}');
+    final totalSets = w.exercises.fold<int>(0, (s, e) => s + e.sets.length);
+    buffer.writeln('Volume: ${_formatTonnage(w.totalVolumeKg ?? 0)} • Sets: $totalSets');
+    buffer.writeln('');
+    buffer.writeln('EXERCISES:');
+    for (final ex in w.exercises) {
+      buffer.writeln('• ${ex.exerciseName} (${ex.muscleGroup})');
+      for (int i = 0; i < ex.sets.length; i++) {
+        final s = ex.sets[i];
+        final warmupTag = s.isWarmup ? ' [Warmup]' : '';
+        final prTag = s.isPr ? ' 🏆 PR' : '';
+        buffer.writeln('  Set ${i + 1}: ${s.weightKg}kg × ${s.reps}$warmupTag$prTag');
+      }
+      buffer.writeln('');
+    }
+    buffer.write('Tracked with LEON');
+    return buffer.toString();
+  }
+
+  void _shareWorkoutSummary(BuildContext context) {
+    HapticFeedback.lightImpact();
+    final summary = _generateWorkoutSummary(widget.workout);
+    Clipboard.setData(ClipboardData(text: summary));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: AppColors.charcoal,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(color: AppColors.steel, width: 1),
+        ),
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: AppColors.pureWhite, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Workout summary copied to clipboard!',
+                style: AppTypography.bodySmall.copyWith(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.pureWhite,
+                ),
+              ),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> _repeatWorkout(BuildContext context) async {
+    HapticFeedback.mediumImpact();
+    final activeSession = ref.read(activeSessionProvider);
+    if (activeSession.isActive) {
+      final shouldReplace = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: AppColors.charcoal,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: AppColors.steel),
+          ),
+          title: Text(
+            'ACTIVE WORKOUT IN PROGRESS',
+            style: AppTypography.titleLarge.copyWith(
+              fontFamily: AppTypography.fontDisplay,
+              fontSize: 16.0,
+              fontWeight: FontWeight.w800,
+              color: AppColors.pureWhite,
+            ),
+          ),
+          content: Text(
+            'A workout session is currently active. Discard it and repeat this workout?',
+            style: AppTypography.bodySmall.copyWith(
+              fontSize: 13.0,
+              color: AppColors.platinum,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(
+                'CANCEL',
+                style: AppTypography.labelSmall.copyWith(
+                  fontSize: 12.0,
+                  color: AppColors.platinum,
+                ),
+              ),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.pureWhite,
+                foregroundColor: AppColors.onyx,
+              ),
+              child: Text(
+                'REPEAT WORKOUT',
+                style: AppTypography.labelSmall.copyWith(
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.onyx,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldReplace != true) return;
+    }
+
+    final mappedExercises = widget.workout.exercises.map((ex) {
+      return ActiveExerciseState(
+        exerciseId: ex.exerciseId,
+        name: ex.exerciseName,
+        muscleGroup: ex.muscleGroup,
+        sets: ex.sets.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final s = entry.value;
+          return ActiveSetState(
+            setNumber: idx + 1,
+            weightKg: s.weightKg,
+            reps: s.reps,
+            previousWeightKg: s.weightKg,
+            previousReps: s.reps,
+            isCompleted: false,
+            setType: s.isWarmup ? ActiveSetType.warmup : ActiveSetType.normal,
+          );
+        }).toList(),
+      );
+    }).toList();
+
+    ref.read(activeSessionProvider.notifier).startSession(
+      splitName: widget.workout.name,
+      initialExercises: mappedExercises,
+    );
+
+    if (context.mounted) {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => const WorkoutSessionScreen(),
+        ),
+      );
+    }
   }
 
   @override
@@ -272,45 +428,94 @@ class _WorkoutHistoryCardState extends State<WorkoutHistoryCard> {
                         ],
                       ),
                     ),
-                  const SizedBox(height: 8),
-                  // Action Row: EDIT WORKOUT
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        EditWorkoutSheet.show(context, widget.workout);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                          color: const Color(0xFF00E5FF).withValues(alpha: 0.6),
-                          width: 1.0,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                      icon: const Icon(
-                        Icons.edit_note_rounded,
-                        size: 16,
-                        color: Color(0xFF00E5FF),
-                      ),
-                      label: const Text(
-                        'EDIT WORKOUT',
-                        style: TextStyle(
-                          fontFamily: 'JetBrains Mono',
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF00E5FF),
-                          letterSpacing: 0.4,
+                  const SizedBox(height: 12),
+                  // ── Action Row: REPEAT WORKOUT • SHARE • EDIT ──────────
+                  Row(
+                    children: [
+                      // 1. REPEAT WORKOUT CTA (Primary)
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: () => _repeatWorkout(context),
+                          icon: const Icon(
+                            Icons.play_arrow_rounded,
+                            size: 16,
+                            color: AppColors.onyx,
+                          ),
+                          label: Text(
+                            'REPEAT WORKOUT',
+                            style: AppTypography.monoSmall.copyWith(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.onyx,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.pureWhite,
+                            foregroundColor: AppColors.onyx,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            minimumSize: const Size(0, 38),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+
+                      // 2. SHARE Summary (Secondary)
+                      OutlinedButton.icon(
+                        onPressed: () => _shareWorkoutSummary(context),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.steel),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          minimumSize: const Size(0, 38),
+                        ),
+                        icon: const Icon(
+                          Icons.copy_rounded,
+                          size: 14,
+                          color: AppColors.pureWhite,
+                        ),
+                        label: Text(
+                          'SHARE',
+                          style: AppTypography.monoSmall.copyWith(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.pureWhite,
+                            letterSpacing: 0.4,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // 3. EDIT Session (Tertiary)
+                      OutlinedButton(
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          EditWorkoutSheet.show(context, widget.workout);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.steel),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          minimumSize: const Size(0, 38),
+                        ),
+                        child: Text(
+                          'EDIT',
+                          style: AppTypography.monoSmall.copyWith(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.platinum,
+                            letterSpacing: 0.4,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ],

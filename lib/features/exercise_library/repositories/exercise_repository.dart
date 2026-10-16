@@ -74,15 +74,21 @@ class ExerciseRepository {
     return result;
   }
 
-  /// Filter exercises by search text, category, equipment, type, and difficulty
+  /// Filter exercises by search text, category, equipment, type, difficulty, and custom status
   List<ExerciseLibraryItem> filter({
     String? searchQuery,
     String? category,
     String? equipment,
     String? exerciseType,
     String? difficulty,
+    bool? onlyCustom,
   }) {
     var result = allExercises;
+
+    // Filter by Custom
+    if (onlyCustom == true) {
+      result = result.where((e) => e.isCustom).toList();
+    }
 
     // Filter by Category
     if (category != null && category.isNotEmpty && category.toLowerCase() != 'all') {

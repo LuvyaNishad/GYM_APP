@@ -171,19 +171,31 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         HapticFeedback.lightImpact();
       } catch (_) {}
 
-      // Auto-trigger rest timer if configured
+      // Check if all exercises and sets in the entire workout are completed
+      final allFinished = updatedExercises.every(
+        (e) => e.sets.isNotEmpty && e.sets.every((s) => s.isCompleted),
+      );
+
+      // Auto-trigger rest timer if configured and workout is not completely finished
       final restState = ref.read(restTimerProvider);
-      if (restState.autoStart) {
+      if (restState.autoStart && !allFinished) {
+        final duration = restDurationToUse > 0 ? restDurationToUse : 90;
         ref.read(restTimerProvider.notifier).startTimer(
-              durationSeconds: restDurationToUse,
+              durationSeconds: duration,
               exerciseName: exercise.name,
               setNumber: currentSet.setNumber,
             );
       }
+    } else {
+      // If user unchecks a set, dismiss the active countdown if it was triggered for this exercise
+      final restState = ref.read(restTimerProvider);
+      if (restState.isRunning && restState.exerciseName == exercise.name) {
+        ref.read(restTimerProvider.notifier).skip();
+      }
     }
   }
 
-  /// Updates weight, reps, RIR, RPE, or warmup flag on a specific set.
+  /// Updates weight, reps, RIR, RPE, setType, or warmup flag on a specific set.
   void updateSetValues({
     required String exerciseId,
     required int setIndex,
@@ -192,6 +204,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     double? rir,
     double? rpe,
     bool? isWarmup,
+    ActiveSetType? setType,
   }) {
     final exIndex = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
     if (exIndex == -1) return;
@@ -216,7 +229,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       reps: reps ?? currentSet.reps,
       rir: updatedRir,
       rpe: updatedRpe,
-      isWarmup: isWarmup ?? currentSet.isWarmup,
+      isWarmup: isWarmup,
+      setType: setType,
     );
 
     final updatedSets = List<ActiveSetState>.from(exercise.sets);
@@ -317,6 +331,53 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     final updatedSets = [...warmups, ...renumberedWorking];
     final updatedExercises = List<ActiveExerciseState>.from(state.exercises);
     updatedExercises[exIndex] = exercise.copyWith(sets: updatedSets);
+
+    state = state.copyWith(exercises: updatedExercises);
+    _persistActiveSession();
+  }
+
+  /// Inserts a single quick warmup set calculated at 50% of the first working set.
+  void addSingleWarmupSet(String exerciseId) {
+    final exIndex = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
+    if (exIndex == -1) return;
+
+    final exercise = state.exercises[exIndex];
+    final firstSet = exercise.sets.isNotEmpty ? exercise.sets.first : null;
+    final baseWeight = firstSet?.weightKg ?? 40.0;
+    final warmupWeight = (baseWeight * 0.50).clamp(10.0, 999.0);
+
+    final warmupSet = ActiveSetState(
+      setNumber: 1,
+      weightKg: warmupWeight,
+      reps: 10,
+      rir: 4.0,
+      rpe: 6.0,
+      setType: ActiveSetType.warmup,
+    );
+
+    // Renumber existing sets and insert warmup set at top
+    final renumberedWorking = [
+      for (int i = 0; i < exercise.sets.length; i++)
+        exercise.sets[i].copyWith(setNumber: i + 2),
+    ];
+
+    final updatedSets = [warmupSet, ...renumberedWorking];
+    final updatedExercises = List<ActiveExerciseState>.from(state.exercises);
+    updatedExercises[exIndex] = exercise.copyWith(sets: updatedSets);
+
+    state = state.copyWith(exercises: updatedExercises);
+    _persistActiveSession();
+  }
+
+  /// Updates the rest countdown interval for a specific exercise in the active workout.
+  void updateExerciseRestDuration(String exerciseId, int seconds) {
+    final exIndex = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
+    if (exIndex == -1) return;
+
+    final updatedExercises = List<ActiveExerciseState>.from(state.exercises);
+    updatedExercises[exIndex] = state.exercises[exIndex].copyWith(
+      restDurationSeconds: seconds.clamp(15, 600),
+    );
 
     state = state.copyWith(exercises: updatedExercises);
     _persistActiveSession();

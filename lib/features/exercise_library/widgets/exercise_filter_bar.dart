@@ -67,6 +67,14 @@ class ExerciseFilterBar extends ConsumerWidget {
             ),
           ),
 
+          // ── High-Visibility "Custom" Filter Chip ───────────────────────
+          _FilterChip(
+            label: 'Custom',
+            icon: Icons.person_outline_rounded,
+            isSelected: state.filter.onlyCustom,
+            onTap: () => notifier.toggleOnlyCustom(),
+          ),
+
           // ── Category Toggle Chips ──────────────────────────────────────
           ..._quickCategories.map((category) {
             final isSelected = state.filter.selectedCategory.toLowerCase() == category.toLowerCase();
@@ -176,11 +184,13 @@ class _FilterChip extends StatelessWidget {
     required this.label,
     required this.isSelected,
     required this.onTap,
+    this.icon,
   });
 
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -211,14 +221,27 @@ class _FilterChip extends StatelessWidget {
                 ),
               ),
               child: Center(
-                child: Text(
-                  label,
-                  style: AppTypography.labelSmall.copyWith(
-                    fontSize: 12.0,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    letterSpacing: 0.4,
-                    color: isSelected ? AppColors.onyx : AppColors.platinum,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (icon != null) ...[
+                      Icon(
+                        icon,
+                        size: 14,
+                        color: isSelected ? AppColors.onyx : AppColors.platinum,
+                      ),
+                      const SizedBox(width: 5),
+                    ],
+                    Text(
+                      label,
+                      style: AppTypography.labelSmall.copyWith(
+                        fontSize: 12.0,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        letterSpacing: 0.4,
+                        color: isSelected ? AppColors.onyx : AppColors.platinum,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

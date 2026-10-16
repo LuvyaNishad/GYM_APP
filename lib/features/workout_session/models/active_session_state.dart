@@ -12,6 +12,21 @@ double rirFromRpe(double rpe) {
   return rir.clamp(0.0, 4.0);
 }
 
+/// The classification type for an individual exercise set.
+enum ActiveSetType {
+  /// Standard progressive working set (counts toward working volume).
+  normal,
+
+  /// Warm-up ramp set (reduced load, excluded from working volume).
+  warmup,
+
+  /// Drop set performed immediately following another set at a reduced load.
+  dropSet,
+
+  /// Maximal effort set taken to muscular failure (0 RIR / 10 RPE).
+  failure,
+}
+
 /// A single set in an active workout session.
 @immutable
 class ActiveSetState {
@@ -22,13 +37,14 @@ class ActiveSetState {
     this.rir = 2.0,
     this.rpe = 8.0,
     this.isCompleted = false,
-    this.isWarmup = false,
+    bool isWarmup = false,
+    ActiveSetType? setType,
     this.isPr = false,
     this.previousWeightKg,
     this.previousReps,
     this.previousRir,
     this.previousRpe,
-  });
+  }) : setType = setType ?? (isWarmup ? ActiveSetType.warmup : ActiveSetType.normal);
 
   final int setNumber;
   final double weightKg;
@@ -36,8 +52,17 @@ class ActiveSetState {
   final double rir;
   final double rpe;
   final bool isCompleted;
-  final bool isWarmup;
+  final ActiveSetType setType;
   final bool isPr;
+
+  /// Whether this set is categorized as a warm-up ramp set.
+  bool get isWarmup => setType == ActiveSetType.warmup;
+
+  /// Whether this set is categorized as a drop set.
+  bool get isDropSet => setType == ActiveSetType.dropSet;
+
+  /// Whether this set is taken to muscular failure.
+  bool get isFailure => setType == ActiveSetType.failure;
 
   /// Ghost reference values from previous logged workout.
   final double? previousWeightKg;
@@ -56,12 +81,21 @@ class ActiveSetState {
     double? rpe,
     bool? isCompleted,
     bool? isWarmup,
+    ActiveSetType? setType,
     bool? isPr,
     double? previousWeightKg,
     int? previousReps,
     double? previousRir,
     double? previousRpe,
   }) {
+    ActiveSetType resolvedType = setType ?? this.setType;
+    if (isWarmup != null) {
+      resolvedType = isWarmup
+          ? ActiveSetType.warmup
+          : (resolvedType == ActiveSetType.warmup
+              ? ActiveSetType.normal
+              : resolvedType);
+    }
     return ActiveSetState(
       setNumber: setNumber ?? this.setNumber,
       weightKg: weightKg ?? this.weightKg,
@@ -69,7 +103,7 @@ class ActiveSetState {
       rir: rir ?? this.rir,
       rpe: rpe ?? this.rpe,
       isCompleted: isCompleted ?? this.isCompleted,
-      isWarmup: isWarmup ?? this.isWarmup,
+      setType: resolvedType,
       isPr: isPr ?? this.isPr,
       previousWeightKg: previousWeightKg ?? this.previousWeightKg,
       previousReps: previousReps ?? this.previousReps,
@@ -89,7 +123,7 @@ class ActiveSetState {
           rir == other.rir &&
           rpe == other.rpe &&
           isCompleted == other.isCompleted &&
-          isWarmup == other.isWarmup &&
+          setType == other.setType &&
           isPr == other.isPr;
 
   @override
@@ -100,7 +134,7 @@ class ActiveSetState {
         rir,
         rpe,
         isCompleted,
-        isWarmup,
+        setType,
         isPr,
       );
 
@@ -112,6 +146,7 @@ class ActiveSetState {
         'rpe': rpe,
         'isCompleted': isCompleted,
         'isWarmup': isWarmup,
+        'setType': setType.name,
         'isPr': isPr,
         'previousWeightKg': previousWeightKg,
         'previousReps': previousReps,
@@ -119,20 +154,32 @@ class ActiveSetState {
         'previousRpe': previousRpe,
       };
 
-  factory ActiveSetState.fromJson(Map<String, dynamic> json) => ActiveSetState(
-        setNumber: json['setNumber'] as int? ?? 1,
-        weightKg: (json['weightKg'] as num?)?.toDouble() ?? 0.0,
-        reps: json['reps'] as int? ?? 0,
-        rir: (json['rir'] as num?)?.toDouble() ?? 2.0,
-        rpe: (json['rpe'] as num?)?.toDouble() ?? 8.0,
-        isCompleted: json['isCompleted'] as bool? ?? false,
-        isWarmup: json['isWarmup'] as bool? ?? false,
-        isPr: json['isPr'] as bool? ?? false,
-        previousWeightKg: (json['previousWeightKg'] as num?)?.toDouble(),
-        previousReps: json['previousReps'] as int?,
-        previousRir: (json['previousRir'] as num?)?.toDouble(),
-        previousRpe: (json['previousRpe'] as num?)?.toDouble(),
+  factory ActiveSetState.fromJson(Map<String, dynamic> json) {
+    ActiveSetType parsedType = ActiveSetType.normal;
+    if (json['setType'] != null) {
+      parsedType = ActiveSetType.values.firstWhere(
+        (e) => e.name == json['setType'],
+        orElse: () => ActiveSetType.normal,
       );
+    } else if (json['isWarmup'] as bool? ?? false) {
+      parsedType = ActiveSetType.warmup;
+    }
+
+    return ActiveSetState(
+      setNumber: json['setNumber'] as int? ?? 1,
+      weightKg: (json['weightKg'] as num?)?.toDouble() ?? 0.0,
+      reps: json['reps'] as int? ?? 0,
+      rir: (json['rir'] as num?)?.toDouble() ?? 2.0,
+      rpe: (json['rpe'] as num?)?.toDouble() ?? 8.0,
+      isCompleted: json['isCompleted'] as bool? ?? false,
+      setType: parsedType,
+      isPr: json['isPr'] as bool? ?? false,
+      previousWeightKg: (json['previousWeightKg'] as num?)?.toDouble(),
+      previousReps: json['previousReps'] as int?,
+      previousRir: (json['previousRir'] as num?)?.toDouble(),
+      previousRpe: (json['previousRpe'] as num?)?.toDouble(),
+    );
+  }
 }
 
 /// An exercise in the active workout sequence.

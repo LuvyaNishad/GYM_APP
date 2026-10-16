@@ -107,11 +107,17 @@ void main() {
 
   group('ExerciseFilterBar Tests', () {
     testWidgets('renders master filter button and quick chips', (tester) async {
+      tester.view.physicalSize = const Size(1400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       await tester.pumpWidget(createTestWidget(const ExerciseFilterBar()));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
 
       expect(find.text('Filters'), findsOneWidget);
+      expect(find.text('Custom'), findsOneWidget);
       expect(find.text('Chest'), findsOneWidget);
       expect(find.text('Back'), findsOneWidget);
       expect(find.text('Barbell'), findsOneWidget);

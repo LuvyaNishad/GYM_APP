@@ -87,6 +87,8 @@ class _CustomExerciseCreatorScreenState
     );
 
     ref.read(exerciseLibraryProvider.notifier).addCustomExercise(customItem);
+    // Auto-filter to Custom movements so the new exercise is immediately visible at the top
+    ref.read(exerciseLibraryProvider.notifier).setOnlyCustom(true);
 
     Navigator.of(context).pop();
 
@@ -98,14 +100,23 @@ class _CustomExerciseCreatorScreenState
           borderRadius: BorderRadius.circular(10),
           side: const BorderSide(color: AppColors.steel, width: 1),
         ),
-        content: Text(
-          'Custom exercise "$name" created successfully!',
-          style: AppTypography.bodySmall.copyWith(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w600,
-            color: AppColors.pureWhite,
-          ),
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: AppColors.pureWhite, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Exercise "$name" created & filtered in library!',
+                style: AppTypography.bodySmall.copyWith(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.pureWhite,
+                ),
+              ),
+            ),
+          ],
         ),
+        duration: const Duration(seconds: 3),
       ),
     );
   }

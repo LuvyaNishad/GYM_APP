@@ -18,6 +18,7 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
   late String _tempEquipment;
   late String _tempType;
   late String _tempDifficulty;
+  late bool _tempOnlyCustom;
 
   static const List<String> _categories = [
     'All',
@@ -64,6 +65,7 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
     _tempEquipment = filter.selectedEquipment;
     _tempType = filter.selectedType;
     _tempDifficulty = filter.selectedDifficulty;
+    _tempOnlyCustom = filter.onlyCustom;
   }
 
   void _resetAll() {
@@ -72,6 +74,7 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
       _tempEquipment = 'All';
       _tempType = 'All';
       _tempDifficulty = 'All';
+      _tempOnlyCustom = false;
     });
   }
 
@@ -81,6 +84,7 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
     notifier.setEquipment(_tempEquipment);
     notifier.setType(_tempType);
     notifier.setDifficulty(_tempDifficulty);
+    notifier.setOnlyCustom(_tempOnlyCustom);
     Navigator.of(context).pop();
   }
 
@@ -167,6 +171,14 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      _buildSectionHeader('EXERCISE SOURCE'),
+                      _buildWrapSelector(
+                        options: const ['All Movements', 'Custom Only'],
+                        selected: _tempOnlyCustom ? 'Custom Only' : 'All Movements',
+                        onSelected: (val) => setState(() => _tempOnlyCustom = val == 'Custom Only'),
+                      ),
+                      const SizedBox(height: 18),
+
                       _buildSectionHeader('TARGET MUSCLE GROUP'),
                       _buildWrapSelector(
                         options: _categories,

@@ -60,6 +60,32 @@ class FloatingRestTimerBar extends ConsumerWidget {
                         ),
                       ),
                     ),
+                    // Auto-start toggle chip
+                    InkWell(
+                      onTap: notifier.toggleAutoStart,
+                      borderRadius: BorderRadius.circular(6),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: restState.autoStart
+                              ? AppColors.pureWhite.withValues(alpha: 0.12)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: restState.autoStart ? AppColors.pureWhite : AppColors.steel,
+                          ),
+                        ),
+                        child: Text(
+                          restState.autoStart ? 'AUTO' : 'MANUAL',
+                          style: AppTypography.monoSmall.copyWith(
+                            fontSize: 11.0,
+                            fontWeight: FontWeight.w700,
+                            color: restState.autoStart ? AppColors.pureWhite : AppColors.platinum,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     // Quick start 60s
                     _buildQuickStartChip(
                       label: '01:00',

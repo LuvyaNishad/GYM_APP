@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/active_session_state.dart';
 import '../providers/active_session_provider.dart';
+import 'exercise_form_guide_sheet.dart';
 import 'exercise_picker_modal.dart';
 import 'exercise_set_table.dart';
 import 'exercise_substitution_sheet.dart';
@@ -209,6 +210,23 @@ class ExerciseSequenceCard extends ConsumerWidget {
                         ),
                       ),
 
+                      // Quick Form Guide & PRs 1-Tap Info Button
+                      IconButton(
+                        icon: const Icon(
+                          Icons.info_outline_rounded,
+                          color: AppColors.platinum,
+                          size: 20,
+                        ),
+                        tooltip: 'Form Guide & PRs',
+                        onPressed: () {
+                          ExerciseFormGuideSheet.show(
+                            context: context,
+                            ref: ref,
+                            exercise: exercise,
+                          );
+                        },
+                      ),
+
                       // 3-Dot Options Menu
                       PopupMenuButton<String>(
                         icon: const Icon(
@@ -224,7 +242,13 @@ class ExerciseSequenceCard extends ConsumerWidget {
                           ),
                         ),
                         onSelected: (value) {
-                          if (value == 'substitute') {
+                          if (value == 'guide') {
+                            ExerciseFormGuideSheet.show(
+                              context: context,
+                              ref: ref,
+                              exercise: exercise,
+                            );
+                          } else if (value == 'substitute') {
                             showExerciseSubstitutionSheet(
                               context: context,
                               currentExercise: exercise,
@@ -252,6 +276,24 @@ class ExerciseSequenceCard extends ConsumerWidget {
                           }
                         },
                         itemBuilder: (ctx) => [
+                          PopupMenuItem(
+                            value: 'guide',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.menu_book_rounded, size: 18, color: AppColors.pureWhite),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    'Form Guide & PRs',
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: AppColors.pureWhite,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                           if (isSuperset)
                             PopupMenuItem(
                               value: 'unlink_superset',
