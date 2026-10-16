@@ -109,16 +109,6 @@ class SleepBentoCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    'Last Night',
-                    style: TextStyle(
-                      fontFamily: AppTypography.fontBody,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
                 ],
               ),
 
@@ -149,7 +139,7 @@ class SleepBentoCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           const Text(
-                            'hrs',
+                            'h',
                             style: TextStyle(
                               fontFamily: AppTypography.fontBody,
                               fontSize: 11.5,

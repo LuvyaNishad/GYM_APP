@@ -85,7 +85,7 @@ class StepsBentoCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 6),
                           const Text(
-                            'Step Count',
+                            'Steps',
                             style: TextStyle(
                               fontFamily: AppTypography.fontDisplay,
                               fontSize: 14.0,
@@ -110,16 +110,6 @@ class StepsBentoCard extends StatelessWidget {
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    'Today',
-                    style: TextStyle(
-                      fontFamily: AppTypography.fontBody,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
-                    ),
                   ),
                 ],
               ),

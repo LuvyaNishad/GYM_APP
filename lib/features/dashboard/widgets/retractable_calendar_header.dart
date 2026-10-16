@@ -233,13 +233,13 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
           String phaseSubtitle;
           double chevronAngle;
           if (t < 0.5) {
-            phaseSubtitle = '$monthStr · Tap to expand';
+            phaseSubtitle = monthStr;
             chevronAngle = -1.5708; // -90 deg
           } else if (t < 1.5) {
             phaseSubtitle = monthStr;
             chevronAngle = (1.0 - t) * -1.5708;
           } else {
-            phaseSubtitle = '$monthStr · Workout History';
+            phaseSubtitle = '$monthStr · History';
             chevronAngle = 3.14159; // 180 deg (pointing up to collapse)
           }
 

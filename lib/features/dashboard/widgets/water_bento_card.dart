@@ -89,7 +89,7 @@ class WaterBentoCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 6),
                           const Text(
-                            'Hydration',
+                            'Water',
                             style: TextStyle(
                               fontFamily: AppTypography.fontDisplay,
                               fontSize: 14.0,
@@ -114,16 +114,6 @@ class WaterBentoCard extends StatelessWidget {
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    'Today',
-                    style: TextStyle(
-                      fontFamily: AppTypography.fontBody,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
-                    ),
                   ),
                 ],
               ),

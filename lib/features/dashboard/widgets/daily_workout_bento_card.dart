@@ -59,6 +59,27 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
 
   static const Color _cardBg = AppColors.charcoal;
 
+  static String _shortMuscleName(String muscle) {
+    final upper = muscle.toUpperCase();
+    switch (upper) {
+      case 'DELTOIDS':
+      case 'SHOULDERS':
+        return 'DELTS';
+      case 'TRICEPS':
+        return 'TRIS';
+      case 'BICEPS':
+        return 'BIS';
+      case 'QUADRICEPS':
+        return 'QUADS';
+      case 'HAMSTRINGS':
+        return 'HAMS';
+      case 'ABDOMINALS':
+        return 'ABS';
+      default:
+        return upper;
+    }
+  }
+
   void _openDetails(BuildContext context) {
     if (onTap != null) {
       onTap!();
@@ -131,7 +152,7 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
                                 .read(workoutRotationProvider.notifier)
                                 .cycleNextDay();
                           },
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(6),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 3),
@@ -139,25 +160,10 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
                               color: Colors.white.withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.swap_horiz_rounded,
-                                  size: 14,
-                                  color: AppColors.primary,
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  'SWAP',
-                                  style: TextStyle(
-                                    fontFamily: 'JetBrains Mono',
-                                    fontSize: 11.0,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                              ],
+                            child: const Icon(
+                              Icons.swap_horiz_rounded,
+                              size: 15,
+                              color: AppColors.primary,
                             ),
                           ),
                         ),
@@ -227,7 +233,7 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
                             ),
                             const SizedBox(width: 5),
                             Text(
-                              muscle.toUpperCase(),
+                              _shortMuscleName(muscle),
                               style: const TextStyle(
                                 fontFamily: 'JetBrains Mono',
                                 fontSize: 11.0,
@@ -275,7 +281,7 @@ class _BentoStatusHeader extends ConsumerWidget {
         : '';
     final setsProgress = isSessionActive
         ? ref.watch(activeSessionProvider
-            .select((s) => '${s.completedSetCount}/${s.totalSetCount} SETS'))
+            .select((s) => '${s.completedSetCount}/${s.totalSetCount}'))
         : '';
 
     return Row(
@@ -318,10 +324,10 @@ class _BentoStatusHeader extends ConsumerWidget {
               const SizedBox(width: 5),
               Text(
                 isSessionActive
-                    ? 'IN PROGRESS • $formattedElapsed'
+                    ? formattedElapsed
                     : (rotation.isCompletedToday
-                        ? 'COMPLETED TODAY'
-                        : "TODAY'S WORKOUT"),
+                        ? 'COMPLETED'
+                        : "TODAY"),
                 style: AppTypography.labelSmall.copyWith(
                   fontFamily: 'JetBrains Mono',
                   fontSize: 11.0,
