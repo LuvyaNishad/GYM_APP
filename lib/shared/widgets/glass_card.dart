@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 
 /// A premium glassmorphism card widget — the foundational surface of LEON's
@@ -98,10 +99,13 @@ class GlassCard extends StatelessWidget {
       return Material(
         type: MaterialType.transparency,
         child: InkWell(
-          onTap: onTap,
+          onTap: () {
+            HapticFeedback.lightImpact();
+            onTap!();
+          },
           borderRadius: radius,
-          splashColor: AppColors.primary.withValues(alpha: 0.12),
-          highlightColor: Colors.transparent,
+          splashColor: AppColors.primary.withValues(alpha: 0.15),
+          highlightColor: AppColors.primary.withValues(alpha: 0.08),
           child: card,
         ),
       );

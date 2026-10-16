@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/split_model.dart';
@@ -72,7 +73,10 @@ class _SplitDayWorkoutCardState extends State<SplitDayWorkoutCard> {
         children: [
           // Main Header Row (Clickable to toggle exercise preview)
           InkWell(
-            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            onTap: () {
+              HapticFeedback.selectionClick();
+              setState(() => _isExpanded = !_isExpanded);
+            },
             borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
             child: Padding(
               padding: const EdgeInsets.all(14),
@@ -256,7 +260,10 @@ class _SplitDayWorkoutCardState extends State<SplitDayWorkoutCard> {
               width: double.infinity,
               height: 44,
               child: ElevatedButton.icon(
-                onPressed: widget.onStartWorkout,
+                onPressed: () {
+                  HapticFeedback.heavyImpact();
+                  widget.onStartWorkout();
+                },
                 icon: const Icon(
                   Icons.play_arrow_rounded,
                   size: 20,

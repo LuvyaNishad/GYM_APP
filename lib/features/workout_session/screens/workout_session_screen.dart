@@ -119,7 +119,10 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final sessionState = ref.watch(activeSessionProvider);
+    final exercises =
+        ref.watch(activeSessionProvider.select((s) => s.exercises));
+    final expandedExerciseId =
+        ref.watch(activeSessionProvider.select((s) => s.expandedExerciseId));
     final notifier = ref.read(activeSessionProvider.notifier);
 
     return Scaffold(
@@ -155,7 +158,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                     children: [
                       _SessionSummaryItem(
                         icon: Icons.fitness_center_rounded,
-                        label: '${sessionState.exercises.length} EXERCISES',
+                        label: '${exercises.length} EXERCISES',
                       ),
                       Container(
                         margin: const EdgeInsets.symmetric(horizontal: 10),
@@ -260,7 +263,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
 
               // Reorderable Exercise Sequence List
               Expanded(
-                child: sessionState.exercises.isEmpty
+                child: exercises.isEmpty
                     ? Center(
                         child: Text(
                           'No exercises in workout.\nTap "+ ADD EXERCISE" above.',
@@ -273,17 +276,17 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                     : ReorderableListView.builder(
                         padding: const EdgeInsets.only(top: 8, bottom: 100),
                         physics: const BouncingScrollPhysics(),
-                        itemCount: sessionState.exercises.length,
+                        itemCount: exercises.length,
                         // ignore: deprecated_member_use
                         onReorder: notifier.reorderExercises,
                         itemBuilder: (context, index) {
-                          final exercise = sessionState.exercises[index];
+                          final exercise = exercises[index];
                           final isExpanded =
-                              sessionState.expandedExerciseId == exercise.exerciseId;
+                              expandedExerciseId == exercise.exerciseId;
                           final isSuperset = exercise.supersetGroupId != null;
                           final hasPrevSuperset = isSuperset &&
                               index > 0 &&
-                              sessionState.exercises[index - 1].supersetGroupId ==
+                              exercises[index - 1].supersetGroupId ==
                                   exercise.supersetGroupId;
 
                           return ExerciseSequenceCard(

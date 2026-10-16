@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/exercise_library_item.dart';
@@ -21,16 +22,19 @@ class ExerciseLibraryCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.charcoal,
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
-          onTap: onTap,
+          onTap: () {
+            HapticFeedback.lightImpact();
+            onTap();
+          },
           borderRadius: BorderRadius.circular(16),
-          splashColor: AppColors.primary.withValues(alpha: 0.10),
-          highlightColor: AppColors.primary.withValues(alpha: 0.05),
+          splashColor: AppColors.primary.withValues(alpha: 0.15),
+          highlightColor: AppColors.primary.withValues(alpha: 0.08),
           child: Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: AppColors.charcoal,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: AppColors.steel,
@@ -137,15 +141,20 @@ class ExerciseLibraryCard extends StatelessWidget {
                   button: true,
                   label: 'Quick add ${exercise.name} to routine',
                   child: Material(
-                    color: Colors.transparent,
+                    color: AppColors.onyx,
+                    shape: const CircleBorder(),
                     child: InkWell(
-                      onTap: onQuickAdd,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        onQuickAdd();
+                      },
                       borderRadius: BorderRadius.circular(24),
+                      splashColor: AppColors.primary.withValues(alpha: 0.25),
+                      highlightColor: AppColors.primary.withValues(alpha: 0.12),
                       child: Container(
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: AppColors.onyx,
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: AppColors.steel,

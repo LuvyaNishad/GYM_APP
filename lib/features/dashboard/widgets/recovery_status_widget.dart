@@ -77,52 +77,54 @@ class _RecoveryStatusWidgetState extends State<RecoveryStatusWidget>
           Row(
             children: [
               // Animated Pulse Beacon
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  final t = _controller.value;
-                  return Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Expanding sonar wave
-                      Container(
-                        width: 44 + (12 * t),
-                        height: 44 + (12 * t),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: statusColor.withValues(alpha: (1.0 - t) * 0.45),
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                      // Core indicator
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: statusColor.withValues(alpha: 0.16),
-                          border: Border.all(
-                            color: statusColor.withValues(alpha: 0.8),
-                            width: 1.8,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: statusColor.withValues(alpha: 0.35),
-                              blurRadius: 14,
+              RepaintBoundary(
+                child: AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    final t = _controller.value;
+                    return Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Expanding sonar wave
+                        Container(
+                          width: 44 + (12 * t),
+                          height: 44 + (12 * t),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: statusColor.withValues(alpha: (1.0 - t) * 0.45),
+                              width: 1.5,
                             ),
-                          ],
+                          ),
                         ),
-                        child: child,
-                      ),
-                    ],
-                  );
-                },
-                child: Icon(
-                  widget.isReady ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                  color: statusColor,
-                  size: 22,
+                        // Core indicator
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: statusColor.withValues(alpha: 0.16),
+                            border: Border.all(
+                              color: statusColor.withValues(alpha: 0.8),
+                              width: 1.8,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: statusColor.withValues(alpha: 0.35),
+                                blurRadius: 14,
+                              ),
+                            ],
+                          ),
+                          child: child,
+                        ),
+                      ],
+                    );
+                  },
+                  child: Icon(
+                    widget.isReady ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                    color: statusColor,
+                    size: 22,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -199,15 +201,17 @@ class _RecoveryStatusWidgetState extends State<RecoveryStatusWidget>
             child: Row(
               children: [
                 // Animated mini ECG graph
-                SizedBox(
-                  width: 90,
-                  height: 28,
-                  child: AnimatedBuilder(
-                    animation: _controller,
-                    builder: (context, _) => CustomPaint(
-                      painter: _EcgLinePainter(
-                        color: statusColor,
-                        progress: _controller.value,
+                RepaintBoundary(
+                  child: SizedBox(
+                    width: 90,
+                    height: 28,
+                    child: AnimatedBuilder(
+                      animation: _controller,
+                      builder: (context, _) => CustomPaint(
+                        painter: _EcgLinePainter(
+                          color: statusColor,
+                          progress: _controller.value,
+                        ),
                       ),
                     ),
                   ),

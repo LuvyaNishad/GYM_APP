@@ -202,12 +202,13 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
     final monthStr = '${_monthName(now.month)}, ${now.year}';
     final topPadding = MediaQuery.paddingOf(context).top;
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onVerticalDragStart: _onDragStart,
-      onVerticalDragUpdate: _onDragUpdate,
-      onVerticalDragEnd: _onDragEnd,
-      child: AnimatedBuilder(
+    return RepaintBoundary(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onVerticalDragStart: _onDragStart,
+        onVerticalDragUpdate: _onDragUpdate,
+        onVerticalDragEnd: _onDragEnd,
+        child: AnimatedBuilder(
         animation: _controller,
         builder: (context, _) {
           final t = _controller.value;
@@ -439,8 +440,9 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
           );
         },
       ),
-    );
-  }
+    ),
+  );
+}
 
   DayStatus _getDayStatus(DateTime date, DateTime today) {
     final d = DateTime(date.year, date.month, date.day);

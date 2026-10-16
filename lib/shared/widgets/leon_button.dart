@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
@@ -69,7 +70,12 @@ class LeonButton extends StatelessWidget {
               : null,
         ),
         child: ElevatedButton.icon(
-          onPressed: isLoading ? null : onPressed,
+          onPressed: enabled
+              ? () {
+                  HapticFeedback.lightImpact();
+                  onPressed!();
+                }
+              : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: bgColor,
             foregroundColor: fgColor,

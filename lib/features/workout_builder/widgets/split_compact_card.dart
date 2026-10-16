@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/split_model.dart';
@@ -57,11 +58,19 @@ class SplitCompactCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Compact Header (Always visible) ────────────────────────────────
-          InkWell(
-            onTap: onToggleExpand,
+          Material(
+            color: Colors.transparent,
             borderRadius: BorderRadius.circular(18),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                onToggleExpand();
+              },
+              borderRadius: BorderRadius.circular(18),
+              splashColor: AppColors.primary.withValues(alpha: 0.12),
+              highlightColor: AppColors.primary.withValues(alpha: 0.06),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -217,6 +226,7 @@ class SplitCompactCard extends StatelessWidget {
               ),
             ),
           ),
+          ),
 
           // ── Expanded Deep Inspection ───────────────────────────────────────
           if (isExpanded) ...[
@@ -243,7 +253,10 @@ class SplitCompactCard extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: onSetActive,
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          onSetActive();
+                        },
                         icon: const Icon(Icons.check, size: 16, color: AppColors.onyx),
                         label: Text(
                           'SET AS ACTIVE TRAINING PROGRAM',
