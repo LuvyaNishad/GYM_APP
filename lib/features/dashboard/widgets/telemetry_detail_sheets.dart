@@ -16,7 +16,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../services/pedometer_service.dart';
 import '../models/daily_telemetry_model.dart';
 
 /// Shows the Step Count details modal sheet.
@@ -168,7 +167,6 @@ class _StepsDetailContentState extends ConsumerState<_StepsDetailContent> {
   @override
   Widget build(BuildContext context) {
     final liveTelemetry = ref.watch(dailyTelemetryProvider);
-    final pedometer = ref.watch(pedometerServiceProvider);
     final t = liveTelemetry;
 
     return Column(
@@ -179,34 +177,19 @@ class _StepsDetailContentState extends ConsumerState<_StepsDetailContent> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Row(
               children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.directions_walk_rounded,
-                      color: AppColors.pureWhite,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Step tracker',
-                      style: AppTypography.headlineMedium.copyWith(
-                        color: AppColors.pureWhite,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                const Icon(
+                  Icons.directions_walk_rounded,
+                  color: AppColors.pureWhite,
+                  size: 20,
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(width: 8),
                 Text(
-                  'Goal: ${_formatNumber(t.stepsGoal)} steps',
-                  style: const TextStyle(
-                    fontFamily: 'JetBrains Mono',
-                    fontSize: 12.0,
-                    color: Color(0xFF94A3B8),
-                    fontWeight: FontWeight.w500,
+                  'Step tracker',
+                  style: AppTypography.headlineMedium.copyWith(
+                    color: AppColors.pureWhite,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -218,43 +201,6 @@ class _StepsDetailContentState extends ConsumerState<_StepsDetailContent> {
               constraints: const BoxConstraints(),
             ),
           ],
-        ),
-        const SizedBox(height: 10),
-
-        // Sensor Active Badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0F291E),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 7,
-                height: 7,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF10B981),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                pedometer.isAvailable
-                    ? 'IN-BUILT PHONE HARDWARE SENSOR ACTIVE'
-                    : 'IN-BUILT PHONE HARDWARE SENSOR SYNCED',
-                style: const TextStyle(
-                  fontFamily: 'JetBrains Mono',
-                  fontSize: 11.0,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
-                  color: Color(0xFF34D399),
-                ),
-              ),
-            ],
-          ),
         ),
         const SizedBox(height: 14),
 
@@ -298,7 +244,7 @@ class _StepsDetailContentState extends ConsumerState<_StepsDetailContent> {
         ),
         const SizedBox(height: 14),
 
-        // 3. Historical Days Card (recreates user phone step tracker)
+        // 3. Horizontally Scrollable Step Tracker Card with 3 Metrics (Goal, Step count, Distance)
         _HistoricalStepTrackerCard(
           telemetry: t,
           selectedTab: _selectedTabIndex,
@@ -357,34 +303,12 @@ class _StepsDetailContentState extends ConsumerState<_StepsDetailContent> {
             ],
           ),
         ),
-        const SizedBox(height: 18),
-
-        // 5. Today's Hourly Distribution Section
-        Text(
-          'TODAY\'S HOURLY CADENCE',
-          style: AppTypography.labelSmall.copyWith(
-            color: AppColors.platinum,
-            letterSpacing: 1.1,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Container(
-          height: 100,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: const Color(0xFF161A23),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-          ),
-          child: _DetailedHourlyBarChart(hourlySteps: t.hourlySteps),
-        ),
       ],
     );
   }
 }
 
-class _HistoricalStepTrackerCard extends StatelessWidget {
+class _HistoricalStepTrackerCard extends StatefulWidget {
   const _HistoricalStepTrackerCard({
     required this.telemetry,
     required this.selectedTab,
@@ -396,177 +320,107 @@ class _HistoricalStepTrackerCard extends StatelessWidget {
   final String Function(int) formatNumber;
 
   @override
+  State<_HistoricalStepTrackerCard> createState() =>
+      _HistoricalStepTrackerCardState();
+}
+
+class _HistoricalStepTrackerCardState
+    extends State<_HistoricalStepTrackerCard> {
+  late final ScrollController _scrollController;
+  int? _selectedDayIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // 17 day data points matching phone screenshot
-    final List<({String label, int steps})> dayData = [
-      (label: '30', steps: 5000),
-      (label: '', steps: 1200),
-      (label: '2', steps: 5800),
-      (label: '', steps: 4400),
-      (label: '4', steps: 4700),
-      (label: '', steps: 1100),
-      (label: '6', steps: 3800),
-      (label: '', steps: 4000),
-      (label: '8', steps: 6500),
-      (label: '', steps: 8000),
-      (label: '10', steps: 3200),
-      (label: '', steps: 5100),
-      (label: '12', steps: 1000),
-      (label: '', steps: 6200),
-      (label: '14', steps: 5100),
-      (label: '', steps: 3500),
-      (label: 'Today', steps: telemetry.steps),
+    // 30 days history leading up to today
+    final List<({String label, String displayLabel, int steps})> dayData = [
+      (label: '17', displayLabel: '17', steps: 4800),
+      (label: '18', displayLabel: '', steps: 6200),
+      (label: '19', displayLabel: '19', steps: 5300),
+      (label: '20', displayLabel: '', steps: 7100),
+      (label: '21', displayLabel: '21', steps: 4300),
+      (label: '22', displayLabel: '', steps: 6700),
+      (label: '23', displayLabel: '23', steps: 5900),
+      (label: '24', displayLabel: '', steps: 3800),
+      (label: '25', displayLabel: '25', steps: 6400),
+      (label: '26', displayLabel: '', steps: 7400),
+      (label: '27', displayLabel: '27', steps: 5200),
+      (label: '28', displayLabel: '', steps: 6900),
+      (label: '29', displayLabel: '29', steps: 4600),
+      (label: '30', displayLabel: '30', steps: 5000),
+      (label: '1', displayLabel: '', steps: 1200),
+      (label: '2', displayLabel: '2', steps: 5800),
+      (label: '3', displayLabel: '', steps: 4400),
+      (label: '4', displayLabel: '4', steps: 4700),
+      (label: '5', displayLabel: '', steps: 1100),
+      (label: '6', displayLabel: '6', steps: 3800),
+      (label: '7', displayLabel: '', steps: 4000),
+      (label: '8', displayLabel: '8', steps: 6500),
+      (label: '9', displayLabel: '', steps: 8000),
+      (label: '10', displayLabel: '10', steps: 3200),
+      (label: '11', displayLabel: '', steps: 5100),
+      (label: '12', displayLabel: '12', steps: 1000),
+      (label: '13', displayLabel: '', steps: 6200),
+      (label: '14', displayLabel: '14', steps: 5100),
+      (label: '15', displayLabel: '', steps: 3500),
+      (label: 'Today', displayLabel: 'Today', steps: widget.telemetry.steps),
     ];
 
-    final List<({String label, int steps})> weekData = [
-      (label: 'M', steps: 5800),
-      (label: 'T', steps: 4700),
-      (label: 'W', steps: 3800),
-      (label: 'T', steps: 6500),
-      (label: 'F', steps: 8000),
-      (label: 'S', steps: 3200),
-      (label: 'Today', steps: telemetry.steps),
+    final List<({String label, String displayLabel, int steps})> weekData = [
+      (label: 'M', displayLabel: 'M', steps: 5800),
+      (label: 'T', displayLabel: 'T', steps: 4700),
+      (label: 'W', displayLabel: 'W', steps: 3800),
+      (label: 'T', displayLabel: 'T', steps: 6500),
+      (label: 'F', displayLabel: 'F', steps: 8000),
+      (label: 'S', displayLabel: 'S', steps: 3200),
+      (label: 'Today', displayLabel: 'Today', steps: widget.telemetry.steps),
     ];
 
-    final List<({String label, int steps})> monthData = [
-      (label: 'W1', steps: 38200),
-      (label: 'W2', steps: 41500),
-      (label: 'W3', steps: 44800),
-      (label: 'W4', steps: 39242),
+    final List<({String label, String displayLabel, int steps})> monthData = [
+      (label: 'W1', displayLabel: 'W1', steps: 38200),
+      (label: 'W2', displayLabel: 'W2', steps: 41500),
+      (label: 'W3', displayLabel: 'W3', steps: 44800),
+      (label: 'W4', displayLabel: 'W4', steps: 39242),
     ];
 
-    final currentData = selectedTab == 0
+    final currentData = widget.selectedTab == 0
         ? dayData
-        : selectedTab == 1
+        : widget.selectedTab == 1
             ? weekData
             : monthData;
 
-    final targetGoal = selectedTab == 2 ? 50000 : 8000;
+    final targetGoal = widget.selectedTab == 2 ? 50000 : widget.telemetry.stepsGoal;
+    final activeIndex = _selectedDayIndex != null && _selectedDayIndex! < currentData.length
+        ? _selectedDayIndex!
+        : (currentData.length - 1);
+    final activeItem = currentData[activeIndex];
+    final isToday = activeItem.label == 'Today';
+    final displayedSteps = activeItem.steps;
+    final displayedKm = (displayedSteps * 0.000708).toStringAsFixed(2);
+    final displayedGoal = targetGoal;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161A23),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Bar Chart Canvas
-          SizedBox(
-            height: 170,
-            child: CustomPaint(
-              painter: _HistoricalDaysPainter(
-                data: currentData,
-                targetGoal: targetGoal,
-                isDayTab: selectedTab == 0,
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
+    const double chartBarAreaHeight = 146.0;
+    const double bottomLabelHeight = 24.0;
+    const double totalChartHeight = chartBarAreaHeight + bottomLabelHeight;
+    const double yAxisWidth = 38.0;
 
-          // In-card metrics (matches user phone tracker)
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Step count',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF94A3B8),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      formatNumber(telemetry.steps),
-                      style: const TextStyle(
-                        fontFamily: 'JetBrains Mono',
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.pureWhite,
-                      ),
-                    ),
-                    const Text(
-                      'Steps',
-                      style: TextStyle(
-                        fontSize: 12.0,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF94A3B8),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Distance',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF94A3B8),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      telemetry.distanceKm.toStringAsFixed(2),
-                      style: const TextStyle(
-                        fontFamily: 'JetBrains Mono',
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.pureWhite,
-                      ),
-                    ),
-                    const Text(
-                      'km',
-                      style: TextStyle(
-                        fontSize: 12.0,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF94A3B8),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HistoricalDaysPainter extends CustomPainter {
-  _HistoricalDaysPainter({
-    required this.data,
-    required this.targetGoal,
-    required this.isDayTab,
-  });
-
-  final List<({String label, int steps})> data;
-  final int targetGoal;
-  final bool isDayTab;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const double labelWidth = 38.0;
-    const double bottomLabelHeight = 22.0;
-    final double chartWidth = size.width - labelWidth;
-    final double chartHeight = size.height - bottomLabelHeight;
-
-    // Gridline and label styling
-    final linePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.10)
-      ..strokeWidth = 1.0;
-
-    final ySteps = isDayTab
+    final ySteps = widget.selectedTab == 0
         ? [8000, 6000, 4000, 2000, 0]
         : [
             targetGoal,
@@ -576,187 +430,396 @@ class _HistoricalDaysPainter extends CustomPainter {
             0
           ];
 
-    for (int i = 0; i < ySteps.length; i++) {
-      final y = (i / (ySteps.length - 1)) * chartHeight;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF161A23),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Scrollable Chart with Fixed Y-Axis
+          SizedBox(
+            height: totalChartHeight,
+            child: Row(
+              children: [
+                // Scrollable bars area
+                Expanded(
+                  child: Stack(
+                    children: [
+                      // Horizontal background dashed grid lines
+                      Positioned.fill(
+                        bottom: bottomLabelHeight,
+                        child: CustomPaint(
+                          painter: _HorizontalGridPainter(
+                            levelsCount: ySteps.length,
+                          ),
+                        ),
+                      ),
+                      // Horizontally scrollable day bars
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        controller: _scrollController,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const SizedBox(width: 4),
+                            for (int i = 0; i < currentData.length; i++) ...[
+                              _buildBarColumn(
+                                index: i,
+                                item: currentData[i],
+                                isSelected: i == activeIndex,
+                                targetGoal: targetGoal,
+                                barAreaHeight: chartBarAreaHeight,
+                                labelHeight: bottomLabelHeight,
+                              ),
+                            ],
+                            const SizedBox(width: 8),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
-      // Draw dashed horizontal grid line
-      _drawDashedLine(canvas, Offset(0, y), Offset(chartWidth, y), linePaint);
-
-      // Draw Y-axis label on right side
-      final tp = TextPainter(
-        text: TextSpan(
-          text: '${ySteps[i]}',
-          style: const TextStyle(
-            fontFamily: 'JetBrains Mono',
-            fontSize: 11.0,
-            color: Color(0xFF64748B),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      tp.paint(canvas, Offset(chartWidth + 6, y - tp.height / 2));
-    }
-
-    // Draw bars
-    final double slotWidth = chartWidth / data.length;
-    final double barWidth = (slotWidth * 0.54).clamp(6.0, 14.0);
-
-    final trackPaint = Paint()
-      ..color = const Color(0xFF1E2330)
-      ..style = PaintingStyle.fill;
-
-    final barPaint = Paint()
-      ..color = const Color(0xFF22C55E)
-      ..style = PaintingStyle.fill;
-
-    final dashedPaint = Paint()
-      ..color = const Color(0xFF22C55E).withValues(alpha: 0.7)
-      ..strokeWidth = 1.5;
-
-    for (int i = 0; i < data.length; i++) {
-      final item = data[i];
-      final double centerX = i * slotWidth + slotWidth / 2;
-      final double left = centerX - barWidth / 2;
-      final double right = centerX + barWidth / 2;
-
-      // Background pill slot (full height 0 to chartHeight)
-      final trackRect = RRect.fromRectAndRadius(
-        Rect.fromLTRB(left, 0, right, chartHeight),
-        Radius.circular(barWidth / 2),
-      );
-      canvas.drawRRect(trackRect, trackPaint);
-
-      // Foreground filled bar
-      final double progress = (item.steps / targetGoal).clamp(0.04, 1.0);
-      final double fillHeight = progress * chartHeight;
-      final double topY = chartHeight - fillHeight;
-
-      final fillRect = RRect.fromRectAndRadius(
-        Rect.fromLTRB(left, topY, right, chartHeight),
-        Radius.circular(barWidth / 2),
-      );
-      canvas.drawRRect(fillRect, barPaint);
-
-      // If Today, draw dashed vertical indicator from topY to top (goal)
-      if (item.label == 'Today' && topY > 0) {
-        _drawVerticalDashedLine(
-          canvas,
-          Offset(centerX, topY),
-          Offset(centerX, 0),
-          dashedPaint,
-        );
-      }
-
-      // X-axis label
-      if (item.label.isNotEmpty) {
-        final tp = TextPainter(
-          text: TextSpan(
-            text: item.label,
-            style: TextStyle(
-              fontFamily: 'JetBrains Mono',
-              fontSize: 11.0,
-              color: item.label == 'Today'
-                  ? const Color(0xFF22C55E)
-                  : const Color(0xFF94A3B8),
-              fontWeight:
-                  item.label == 'Today' ? FontWeight.w700 : FontWeight.w500,
+                // Fixed Y-Axis Labels
+                SizedBox(
+                  width: yAxisWidth,
+                  height: totalChartHeight,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      SizedBox(
+                        height: chartBarAreaHeight,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            for (final val in ySteps)
+                              Text(
+                                '$val',
+                                style: const TextStyle(
+                                  fontFamily: 'JetBrains Mono',
+                                  fontSize: 11.0,
+                                  color: Color(0xFF64748B),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: bottomLabelHeight),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          textDirection: TextDirection.ltr,
-        )..layout();
-        tp.paint(
-          canvas,
-          Offset(centerX - tp.width / 2, chartHeight + 6),
-        );
-      }
-    }
+          const SizedBox(height: 16),
+
+          // 3 Metrics Together: Goal, Step count, Distance
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF131722),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+            ),
+            child: Row(
+              children: [
+                // 1. Goal
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Goal',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF94A3B8),
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        widget.formatNumber(displayedGoal),
+                        style: const TextStyle(
+                          fontFamily: 'JetBrains Mono',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.pureWhite,
+                        ),
+                      ),
+                      const Text(
+                        'Steps',
+                        style: TextStyle(
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 36,
+                  color: Colors.white.withValues(alpha: 0.08),
+                ),
+
+                // 2. Step count
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        isToday ? 'Step count' : 'Steps (${activeItem.label})',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF94A3B8),
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        widget.formatNumber(displayedSteps),
+                        style: TextStyle(
+                          fontFamily: 'JetBrains Mono',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: activeIndex == currentData.length - 1
+                              ? const Color(0xFF22C55E)
+                              : const Color(0xFF00E5FF),
+                        ),
+                      ),
+                      const Text(
+                        'Steps',
+                        style: TextStyle(
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 36,
+                  color: Colors.white.withValues(alpha: 0.08),
+                ),
+
+                // 3. Distance
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Distance',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF94A3B8),
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        displayedKm,
+                        style: const TextStyle(
+                          fontFamily: 'JetBrains Mono',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.pureWhite,
+                        ),
+                      ),
+                      const Text(
+                        'km',
+                        style: TextStyle(
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  void _drawDashedLine(Canvas canvas, Offset p1, Offset p2, Paint paint) {
-    const double dashWidth = 3.0;
-    const double dashSpace = 3.0;
-    double startX = p1.dx;
-    while (startX < p2.dx) {
-      canvas.drawLine(
-        Offset(startX, p1.dy),
-        Offset(math.min(startX + dashWidth, p2.dx), p1.dy),
-        paint,
-      );
-      startX += dashWidth + dashSpace;
-    }
-  }
+  Widget _buildBarColumn({
+    required int index,
+    required ({String label, String displayLabel, int steps}) item,
+    required bool isSelected,
+    required int targetGoal,
+    required double barAreaHeight,
+    required double labelHeight,
+  }) {
+    final double progress = (item.steps / targetGoal).clamp(0.04, 1.0);
+    final double fillHeight = progress * barAreaHeight;
+    final bool isToday = item.label == 'Today';
+    const double barWidth = 10.0;
+    final double slotWidth = isToday ? 38.0 : 26.0;
 
-  void _drawVerticalDashedLine(
-      Canvas canvas, Offset p1, Offset p2, Paint paint) {
-    const double dashHeight = 3.0;
-    const double dashSpace = 3.0;
-    double currentY = p1.dy;
-    while (currentY > p2.dy) {
-      canvas.drawLine(
-        Offset(p1.dx, currentY),
-        Offset(p1.dx, math.max(currentY - dashHeight, p2.dy)),
-        paint,
-      );
-      currentY -= dashHeight + dashSpace;
-    }
-  }
+    return InkWell(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() => _selectedDayIndex = index);
+      },
+      borderRadius: BorderRadius.circular(6),
+      child: SizedBox(
+        width: slotWidth,
+        height: barAreaHeight + labelHeight,
+        child: Column(
+          children: [
+            // Bar Slot Area
+            SizedBox(
+              height: barAreaHeight,
+              child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  // Inactive Track
+                  Container(
+                    width: barWidth,
+                    height: barAreaHeight,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Colors.white.withValues(alpha: 0.12)
+                          : const Color(0xFF1E2330),
+                      borderRadius: BorderRadius.circular(barWidth / 2),
+                    ),
+                  ),
 
-  @override
-  bool shouldRepaint(covariant _HistoricalDaysPainter oldDelegate) {
-    return oldDelegate.data != data ||
-        oldDelegate.targetGoal != targetGoal ||
-        oldDelegate.isDayTab != isDayTab;
+                  // Today's dashed goal guideline
+                  if (isToday && progress < 1.0)
+                    Positioned(
+                      top: 0,
+                      bottom: fillHeight,
+                      child: SizedBox(
+                        width: 2,
+                        child: CustomPaint(
+                          painter: _VerticalDashedLinePainter(
+                            color: const Color(0xFF22C55E).withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  // Active Filled Bar
+                  Container(
+                    width: barWidth,
+                    height: fillHeight,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? const Color(0xFF00E5FF)
+                          : const Color(0xFF22C55E),
+                      borderRadius: BorderRadius.circular(barWidth / 2),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
+                                blurRadius: 6,
+                                spreadRadius: 1,
+                              ),
+                            ]
+                          : null,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Date / Day Label
+            SizedBox(
+              height: labelHeight,
+              child: Center(
+                child: Text(
+                  item.displayLabel,
+                  softWrap: false,
+                  overflow: TextOverflow.visible,
+                  style: TextStyle(
+                    fontFamily: 'JetBrains Mono',
+                    fontSize: 11.0,
+                    color: isSelected
+                        ? const Color(0xFF00E5FF)
+                        : isToday
+                            ? const Color(0xFF22C55E)
+                            : const Color(0xFF94A3B8),
+                    fontWeight: isSelected || isToday
+                        ? FontWeight.w700
+                        : FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
-class _DetailedHourlyBarChart extends StatelessWidget {
-  const _DetailedHourlyBarChart({required this.hourlySteps});
-
-  final List<int> hourlySteps;
+class _HorizontalGridPainter extends CustomPainter {
+  const _HorizontalGridPainter({required this.levelsCount});
+  final int levelsCount;
 
   @override
-  Widget build(BuildContext context) {
-    if (hourlySteps.isEmpty) return const SizedBox.shrink();
-    final maxVal = hourlySteps.reduce((a, b) => a > b ? a : b);
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.08)
+      ..strokeWidth = 1.0;
 
-    return Column(
-      children: [
-        Expanded(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              for (int i = 0; i < hourlySteps.length; i++) ...[
-                Flexible(
-                  child: FractionallySizedBox(
-                    heightFactor: (hourlySteps[i] / (maxVal > 0 ? maxVal : 1)).clamp(0.08, 1.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: hourlySteps[i] == maxVal ? AppColors.pureWhite : AppColors.steel,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    ),
-                  ),
-                ),
-                if (i < hourlySteps.length - 1) const SizedBox(width: 4),
-              ],
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Text('08:00', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
-            Text('12:00', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
-            Text('16:00', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
-            Text('20:00', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
-          ],
-        ),
-      ],
-    );
+    for (int i = 0; i < levelsCount; i++) {
+      final y = (i / (levelsCount - 1)) * size.height;
+      double x = 0;
+      while (x < size.width) {
+        canvas.drawLine(
+          Offset(x, y),
+          Offset(math.min(x + 3.0, size.width), y),
+          paint,
+        );
+        x += 6.0;
+      }
+    }
   }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _VerticalDashedLinePainter extends CustomPainter {
+  const _VerticalDashedLinePainter({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5;
+
+    double y = size.height;
+    while (y > 0) {
+      canvas.drawLine(
+        Offset(size.width / 2, y),
+        Offset(size.width / 2, math.max(0, y - 3.0)),
+        paint,
+      );
+      y -= 6.0;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
