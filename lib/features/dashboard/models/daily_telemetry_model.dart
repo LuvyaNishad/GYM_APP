@@ -10,9 +10,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DailyTelemetry {
   const DailyTelemetry({
-    this.steps = 8420,
-    this.stepsGoal = 10000,
-    this.distanceKm = 6.12,
+    this.steps = 5282,
+    this.stepsGoal = 8000,
+    this.distanceKm = 3.74,
     this.calories = 2390,
     this.caloriesGoal = 3000,
     this.waterMl = 2750,
@@ -20,8 +20,25 @@ class DailyTelemetry {
     this.sleepHours = 7.5,
     this.sleepGoalHours = 8.0,
     this.hourlySteps = const [
-      120, 240, 520, 890, 1420, 2100, 3902, 2800, 1950, 1200, 680, 310
+      80, 190, 420, 680, 1150, 1680, 2450, 3120, 3950, 4480, 4920, 5282
     ],
+    this.historicalDays = const {
+      '30': 5000,
+      '2': 5800,
+      '4': 4700,
+      '6': 3800,
+      '8': 6500,
+      '9': 8000,
+      '10': 3200,
+      '12': 1000,
+      '13': 6200,
+      '14': 5100,
+      '15': 3500,
+      'Today': 5282,
+    },
+    this.recordSingleDaySteps = 17024,
+    this.recordSingleDayKm = 11.97,
+    this.recordDate = '26/6/2026',
   });
 
   /// Total steps taken today.
@@ -54,6 +71,18 @@ class DailyTelemetry {
   /// Hourly steps distribution across active daytime hours (e.g. 08:00 - 20:00).
   final List<int> hourlySteps;
 
+  /// Historical daily step counts from built-in phone tracker.
+  final Map<String, int> historicalDays;
+
+  /// All-time single day step record from built-in phone tracker.
+  final int recordSingleDaySteps;
+
+  /// All-time single day distance record in km.
+  final double recordSingleDayKm;
+
+  /// Date when the record was achieved.
+  final String recordDate;
+
   /// Progress fraction for steps (0.0 to 1.0+).
   double get stepsProgress => (steps / stepsGoal).clamp(0.0, 1.0);
 
@@ -77,6 +106,10 @@ class DailyTelemetry {
     double? sleepHours,
     double? sleepGoalHours,
     List<int>? hourlySteps,
+    Map<String, int>? historicalDays,
+    int? recordSingleDaySteps,
+    double? recordSingleDayKm,
+    String? recordDate,
   }) {
     return DailyTelemetry(
       steps: steps ?? this.steps,
@@ -89,6 +122,10 @@ class DailyTelemetry {
       sleepHours: sleepHours ?? this.sleepHours,
       sleepGoalHours: sleepGoalHours ?? this.sleepGoalHours,
       hourlySteps: hourlySteps ?? this.hourlySteps,
+      historicalDays: historicalDays ?? this.historicalDays,
+      recordSingleDaySteps: recordSingleDaySteps ?? this.recordSingleDaySteps,
+      recordSingleDayKm: recordSingleDayKm ?? this.recordSingleDayKm,
+      recordDate: recordDate ?? this.recordDate,
     );
   }
 }
@@ -114,6 +151,14 @@ class DailyTelemetryNotifier extends Notifier<DailyTelemetry> {
 
   void updateSleep(double hours) {
     state = state.copyWith(sleepHours: hours);
+  }
+
+  void updateSleepGoal(double goalHours) {
+    state = state.copyWith(sleepGoalHours: goalHours);
+  }
+
+  void updateStepsGoal(int goalSteps) {
+    state = state.copyWith(stepsGoal: goalSteps);
   }
 }
 

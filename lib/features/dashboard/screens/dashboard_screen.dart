@@ -17,6 +17,7 @@ import '../../../shared/widgets/app_shell.dart';
 import '../../../state/app_providers.dart';
 import '../models/daily_telemetry_model.dart';
 import '../providers/dashboard_provider.dart';
+import '../../../services/pedometer_service.dart';
 import '../widgets/calories_bento_card.dart';
 import '../widgets/daily_workout_bento_card.dart';
 import '../widgets/retractable_calendar_header.dart';
@@ -30,6 +31,9 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Keep hardware pedometer sensor listening in background
+    ref.watch(pedometerServiceProvider);
+
     final userProfile = ref.watch(userProfileProvider);
     final telemetry = ref.watch(dailyTelemetryProvider);
     final loggedWorkoutDates = ref.watch(loggedWorkoutDatesProvider);
