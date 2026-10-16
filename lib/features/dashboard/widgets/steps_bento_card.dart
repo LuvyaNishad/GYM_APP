@@ -81,17 +81,17 @@ class StepsBentoCard extends StatelessWidget {
                         children: [
                           const Text(
                             '👟',
-                            style: TextStyle(fontSize: 15.5),
+                            style: TextStyle(fontSize: 17.5),
                           ),
                           const SizedBox(width: 6),
                           const Text(
                             'Steps',
                             style: TextStyle(
                               fontFamily: AppTypography.fontDisplay,
-                              fontSize: 15.5,
+                              fontSize: 17.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.pureWhite,
-                              letterSpacing: 0.3,
+                              letterSpacing: 0.2,
                             ),
                           ),
                         ],
@@ -119,7 +119,7 @@ class StepsBentoCard extends StatelessWidget {
                 _formatNumber(telemetry.steps),
                 style: const TextStyle(
                   fontFamily: 'JetBrains Mono',
-                  fontSize: 24,
+                  fontSize: 25,
                   fontWeight: FontWeight.w800,
                   color: AppColors.pureWhite,
                   letterSpacing: -0.4,
@@ -164,9 +164,9 @@ class _SlimBarGraph extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // 16 slim vertical lines (increased height from 24 to 35)
+        // 16 slim vertical lines (increased height to 40)
         SizedBox(
-          height: 35,
+          height: 40,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -174,8 +174,8 @@ class _SlimBarGraph extends StatelessWidget {
               final heightPct = normalizedHeights[i];
               final bool hasActivity = i < (totalBars * 0.75);
               return Container(
-                width: 2.5,
-                height: (heightPct * 35).clamp(4.0, 35.0),
+                width: 2.8,
+                height: (heightPct * 40).clamp(5.0, 40.0),
                 decoration: BoxDecoration(
                   color: hasActivity
                       ? AppColors.pureWhite

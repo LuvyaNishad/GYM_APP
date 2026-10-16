@@ -91,14 +91,14 @@ class DashboardScreen extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: AspectRatio(
-                        aspectRatio: 1.05,
+                        aspectRatio: 1.45,
                         child: WaterBentoCard(telemetry: telemetry),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: AspectRatio(
-                        aspectRatio: 1.05,
+                        aspectRatio: 1.45,
                         child: SleepBentoCard(telemetry: telemetry),
                       ),
                     ),

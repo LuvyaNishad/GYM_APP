@@ -60,7 +60,7 @@ class SleepBentoCard extends StatelessWidget {
               width: 1.0,
             ),
           ),
-          padding: const EdgeInsets.fromLTRB(14, 13, 14, 14),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -79,17 +79,17 @@ class SleepBentoCard extends StatelessWidget {
                         children: [
                           const Text(
                             '💤',
-                            style: TextStyle(fontSize: 15.5),
+                            style: TextStyle(fontSize: 17.5),
                           ),
                           const SizedBox(width: 6),
                           const Text(
                             'Sleep',
                             style: TextStyle(
                               fontFamily: AppTypography.fontDisplay,
-                              fontSize: 15.5,
+                              fontSize: 17.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.pureWhite,
-                              letterSpacing: 0.3,
+                              letterSpacing: 0.2,
                             ),
                           ),
                         ],
@@ -131,7 +131,7 @@ class SleepBentoCard extends StatelessWidget {
                             hoursStr,
                             style: const TextStyle(
                               fontFamily: 'JetBrains Mono',
-                              fontSize: 24,
+                              fontSize: 22,
                               fontWeight: FontWeight.w800,
                               color: AppColors.pureWhite,
                               letterSpacing: -0.4,
@@ -161,7 +161,7 @@ class SleepBentoCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   FractionallySizedBox(
                     alignment: Alignment.centerLeft,
                     widthFactor: 0.72,
