@@ -21,6 +21,9 @@ class SyncStatusIndicator extends StatelessWidget {
 
   void _showSyncInfoDialog(BuildContext context) {
     HapticFeedback.lightImpact();
+    final statusColor =
+        isOnline ? const Color(0xFF00E676) : AppColors.pureWhite;
+
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -33,7 +36,7 @@ class SyncStatusIndicator extends StatelessWidget {
           children: [
             Icon(
               isOnline ? Icons.cloud_done_rounded : Icons.cloud_off_rounded,
-              color: isOnline ? const Color(0xFF00E5FF) : const Color(0xFFFFB300),
+              color: statusColor,
               size: 20,
             ),
             const SizedBox(width: 8),
@@ -63,15 +66,12 @@ class SyncStatusIndicator extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isOnline
-                          ? const Color(0xFF00E5FF)
-                          : const Color(0xFFFFB300),
-                    ),
+                  Icon(
+                    isOnline
+                        ? Icons.cloud_done_rounded
+                        : Icons.cloud_off_rounded,
+                    size: 16,
+                    color: statusColor,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -83,9 +83,7 @@ class SyncStatusIndicator extends StatelessWidget {
                         fontFamily: 'JetBrains Mono',
                         fontSize: 11.5,
                         fontWeight: FontWeight.w800,
-                        color: isOnline
-                            ? const Color(0xFF00E5FF)
-                            : const Color(0xFFFFB300),
+                        color: statusColor,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -126,44 +124,74 @@ class SyncStatusIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusColor =
-        isOnline ? const Color(0xFF00E5FF) : const Color(0xFFFFB300);
+        isOnline ? const Color(0xFF00E676) : AppColors.pureWhite;
+    final statusBg = isOnline
+        ? const Color(0xFF00E676).withValues(alpha: 0.12)
+        : Colors.white.withValues(alpha: 0.08);
+    final statusBorder = isOnline
+        ? const Color(0xFF00E676).withValues(alpha: 0.40)
+        : Colors.white.withValues(alpha: 0.25);
+    final statusIcon =
+        isOnline ? Icons.cloud_done_rounded : Icons.cloud_off_rounded;
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => _showSyncInfoDialog(context),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: statusColor.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: statusColor.withValues(alpha: 0.4),
-            width: 0.8,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: statusColor,
-              ),
-            ),
-            if (showLabel) ...[
-              const SizedBox(width: 6),
-              Text(
-                isOnline ? 'SAVED' : 'OFFLINE',
-                style: TextStyle(
-                  fontFamily: 'JetBrains Mono',
-                  fontSize: 11.0,
-                  fontWeight: FontWeight.w700,
-                  color: statusColor,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+        child: Center(
+          child: showLabel
+              ? Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusBg,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: statusBorder,
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        statusIcon,
+                        size: 13,
+                        color: statusColor,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        isOnline ? 'SAVED' : 'OFFLINE',
+                        style: TextStyle(
+                          fontFamily: 'JetBrains Mono',
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w700,
+                          color: statusColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: statusBg,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: statusBorder,
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      statusIcon,
+                      size: 16,
+                      color: statusColor,
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ],
         ),
       ),
     );

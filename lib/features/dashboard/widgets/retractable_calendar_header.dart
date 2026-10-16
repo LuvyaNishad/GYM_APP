@@ -336,7 +336,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const SyncStatusIndicator(showLabel: true),
+                              const SyncStatusIndicator(),
                               const SizedBox(width: 8),
                               // Profile avatar with 44pt accessible touch target
                               GestureDetector(
