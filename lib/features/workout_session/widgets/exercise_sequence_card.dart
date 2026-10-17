@@ -9,6 +9,8 @@ import 'exercise_form_guide_sheet.dart';
 import 'exercise_picker_modal.dart';
 import 'exercise_set_table.dart';
 import 'exercise_substitution_sheet.dart';
+import 'plate_calculator_modal.dart';
+import 'tempo_pacer_overlay.dart';
 
 /// Interactive Sequence Card representing an exercise in the active workout.
 ///
@@ -38,7 +40,6 @@ class ExerciseSequenceCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(activeSessionProvider.notifier);
     final isDone = exercise.isFullyCompleted;
-    final topSet = exercise.topCompletedSet;
     final isSuperset = exercise.supersetGroupId != null;
 
     final borderColor = isExpanded
@@ -52,7 +53,7 @@ class ExerciseSequenceCard extends ConsumerWidget {
         : borderColor;
 
     final cardWidget = Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: isExpanded ? 10 : 5),
       decoration: BoxDecoration(
         color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(16),
@@ -84,7 +85,7 @@ class ExerciseSequenceCard extends ConsumerWidget {
                 onTap: onToggleExpand,
                 borderRadius: BorderRadius.circular(16),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: isExpanded ? 14 : 10),
                   child: Row(
                     children: [
                       // Reorder Drag Handle
@@ -102,8 +103,8 @@ class ExerciseSequenceCard extends ConsumerWidget {
 
                       // Index indicator
                       Container(
-                        width: 26,
-                        height: 26,
+                        width: 28,
+                        height: 28,
                         decoration: BoxDecoration(
                           color: isDone
                               ? AppColors.pureWhite.withValues(alpha: 0.15)
@@ -127,111 +128,84 @@ class ExerciseSequenceCard extends ConsumerWidget {
                       ),
                       const SizedBox(width: 12),
 
-                      // Exercise Name & Muscle Tag & Top Set summary
+                      // Exercise Name & Optional Status Badges (Clean, no clutter)
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    exercise.name,
-                                    style: AppTypography.headlineSmall.copyWith(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              exercise.name,
+                              style: AppTypography.headlineSmall.copyWith(
+                                fontSize: isExpanded ? 16.5 : 15.0,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                              maxLines: isExpanded ? 2 : 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 3),
-                            Wrap(
-                              spacing: 6,
-                              runSpacing: 2,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                if (isSuperset)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(4),
-                                      border: Border.all(color: const Color(0xFF00E5FF), width: 1.0),
-                                    ),
-                                    child: const Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.bolt, size: 12, color: Color(0xFF00E5FF)),
-                                        SizedBox(width: 2),
-                                        Text(
-                                          'SUPERSET',
-                                          style: TextStyle(
-                                            fontFamily: AppTypography.fontMono,
-                                            fontSize: 11.0,
-                                            fontWeight: FontWeight.w800,
-                                            color: Color(0xFF00E5FF),
-                                            letterSpacing: 0.5,
+                            if (isSuperset || exercise.isUnilateral) ...[
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (isSuperset) ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(color: const Color(0xFF00E5FF), width: 1.0),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.bolt, size: 12, color: Color(0xFF00E5FF)),
+                                          SizedBox(width: 2),
+                                          Text(
+                                            'SUPERSET',
+                                            style: TextStyle(
+                                              fontFamily: AppTypography.fontMono,
+                                              fontSize: 11.0,
+                                              fontWeight: FontWeight.w800,
+                                              color: Color(0xFF00E5FF),
+                                              letterSpacing: 0.5,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                if (exercise.isUnilateral)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(4),
-                                      border: Border.all(color: const Color(0xFF00E5FF), width: 1.0),
-                                    ),
-                                    child: const Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.compare_arrows_rounded, size: 12, color: Color(0xFF00E5FF)),
-                                        SizedBox(width: 2),
-                                        Text(
-                                          'UNILATERAL',
-                                          style: TextStyle(
-                                            fontFamily: AppTypography.fontMono,
-                                            fontSize: 11.0,
-                                            fontWeight: FontWeight.w800,
-                                            color: Color(0xFF00E5FF),
-                                            letterSpacing: 0.5,
+                                    const SizedBox(width: 6),
+                                  ],
+                                  if (exercise.isUnilateral)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(color: const Color(0xFF00E5FF), width: 1.0),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.compare_arrows_rounded, size: 12, color: Color(0xFF00E5FF)),
+                                          SizedBox(width: 2),
+                                          Text(
+                                            'UNILATERAL',
+                                            style: TextStyle(
+                                              fontFamily: AppTypography.fontMono,
+                                              fontSize: 11.0,
+                                              fontWeight: FontWeight.w800,
+                                              color: Color(0xFF00E5FF),
+                                              letterSpacing: 0.5,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                Text(
-                                  exercise.muscleGroup.toUpperCase(),
-                                  style: AppTypography.monoSmall.copyWith(
-                                    fontSize: 11.0,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.pureWhite,
-                                  ),
-                                ),
-                                Text(
-                                  '· ${exercise.completedSetsCount}/${exercise.totalSetsCount} SETS',
-                                  style: AppTypography.monoSmall.copyWith(
-                                    fontSize: 11.0,
-                                    color: AppColors.platinum,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                if (topSet != null)
-                                  Text(
-                                    '· Top: ${topSet.weightKg.toInt()}kg × ${topSet.reps}',
-                                    style: AppTypography.monoSmall.copyWith(
-                                      fontSize: 11.0,
-                                      color: AppColors.platinum,
-                                    ),
-                                  ),
-                              ],
-                            ),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -299,6 +273,50 @@ class ExerciseSequenceCard extends ConsumerWidget {
                                 },
                               ),
                             );
+                          } else if (value == 'plate_calc') {
+                            final activeSetIndex =
+                                exercise.sets.indexWhere((s) => !s.isCompleted);
+                            final targetSetIndex =
+                                activeSetIndex != -1 ? activeSetIndex : 0;
+                            final targetSet = exercise.sets.isNotEmpty
+                                ? exercise.sets[targetSetIndex]
+                                : null;
+                            final targetWeight = targetSet?.weightKg ?? 60.0;
+                            showModalBottomSheet(
+                              context: context,
+                              backgroundColor: Colors.transparent,
+                              isScrollControlled: true,
+                              builder: (ctx) => PlateCalculatorModal(
+                                initialTotalWeightKg: targetWeight,
+                                onWeightSelected: (newWeight) {
+                                  notifier.updateSetValues(
+                                    exerciseId: exercise.exerciseId,
+                                    setIndex: targetSetIndex,
+                                    weightKg: newWeight,
+                                  );
+                                },
+                              ),
+                            );
+                          } else if (value == 'tempo_pacer') {
+                            final activeSetIndex =
+                                exercise.sets.indexWhere((s) => !s.isCompleted);
+                            final targetSetIndex =
+                                activeSetIndex != -1 ? activeSetIndex : 0;
+                            final targetSet = exercise.sets.isNotEmpty
+                                ? exercise.sets[targetSetIndex]
+                                : null;
+                            final targetReps = targetSet?.reps ?? 8;
+                            final targetWeight = targetSet?.weightKg ?? 20.0;
+                            TempoPacerOverlay.show(
+                              context,
+                              exerciseName: exercise.name,
+                              exerciseId: exercise.exerciseId,
+                              setIndex: targetSetIndex,
+                              targetReps: targetReps,
+                              weightKg: targetWeight,
+                            );
+                          } else if (value == 'rest_duration') {
+                            showRestDurationPicker(context, exercise, notifier);
                           } else if (value == 'delete') {
                             notifier.removeExercise(exercise.exerciseId);
                           }
@@ -313,6 +331,61 @@ class ExerciseSequenceCard extends ConsumerWidget {
                                 Expanded(
                                   child: Text(
                                     'Form Guide & PRs',
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: AppColors.pureWhite,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (exercise.equipment.toLowerCase() == 'barbell')
+                            PopupMenuItem(
+                              value: 'plate_calc',
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.calculate_outlined, size: 18, color: AppColors.pureWhite),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      'Plate Calculator',
+                                      style: AppTypography.bodySmall.copyWith(
+                                        color: AppColors.pureWhite,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          PopupMenuItem(
+                            value: 'tempo_pacer',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.speed, size: 18, color: Color(0xFF00E5FF)),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    'Tempo Pacer',
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: AppColors.pureWhite,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'rest_duration',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.timer_outlined, size: 18, color: AppColors.platinum),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    'Rest Timer (${exercise.restDurationSeconds}s)',
                                     style: AppTypography.bodySmall.copyWith(
                                       color: AppColors.pureWhite,
                                       fontWeight: FontWeight.w600,

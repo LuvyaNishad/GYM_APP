@@ -217,11 +217,9 @@ void main() {
       expect(find.text('D'), findsOneWidget);
       expect(find.text('F'), findsOneWidget);
 
-      // + WARMUP button exists
+      // + WARMUP and ADD SET buttons exist
       expect(find.text('+ WARMUP'), findsOneWidget);
-
-      // REST chip exists
-      expect(find.text('REST: 90s'), findsOneWidget);
+      expect(find.text('ADD SET'), findsOneWidget);
     });
   });
 }

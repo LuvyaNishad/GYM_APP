@@ -3,21 +3,20 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../onboarding/providers/onboarding_provider.dart';
 import '../models/active_session_state.dart';
 import '../providers/active_session_provider.dart';
-import 'effort_picker_modal.dart';
-import 'plate_calculator_modal.dart';
 import 'tempo_pacer_overlay.dart';
 
-/// Detailed Set Logger table for an individual exercise.
+/// Clean, high-contrast Set Table for an active workout exercise.
 ///
 /// Features:
-/// - Columns: SET #, PREVIOUS (ghost performance), KG, REPS, EFFORT (RIR/RPE), LOG (Checkmark)
-/// - 1-tap autofill from previous ghost performance
-/// - RIR/RPE synchronized sheet picker
-/// - Plate calculator launcher for barbell exercises
-/// - Warm-up set generator and dynamic set addition/deletion
+/// - 4 uncluttered columns: SET, KG, REPS, LOG
+/// - Direct numeric keyboard input (no fiddly + / - steppers)
+/// - Auto-fills weights and reps from previous session baseline
+/// - Subtle micro-subtext displaying previous baseline under input fields (min 11.0 pt)
+/// - Single-tap text selection on focus for instant frictionless overwriting
+/// - Option A two-stage unilateral logging with 1-tap L->R sync
+/// - Clean bottom actions: + ADD SET and + WARMUP (Plate Calc & Tempo in 3-dot menu)
 class ExerciseSetTable extends ConsumerWidget {
   const ExerciseSetTable({
     super.key,
@@ -29,149 +28,13 @@ class ExerciseSetTable extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(activeSessionProvider.notifier);
-    final goalConfig = ref.watch(trainingGoalConfigProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Equipment & Goal Target Bar
-        Padding(
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 6, bottom: 4),
-          child: Wrap(
-            spacing: 6,
-            runSpacing: 4,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.charcoal,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: AppColors.steel,
-                  ),
-                ),
-                child: Text(
-                  exercise.equipment.toUpperCase(),
-                  style: AppTypography.monoSmall.copyWith(
-                    fontSize: 11.0,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.platinum,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.charcoal,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: AppColors.steel,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.adjust_rounded,
-                      size: 11.0,
-                      color: goalConfig.accentColor,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'TARGET: ${goalConfig.targetRepRange.toUpperCase()}',
-                      style: AppTypography.monoSmall.copyWith(
-                        fontSize: 11.0,
-                        fontWeight: FontWeight.w700,
-                        color: goalConfig.accentColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              InkWell(
-                onTap: () => _showRestDurationPicker(context, exercise, notifier),
-                borderRadius: BorderRadius.circular(6),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AppColors.charcoal,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: AppColors.steel,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.timer_outlined,
-                        size: 11.0,
-                        color: AppColors.platinum,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'REST: ${exercise.restDurationSeconds}s',
-                        style: AppTypography.monoSmall.copyWith(
-                          fontSize: 11.0,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.platinum,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () => notifier.toggleUnilateral(exercise.exerciseId),
-                borderRadius: BorderRadius.circular(6),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: exercise.isUnilateral
-                        ? const Color(0xFF00E5FF).withValues(alpha: 0.15)
-                        : AppColors.charcoal,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: exercise.isUnilateral
-                          ? const Color(0xFF00E5FF)
-                          : AppColors.steel,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.compare_arrows_rounded,
-                        size: 11.0,
-                        color: exercise.isUnilateral
-                            ? const Color(0xFF00E5FF)
-                            : AppColors.platinum,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        exercise.isUnilateral ? 'UNILATERAL (L/R)' : 'BILATERAL',
-                        style: AppTypography.monoSmall.copyWith(
-                          fontSize: 11.0,
-                          fontWeight: FontWeight.w700,
-                          color: exercise.isUnilateral
-                              ? const Color(0xFF00E5FF)
-                              : AppColors.platinum,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Table Header
+        // Table Header: 4 Clean Columns (No excess chips, no clutter)
         Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: exercise.isUnilateral ? 10 : 16,
-            vertical: 5,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: const BoxDecoration(
             color: AppColors.charcoal,
             border: Border(
@@ -183,74 +46,59 @@ class ExerciseSetTable extends ConsumerWidget {
           child: Row(
             children: [
               SizedBox(
-                width: exercise.isUnilateral ? 60 : 38,
+                width: exercise.isUnilateral ? 64 : 40,
                 child: Text(
-                  exercise.isUnilateral ? 'SET/SD' : 'SET',
+                  exercise.isUnilateral ? 'SET/SIDE' : 'SET',
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 11.0,
                     fontWeight: FontWeight.w700,
                     color: AppColors.platinum,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
-              SizedBox(width: exercise.isUnilateral ? 4 : 8),
+              const SizedBox(width: 8),
               Expanded(
-                flex: 3,
-                child: Text(
-                  exercise.isUnilateral ? 'PREV' : 'PREVIOUS',
-                  style: AppTypography.monoSmall.copyWith(
-                    fontSize: 11.0,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.platinum,
-                  ),
-                ),
-              ),
-              SizedBox(width: exercise.isUnilateral ? 4 : 8),
-              Expanded(
-                flex: 3,
-                child: Text(
-                  'KG',
-                  style: AppTypography.monoSmall.copyWith(
-                    fontSize: 11.0,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.platinum,
-                  ),
-                ),
-              ),
-              SizedBox(width: exercise.isUnilateral ? 4 : 8),
-              Expanded(
-                flex: 2,
-                child: Text(
-                  'REPS',
-                  style: AppTypography.monoSmall.copyWith(
-                    fontSize: 11.0,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.platinum,
-                  ),
-                ),
-              ),
-              SizedBox(width: exercise.isUnilateral ? 4 : 8),
-              Expanded(
-                flex: 3,
-                child: Text(
-                  'EFFORT',
-                  style: AppTypography.monoSmall.copyWith(
-                    fontSize: 11.0,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.platinum,
-                  ),
-                ),
-              ),
-              SizedBox(width: exercise.isUnilateral ? 4 : 8),
-              SizedBox(
-                width: exercise.isUnilateral ? 36 : 44,
-                child: const Center(
+                flex: 5,
+                child: Center(
                   child: Text(
-                    'LOG',
-                    style: TextStyle(
+                    'KG',
+                    style: AppTypography.monoSmall.copyWith(
                       fontSize: 11.0,
                       fontWeight: FontWeight.w700,
                       color: AppColors.platinum,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 4,
+                child: Center(
+                  child: Text(
+                    'REPS',
+                    style: AppTypography.monoSmall.copyWith(
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.platinum,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const SizedBox(
+                width: 44,
+                child: Center(
+                  child: Text(
+                    'LOG',
+                    style: TextStyle(
+                      fontFamily: AppTypography.fontMono,
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.platinum,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
@@ -259,7 +107,7 @@ class ExerciseSetTable extends ConsumerWidget {
           ),
         ),
 
-        // Set Rows (Zero phantom padding)
+        // Set Rows
         for (int i = 0; i < exercise.sets.length; i++) ...[
           if (i > 0)
             const Divider(
@@ -267,956 +115,80 @@ class ExerciseSetTable extends ConsumerWidget {
               color: AppColors.steel,
             ),
           if (exercise.isUnilateral)
-            _buildUnilateralSetRow(
-              context: context,
-              ref: ref,
+            _UnilateralSetRowWidget(
+              key: ValueKey('${exercise.exerciseId}_uni_$i'),
+              exerciseId: exercise.exerciseId,
               set: exercise.sets[i],
               setIndex: i,
               notifier: notifier,
+              onShowSetOptions: () => _showSetOptionsSheet(context, i, notifier),
             )
           else
-            _buildSetRow(
-              context: context,
-              ref: ref,
+            _BilateralSetRowWidget(
+              key: ValueKey('${exercise.exerciseId}_bi_$i'),
+              exerciseId: exercise.exerciseId,
               set: exercise.sets[i],
               setIndex: i,
               notifier: notifier,
+              onShowSetOptions: () => _showSetOptionsSheet(context, i, notifier),
             ),
         ],
 
-        const SizedBox(height: 8),
-
-        // Bottom Action Controls: 4 Cohesive Options Together
+        // Bottom Action Controls (Clean + ADD SET & + WARMUP)
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
             children: [
-              // Row 1: Add Set & Warmup Sets
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => notifier.addSet(exercise.exerciseId),
-                      icon: const Icon(Icons.add, size: 16, color: AppColors.pureWhite),
-                      label: Text(
-                        'ADD SET',
-                        style: AppTypography.monoSmall.copyWith(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.pureWhite,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: AppColors.steel),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        minimumSize: const Size(0, 42),
-                      ),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => notifier.addSet(exercise.exerciseId),
+                  icon: const Icon(Icons.add, size: 18, color: AppColors.pureWhite),
+                  label: Text(
+                    'ADD SET',
+                    style: AppTypography.monoSmall.copyWith(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.pureWhite,
+                      letterSpacing: 0.5,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _showWarmupOptionsSheet(context, exercise.exerciseId, notifier),
-                      icon: const Icon(Icons.fitness_center, size: 16, color: AppColors.platinum),
-                      label: Text(
-                        '+ WARMUP',
-                        style: AppTypography.monoSmall.copyWith(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.platinum,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: AppColors.steel),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        minimumSize: const Size(0, 42),
-                      ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.steel, width: 1.2),
+                    backgroundColor: AppColors.charcoal,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    minimumSize: const Size(0, 46),
                   ),
-                ],
+                ),
               ),
-              const SizedBox(height: 6),
-
-              // Row 2: Tempo Pacer & Plate Calculator (Placed below Add Set & Warmup Sets)
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        final activeSetIndex =
-                            exercise.sets.indexWhere((s) => !s.isCompleted);
-                        final targetSetIndex =
-                            activeSetIndex != -1 ? activeSetIndex : 0;
-                        final targetSet = exercise.sets.isNotEmpty
-                            ? exercise.sets[targetSetIndex]
-                            : null;
-                        final targetReps = targetSet?.reps ?? 8;
-                        final targetWeight = targetSet?.weightKg ?? 20.0;
-
-                        TempoPacerOverlay.show(
-                          context,
-                          exerciseName: exercise.name,
-                          exerciseId: exercise.exerciseId,
-                          setIndex: targetSetIndex,
-                          targetReps: targetReps,
-                          weightKg: targetWeight,
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.speed,
-                        size: 16,
-                        color: Color(0xFF00E5FF),
-                      ),
-                      label: Text(
-                        'TEMPO PACER',
-                        style: AppTypography.monoSmall.copyWith(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF00E5FF),
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                          color: const Color(0xFF00E5FF).withValues(alpha: 0.5),
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        minimumSize: const Size(0, 42),
-                      ),
-                    ),
+              const SizedBox(width: 8),
+              OutlinedButton.icon(
+                onPressed: () => _showWarmupOptionsSheet(context, exercise.exerciseId, notifier),
+                icon: const Icon(Icons.fitness_center, size: 16, color: AppColors.platinum),
+                label: Text(
+                  '+ WARMUP',
+                  style: AppTypography.monoSmall.copyWith(
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.platinum,
                   ),
-                  if (exercise.equipment.toLowerCase() == 'barbell') ...[
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          final activeSetIndex =
-                              exercise.sets.indexWhere((s) => !s.isCompleted);
-                          final targetSetIndex =
-                              activeSetIndex != -1 ? activeSetIndex : 0;
-                          final targetSet = exercise.sets.isNotEmpty
-                              ? exercise.sets[targetSetIndex]
-                              : null;
-                          final targetWeight = targetSet?.weightKg ?? 60.0;
-                          showModalBottomSheet(
-                            context: context,
-                            backgroundColor: Colors.transparent,
-                            isScrollControlled: true,
-                            builder: (ctx) => PlateCalculatorModal(
-                              initialTotalWeightKg: targetWeight,
-                              onWeightSelected: (newWeight) {
-                                notifier.updateSetValues(
-                                  exerciseId: exercise.exerciseId,
-                                  setIndex: targetSetIndex,
-                                  weightKg: newWeight,
-                                );
-                              },
-                            ),
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.calculate_outlined,
-                          size: 16,
-                          color: AppColors.pureWhite,
-                        ),
-                        label: Text(
-                          'PLATE CALC',
-                          style: AppTypography.monoSmall.copyWith(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.pureWhite,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.steel),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          minimumSize: const Size(0, 42),
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.steel),
+                  backgroundColor: AppColors.charcoal,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  minimumSize: const Size(0, 46),
+                ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 8),
       ],
-    );
-  }
-
-  Widget _buildSetRow({
-    required BuildContext context,
-    required WidgetRef ref,
-    required ActiveSetState set,
-    required int setIndex,
-    required ActiveSessionNotifier notifier,
-  }) {
-    final isCompleted = set.isCompleted;
-
-    return Container(
-      color: isCompleted
-          ? AppColors.steel.withValues(alpha: 0.15)
-          : Colors.transparent,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Row(
-        children: [
-          // 1. SET Index badge
-          SizedBox(
-            width: 38,
-            height: 38,
-            child: InkWell(
-              onTap: () => _showSetOptionsSheet(context, setIndex, notifier),
-              borderRadius: BorderRadius.circular(6),
-              child: Container(
-                height: 38,
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.charcoal,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: set.setType == ActiveSetType.failure
-                        ? AppColors.pureWhite
-                        : (set.setType == ActiveSetType.dropSet
-                            ? const Color(0xFF00E5FF)
-                            : (set.isWarmup ? AppColors.platinum : AppColors.steel)),
-                    width: set.setType == ActiveSetType.failure ||
-                            set.setType == ActiveSetType.dropSet
-                        ? 1.5
-                        : 1.0,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  set.setType == ActiveSetType.warmup
-                      ? 'W'
-                      : (set.setType == ActiveSetType.dropSet
-                          ? 'D'
-                          : (set.setType == ActiveSetType.failure
-                              ? 'F'
-                              : '${set.setNumber}')),
-                  style: AppTypography.monoSmall.copyWith(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
-                    color: set.setType == ActiveSetType.dropSet
-                        ? const Color(0xFF00E5FF)
-                        : (set.isWarmup
-                            ? AppColors.platinum
-                            : AppColors.pureWhite),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-
-          // 2. PREVIOUS Ghost Performance (Tap to Autofill)
-          Expanded(
-            flex: 3,
-            child: InkWell(
-              onTap: () {
-                if (set.previousWeightKg != null && set.previousReps != null) {
-                  try {
-                    HapticFeedback.selectionClick();
-                  } catch (_) {}
-                  notifier.updateSetValues(
-                    exerciseId: exercise.exerciseId,
-                    setIndex: setIndex,
-                    weightKg: set.previousWeightKg,
-                    reps: set.previousReps,
-                    rir: set.previousRir,
-                  );
-                }
-              },
-              borderRadius: BorderRadius.circular(6),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Text(
-                  set.previousWeightKg != null
-                      ? '${set.previousWeightKg!.toInt()} kg × ${set.previousReps}'
-                      : '—',
-                  style: AppTypography.monoSmall.copyWith(
-                    fontSize: 11.5,
-                    color: AppColors.platinum,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-
-          // 3. KG (Weight) Input
-          Expanded(
-            flex: 3,
-            child: Container(
-              height: 38,
-              decoration: BoxDecoration(
-                color: AppColors.charcoal,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: isCompleted
-                      ? AppColors.pureWhite.withValues(alpha: 0.5)
-                      : AppColors.steel,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        set.weightKg >= 10 && set.weightKg % 1 == 0
-                            ? '${set.weightKg.toInt()}'
-                            : set.weightKg.toStringAsFixed(1),
-                        style: AppTypography.monoSmall.copyWith(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.pureWhite,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildMiniStepper(
-                        icon: Icons.keyboard_arrow_up,
-                        onTap: () => notifier.updateSetValues(
-                          exerciseId: exercise.exerciseId,
-                          setIndex: setIndex,
-                          weightKg: set.weightKg + 2.5,
-                        ),
-                      ),
-                      _buildMiniStepper(
-                        icon: Icons.keyboard_arrow_down,
-                        onTap: () => notifier.updateSetValues(
-                          exerciseId: exercise.exerciseId,
-                          setIndex: setIndex,
-                          weightKg: (set.weightKg - 2.5).clamp(0.0, 999.0),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-
-          // 4. REPS Input
-          Expanded(
-            flex: 2,
-            child: Container(
-              height: 38,
-              decoration: BoxDecoration(
-                color: AppColors.charcoal,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: isCompleted
-                      ? AppColors.pureWhite.withValues(alpha: 0.5)
-                      : AppColors.steel,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        '${set.reps}',
-                        style: AppTypography.monoSmall.copyWith(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.pureWhite,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildMiniStepper(
-                        icon: Icons.keyboard_arrow_up,
-                        onTap: () => notifier.updateSetValues(
-                          exerciseId: exercise.exerciseId,
-                          setIndex: setIndex,
-                          reps: set.reps + 1,
-                        ),
-                      ),
-                      _buildMiniStepper(
-                        icon: Icons.keyboard_arrow_down,
-                        onTap: () => notifier.updateSetValues(
-                          exerciseId: exercise.exerciseId,
-                          setIndex: setIndex,
-                          reps: (set.reps - 1).clamp(0, 999),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-
-          // 5. EFFORT (RIR & RPE Pill)
-          Expanded(
-            flex: 3,
-            child: InkWell(
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  backgroundColor: Colors.transparent,
-                  isScrollControlled: true,
-                  builder: (ctx) => EffortPickerModal(
-                    initialRir: set.rir,
-                    initialRpe: set.rpe,
-                    onSaved: (newRir, newRpe) {
-                      notifier.updateSetValues(
-                        exerciseId: exercise.exerciseId,
-                        setIndex: setIndex,
-                        rir: newRir,
-                        rpe: newRpe,
-                      );
-                    },
-                  ),
-                );
-              },
-              borderRadius: BorderRadius.circular(6),
-              child: Container(
-                height: 38,
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.charcoal,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: AppColors.steel,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  '${set.rir.toInt()} RIR (${set.rpe.toInt()})',
-                  style: AppTypography.monoSmall.copyWith(
-                    fontSize: 11.0,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.pureWhite,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-
-          // 6. LOG Checkmark Button (Min 44×44 pt touch target per Apple HIG)
-          SizedBox(
-            width: 44,
-            height: 44,
-            child: IconButton(
-              onPressed: () {
-                try {
-                  HapticFeedback.mediumImpact();
-                } catch (_) {}
-                notifier.logSet(
-                  exerciseId: exercise.exerciseId,
-                  setIndex: setIndex,
-                );
-              },
-              icon: AnimatedScale(
-                scale: isCompleted ? 1.08 : 1.0,
-                duration: const Duration(milliseconds: 180),
-                curve: Curves.easeOutBack,
-                child: Icon(
-                  isCompleted ? Icons.check_circle : Icons.check_circle_outline,
-                  color: isCompleted ? AppColors.primary : AppColors.platinum,
-                  size: 24,
-                ),
-              ),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-              tooltip: isCompleted ? 'Mark incomplete' : 'Log set',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUnilateralSetRow({
-    required BuildContext context,
-    required WidgetRef ref,
-    required ActiveSetState set,
-    required int setIndex,
-    required ActiveSessionNotifier notifier,
-  }) {
-    final isFullyCompleted = set.isLeftCompleted && set.isRightCompleted;
-    final rightWeight = set.weightKgRight ?? set.weightKg;
-    final rightReps = set.repsRight ?? set.reps;
-
-    return Container(
-      color: isFullyCompleted
-          ? AppColors.steel.withValues(alpha: 0.15)
-          : Colors.transparent,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // 1. SET Index badge (spanning both L and R sublines)
-          SizedBox(
-            width: 34,
-            height: 78,
-            child: InkWell(
-              onTap: () => _showSetOptionsSheet(context, setIndex, notifier),
-              borderRadius: BorderRadius.circular(6),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.charcoal,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: set.setType == ActiveSetType.failure
-                        ? AppColors.pureWhite
-                        : (set.setType == ActiveSetType.dropSet
-                            ? const Color(0xFF00E5FF)
-                            : (set.isWarmup ? AppColors.platinum : AppColors.steel)),
-                    width: set.setType == ActiveSetType.failure ||
-                            set.setType == ActiveSetType.dropSet
-                        ? 1.5
-                        : 1.0,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  set.setType == ActiveSetType.warmup
-                      ? 'W'
-                      : (set.setType == ActiveSetType.dropSet
-                          ? 'D'
-                          : (set.setType == ActiveSetType.failure
-                              ? 'F'
-                              : '${set.setNumber}')),
-                  style: AppTypography.monoSmall.copyWith(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
-                    color: set.setType == ActiveSetType.dropSet
-                        ? const Color(0xFF00E5FF)
-                        : (set.isWarmup
-                            ? AppColors.platinum
-                            : AppColors.pureWhite),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 6),
-
-          // 2. Sub-lines for Left and Right sides
-          Expanded(
-            child: Column(
-              children: [
-                // ── LEFT SUB-ROW ──
-                _buildSideSubRow(
-                  context: context,
-                  sideLabel: 'L',
-                  isCompleted: set.isLeftCompleted,
-                  ghostText: set.previousWeightKg != null
-                      ? '${set.previousWeightKg!.toInt()} kg × ${set.previousReps ?? set.reps}'
-                      : null,
-                  onGhostTap: () {
-                    if (set.previousWeightKg != null && set.previousReps != null) {
-                      notifier.updateSetValues(
-                        exerciseId: exercise.exerciseId,
-                        setIndex: setIndex,
-                        weightKg: set.previousWeightKg,
-                        reps: set.previousReps,
-                      );
-                    }
-                  },
-                  weightKg: set.weightKg,
-                  reps: set.reps,
-                  onWeightChanged: (newWeight) => notifier.updateSetValues(
-                    exerciseId: exercise.exerciseId,
-                    setIndex: setIndex,
-                    weightKg: newWeight,
-                  ),
-                  onRepsChanged: (newReps) => notifier.updateSetValues(
-                    exerciseId: exercise.exerciseId,
-                    setIndex: setIndex,
-                    reps: newReps,
-                  ),
-                  onLogTap: () => notifier.logSetSide(
-                    exerciseId: exercise.exerciseId,
-                    setIndex: setIndex,
-                    isLeft: true,
-                  ),
-                  showEffort: true,
-                  set: set,
-                  setIndex: setIndex,
-                  notifier: notifier,
-                ),
-
-                const SizedBox(height: 6),
-
-                // ── RIGHT SUB-ROW ──
-                _buildSideSubRow(
-                  context: context,
-                  sideLabel: 'R',
-                  isCompleted: set.isRightCompleted,
-                  ghostText: (set.previousWeightKgRight ?? set.previousWeightKg) != null
-                      ? '${(set.previousWeightKgRight ?? set.previousWeightKg)!.toInt()} kg × ${set.previousRepsRight ?? set.previousReps ?? rightReps}'
-                      : null,
-                  onGhostTap: () {
-                    final prevW = set.previousWeightKgRight ?? set.previousWeightKg;
-                    final prevR = set.previousRepsRight ?? set.previousReps;
-                    if (prevW != null && prevR != null) {
-                      notifier.updateSetValues(
-                        exerciseId: exercise.exerciseId,
-                        setIndex: setIndex,
-                        weightKgRight: prevW,
-                        repsRight: prevR,
-                      );
-                    }
-                  },
-                  weightKg: rightWeight,
-                  reps: rightReps,
-                  onWeightChanged: (newWeight) => notifier.updateSetValues(
-                    exerciseId: exercise.exerciseId,
-                    setIndex: setIndex,
-                    weightKgRight: newWeight,
-                  ),
-                  onRepsChanged: (newReps) => notifier.updateSetValues(
-                    exerciseId: exercise.exerciseId,
-                    setIndex: setIndex,
-                    repsRight: newReps,
-                  ),
-                  onLogTap: () => notifier.logSetSide(
-                    exerciseId: exercise.exerciseId,
-                    setIndex: setIndex,
-                    isLeft: false,
-                  ),
-                  showCopyFromLeft: true,
-                  onCopyFromLeft: () {
-                    try {
-                      HapticFeedback.selectionClick();
-                    } catch (_) {}
-                    notifier.updateSetValues(
-                      exerciseId: exercise.exerciseId,
-                      setIndex: setIndex,
-                      weightKgRight: set.weightKg,
-                      repsRight: set.reps,
-                    );
-                  },
-                  set: set,
-                  setIndex: setIndex,
-                  notifier: notifier,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSideSubRow({
-    required BuildContext context,
-    required String sideLabel,
-    required bool isCompleted,
-    String? ghostText,
-    VoidCallback? onGhostTap,
-    required double weightKg,
-    required int reps,
-    required ValueChanged<double> onWeightChanged,
-    required ValueChanged<int> onRepsChanged,
-    required VoidCallback onLogTap,
-    bool showEffort = false,
-    bool showCopyFromLeft = false,
-    VoidCallback? onCopyFromLeft,
-    required ActiveSetState set,
-    required int setIndex,
-    required ActiveSessionNotifier notifier,
-  }) {
-    return Row(
-      children: [
-        // Side Badge (L or R)
-        Container(
-          width: 20,
-          height: 36,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: isCompleted
-                ? const Color(0xFF00E5FF).withValues(alpha: 0.2)
-                : AppColors.charcoal,
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(
-              color: isCompleted ? const Color(0xFF00E5FF) : AppColors.steel,
-            ),
-          ),
-          child: Text(
-            sideLabel,
-            style: AppTypography.monoSmall.copyWith(
-              fontSize: 11.0,
-              fontWeight: FontWeight.w800,
-              color: isCompleted ? const Color(0xFF00E5FF) : AppColors.pureWhite,
-            ),
-          ),
-        ),
-        const SizedBox(width: 4),
-
-        // Ghost Previous Performance (Tap to Autofill)
-        Expanded(
-          flex: 3,
-          child: InkWell(
-            onTap: onGhostTap,
-            borderRadius: BorderRadius.circular(6),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text(
-                ghostText ?? '—',
-                style: AppTypography.monoSmall.copyWith(
-                  fontSize: 11.0,
-                  color: AppColors.platinum,
-                  fontWeight: FontWeight.w500,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 4),
-
-        // KG (Weight) Input Stepper
-        Expanded(
-          flex: 3,
-          child: Container(
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppColors.charcoal,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: isCompleted
-                    ? const Color(0xFF00E5FF).withValues(alpha: 0.5)
-                    : AppColors.steel,
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      weightKg >= 10 && weightKg % 1 == 0
-                          ? '${weightKg.toInt()}'
-                          : weightKg.toStringAsFixed(1),
-                      style: AppTypography.monoSmall.copyWith(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.pureWhite,
-                      ),
-                    ),
-                  ),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildMiniStepper(
-                      icon: Icons.keyboard_arrow_up,
-                      onTap: () => onWeightChanged(weightKg + 2.5),
-                      height: 16,
-                    ),
-                    _buildMiniStepper(
-                      icon: Icons.keyboard_arrow_down,
-                      onTap: () => onWeightChanged((weightKg - 2.5).clamp(0.0, 999.0)),
-                      height: 16,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 4),
-
-        // REPS Input Stepper
-        Expanded(
-          flex: 2,
-          child: Container(
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppColors.charcoal,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: isCompleted
-                    ? const Color(0xFF00E5FF).withValues(alpha: 0.5)
-                    : AppColors.steel,
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      '$reps',
-                      style: AppTypography.monoSmall.copyWith(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.pureWhite,
-                      ),
-                    ),
-                  ),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildMiniStepper(
-                      icon: Icons.keyboard_arrow_up,
-                      onTap: () => onRepsChanged(reps + 1),
-                      height: 16,
-                    ),
-                    _buildMiniStepper(
-                      icon: Icons.keyboard_arrow_down,
-                      onTap: () => onRepsChanged((reps - 1).clamp(0, 999)),
-                      height: 16,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 4),
-
-        // EFFORT or Match L Action
-        Expanded(
-          flex: 3,
-          child: showCopyFromLeft
-              ? InkWell(
-                  onTap: onCopyFromLeft,
-                  borderRadius: BorderRadius.circular(6),
-                  child: Container(
-                    height: 36,
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.charcoal,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.steel),
-                    ),
-                    alignment: Alignment.center,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.sync_rounded,
-                          size: 11,
-                          color: Color(0xFF00E5FF),
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          'SYNC',
-                          style: AppTypography.monoSmall.copyWith(
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF00E5FF),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : InkWell(
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      backgroundColor: Colors.transparent,
-                      isScrollControlled: true,
-                      builder: (ctx) => EffortPickerModal(
-                        initialRir: set.rir,
-                        initialRpe: set.rpe,
-                        onSaved: (newRir, newRpe) {
-                          notifier.updateSetValues(
-                            exerciseId: exercise.exerciseId,
-                            setIndex: setIndex,
-                            rir: newRir,
-                            rpe: newRpe,
-                          );
-                        },
-                      ),
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(6),
-                  child: Container(
-                    height: 36,
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
-                    decoration: BoxDecoration(
-                      color: AppColors.charcoal,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.steel),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      '${set.rir.toInt()} RIR (${set.rpe.toInt()})',
-                      style: AppTypography.monoSmall.copyWith(
-                        fontSize: 11.0,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.pureWhite,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-        ),
-        const SizedBox(width: 4),
-
-        // LOG Checkmark Button for this side
-        SizedBox(
-          width: 36,
-          height: 36,
-          child: IconButton(
-            onPressed: onLogTap,
-            icon: AnimatedScale(
-              scale: isCompleted ? 1.08 : 1.0,
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOutBack,
-              child: Icon(
-                isCompleted ? Icons.check_circle : Icons.check_circle_outline,
-                color: isCompleted ? const Color(0xFF00E5FF) : AppColors.platinum,
-                size: 22,
-              ),
-            ),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-            tooltip: 'Log $sideLabel set',
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMiniStepper({
-    required IconData icon,
-    required VoidCallback onTap,
-    double height = 18,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: SizedBox(
-        width: 18,
-        height: height,
-        child: Icon(icon, size: height > 16 ? 14 : 11, color: AppColors.platinum),
-      ),
     );
   }
 
@@ -1537,98 +509,1189 @@ class ExerciseSetTable extends ConsumerWidget {
       },
     );
   }
+}
 
-  void _showRestDurationPicker(
-    BuildContext context,
-    ActiveExerciseState exercise,
-    ActiveSessionNotifier notifier,
-  ) {
-    const durations = [30, 45, 60, 90, 120, 150, 180, 240];
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.onyx,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        side: BorderSide(color: AppColors.steel),
-      ),
-      builder: (ctx) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+/// Bilateral Set Row with direct numeric typing & subtle previous baselines.
+class _BilateralSetRowWidget extends StatefulWidget {
+  const _BilateralSetRowWidget({
+    super.key,
+    required this.exerciseId,
+    required this.set,
+    required this.setIndex,
+    required this.notifier,
+    required this.onShowSetOptions,
+  });
+
+  final String exerciseId;
+  final ActiveSetState set;
+  final int setIndex;
+  final ActiveSessionNotifier notifier;
+  final VoidCallback onShowSetOptions;
+
+  @override
+  State<_BilateralSetRowWidget> createState() => _BilateralSetRowWidgetState();
+}
+
+class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
+  late TextEditingController _weightController;
+  late TextEditingController _repsController;
+  late FocusNode _weightFocusNode;
+  late FocusNode _repsFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _weightFocusNode = FocusNode();
+    _repsFocusNode = FocusNode();
+
+    // Auto-fill initial values from last session if unassigned
+    final initialWeight = widget.set.weightKg > 0
+        ? widget.set.weightKg
+        : (widget.set.previousWeightKg ?? 20.0);
+    final initialReps = widget.set.reps > 0
+        ? widget.set.reps
+        : (widget.set.previousReps ?? 10);
+
+    if (widget.set.weightKg <= 0 && widget.set.previousWeightKg != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        widget.notifier.updateSetValues(
+          exerciseId: widget.exerciseId,
+          setIndex: widget.setIndex,
+          weightKg: initialWeight,
+          reps: initialReps,
+        );
+      });
+    }
+
+    _weightController = TextEditingController(text: _formatWeight(initialWeight));
+    _repsController = TextEditingController(text: '$initialReps');
+
+    _weightFocusNode.addListener(() {
+      if (_weightFocusNode.hasFocus) {
+        _weightController.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: _weightController.text.length,
+        );
+      }
+    });
+
+    _repsFocusNode.addListener(() {
+      if (_repsFocusNode.hasFocus) {
+        _repsController.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: _repsController.text.length,
+        );
+      }
+    });
+  }
+
+  String _formatWeight(double w) {
+    if (w >= 10 && w % 1 == 0) {
+      return '${w.toInt()}';
+    }
+    return w.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
+  }
+
+  @override
+  void didUpdateWidget(covariant _BilateralSetRowWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_weightFocusNode.hasFocus && widget.set.weightKg > 0) {
+      final formatted = _formatWeight(widget.set.weightKg);
+      if (_weightController.text != formatted) {
+        _weightController.text = formatted;
+      }
+    }
+    if (!_repsFocusNode.hasFocus && widget.set.reps > 0) {
+      final formattedReps = '${widget.set.reps}';
+      if (_repsController.text != formattedReps) {
+        _repsController.text = formattedReps;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _weightController.dispose();
+    _repsController.dispose();
+    _weightFocusNode.dispose();
+    _repsFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final set = widget.set;
+    final isCompleted = set.isCompleted;
+
+    final prevWeightText = set.previousWeightKg != null
+        ? '${_formatWeight(set.previousWeightKg!)} kg'
+        : '—';
+    final prevRepsText = set.previousReps != null ? '${set.previousReps}' : '—';
+
+    return Container(
+      color: isCompleted
+          ? AppColors.steel.withValues(alpha: 0.15)
+          : Colors.transparent,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. SET Index badge
+          SizedBox(
+            width: 40,
+            height: 46,
+            child: InkWell(
+              onTap: widget.onShowSetOptions,
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.charcoal,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: set.setType == ActiveSetType.failure
+                        ? AppColors.pureWhite
+                        : (set.setType == ActiveSetType.dropSet
+                            ? const Color(0xFF00E5FF)
+                            : (set.isWarmup ? AppColors.platinum : AppColors.steel)),
+                    width: set.setType == ActiveSetType.failure ||
+                            set.setType == ActiveSetType.dropSet
+                        ? 1.5
+                        : 1.0,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  set.setType == ActiveSetType.warmup
+                      ? 'W'
+                      : (set.setType == ActiveSetType.dropSet
+                          ? 'D'
+                          : (set.setType == ActiveSetType.failure
+                              ? 'F'
+                              : '${set.setNumber}')),
+                  style: AppTypography.monoSmall.copyWith(
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.w800,
+                    color: set.setType == ActiveSetType.dropSet
+                        ? const Color(0xFF00E5FF)
+                        : (set.isWarmup
+                            ? AppColors.platinum
+                            : AppColors.pureWhite),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // 2. KG Direct Numeric Input
+          Expanded(
+            flex: 5,
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'REST INTERVAL FOR ${exercise.name.toUpperCase()}',
-                        style: AppTypography.titleLarge.copyWith(
-                          fontFamily: AppTypography.fontDisplay,
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.pureWhite,
-                          letterSpacing: 0.8,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                Container(
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: AppColors.charcoal,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: _weightFocusNode.hasFocus
+                          ? const Color(0xFF00E5FF)
+                          : (isCompleted
+                              ? AppColors.pureWhite.withValues(alpha: 0.4)
+                              : AppColors.steel),
+                      width: _weightFocusNode.hasFocus ? 1.5 : 1.0,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: TextField(
+                    controller: _weightController,
+                    focusNode: _weightFocusNode,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                    ],
+                    textAlign: TextAlign.center,
+                    style: AppTypography.monoSmall.copyWith(
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.pureWhite,
+                    ),
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      hintText: '0',
+                      hintStyle: TextStyle(
+                        fontFamily: AppTypography.fontMono,
+                        fontSize: 15.0,
+                        color: AppColors.platinum.withValues(alpha: 0.4),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: AppColors.platinum, size: 20),
-                      onPressed: () => Navigator.of(ctx).pop(),
-                    ),
-                  ],
+                    onTap: () {
+                      _weightController.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: _weightController.text.length,
+                      );
+                    },
+                    onChanged: (text) {
+                      final parsed = double.tryParse(text);
+                      if (parsed != null) {
+                        widget.notifier.updateSetValues(
+                          exerciseId: widget.exerciseId,
+                          setIndex: widget.setIndex,
+                          weightKg: parsed,
+                        );
+                      }
+                    },
+                  ),
                 ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: durations.map((seconds) {
-                    final isSelected = exercise.restDurationSeconds == seconds;
-                    final minutes = seconds ~/ 60;
-                    final rem = seconds % 60;
-                    final timeLabel = minutes > 0
-                        ? (rem > 0 ? '$minutes min $rem s' : '$minutes min')
-                        : '$seconds s';
-
-                    return InkWell(
-                      onTap: () {
-                        notifier.updateExerciseRestDuration(exercise.exerciseId, seconds);
-                        Navigator.of(ctx).pop();
-                      },
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.pureWhite.withValues(alpha: 0.15)
-                              : AppColors.charcoal,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isSelected ? AppColors.pureWhite : AppColors.steel,
-                            width: isSelected ? 1.5 : 1.0,
-                          ),
-                        ),
-                        child: Text(
-                          timeLabel,
-                          style: AppTypography.monoSmall.copyWith(
-                            fontSize: 12.0,
-                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                            color: isSelected ? AppColors.pureWhite : AppColors.platinum,
-                          ),
-                        ),
+                const SizedBox(height: 3),
+                // Subtle previous baseline text (min 11.0 pt, tap to autofill)
+                InkWell(
+                  onTap: () {
+                    if (set.previousWeightKg != null) {
+                      final formatted = _formatWeight(set.previousWeightKg!);
+                      _weightController.text = formatted;
+                      widget.notifier.updateSetValues(
+                        exerciseId: widget.exerciseId,
+                        setIndex: widget.setIndex,
+                        weightKg: set.previousWeightKg!,
+                      );
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(4),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    child: Text(
+                      'prev: $prevWeightText',
+                      style: AppTypography.monoSmall.copyWith(
+                        fontSize: 11.0,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.platinum,
                       ),
-                    );
-                  }).toList(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-        );
-      },
+          const SizedBox(width: 8),
+
+          // 3. REPS Direct Numeric Input
+          Expanded(
+            flex: 4,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: AppColors.charcoal,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: _repsFocusNode.hasFocus
+                          ? const Color(0xFF00E5FF)
+                          : (isCompleted
+                              ? AppColors.pureWhite.withValues(alpha: 0.4)
+                              : AppColors.steel),
+                      width: _repsFocusNode.hasFocus ? 1.5 : 1.0,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: TextField(
+                    controller: _repsController,
+                    focusNode: _repsFocusNode,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    textAlign: TextAlign.center,
+                    style: AppTypography.monoSmall.copyWith(
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.pureWhite,
+                    ),
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      hintText: '0',
+                      hintStyle: TextStyle(
+                        fontFamily: AppTypography.fontMono,
+                        fontSize: 15.0,
+                        color: AppColors.platinum.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    onTap: () {
+                      _repsController.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: _repsController.text.length,
+                      );
+                    },
+                    onChanged: (text) {
+                      final parsed = int.tryParse(text);
+                      if (parsed != null) {
+                        widget.notifier.updateSetValues(
+                          exerciseId: widget.exerciseId,
+                          setIndex: widget.setIndex,
+                          reps: parsed,
+                        );
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: 3),
+                // Subtle previous baseline text (min 11.0 pt, tap to autofill)
+                InkWell(
+                  onTap: () {
+                    if (set.previousReps != null) {
+                      _repsController.text = '${set.previousReps}';
+                      widget.notifier.updateSetValues(
+                        exerciseId: widget.exerciseId,
+                        setIndex: widget.setIndex,
+                        reps: set.previousReps!,
+                      );
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(4),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    child: Text(
+                      'prev: $prevRepsText',
+                      style: AppTypography.monoSmall.copyWith(
+                        fontSize: 11.0,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.platinum,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // 4. LOG Checkmark Button (Min 44x44 pt touch target)
+          SizedBox(
+            width: 44,
+            height: 46,
+            child: Center(
+              child: IconButton(
+                onPressed: () {
+                  try {
+                    HapticFeedback.mediumImpact();
+                  } catch (_) {}
+                  widget.notifier.logSet(
+                    exerciseId: widget.exerciseId,
+                    setIndex: widget.setIndex,
+                  );
+                },
+                icon: AnimatedScale(
+                  scale: isCompleted ? 1.08 : 1.0,
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutBack,
+                  child: Icon(
+                    isCompleted ? Icons.check_circle : Icons.check_circle_outline,
+                    color: isCompleted ? AppColors.primary : AppColors.platinum,
+                    size: 26,
+                  ),
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                tooltip: isCompleted ? 'Mark incomplete' : 'Log set',
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
+}
+
+/// Unilateral Set Row with side sub-rows (L & R), direct numeric typing, and 1-tap L->R sync.
+class _UnilateralSetRowWidget extends StatefulWidget {
+  const _UnilateralSetRowWidget({
+    super.key,
+    required this.exerciseId,
+    required this.set,
+    required this.setIndex,
+    required this.notifier,
+    required this.onShowSetOptions,
+  });
+
+  final String exerciseId;
+  final ActiveSetState set;
+  final int setIndex;
+  final ActiveSessionNotifier notifier;
+  final VoidCallback onShowSetOptions;
+
+  @override
+  State<_UnilateralSetRowWidget> createState() => _UnilateralSetRowWidgetState();
+}
+
+class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
+  late TextEditingController _leftWeightController;
+  late TextEditingController _leftRepsController;
+  late TextEditingController _rightWeightController;
+  late TextEditingController _rightRepsController;
+
+  late FocusNode _leftWeightFocus;
+  late FocusNode _leftRepsFocus;
+  late FocusNode _rightWeightFocus;
+  late FocusNode _rightRepsFocus;
+
+  @override
+  void initState() {
+    super.initState();
+    _leftWeightFocus = FocusNode();
+    _leftRepsFocus = FocusNode();
+    _rightWeightFocus = FocusNode();
+    _rightRepsFocus = FocusNode();
+
+    final leftW = widget.set.weightKg > 0
+        ? widget.set.weightKg
+        : (widget.set.previousWeightKg ?? 20.0);
+    final leftR = widget.set.reps > 0
+        ? widget.set.reps
+        : (widget.set.previousReps ?? 10);
+
+    final rightW = (widget.set.weightKgRight ?? widget.set.weightKg) > 0
+        ? (widget.set.weightKgRight ?? widget.set.weightKg)
+        : (widget.set.previousWeightKgRight ?? widget.set.previousWeightKg ?? leftW);
+    final rightR = (widget.set.repsRight ?? widget.set.reps) > 0
+        ? (widget.set.repsRight ?? widget.set.reps)
+        : (widget.set.previousRepsRight ?? widget.set.previousReps ?? leftR);
+
+    _leftWeightController = TextEditingController(text: _formatWeight(leftW));
+    _leftRepsController = TextEditingController(text: '$leftR');
+    _rightWeightController = TextEditingController(text: _formatWeight(rightW));
+    _rightRepsController = TextEditingController(text: '$rightR');
+
+    _leftWeightFocus.addListener(() {
+      if (_leftWeightFocus.hasFocus) {
+        _leftWeightController.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: _leftWeightController.text.length,
+        );
+      }
+    });
+    _leftRepsFocus.addListener(() {
+      if (_leftRepsFocus.hasFocus) {
+        _leftRepsController.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: _leftRepsController.text.length,
+        );
+      }
+    });
+    _rightWeightFocus.addListener(() {
+      if (_rightWeightFocus.hasFocus) {
+        _rightWeightController.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: _rightWeightController.text.length,
+        );
+      }
+    });
+    _rightRepsFocus.addListener(() {
+      if (_rightRepsFocus.hasFocus) {
+        _rightRepsController.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: _rightRepsController.text.length,
+        );
+      }
+    });
+  }
+
+  String _formatWeight(double w) {
+    if (w >= 10 && w % 1 == 0) {
+      return '${w.toInt()}';
+    }
+    return w.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
+  }
+
+  @override
+  void didUpdateWidget(covariant _UnilateralSetRowWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_leftWeightFocus.hasFocus && widget.set.weightKg > 0) {
+      final f = _formatWeight(widget.set.weightKg);
+      if (_leftWeightController.text != f) _leftWeightController.text = f;
+    }
+    if (!_leftRepsFocus.hasFocus && widget.set.reps > 0) {
+      final f = '${widget.set.reps}';
+      if (_leftRepsController.text != f) _leftRepsController.text = f;
+    }
+    final rW = widget.set.weightKgRight ?? widget.set.weightKg;
+    if (!_rightWeightFocus.hasFocus && rW > 0) {
+      final f = _formatWeight(rW);
+      if (_rightWeightController.text != f) _rightWeightController.text = f;
+    }
+    final rR = widget.set.repsRight ?? widget.set.reps;
+    if (!_rightRepsFocus.hasFocus && rR > 0) {
+      final f = '$rR';
+      if (_rightRepsController.text != f) _rightRepsController.text = f;
+    }
+  }
+
+  @override
+  void dispose() {
+    _leftWeightController.dispose();
+    _leftRepsController.dispose();
+    _rightWeightController.dispose();
+    _rightRepsController.dispose();
+    _leftWeightFocus.dispose();
+    _leftRepsFocus.dispose();
+    _rightWeightFocus.dispose();
+    _rightRepsFocus.dispose();
+    super.dispose();
+  }
+
+  void _syncLeftToRight() {
+    try {
+      HapticFeedback.selectionClick();
+    } catch (_) {}
+    _rightWeightController.text = _leftWeightController.text;
+    _rightRepsController.text = _leftRepsController.text;
+    widget.notifier.updateSetValues(
+      exerciseId: widget.exerciseId,
+      setIndex: widget.setIndex,
+      weightKgRight: widget.set.weightKg,
+      repsRight: widget.set.reps,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final set = widget.set;
+    final isFullyCompleted = set.isLeftCompleted && set.isRightCompleted;
+
+    final prevLeftW = set.previousWeightKg != null ? _formatWeight(set.previousWeightKg!) : '—';
+    final prevLeftR = set.previousReps != null ? '${set.previousReps}' : '—';
+
+    final prevRightW = (set.previousWeightKgRight ?? set.previousWeightKg) != null
+        ? _formatWeight((set.previousWeightKgRight ?? set.previousWeightKg)!)
+        : '—';
+    final prevRightR = (set.previousRepsRight ?? set.previousReps) != null
+        ? '${(set.previousRepsRight ?? set.previousReps)!}'
+        : '—';
+
+    return Container(
+      color: isFullyCompleted
+          ? AppColors.steel.withValues(alpha: 0.15)
+          : Colors.transparent,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // 1. Spanning SET Index Badge
+          SizedBox(
+            width: 36,
+            height: 104,
+            child: InkWell(
+              onTap: widget.onShowSetOptions,
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.charcoal,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: set.setType == ActiveSetType.failure
+                        ? AppColors.pureWhite
+                        : (set.setType == ActiveSetType.dropSet
+                            ? const Color(0xFF00E5FF)
+                            : (set.isWarmup ? AppColors.platinum : AppColors.steel)),
+                    width: set.setType == ActiveSetType.failure ||
+                            set.setType == ActiveSetType.dropSet
+                        ? 1.5
+                        : 1.0,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  set.setType == ActiveSetType.warmup
+                      ? 'W'
+                      : (set.setType == ActiveSetType.dropSet
+                          ? 'D'
+                          : (set.setType == ActiveSetType.failure
+                              ? 'F'
+                              : '${set.setNumber}')),
+                  style: AppTypography.monoSmall.copyWith(
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.w800,
+                    color: set.setType == ActiveSetType.dropSet
+                        ? const Color(0xFF00E5FF)
+                        : (set.isWarmup
+                            ? AppColors.platinum
+                            : AppColors.pureWhite),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // 2. Sub-rows for L and R
+          Expanded(
+            child: Column(
+              children: [
+                // ── LEFT SUB-ROW ──
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // L Badge
+                    Container(
+                      width: 26,
+                      height: 46,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: set.isLeftCompleted
+                            ? const Color(0xFF00E5FF).withValues(alpha: 0.18)
+                            : AppColors.charcoal,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: set.isLeftCompleted
+                              ? const Color(0xFF00E5FF)
+                              : AppColors.steel,
+                        ),
+                      ),
+                      child: Text(
+                        'L',
+                        style: AppTypography.monoSmall.copyWith(
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w800,
+                          color: set.isLeftCompleted
+                              ? const Color(0xFF00E5FF)
+                              : AppColors.pureWhite,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+
+                    // Left Weight (KG)
+                    Expanded(
+                      flex: 5,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            height: 46,
+                            decoration: BoxDecoration(
+                              color: AppColors.charcoal,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: _leftWeightFocus.hasFocus
+                                    ? const Color(0xFF00E5FF)
+                                    : (set.isLeftCompleted
+                                        ? const Color(0xFF00E5FF).withValues(alpha: 0.4)
+                                        : AppColors.steel),
+                                width: _leftWeightFocus.hasFocus ? 1.5 : 1.0,
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: TextField(
+                              controller: _leftWeightController,
+                              focusNode: _leftWeightFocus,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                              ],
+                              textAlign: TextAlign.center,
+                              style: AppTypography.monoSmall.copyWith(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.pureWhite,
+                              ),
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                                hintText: '0',
+                              ),
+                              onTap: () {
+                                _leftWeightController.selection = TextSelection(
+                                  baseOffset: 0,
+                                  extentOffset: _leftWeightController.text.length,
+                                );
+                              },
+                              onChanged: (text) {
+                                final p = double.tryParse(text);
+                                if (p != null) {
+                                  widget.notifier.updateSetValues(
+                                    exerciseId: widget.exerciseId,
+                                    setIndex: widget.setIndex,
+                                    weightKg: p,
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'prev: $prevLeftW kg',
+                            style: AppTypography.monoSmall.copyWith(
+                              fontSize: 11.0,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.platinum,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+
+                    // Left Reps
+                    Expanded(
+                      flex: 4,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            height: 46,
+                            decoration: BoxDecoration(
+                              color: AppColors.charcoal,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: _leftRepsFocus.hasFocus
+                                    ? const Color(0xFF00E5FF)
+                                    : (set.isLeftCompleted
+                                        ? const Color(0xFF00E5FF).withValues(alpha: 0.4)
+                                        : AppColors.steel),
+                                width: _leftRepsFocus.hasFocus ? 1.5 : 1.0,
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: TextField(
+                              controller: _leftRepsController,
+                              focusNode: _leftRepsFocus,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                              textAlign: TextAlign.center,
+                              style: AppTypography.monoSmall.copyWith(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.pureWhite,
+                              ),
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                                hintText: '0',
+                              ),
+                              onTap: () {
+                                _leftRepsController.selection = TextSelection(
+                                  baseOffset: 0,
+                                  extentOffset: _leftRepsController.text.length,
+                                );
+                              },
+                              onChanged: (text) {
+                                final p = int.tryParse(text);
+                                if (p != null) {
+                                  widget.notifier.updateSetValues(
+                                    exerciseId: widget.exerciseId,
+                                    setIndex: widget.setIndex,
+                                    reps: p,
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'prev: $prevLeftR',
+                            style: AppTypography.monoSmall.copyWith(
+                              fontSize: 11.0,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.platinum,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+
+                    // Left Log Checkmark
+                    SizedBox(
+                      width: 44,
+                      height: 46,
+                      child: Center(
+                        child: IconButton(
+                          onPressed: () {
+                            try {
+                              HapticFeedback.mediumImpact();
+                            } catch (_) {}
+                            widget.notifier.logSetSide(
+                              exerciseId: widget.exerciseId,
+                              setIndex: widget.setIndex,
+                              isLeft: true,
+                            );
+                          },
+                          icon: AnimatedScale(
+                            scale: set.isLeftCompleted ? 1.08 : 1.0,
+                            duration: const Duration(milliseconds: 180),
+                            curve: Curves.easeOutBack,
+                            child: Icon(
+                              set.isLeftCompleted
+                                  ? Icons.check_circle
+                                  : Icons.check_circle_outline,
+                              color: set.isLeftCompleted
+                                  ? const Color(0xFF00E5FF)
+                                  : AppColors.platinum,
+                              size: 26,
+                            ),
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                          tooltip: 'Log Left side',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 8),
+
+                // ── RIGHT SUB-ROW ──
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // R Badge with Sync Button Stacked
+                    InkWell(
+                      onTap: _syncLeftToRight,
+                      borderRadius: BorderRadius.circular(6),
+                      child: Container(
+                        width: 26,
+                        height: 46,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: set.isRightCompleted
+                              ? const Color(0xFF00E5FF).withValues(alpha: 0.18)
+                              : AppColors.charcoal,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: set.isRightCompleted
+                                ? const Color(0xFF00E5FF)
+                                : AppColors.steel,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'R',
+                              style: AppTypography.monoSmall.copyWith(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w800,
+                                color: set.isRightCompleted
+                                    ? const Color(0xFF00E5FF)
+                                    : AppColors.pureWhite,
+                              ),
+                            ),
+                            const Icon(
+                              Icons.sync_rounded,
+                              size: 11,
+                              color: Color(0xFF00E5FF),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+
+                    // Right Weight (KG)
+                    Expanded(
+                      flex: 5,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            height: 46,
+                            decoration: BoxDecoration(
+                              color: AppColors.charcoal,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: _rightWeightFocus.hasFocus
+                                    ? const Color(0xFF00E5FF)
+                                    : (set.isRightCompleted
+                                        ? const Color(0xFF00E5FF).withValues(alpha: 0.4)
+                                        : AppColors.steel),
+                                width: _rightWeightFocus.hasFocus ? 1.5 : 1.0,
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: TextField(
+                              controller: _rightWeightController,
+                              focusNode: _rightWeightFocus,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                              ],
+                              textAlign: TextAlign.center,
+                              style: AppTypography.monoSmall.copyWith(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.pureWhite,
+                              ),
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                                hintText: '0',
+                              ),
+                              onTap: () {
+                                _rightWeightController.selection = TextSelection(
+                                  baseOffset: 0,
+                                  extentOffset: _rightWeightController.text.length,
+                                );
+                              },
+                              onChanged: (text) {
+                                final p = double.tryParse(text);
+                                if (p != null) {
+                                  widget.notifier.updateSetValues(
+                                    exerciseId: widget.exerciseId,
+                                    setIndex: widget.setIndex,
+                                    weightKgRight: p,
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'prev: $prevRightW kg',
+                            style: AppTypography.monoSmall.copyWith(
+                              fontSize: 11.0,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.platinum,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+
+                    // Right Reps
+                    Expanded(
+                      flex: 4,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            height: 46,
+                            decoration: BoxDecoration(
+                              color: AppColors.charcoal,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: _rightRepsFocus.hasFocus
+                                    ? const Color(0xFF00E5FF)
+                                    : (set.isRightCompleted
+                                        ? const Color(0xFF00E5FF).withValues(alpha: 0.4)
+                                        : AppColors.steel),
+                                width: _rightRepsFocus.hasFocus ? 1.5 : 1.0,
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: TextField(
+                              controller: _rightRepsController,
+                              focusNode: _rightRepsFocus,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                              textAlign: TextAlign.center,
+                              style: AppTypography.monoSmall.copyWith(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.pureWhite,
+                              ),
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                                hintText: '0',
+                              ),
+                              onTap: () {
+                                _rightRepsController.selection = TextSelection(
+                                  baseOffset: 0,
+                                  extentOffset: _rightRepsController.text.length,
+                                );
+                              },
+                              onChanged: (text) {
+                                final p = int.tryParse(text);
+                                if (p != null) {
+                                  widget.notifier.updateSetValues(
+                                    exerciseId: widget.exerciseId,
+                                    setIndex: widget.setIndex,
+                                    repsRight: p,
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'prev: $prevRightR',
+                            style: AppTypography.monoSmall.copyWith(
+                              fontSize: 11.0,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.platinum,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+
+                    // Right Log Checkmark
+                    SizedBox(
+                      width: 44,
+                      height: 46,
+                      child: Center(
+                        child: IconButton(
+                          onPressed: () {
+                            try {
+                              HapticFeedback.mediumImpact();
+                            } catch (_) {}
+                            widget.notifier.logSetSide(
+                              exerciseId: widget.exerciseId,
+                              setIndex: widget.setIndex,
+                              isLeft: false,
+                            );
+                          },
+                          icon: AnimatedScale(
+                            scale: set.isRightCompleted ? 1.08 : 1.0,
+                            duration: const Duration(milliseconds: 180),
+                            curve: Curves.easeOutBack,
+                            child: Icon(
+                              set.isRightCompleted
+                                  ? Icons.check_circle
+                                  : Icons.check_circle_outline,
+                              color: set.isRightCompleted
+                                  ? const Color(0xFF00E5FF)
+                                  : AppColors.platinum,
+                              size: 26,
+                            ),
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                          tooltip: 'Log Right side',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Standalone Rest Duration Picker Sheet callable from anywhere (e.g. 3-dot menu or quick action).
+void showRestDurationPicker(
+  BuildContext context,
+  ActiveExerciseState exercise,
+  ActiveSessionNotifier notifier,
+) {
+  const durations = [30, 45, 60, 90, 120, 150, 180, 240];
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: AppColors.onyx,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      side: BorderSide(color: AppColors.steel),
+    ),
+    builder: (ctx) {
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'REST INTERVAL FOR ${exercise.name.toUpperCase()}',
+                      style: AppTypography.titleLarge.copyWith(
+                        fontFamily: AppTypography.fontDisplay,
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.pureWhite,
+                        letterSpacing: 0.8,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: AppColors.platinum, size: 20),
+                    onPressed: () => Navigator.of(ctx).pop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: durations.map((seconds) {
+                  final isSelected = exercise.restDurationSeconds == seconds;
+                  final minutes = seconds ~/ 60;
+                  final rem = seconds % 60;
+                  final timeLabel = minutes > 0
+                      ? (rem > 0 ? '$minutes min $rem s' : '$minutes min')
+                      : '$seconds s';
+
+                  return InkWell(
+                    onTap: () {
+                      notifier.updateExerciseRestDuration(exercise.exerciseId, seconds);
+                      Navigator.of(ctx).pop();
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.pureWhite.withValues(alpha: 0.15)
+                            : AppColors.charcoal,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isSelected ? AppColors.pureWhite : AppColors.steel,
+                          width: isSelected ? 1.5 : 1.0,
+                        ),
+                      ),
+                      child: Text(
+                        timeLabel,
+                        style: AppTypography.monoSmall.copyWith(
+                          fontSize: 12.0,
+                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                          color: isSelected ? AppColors.pureWhite : AppColors.platinum,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }

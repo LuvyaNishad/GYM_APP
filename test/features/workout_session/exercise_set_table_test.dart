@@ -41,12 +41,12 @@ void main() {
 
       // Verify headers
       expect(find.text('SET'), findsOneWidget);
-      expect(find.text('PREVIOUS'), findsOneWidget);
       expect(find.text('KG'), findsOneWidget);
       expect(find.text('REPS'), findsOneWidget);
+      expect(find.text('LOG'), findsOneWidget);
 
-      // Verify ghost text presence
-      expect(find.textContaining('80 kg × 8'), findsWidgets);
+      // Verify subtle previous baseline presence
+      expect(find.textContaining('prev: 80 kg'), findsWidgets);
 
       // Verify checkmark button exists
       final checkButtons = find.byIcon(Icons.check_circle_outline);
