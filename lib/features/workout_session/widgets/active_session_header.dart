@@ -16,10 +16,12 @@ class ActiveSessionHeader extends ConsumerWidget {
     super.key,
     required this.onFinishPressed,
     required this.onCancelPressed,
+    this.onAddExercisePressed,
   });
 
   final VoidCallback onFinishPressed;
   final VoidCallback onCancelPressed;
+  final VoidCallback? onAddExercisePressed;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -121,7 +123,17 @@ class ActiveSessionHeader extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
+                if (onAddExercisePressed != null) ...[
+                  IconButton(
+                    icon: const Icon(Icons.add_rounded, color: AppColors.pureWhite, size: 22),
+                    onPressed: onAddExercisePressed,
+                    tooltip: 'Add Exercise',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                  ),
+                  const SizedBox(width: 4),
+                ],
                 // Finish Workout CTA
                 FilledButton(
                   onPressed: onFinishPressed,

@@ -117,6 +117,20 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     );
   }
 
+  void _openAddExerciseModal() {
+    final notifier = ref.read(activeSessionProvider.notifier);
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => ExercisePickerModal(
+        onExerciseSelected: (newEx) {
+          notifier.addExercise(newEx);
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final exercises =
@@ -132,145 +146,47 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
           // Main Scrollable Area
           Column(
             children: [
-              // Sticky Active Header
+              // Sticky Active Header with live stats and quick + Add action
               ActiveSessionHeader(
                 onFinishPressed: _handleFinishWorkout,
                 onCancelPressed: _handleCancelWorkout,
+                onAddExercisePressed: _openAddExerciseModal,
               ),
 
-              // Session Telemetry Strip (Available after starting workout)
-              Container(
-                margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                decoration: BoxDecoration(
-                  color: AppColors.onyx,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: AppColors.steel.withValues(alpha: 0.5),
-                    width: 1,
-                  ),
-                ),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _SessionSummaryItem(
-                        icon: Icons.fitness_center_rounded,
-                        label: '${exercises.length} EXERCISES',
-                      ),
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 10),
-                        width: 1,
-                        height: 11,
-                        color: AppColors.steel,
-                      ),
-                      const _SessionSummaryItem(
-                        icon: Icons.timer_outlined,
-                        label: '~48 MIN',
-                      ),
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 10),
-                        width: 1,
-                        height: 11,
-                        color: AppColors.steel,
-                      ),
-                      const _SessionSummaryItem(
-                        icon: Icons.bolt_rounded,
-                        label: 'HYPERTROPHY',
-                      ),
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 10),
-                        width: 1,
-                        height: 11,
-                        color: AppColors.steel,
-                      ),
-                      const _SessionSummaryItem(
-                        icon: Icons.speed_rounded,
-                        label: 'TARGET RPE 8.5',
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Action Toolbar
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-                child: Row(
-                  children: [
-                    FilledButton.icon(
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          backgroundColor: Colors.transparent,
-                          isScrollControlled: true,
-                          builder: (ctx) => ExercisePickerModal(
-                            onExerciseSelected: (newEx) {
-                              notifier.addExercise(newEx);
-                            },
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.add, size: 16, color: AppColors.onPrimary),
-                      label: Text(
-                        'ADD EXERCISE',
-                        style: AppTypography.monoSmall.copyWith(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.onPrimary,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: AppColors.onPrimary,
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        minimumSize: const Size(0, 38),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.charcoal,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: AppColors.steel,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.touch_app_outlined, size: 14, color: AppColors.platinum),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Hold ≡ to reorder',
-                            style: AppTypography.monoSmall.copyWith(
-                              fontSize: 11.0,
-                              color: AppColors.platinum,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Reorderable Exercise Sequence List
+              // Reorderable Exercise Sequence List — immediately visible with zero vertical buffer
               Expanded(
                 child: exercises.isEmpty
                     ? Center(
-                        child: Text(
-                          'No exercises in workout.\nTap "+ ADD EXERCISE" above.',
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: AppColors.platinum,
-                          ),
-                          textAlign: TextAlign.center,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'No exercises in workout.\nTap "+ ADD EXERCISE" below.',
+                              style: AppTypography.bodyMedium.copyWith(
+                                color: AppColors.platinum,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            FilledButton.icon(
+                              onPressed: _openAddExerciseModal,
+                              icon: const Icon(Icons.add_rounded, size: 16, color: AppColors.onPrimary),
+                              label: Text(
+                                'ADD EXERCISE',
+                                style: AppTypography.monoSmall.copyWith(
+                                  fontSize: 12.0,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.onPrimary,
+                                  letterSpacing: 0.6,
+                                ),
+                              ),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: AppColors.onPrimary,
+                                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                              ),
+                            ),
+                          ],
                         ),
                       )
                     : ReorderableListView.builder(
@@ -279,6 +195,31 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                         itemCount: exercises.length,
                         // ignore: deprecated_member_use
                         onReorder: notifier.reorderExercises,
+                        footer: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                          child: OutlinedButton.icon(
+                            onPressed: _openAddExerciseModal,
+                            icon: const Icon(Icons.add_rounded, size: 18, color: AppColors.pureWhite),
+                            label: Text(
+                              'ADD EXERCISE',
+                              style: AppTypography.monoSmall.copyWith(
+                                fontSize: 12.0,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.pureWhite,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: AppColors.steel, width: 1.2),
+                              backgroundColor: AppColors.charcoal.withValues(alpha: 0.6),
+                              foregroundColor: AppColors.pureWhite,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
                         itemBuilder: (context, index) {
                           final exercise = exercises[index];
                           final isExpanded =
@@ -314,41 +255,6 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _SessionSummaryItem extends StatelessWidget {
-  const _SessionSummaryItem({
-    required this.icon,
-    required this.label,
-  });
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          size: 13,
-          color: AppColors.platinum,
-        ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'JetBrains Mono',
-            fontSize: 11.0,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textSecondary,
-            letterSpacing: 0.5,
-          ),
-        ),
-      ],
     );
   }
 }

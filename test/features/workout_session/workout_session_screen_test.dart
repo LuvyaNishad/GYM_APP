@@ -53,7 +53,15 @@ void main() {
       await tester.tap(find.text('Incline Dumbbell Press'));
       await tester.pump();
 
-      // Top action button ADD EXERCISE should be present
+      // Header quick action button
+      expect(find.byTooltip('Add Exercise'), findsOneWidget);
+
+      // Verify that old clutter text is completely gone
+      expect(find.text('HYPERTROPHY'), findsNothing);
+      expect(find.text('TARGET RPE 8.5'), findsNothing);
+      expect(find.text('Hold ≡ to reorder'), findsNothing);
+
+      // Bottom footer action button ADD EXERCISE should be present
       expect(find.text('ADD EXERCISE'), findsOneWidget);
 
       // Cancel session ticker so no timers remain pending
