@@ -44,6 +44,12 @@ class ActiveSetState {
     this.previousReps,
     this.previousRir,
     this.previousRpe,
+    this.weightKgRight,
+    this.repsRight,
+    this.isLeftCompleted = false,
+    this.isRightCompleted = false,
+    this.previousWeightKgRight,
+    this.previousRepsRight,
   }) : setType = setType ?? (isWarmup ? ActiveSetType.warmup : ActiveSetType.normal);
 
   final int setNumber;
@@ -54,6 +60,12 @@ class ActiveSetState {
   final bool isCompleted;
   final ActiveSetType setType;
   final bool isPr;
+
+  /// Unilateral properties for independent Left/Right logging
+  final double? weightKgRight;
+  final int? repsRight;
+  final bool isLeftCompleted;
+  final bool isRightCompleted;
 
   /// Whether this set is categorized as a warm-up ramp set.
   bool get isWarmup => setType == ActiveSetType.warmup;
@@ -69,9 +81,21 @@ class ActiveSetState {
   final int? previousReps;
   final double? previousRir;
   final double? previousRpe;
+  final double? previousWeightKgRight;
+  final int? previousRepsRight;
 
-  /// Set volume in kilograms (weight × reps). Warm-up sets do not count toward working volume.
-  double get volumeKg => isWarmup ? 0.0 : (weightKg * reps);
+  /// Set volume in kilograms. Warm-up sets do not count toward working volume.
+  /// If unilateral (right values specified), calculates both sides: (W_L * R_L) + (W_R * R_R).
+  double get volumeKg {
+    if (isWarmup) return 0.0;
+    final leftVol = weightKg * reps;
+    if (weightKgRight != null || repsRight != null) {
+      final rightWeight = weightKgRight ?? weightKg;
+      final rightReps = repsRight ?? reps;
+      return leftVol + (rightWeight * rightReps);
+    }
+    return leftVol;
+  }
 
   ActiveSetState copyWith({
     int? setNumber,
@@ -87,6 +111,12 @@ class ActiveSetState {
     int? previousReps,
     double? previousRir,
     double? previousRpe,
+    double? weightKgRight,
+    int? repsRight,
+    bool? isLeftCompleted,
+    bool? isRightCompleted,
+    double? previousWeightKgRight,
+    int? previousRepsRight,
   }) {
     ActiveSetType resolvedType = setType ?? this.setType;
     if (isWarmup != null) {
@@ -109,6 +139,12 @@ class ActiveSetState {
       previousReps: previousReps ?? this.previousReps,
       previousRir: previousRir ?? this.previousRir,
       previousRpe: previousRpe ?? this.previousRpe,
+      weightKgRight: weightKgRight ?? this.weightKgRight,
+      repsRight: repsRight ?? this.repsRight,
+      isLeftCompleted: isLeftCompleted ?? this.isLeftCompleted,
+      isRightCompleted: isRightCompleted ?? this.isRightCompleted,
+      previousWeightKgRight: previousWeightKgRight ?? this.previousWeightKgRight,
+      previousRepsRight: previousRepsRight ?? this.previousRepsRight,
     );
   }
 
@@ -124,7 +160,11 @@ class ActiveSetState {
           rpe == other.rpe &&
           isCompleted == other.isCompleted &&
           setType == other.setType &&
-          isPr == other.isPr;
+          isPr == other.isPr &&
+          weightKgRight == other.weightKgRight &&
+          repsRight == other.repsRight &&
+          isLeftCompleted == other.isLeftCompleted &&
+          isRightCompleted == other.isRightCompleted;
 
   @override
   int get hashCode => Object.hash(
@@ -136,6 +176,10 @@ class ActiveSetState {
         isCompleted,
         setType,
         isPr,
+        weightKgRight,
+        repsRight,
+        isLeftCompleted,
+        isRightCompleted,
       );
 
   Map<String, dynamic> toJson() => {
@@ -152,6 +196,12 @@ class ActiveSetState {
         'previousReps': previousReps,
         'previousRir': previousRir,
         'previousRpe': previousRpe,
+        'weightKgRight': weightKgRight,
+        'repsRight': repsRight,
+        'isLeftCompleted': isLeftCompleted,
+        'isRightCompleted': isRightCompleted,
+        'previousWeightKgRight': previousWeightKgRight,
+        'previousRepsRight': previousRepsRight,
       };
 
   factory ActiveSetState.fromJson(Map<String, dynamic> json) {
@@ -165,19 +215,27 @@ class ActiveSetState {
       parsedType = ActiveSetType.warmup;
     }
 
+    final bool legacyCompleted = json['isCompleted'] as bool? ?? false;
+
     return ActiveSetState(
       setNumber: json['setNumber'] as int? ?? 1,
       weightKg: (json['weightKg'] as num?)?.toDouble() ?? 0.0,
       reps: json['reps'] as int? ?? 0,
       rir: (json['rir'] as num?)?.toDouble() ?? 2.0,
       rpe: (json['rpe'] as num?)?.toDouble() ?? 8.0,
-      isCompleted: json['isCompleted'] as bool? ?? false,
+      isCompleted: legacyCompleted,
       setType: parsedType,
       isPr: json['isPr'] as bool? ?? false,
       previousWeightKg: (json['previousWeightKg'] as num?)?.toDouble(),
       previousReps: json['previousReps'] as int?,
       previousRir: (json['previousRir'] as num?)?.toDouble(),
       previousRpe: (json['previousRpe'] as num?)?.toDouble(),
+      weightKgRight: (json['weightKgRight'] as num?)?.toDouble(),
+      repsRight: json['repsRight'] as int?,
+      isLeftCompleted: json['isLeftCompleted'] as bool? ?? legacyCompleted,
+      isRightCompleted: json['isRightCompleted'] as bool? ?? legacyCompleted,
+      previousWeightKgRight: (json['previousWeightKgRight'] as num?)?.toDouble(),
+      previousRepsRight: json['previousRepsRight'] as int?,
     );
   }
 }
@@ -194,6 +252,7 @@ class ActiveExerciseState {
     this.notes,
     this.supersetGroupId,
     this.restDurationSeconds = 90,
+    this.isUnilateral = false,
   });
 
   final String exerciseId;
@@ -204,6 +263,7 @@ class ActiveExerciseState {
   final String? notes;
   final String? supersetGroupId;
   final int restDurationSeconds;
+  final bool isUnilateral;
 
   int get completedSetsCount =>
       sets.where((s) => s.isCompleted).length;
@@ -233,6 +293,7 @@ class ActiveExerciseState {
     String? supersetGroupId,
     bool clearSupersetGroup = false,
     int? restDurationSeconds,
+    bool? isUnilateral,
   }) {
     return ActiveExerciseState(
       exerciseId: exerciseId ?? this.exerciseId,
@@ -243,6 +304,7 @@ class ActiveExerciseState {
       notes: notes ?? this.notes,
       supersetGroupId: clearSupersetGroup ? null : (supersetGroupId ?? this.supersetGroupId),
       restDurationSeconds: restDurationSeconds ?? this.restDurationSeconds,
+      isUnilateral: isUnilateral ?? this.isUnilateral,
     );
   }
 
@@ -254,6 +316,7 @@ class ActiveExerciseState {
           exerciseId == other.exerciseId &&
           name == other.name &&
           muscleGroup == other.muscleGroup &&
+          isUnilateral == other.isUnilateral &&
           listEquals(sets, other.sets);
 
   @override
@@ -261,6 +324,7 @@ class ActiveExerciseState {
         exerciseId,
         name,
         muscleGroup,
+        isUnilateral,
         sets,
       );
 
@@ -273,6 +337,7 @@ class ActiveExerciseState {
         'notes': notes,
         'supersetGroupId': supersetGroupId,
         'restDurationSeconds': restDurationSeconds,
+        'isUnilateral': isUnilateral,
       };
 
   factory ActiveExerciseState.fromJson(Map<String, dynamic> json) =>
@@ -289,6 +354,7 @@ class ActiveExerciseState {
         notes: json['notes'] as String?,
         supersetGroupId: json['supersetGroupId'] as String?,
         restDurationSeconds: json['restDurationSeconds'] as int? ?? 90,
+        isUnilateral: json['isUnilateral'] as bool? ?? false,
       );
 }
 

@@ -185,7 +185,11 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     final currentSet = exercise.sets[setIndex];
     final targetCompleted = completed ?? !currentSet.isCompleted;
 
-    final updatedSet = currentSet.copyWith(isCompleted: targetCompleted);
+    final updatedSet = currentSet.copyWith(
+      isCompleted: targetCompleted,
+      isLeftCompleted: targetCompleted,
+      isRightCompleted: targetCompleted,
+    );
     final updatedSets = List<ActiveSetState>.from(exercise.sets);
     updatedSets[setIndex] = updatedSet;
 
@@ -249,6 +253,113 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     }
   }
 
+  /// Logs either the Left or Right side of a unilateral set.
+  /// When both sides are completed, marks the entire set completed and triggers the rest timer.
+  void logSetSide({
+    required String exerciseId,
+    required int setIndex,
+    required bool isLeft,
+    bool? completed,
+  }) {
+    final exIndex = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
+    if (exIndex == -1) return;
+
+    final exercise = state.exercises[exIndex];
+    if (setIndex < 0 || setIndex >= exercise.sets.length) return;
+
+    final currentSet = exercise.sets[setIndex];
+    final targetCompleted = completed ??
+        (isLeft ? !currentSet.isLeftCompleted : !currentSet.isRightCompleted);
+
+    final newLeft = isLeft ? targetCompleted : currentSet.isLeftCompleted;
+    final newRight = !isLeft ? targetCompleted : currentSet.isRightCompleted;
+    final bothCompleted = newLeft && newRight;
+
+    final updatedSet = currentSet.copyWith(
+      isLeftCompleted: newLeft,
+      isRightCompleted: newRight,
+      isCompleted: bothCompleted,
+    );
+    final updatedSets = List<ActiveSetState>.from(exercise.sets);
+    updatedSets[setIndex] = updatedSet;
+
+    final updatedExercise = exercise.copyWith(sets: updatedSets);
+    final updatedExercises = List<ActiveExerciseState>.from(state.exercises);
+    updatedExercises[exIndex] = updatedExercise;
+
+    state = state.copyWith(exercises: updatedExercises);
+    _persistActiveSession();
+
+    if (bothCompleted && !currentSet.isCompleted) {
+      try {
+        HapticFeedback.mediumImpact();
+      } catch (_) {}
+
+      final allFinished = updatedExercises.every(
+        (e) => e.sets.isNotEmpty && e.sets.every((s) => s.isCompleted),
+      );
+
+      final restState = ref.read(restTimerProvider);
+      if (restState.autoStart && !allFinished) {
+        final duration = exercise.restDurationSeconds > 0
+            ? exercise.restDurationSeconds
+            : 90;
+        ref.read(restTimerProvider.notifier).startTimer(
+              durationSeconds: duration,
+              exerciseName: exercise.name,
+              setNumber: currentSet.setNumber,
+            );
+      }
+    } else if (targetCompleted && !bothCompleted) {
+      try {
+        HapticFeedback.lightImpact();
+      } catch (_) {}
+    } else if (!bothCompleted && currentSet.isCompleted) {
+      final restState = ref.read(restTimerProvider);
+      if (restState.isRunning && restState.exerciseName == exercise.name) {
+        ref.read(restTimerProvider.notifier).skip();
+      }
+    }
+  }
+
+  /// Toggles an exercise between Unilateral and Bilateral mode.
+  void toggleUnilateral(String exerciseId) {
+    final index = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
+    if (index == -1) return;
+
+    final exercise = state.exercises[index];
+    final newIsUnilateral = !exercise.isUnilateral;
+
+    final updatedSets = exercise.sets.map((s) {
+      if (newIsUnilateral) {
+        return s.copyWith(
+          weightKgRight: s.weightKgRight ?? s.weightKg,
+          repsRight: s.repsRight ?? s.reps,
+          isLeftCompleted: s.isCompleted,
+          isRightCompleted: s.isCompleted,
+        );
+      } else {
+        return s.copyWith(
+          isCompleted: s.isCompleted || (s.isLeftCompleted && s.isRightCompleted),
+        );
+      }
+    }).toList();
+
+    final updatedExercise = exercise.copyWith(
+      isUnilateral: newIsUnilateral,
+      sets: updatedSets,
+    );
+
+    final updatedExercises = List<ActiveExerciseState>.from(state.exercises);
+    updatedExercises[index] = updatedExercise;
+
+    state = state.copyWith(exercises: updatedExercises);
+    _persistActiveSession();
+    try {
+      HapticFeedback.selectionClick();
+    } catch (_) {}
+  }
+
   /// Updates weight, reps, RIR, RPE, setType, or warmup flag on a specific set.
   void updateSetValues({
     required String exerciseId,
@@ -259,6 +370,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     double? rpe,
     bool? isWarmup,
     ActiveSetType? setType,
+    double? weightKgRight,
+    int? repsRight,
   }) {
     final exIndex = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
     if (exIndex == -1) return;
@@ -281,6 +394,8 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     final updatedSet = currentSet.copyWith(
       weightKg: weightKg ?? currentSet.weightKg,
       reps: reps ?? currentSet.reps,
+      weightKgRight: weightKgRight ?? currentSet.weightKgRight,
+      repsRight: repsRight ?? currentSet.repsRight,
       rir: updatedRir,
       rpe: updatedRpe,
       isWarmup: isWarmup,
@@ -314,6 +429,10 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       rpe: lastSet?.rpe ?? 8.0,
       previousWeightKg: lastSet?.previousWeightKg,
       previousReps: lastSet?.previousReps,
+      weightKgRight: lastSet?.weightKgRight ?? (exercise.isUnilateral ? (lastSet?.weightKg ?? 20.0) : null),
+      repsRight: lastSet?.repsRight ?? (exercise.isUnilateral ? (lastSet?.reps ?? 10) : null),
+      previousWeightKgRight: lastSet?.previousWeightKgRight,
+      previousRepsRight: lastSet?.previousRepsRight,
     );
 
     final updatedSets = [...exercise.sets, newSet];

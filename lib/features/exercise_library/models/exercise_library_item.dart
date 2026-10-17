@@ -49,6 +49,21 @@ class ExerciseLibraryItem {
   final bool isCustom;
   final List<String> alternatives;
 
+  /// Whether this exercise is performed unilaterally (one side at a time).
+  bool get isUnilateral =>
+      tags.any((t) => t.toLowerCase().contains('unilateral')) ||
+      description.toLowerCase().contains('unilateral') ||
+      name.toLowerCase().contains('single-arm') ||
+      name.toLowerCase().contains('single arm') ||
+      name.toLowerCase().contains('single-leg') ||
+      name.toLowerCase().contains('single leg') ||
+      name.toLowerCase().contains('one-arm') ||
+      name.toLowerCase().contains('one arm') ||
+      name.toLowerCase().contains('lateral raise') ||
+      name.toLowerCase().contains('split squat') ||
+      name.toLowerCase().contains('step-up') ||
+      name.toLowerCase().contains('lunge');
+
   /// Formatted primary muscles display (capitalized, comma-separated)
   String get primaryMusclesDisplay {
     if (primaryMuscles.isEmpty) return category;

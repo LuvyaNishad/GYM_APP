@@ -17,6 +17,17 @@ class ExerciseTemplate {
   final String muscleGroup;
   final String equipment;
   final int defaultRestSeconds;
+
+  bool get isUnilateral =>
+      name.toLowerCase().contains('single-arm') ||
+      name.toLowerCase().contains('single arm') ||
+      name.toLowerCase().contains('single-leg') ||
+      name.toLowerCase().contains('single leg') ||
+      name.toLowerCase().contains('one-arm') ||
+      name.toLowerCase().contains('one arm') ||
+      name.toLowerCase().contains('lateral raise') ||
+      name.toLowerCase().contains('split squat') ||
+      name.toLowerCase().contains('lunge');
 }
 
 const List<ExerciseTemplate> kExerciseCatalog = [
@@ -277,10 +288,29 @@ class _ExercisePickerModalState extends ConsumerState<ExercisePickerModal> {
                       muscleGroup: template.muscleGroup,
                       equipment: template.equipment,
                       restDurationSeconds: template.defaultRestSeconds,
+                      isUnilateral: template.isUnilateral,
                       sets: [
-                        const ActiveSetState(setNumber: 1, weightKg: 20.0, reps: 10),
-                        const ActiveSetState(setNumber: 2, weightKg: 20.0, reps: 10),
-                        const ActiveSetState(setNumber: 3, weightKg: 20.0, reps: 10),
+                        ActiveSetState(
+                          setNumber: 1,
+                          weightKg: 20.0,
+                          reps: 10,
+                          weightKgRight: template.isUnilateral ? 20.0 : null,
+                          repsRight: template.isUnilateral ? 10 : null,
+                        ),
+                        ActiveSetState(
+                          setNumber: 2,
+                          weightKg: 20.0,
+                          reps: 10,
+                          weightKgRight: template.isUnilateral ? 20.0 : null,
+                          repsRight: template.isUnilateral ? 10 : null,
+                        ),
+                        ActiveSetState(
+                          setNumber: 3,
+                          weightKg: 20.0,
+                          reps: 10,
+                          weightKgRight: template.isUnilateral ? 20.0 : null,
+                          repsRight: template.isUnilateral ? 10 : null,
+                        ),
                       ],
                     );
                     widget.onExerciseSelected(newExercise);

@@ -180,6 +180,32 @@ class ExerciseSequenceCard extends ConsumerWidget {
                                       ],
                                     ),
                                   ),
+                                if (exercise.isUnilateral)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(color: const Color(0xFF00E5FF), width: 1.0),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.compare_arrows_rounded, size: 12, color: Color(0xFF00E5FF)),
+                                        SizedBox(width: 2),
+                                        Text(
+                                          'UNILATERAL',
+                                          style: TextStyle(
+                                            fontFamily: AppTypography.fontMono,
+                                            fontSize: 11.0,
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xFF00E5FF),
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 Text(
                                   exercise.muscleGroup.toUpperCase(),
                                   style: AppTypography.monoSmall.copyWith(
@@ -248,6 +274,8 @@ class ExerciseSequenceCard extends ConsumerWidget {
                               ref: ref,
                               exercise: exercise,
                             );
+                          } else if (value == 'toggle_unilateral') {
+                            notifier.toggleUnilateral(exercise.exerciseId);
                           } else if (value == 'substitute') {
                             showExerciseSubstitutionSheet(
                               context: context,
@@ -285,6 +313,24 @@ class ExerciseSequenceCard extends ConsumerWidget {
                                 Expanded(
                                   child: Text(
                                     'Form Guide & PRs',
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: AppColors.pureWhite,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'toggle_unilateral',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.compare_arrows_rounded, size: 18, color: Color(0xFF00E5FF)),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    exercise.isUnilateral ? 'Switch to Bilateral' : 'Switch to Unilateral (L/R)',
                                     style: AppTypography.bodySmall.copyWith(
                                       color: AppColors.pureWhite,
                                       fontWeight: FontWeight.w600,

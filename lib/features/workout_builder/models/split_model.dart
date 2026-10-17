@@ -23,6 +23,7 @@ class PlannedExercise {
     this.targetWeightKg = 60.0,
     this.restSeconds = 90,
     this.supersetGroupId,
+    this.isUnilateral = false,
   });
 
   final String exerciseId;
@@ -35,6 +36,7 @@ class PlannedExercise {
   final double targetWeightKg;
   final int restSeconds;
   final String? supersetGroupId;
+  final bool isUnilateral;
 
   /// Converts this planned exercise into active session state with pre-populated sets.
   ActiveExerciseState toActiveExerciseState() {
@@ -48,6 +50,8 @@ class PlannedExercise {
         rpe: 10.0 - targetRir,
         previousWeightKg: targetWeightKg,
         previousReps: int.tryParse(repRange.split('–').first.trim()) ?? 10,
+        weightKgRight: isUnilateral ? targetWeightKg : null,
+        repsRight: isUnilateral ? (int.tryParse(repRange.split('–').first.trim()) ?? 10) : null,
       ),
     );
 
@@ -59,6 +63,7 @@ class PlannedExercise {
       sets: sets,
       supersetGroupId: supersetGroupId,
       restDurationSeconds: restSeconds,
+      isUnilateral: isUnilateral,
     );
   }
 
@@ -73,6 +78,7 @@ class PlannedExercise {
     double? targetWeightKg,
     int? restSeconds,
     String? supersetGroupId,
+    bool? isUnilateral,
   }) {
     return PlannedExercise(
       exerciseId: exerciseId ?? this.exerciseId,
@@ -85,6 +91,7 @@ class PlannedExercise {
       targetWeightKg: targetWeightKg ?? this.targetWeightKg,
       restSeconds: restSeconds ?? this.restSeconds,
       supersetGroupId: supersetGroupId ?? this.supersetGroupId,
+      isUnilateral: isUnilateral ?? this.isUnilateral,
     );
   }
 
@@ -100,6 +107,7 @@ class PlannedExercise {
       'targetWeightKg': targetWeightKg,
       'restSeconds': restSeconds,
       'supersetGroupId': supersetGroupId,
+      'isUnilateral': isUnilateral,
     };
   }
 
@@ -114,6 +122,17 @@ class PlannedExercise {
             category: muscle,
           );
 
+    final explicitUnilateral = json['isUnilateral'] as bool?;
+    final inferredUnilateral = explicitUnilateral ??
+        (name.toLowerCase().contains('single-arm') ||
+            name.toLowerCase().contains('single arm') ||
+            name.toLowerCase().contains('single-leg') ||
+            name.toLowerCase().contains('single leg') ||
+            name.toLowerCase().contains('one-arm') ||
+            name.toLowerCase().contains('one arm') ||
+            name.toLowerCase().contains('lateral raise') ||
+            name.toLowerCase().contains('split squat'));
+
     return PlannedExercise(
       exerciseId: json['exerciseId'] as String? ?? '',
       exerciseName: name,
@@ -125,6 +144,7 @@ class PlannedExercise {
       targetWeightKg: (json['targetWeightKg'] as num?)?.toDouble() ?? 60.0,
       restSeconds: computedRest,
       supersetGroupId: json['supersetGroupId'] as String?,
+      isUnilateral: inferredUnilateral,
     );
   }
 }
