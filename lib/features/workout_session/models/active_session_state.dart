@@ -304,6 +304,7 @@ class ActiveSessionState {
     this.isPaused = false,
     this.exercises = const [],
     this.expandedExerciseId,
+    this.lastResumedAt,
   });
 
   final String workoutId;
@@ -314,6 +315,7 @@ class ActiveSessionState {
   final bool isPaused;
   final List<ActiveExerciseState> exercises;
   final String? expandedExerciseId;
+  final DateTime? lastResumedAt;
 
   int get completedSetCount =>
       exercises.fold(0, (acc, ex) => acc + ex.completedSetsCount);
@@ -347,6 +349,8 @@ class ActiveSessionState {
     List<ActiveExerciseState>? exercises,
     String? expandedExerciseId,
     bool clearExpandedExercise = false,
+    DateTime? lastResumedAt,
+    bool clearLastResumedAt = false,
   }) {
     return ActiveSessionState(
       workoutId: workoutId ?? this.workoutId,
@@ -359,6 +363,9 @@ class ActiveSessionState {
       expandedExerciseId: clearExpandedExercise
           ? null
           : (expandedExerciseId ?? this.expandedExerciseId),
+      lastResumedAt: clearLastResumedAt
+          ? null
+          : (lastResumedAt ?? this.lastResumedAt),
     );
   }
 
@@ -371,6 +378,7 @@ class ActiveSessionState {
         'isPaused': isPaused,
         'exercises': exercises.map((e) => e.toJson()).toList(),
         'expandedExerciseId': expandedExerciseId,
+        'lastResumedAt': lastResumedAt?.toIso8601String(),
       };
 
   factory ActiveSessionState.fromJson(Map<String, dynamic> json) =>
@@ -388,6 +396,9 @@ class ActiveSessionState {
                 .toList() ??
             const [],
         expandedExerciseId: json['expandedExerciseId'] as String?,
+        lastResumedAt: json['lastResumedAt'] != null
+            ? DateTime.tryParse(json['lastResumedAt'] as String)
+            : null,
       );
 }
 
@@ -401,6 +412,7 @@ class RestTimerState {
     this.autoStart = true,
     this.exerciseName,
     this.setNumber,
+    this.targetEndTime,
   });
 
   final int totalDurationSeconds;
@@ -409,6 +421,7 @@ class RestTimerState {
   final bool autoStart;
   final String? exerciseName;
   final int? setNumber;
+  final DateTime? targetEndTime;
 
   bool get isFinished => remainingSeconds == 0 && isRunning;
 
@@ -430,6 +443,8 @@ class RestTimerState {
     bool? autoStart,
     String? exerciseName,
     int? setNumber,
+    DateTime? targetEndTime,
+    bool clearTargetEndTime = false,
   }) {
     return RestTimerState(
       totalDurationSeconds: totalDurationSeconds ?? this.totalDurationSeconds,
@@ -438,6 +453,9 @@ class RestTimerState {
       autoStart: autoStart ?? this.autoStart,
       exerciseName: exerciseName ?? this.exerciseName,
       setNumber: setNumber ?? this.setNumber,
+      targetEndTime: clearTargetEndTime
+          ? null
+          : (targetEndTime ?? this.targetEndTime),
     );
   }
 }

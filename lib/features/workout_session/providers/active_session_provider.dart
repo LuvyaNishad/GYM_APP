@@ -30,7 +30,18 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         );
         if (restored.isActive) {
           if (!restored.isPaused) {
+            final now = DateTime.now();
+            int currentElapsed = restored.elapsedSeconds;
+            if (restored.lastResumedAt != null) {
+              currentElapsed +=
+                  now.difference(restored.lastResumedAt!).inSeconds;
+            }
+            final updated = restored.copyWith(
+              elapsedSeconds: currentElapsed,
+              lastResumedAt: now,
+            );
             _startElapsedTicker();
+            return updated;
           }
           return restored;
         }
@@ -70,11 +81,13 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
     final goalConfig = ref.read(trainingGoalConfigProvider);
     final exercises = initialExercises ?? _buildDefaultPushWorkout(goalConfig);
+    final now = DateTime.now();
 
     state = ActiveSessionState(
-      workoutId: 'wkt_${DateTime.now().microsecondsSinceEpoch}',
+      workoutId: 'wkt_${now.microsecondsSinceEpoch}',
       splitName: splitName,
-      startTime: DateTime.now(),
+      startTime: now,
+      lastResumedAt: now,
       elapsedSeconds: 0,
       isActive: true,
       isPaused: false,
@@ -94,15 +107,56 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   void _startElapsedTicker() {
     _elapsedTicker?.cancel();
     _elapsedTicker = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (state.isActive && !state.isPaused) {
-        state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
+      if (state.isActive && !state.isPaused && state.lastResumedAt != null) {
+        final now = DateTime.now();
+        final delta = now.difference(state.lastResumedAt!).inSeconds;
+        if (delta > 0) {
+          state = state.copyWith(
+            elapsedSeconds: state.elapsedSeconds + delta,
+            lastResumedAt: now,
+          );
+        }
       }
     });
   }
 
-  /// Pauses or resumes the elapsed session stopwatch.
+  /// Resyncs the elapsed workout stopwatch against wall-clock time when app resumes from background.
+  void resyncWithWallClock() {
+    if (state.isActive && !state.isPaused && state.lastResumedAt != null) {
+      final now = DateTime.now();
+      final delta = now.difference(state.lastResumedAt!).inSeconds;
+      if (delta > 0) {
+        state = state.copyWith(
+          elapsedSeconds: state.elapsedSeconds + delta,
+          lastResumedAt: now,
+        );
+        _persistActiveSession();
+      }
+    }
+  }
+
+  /// Pauses or resumes the elapsed session stopwatch with wall-clock precision.
   void togglePause() {
-    state = state.copyWith(isPaused: !state.isPaused);
+    final now = DateTime.now();
+    if (!state.isPaused) {
+      int newElapsed = state.elapsedSeconds;
+      if (state.lastResumedAt != null) {
+        newElapsed += now.difference(state.lastResumedAt!).inSeconds;
+      }
+      state = state.copyWith(
+        isPaused: true,
+        elapsedSeconds: newElapsed,
+        clearLastResumedAt: true,
+      );
+      _elapsedTicker?.cancel();
+    } else {
+      state = state.copyWith(
+        isPaused: false,
+        lastResumedAt: now,
+      );
+      _startElapsedTicker();
+    }
+    _persistActiveSession();
   }
 
   /// Accordion expansion toggle.

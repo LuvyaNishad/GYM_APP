@@ -19,6 +19,7 @@ class _FakeWorkoutNotificationService extends WorkoutNotificationService {
     required int setNumber,
     required int remainingSeconds,
     required int totalDurationSeconds,
+    DateTime? targetEndTime,
   }) async {
     lastExerciseName = exerciseName;
     lastSetNumber = setNumber;

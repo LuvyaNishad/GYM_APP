@@ -82,6 +82,7 @@ class WorkoutNotificationService {
     required int setNumber,
     required int remainingSeconds,
     required int totalDurationSeconds,
+    DateTime? targetEndTime,
   }) async {
     if (!_isInitialized || kIsWeb) return;
 
@@ -105,6 +106,9 @@ class WorkoutNotificationService {
       showProgress: true,
       maxProgress: totalDurationSeconds > 0 ? totalDurationSeconds : 90,
       progress: remainingSeconds,
+      when: targetEndTime?.millisecondsSinceEpoch,
+      usesChronometer: targetEndTime != null,
+      chronometerCountDown: targetEndTime != null,
       actions: const <AndroidNotificationAction>[
         AndroidNotificationAction(
           'add_30',
