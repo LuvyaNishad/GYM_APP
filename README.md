@@ -260,7 +260,7 @@ Refer to [TODO.md](./TODO.md) for the active production backlog:
 - [ ] **Rest Timer Audio Sound Pack:** Audio assets with headphone ducking
 - [ ] **Nutrition & Macro Tracking:** Barcode food scanner (OpenFoodFacts) & macro targets
 - [ ] **Smartwatch Companion App:** Wear OS & Apple Watch wrist set logging
-- [ ] **Social Workout Brag Cards:** 9:16 high-contrast Instagram Story recap generator
+- [ ] **Social Workout Brag Cards:** 9:16 high-contrast Instagram Story recap generator.
 
 ---
 
