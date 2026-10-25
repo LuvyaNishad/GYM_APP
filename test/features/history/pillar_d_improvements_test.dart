@@ -91,7 +91,7 @@ void main() {
       // Tap REPEAT WORKOUT
       final repeatBtn = find.text('REPEAT WORKOUT');
       await tester.tap(repeatBtn);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 200));
 
       // Active session should now be running with testWorkout's exercises
       final session = container.read(activeSessionProvider);

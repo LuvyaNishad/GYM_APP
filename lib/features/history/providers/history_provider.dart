@@ -90,8 +90,8 @@ class HistoryWorkoutsNotifier extends Notifier<List<WorkoutModel>> {
       return deduplicated;
     }
 
-    // Realistic sample history dataset if fresh install or guest mode
-    return _buildSampleWorkoutHistory();
+    // Clean initial state: zero fake workouts
+    return [];
   }
 
   /// Updates a historical workout in Hive and synchronizes state.
@@ -135,6 +135,21 @@ final historyWorkoutsProvider =
 final historySummaryProvider = Provider<HistorySummaryModel>((ref) {
   final workouts = ref.watch(historyWorkoutsProvider);
 
+  if (workouts.isEmpty) {
+    return const HistorySummaryModel(
+      currentStreakDays: 0,
+      longestStreakDays: 0,
+      completedWorkoutsCount: 0,
+      missedWorkoutsCount: 0,
+      complianceRate: 0.0,
+      totalTonnageKg: 0.0,
+      prCount: 0,
+      gamificationLevel: 1,
+      gamificationRankTitle: 'Iron Initiate',
+      nextLevelTonnageTarget: 6000.0,
+    );
+  }
+
   double totalTonnage = 0;
   int prCount = 0;
 
@@ -164,21 +179,44 @@ final historySummaryProvider = Provider<HistorySummaryModel>((ref) {
 
   final nextTarget = (level * 6000.0);
 
-  // Completed vs Missed calculation
+  // Compute active streak from workout dates
+  final sortedDates = workouts
+      .map((w) => DateTime(w.date.year, w.date.month, w.date.day))
+      .toSet()
+      .toList()
+    ..sort((a, b) => b.compareTo(a));
+
+  int currentStreak = 0;
+  final now = DateTime.now();
+  final todayMidnight = DateTime(now.year, now.month, now.day);
+  final yesterdayMidnight = todayMidnight.subtract(const Duration(days: 1));
+
+  if (sortedDates.isNotEmpty &&
+      (sortedDates.first == todayMidnight || sortedDates.first == yesterdayMidnight)) {
+    var checkDate = sortedDates.first;
+    for (final d in sortedDates) {
+      if (d == checkDate) {
+        currentStreak++;
+        checkDate = checkDate.subtract(const Duration(days: 1));
+      } else if (d.isBefore(checkDate)) {
+        break;
+      }
+    }
+  }
+
   final completed = workouts.length;
-  // Estimated 2 missed sessions in the cycle for realistic miss tracking
-  final missed = (completed > 4) ? 2 : 0;
+  const missed = 0;
   final totalPlanned = completed + missed;
   final compliance = totalPlanned > 0 ? (completed / totalPlanned) : 1.0;
 
   return HistorySummaryModel(
-    currentStreakDays: 14,
-    longestStreakDays: 28,
+    currentStreakDays: currentStreak,
+    longestStreakDays: currentStreak,
     completedWorkoutsCount: completed,
     missedWorkoutsCount: missed,
     complianceRate: compliance,
     totalTonnageKg: totalTonnage,
-    prCount: prCount > 0 ? prCount : 12,
+    prCount: prCount,
     gamificationLevel: level,
     gamificationRankTitle: rankTitle,
     nextLevelTonnageTarget: nextTarget,
@@ -188,33 +226,18 @@ final historySummaryProvider = Provider<HistorySummaryModel>((ref) {
 /// Available exercises for progressive overload selection.
 final availableOverloadExercisesProvider = Provider<List<ExerciseProgressModel>>((ref) {
   final workouts = ref.watch(historyWorkoutsProvider);
+  if (workouts.isEmpty) return const [];
 
-  // Group performance by exercise
   final Map<String, List<StrengthDataPoint>> pointsByEx = {};
-  final Map<String, String> namesByEx = {
-    'ex_bench_press': 'Barbell Bench Press',
-    'ex_incline_db': 'Incline Dumbbell Press',
-    'ex_squat': 'Barbell Back Squat',
-    'ex_barbell_row': 'Bent-Over Barbell Row',
-    'ex_rdl': 'Romanian Deadlift',
-  };
-  final Map<String, String> muscleByEx = {
-    'ex_bench_press': 'Chest',
-    'ex_incline_db': 'Chest',
-    'ex_squat': 'Quads',
-    'ex_barbell_row': 'Back',
-    'ex_rdl': 'Hamstrings',
-  };
+  final Map<String, String> namesByEx = {};
+  final Map<String, String> muscleByEx = {};
 
-  // Populate from existing sessions (chronological order)
   final chronological = workouts.reversed.toList();
   for (final w in chronological) {
     for (final ex in w.exercises) {
       final key = ex.exerciseId;
-      if (!namesByEx.containsKey(key)) {
-        namesByEx[key] = ex.exerciseName;
-        muscleByEx[key] = ex.muscleGroup;
-      }
+      namesByEx[key] = ex.exerciseName;
+      muscleByEx[key] = ex.muscleGroup;
 
       double maxWeight = 0;
       int maxReps = 0;
@@ -230,7 +253,6 @@ final availableOverloadExercisesProvider = Provider<List<ExerciseProgressModel>>
       }
 
       if (maxWeight > 0) {
-        // Epley e1RM formula via StrengthMath utility
         final e1rm = StrengthMath.calculateEpley1RM(maxWeight, maxReps);
         pointsByEx.putIfAbsent(key, () => []).add(
               StrengthDataPoint(
@@ -244,9 +266,6 @@ final availableOverloadExercisesProvider = Provider<List<ExerciseProgressModel>>
       }
     }
   }
-
-  // Ensure primary compound exercises exist with rich curve points
-  _ensureBenchmarkProgress(pointsByEx);
 
   final results = <ExerciseProgressModel>[];
   for (final entry in namesByEx.entries) {
@@ -284,37 +303,28 @@ final availableOverloadExercisesProvider = Provider<List<ExerciseProgressModel>>
 
 /// Recent PR breakthroughs for the trophy wall.
 final recentPrMilestonesProvider = Provider<List<PrMilestone>>((ref) {
-  final now = DateTime.now();
-  return [
-    PrMilestone(
-      exerciseName: 'Barbell Bench Press',
-      recordType: '1RM Record',
-      valueFormatted: '110.0 KG',
-      date: now.subtract(const Duration(days: 2)),
-      deltaFormatted: '+5.0 KG',
-    ),
-    PrMilestone(
-      exerciseName: 'Incline Dumbbell Press',
-      recordType: 'Rep Record',
-      valueFormatted: '36 KG × 8 Reps',
-      date: now.subtract(const Duration(days: 5)),
-      deltaFormatted: '+2 Reps',
-    ),
-    PrMilestone(
-      exerciseName: 'Barbell Back Squat',
-      recordType: 'Volume PR',
-      valueFormatted: '4,650 KG Total',
-      date: now.subtract(const Duration(days: 9)),
-      deltaFormatted: '+420 KG',
-    ),
-    PrMilestone(
-      exerciseName: 'Bent-Over Barbell Row',
-      recordType: '1RM Record',
-      valueFormatted: '92.5 KG',
-      date: now.subtract(const Duration(days: 14)),
-      deltaFormatted: '+2.5 KG',
-    ),
-  ];
+  final workouts = ref.watch(historyWorkoutsProvider);
+  final milestones = <PrMilestone>[];
+
+  for (final w in workouts) {
+    for (final ex in w.exercises) {
+      for (final s in ex.sets) {
+        if (s.isPr) {
+          milestones.add(
+            PrMilestone(
+              exerciseName: ex.exerciseName,
+              recordType: 'Set PR',
+              valueFormatted: '${s.weightKg} KG × ${s.reps} Reps',
+              date: w.date,
+              deltaFormatted: 'NEW PR',
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  return milestones;
 });
 
 /// Computes muscle balance volume and detects lagging muscles.
@@ -328,6 +338,8 @@ final muscleBalanceProvider = Provider<MuscleBalanceModel>((ref) {
   double hamstrings = 0;
   double arms = 0;
 
+  final Map<String, ({DateTime date, String sessionName})> lastHitByMuscle = {};
+
   for (final w in workouts) {
     for (final ex in w.exercises) {
       double vol = 0;
@@ -335,36 +347,39 @@ final muscleBalanceProvider = Provider<MuscleBalanceModel>((ref) {
         if (!s.isWarmup) vol += (s.weightKg * s.reps);
       }
       final group = ex.muscleGroup.toLowerCase();
+      String muscleCategory = 'Chest & Triceps';
+
       if (group.contains('chest')) {
         chest += vol;
+        muscleCategory = 'Chest & Triceps';
       } else if (group.contains('back') || group.contains('lat')) {
         back += vol;
+        muscleCategory = 'Back & Lats';
       } else if (group.contains('deltoid') || group.contains('shoulder')) {
         shoulders += vol;
+        muscleCategory = 'Deltoids';
       } else if (group.contains('quad') || group.contains('leg')) {
         quads += vol;
+        muscleCategory = 'Quads & Calves';
       } else if (group.contains('hamstring')) {
         hamstrings += vol;
+        muscleCategory = 'Hamstrings';
       } else if (group.contains('tricep') || group.contains('bicep') || group.contains('arm')) {
         arms += vol;
+        muscleCategory = 'Arms';
       } else {
         chest += vol * 0.5;
         arms += vol * 0.5;
       }
+
+      if (!lastHitByMuscle.containsKey(muscleCategory) ||
+          w.date.isAfter(lastHitByMuscle[muscleCategory]!.date)) {
+        lastHitByMuscle[muscleCategory] = (date: w.date, sessionName: w.name);
+      }
     }
   }
 
-  // Fallback balanced base if volume is low
-  if (chest == 0 && back == 0) {
-    chest = 8400;
-    back = 7900;
-    shoulders = 6200;
-    quads = 9100;
-    hamstrings = 4600; // Intentionally lower to illustrate lagging detection
-    arms = 5100;
-  }
-
-  // Detect lagging muscle (e.g. Hamstrings < 0.6 of Quads)
+  // Detect lagging muscles if volume exists
   final laggingAdvisories = <LaggingMuscleAdvisory>[];
   if (quads > 0 && (hamstrings / quads) < 0.6) {
     laggingAdvisories.add(
@@ -376,7 +391,7 @@ final muscleBalanceProvider = Provider<MuscleBalanceModel>((ref) {
           'Seated Leg Curls (Lengthened Bias)',
         ],
         rationale:
-            'Posterior chain volume is 49% behind anterior quads. High risk of knee shear imbalance.',
+            'Posterior chain volume is below anterior quads.',
       ),
     );
   }
@@ -396,33 +411,30 @@ final muscleBalanceProvider = Provider<MuscleBalanceModel>((ref) {
     );
   }
 
-  // Hours since each muscle was last hit
-  final recoveryStates = [
-    const MuscleRecoveryState(
-      muscleName: 'Back & Lats',
-      hoursSinceLastTrained: 74,
-      status: RecoveryStatus.ready,
-      lastSessionName: 'Pull Day ● Workout B',
-    ),
-    const MuscleRecoveryState(
-      muscleName: 'Quads & Calves',
-      hoursSinceLastTrained: 48,
-      status: RecoveryStatus.ready,
-      lastSessionName: 'Leg Day ● Workout A',
-    ),
-    const MuscleRecoveryState(
-      muscleName: 'Chest & Triceps',
-      hoursSinceLastTrained: 18,
-      status: RecoveryStatus.recovering,
-      lastSessionName: 'Push Day ● Workout A',
-    ),
-    const MuscleRecoveryState(
-      muscleName: 'Hamstrings',
-      hoursSinceLastTrained: 146,
-      status: RecoveryStatus.overdue,
-      lastSessionName: 'Leg Day ● Workout A',
-    ),
-  ];
+  // Recovery states computed from real workouts
+  final now = DateTime.now();
+  final recoveryStates = <MuscleRecoveryState>[];
+
+  lastHitByMuscle.forEach((muscle, info) {
+    final hours = now.difference(info.date).inHours;
+    final RecoveryStatus status;
+    if (hours < 24) {
+      status = RecoveryStatus.recovering;
+    } else if (hours <= 96) {
+      status = RecoveryStatus.ready;
+    } else {
+      status = RecoveryStatus.overdue;
+    }
+
+    recoveryStates.add(
+      MuscleRecoveryState(
+        muscleName: muscle,
+        hoursSinceLastTrained: hours,
+        status: status,
+        lastSessionName: info.sessionName,
+      ),
+    );
+  });
 
   return MuscleBalanceModel(
     chestVolume: chest,
@@ -435,336 +447,3 @@ final muscleBalanceProvider = Provider<MuscleBalanceModel>((ref) {
     recoveryStates: recoveryStates,
   );
 });
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-void _ensureBenchmarkProgress(Map<String, List<StrengthDataPoint>> map) {
-  final now = DateTime.now();
-  if (!map.containsKey('ex_bench_press') || map['ex_bench_press']!.length < 3) {
-    map['ex_bench_press'] = [
-      StrengthDataPoint(
-        date: now.subtract(const Duration(days: 28)),
-        weightKg: 95.0,
-        reps: 6,
-        estimated1RM: 114.0,
-        volumeKg: 2850,
-      ),
-      StrengthDataPoint(
-        date: now.subtract(const Duration(days: 21)),
-        weightKg: 97.5,
-        reps: 6,
-        estimated1RM: 117.0,
-        volumeKg: 2925,
-      ),
-      StrengthDataPoint(
-        date: now.subtract(const Duration(days: 14)),
-        weightKg: 100.0,
-        reps: 5,
-        estimated1RM: 116.7,
-        volumeKg: 3000,
-      ),
-      StrengthDataPoint(
-        date: now.subtract(const Duration(days: 7)),
-        weightKg: 102.5,
-        reps: 5,
-        estimated1RM: 119.6,
-        volumeKg: 3120,
-      ),
-      StrengthDataPoint(
-        date: now.subtract(const Duration(days: 2)),
-        weightKg: 105.0,
-        reps: 5,
-        estimated1RM: 122.5,
-        volumeKg: 3250,
-      ),
-    ];
-  }
-
-  if (!map.containsKey('ex_squat') || map['ex_squat']!.length < 3) {
-    map['ex_squat'] = [
-      StrengthDataPoint(
-        date: now.subtract(const Duration(days: 26)),
-        weightKg: 120.0,
-        reps: 5,
-        estimated1RM: 140.0,
-        volumeKg: 3600,
-      ),
-      StrengthDataPoint(
-        date: now.subtract(const Duration(days: 19)),
-        weightKg: 122.5,
-        reps: 5,
-        estimated1RM: 142.9,
-        volumeKg: 3675,
-      ),
-      StrengthDataPoint(
-        date: now.subtract(const Duration(days: 12)),
-        weightKg: 125.0,
-        reps: 5,
-        estimated1RM: 145.8,
-        volumeKg: 3750,
-      ),
-      StrengthDataPoint(
-        date: now.subtract(const Duration(days: 4)),
-        weightKg: 130.0,
-        reps: 4,
-        estimated1RM: 147.3,
-        volumeKg: 3900,
-      ),
-    ];
-  }
-}
-
-List<WorkoutModel> _buildSampleWorkoutHistory() {
-  final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
-  final workouts = <WorkoutModel>[];
-
-  // Training schedule template:
-  // Mon: Push Day // Workout A (Chest / Shoulders / Triceps)
-  // Tue: Pull Day // Workout A (Back / Biceps)
-  // Wed: Rest (Scheduled recovery day - no session)
-  // Thu: Leg Day // Workout A (Quads / Hamstrings)
-  // Fri: Push Day // Workout B (Incline / Deltoids focus)
-  // Sat: Pull Day // Workout B (or designated missed sessions)
-  // Sun: Rest (Scheduled recovery day - no session)
-
-  // Populate realistic workouts across the past 42 days (6 weeks)
-  for (int daysAgo = 1; daysAgo <= 42; daysAgo++) {
-    final dayDate = today.subtract(Duration(days: daysAgo));
-    final weekday = dayDate.weekday;
-
-    // Designated Rest Days (Wednesday=3, Sunday=7) have NO workouts
-    if (weekday == DateTime.wednesday || weekday == DateTime.sunday) {
-      continue;
-    }
-
-    // Realistic Missed Training Sessions (scheduled training days with 0 workouts logged)
-    // Saturday 6 days ago, Saturday 13 days ago, and Thursday 25 days ago
-    if (daysAgo == 6 || daysAgo == 13 || daysAgo == 25) {
-      continue;
-    }
-
-    final weekNum = daysAgo ~/ 7;
-
-    if (weekday == DateTime.monday) {
-      // PUSH DAY // WORKOUT A
-      final benchWeight = 105.0 - (weekNum * 2.5).clamp(0.0, 12.5);
-      workouts.add(
-        WorkoutModel(
-          id: 'demo_push_a_$daysAgo',
-          userId: 'guest_user',
-          name: 'PUSH DAY ● WORKOUT A',
-          date: DateTime(dayDate.year, dayDate.month, dayDate.day, 10, 30),
-          durationSeconds: 3120, // 52 mins
-          totalVolumeKg: (7850 - weekNum * 180).toDouble(),
-          averageRpe: 8.5,
-          notes: weekNum == 0
-              ? 'Crushed new bench PR. Felt strong on chest press.'
-              : 'Controlled tempo throughout.',
-          exercises: [
-            WorkoutExercise(
-              exerciseId: 'ex_bench_press',
-              exerciseName: 'Barbell Bench Press',
-              muscleGroup: 'Chest',
-              sets: [
-                const WorkoutSet(reps: 10, weightKg: 80.0, isWarmup: true),
-                WorkoutSet(reps: 8, weightKg: benchWeight - 10, rpe: 8.0),
-                WorkoutSet(reps: 6, weightKg: benchWeight - 5, rpe: 8.5),
-                WorkoutSet(
-                  reps: 5,
-                  weightKg: benchWeight,
-                  rpe: 9.0,
-                  isPr: weekNum == 0,
-                ),
-              ],
-            ),
-            WorkoutExercise(
-              exerciseId: 'ex_incline_db',
-              exerciseName: 'Incline Dumbbell Press',
-              muscleGroup: 'Chest',
-              sets: [
-                const WorkoutSet(reps: 10, weightKg: 32.0, rpe: 8.0),
-                WorkoutSet(
-                  reps: 8,
-                  weightKg: 36.0,
-                  rpe: 8.5,
-                  isPr: weekNum == 0,
-                ),
-                const WorkoutSet(reps: 8, weightKg: 36.0, rpe: 9.0),
-              ],
-            ),
-            const WorkoutExercise(
-              exerciseId: 'ex_lateral_raise',
-              exerciseName: 'Cable Lateral Raise',
-              muscleGroup: 'Deltoids',
-              sets: [
-                WorkoutSet(reps: 15, weightKg: 12.5, rpe: 8.0),
-                WorkoutSet(reps: 12, weightKg: 15.0, rpe: 8.5),
-                WorkoutSet(reps: 12, weightKg: 15.0, rpe: 9.0),
-              ],
-            ),
-          ],
-        ),
-      );
-    } else if (weekday == DateTime.tuesday) {
-      // PULL DAY // WORKOUT A
-      final rowWeight = 92.5 - (weekNum * 2.5).clamp(0.0, 10.0);
-      workouts.add(
-        WorkoutModel(
-          id: 'demo_pull_a_$daysAgo',
-          userId: 'guest_user',
-          name: 'PULL DAY ● WORKOUT A',
-          date: DateTime(dayDate.year, dayDate.month, dayDate.day, 18, 15),
-          durationSeconds: 2940, // 49 mins
-          totalVolumeKg: (8240 - weekNum * 150).toDouble(),
-          averageRpe: 8.0,
-          notes: 'Smooth lat engagement. Kept eccentric controlled.',
-          exercises: [
-            WorkoutExercise(
-              exerciseId: 'ex_barbell_row',
-              exerciseName: 'Bent-Over Barbell Row',
-              muscleGroup: 'Back',
-              sets: [
-                const WorkoutSet(reps: 10, weightKg: 70.0, isWarmup: true),
-                WorkoutSet(reps: 8, weightKg: rowWeight - 7.5, rpe: 8.0),
-                WorkoutSet(reps: 8, weightKg: rowWeight - 2.5, rpe: 8.5),
-                WorkoutSet(
-                  reps: 6,
-                  weightKg: rowWeight,
-                  rpe: 9.0,
-                  isPr: weekNum == 0,
-                ),
-              ],
-            ),
-            const WorkoutExercise(
-              exerciseId: 'ex_lat_pulldown',
-              exerciseName: 'Neutral Grip Lat Pulldown',
-              muscleGroup: 'Back',
-              sets: [
-                WorkoutSet(reps: 10, weightKg: 75.0, rpe: 8.0),
-                WorkoutSet(reps: 10, weightKg: 80.0, rpe: 8.5),
-                WorkoutSet(reps: 8, weightKg: 85.0, rpe: 8.5),
-              ],
-            ),
-          ],
-        ),
-      );
-    } else if (weekday == DateTime.thursday) {
-      // LEG DAY // WORKOUT A
-      final squatWeight = 130.0 - (weekNum * 5.0).clamp(0.0, 20.0);
-      workouts.add(
-        WorkoutModel(
-          id: 'demo_leg_a_$daysAgo',
-          userId: 'guest_user',
-          name: 'LEG DAY ● WORKOUT A',
-          date: DateTime(dayDate.year, dayDate.month, dayDate.day, 11, 0),
-          durationSeconds: 3480, // 58 mins
-          totalVolumeKg: (9450 - weekNum * 200).toDouble(),
-          averageRpe: 9.0,
-          notes: 'Heavy squats. Quads thoroughly exhausted.',
-          exercises: [
-            WorkoutExercise(
-              exerciseId: 'ex_squat',
-              exerciseName: 'Barbell Back Squat',
-              muscleGroup: 'Quads',
-              sets: [
-                const WorkoutSet(reps: 8, weightKg: 100.0, isWarmup: true),
-                WorkoutSet(reps: 6, weightKg: squatWeight - 10, rpe: 8.0),
-                WorkoutSet(reps: 5, weightKg: squatWeight - 5, rpe: 8.5),
-                WorkoutSet(
-                  reps: 4,
-                  weightKg: squatWeight,
-                  rpe: 9.0,
-                  isPr: weekNum == 0,
-                ),
-              ],
-            ),
-            const WorkoutExercise(
-              exerciseId: 'ex_rdl',
-              exerciseName: 'Romanian Deadlift (RDL)',
-              muscleGroup: 'Hamstrings',
-              sets: [
-                WorkoutSet(reps: 10, weightKg: 90.0, rpe: 8.0),
-                WorkoutSet(reps: 8, weightKg: 105.0, rpe: 8.5),
-                WorkoutSet(reps: 8, weightKg: 105.0, rpe: 8.5),
-              ],
-            ),
-          ],
-        ),
-      );
-    } else if (weekday == DateTime.friday) {
-      // PUSH DAY ● WORKOUT B
-      workouts.add(
-        WorkoutModel(
-          id: 'demo_push_b_$daysAgo',
-          userId: 'guest_user',
-          name: 'PUSH DAY ● WORKOUT B',
-          date: DateTime(dayDate.year, dayDate.month, dayDate.day, 17, 30),
-          durationSeconds: 2880, // 48 mins
-          totalVolumeKg: (7120 - weekNum * 120).toDouble(),
-          averageRpe: 8.0,
-          notes: 'Deltoid stimulus and incline pressing focus.',
-          exercises: [
-            const WorkoutExercise(
-              exerciseId: 'ex_bench_press',
-              exerciseName: 'Barbell Bench Press',
-              muscleGroup: 'Chest',
-              sets: [
-                WorkoutSet(reps: 8, weightKg: 90.0, isWarmup: true),
-                WorkoutSet(reps: 8, weightKg: 97.5, rpe: 8.0),
-                WorkoutSet(reps: 6, weightKg: 102.5, rpe: 8.5),
-              ],
-            ),
-            const WorkoutExercise(
-              exerciseId: 'ex_lateral_raise',
-              exerciseName: 'Cable Lateral Raise',
-              muscleGroup: 'Deltoids',
-              sets: [
-                WorkoutSet(reps: 15, weightKg: 12.5, rpe: 8.0),
-                WorkoutSet(reps: 12, weightKg: 15.0, rpe: 8.5),
-              ],
-            ),
-          ],
-        ),
-      );
-    } else if (weekday == DateTime.saturday) {
-      // PULL DAY ● WORKOUT B
-      workouts.add(
-        WorkoutModel(
-          id: 'demo_pull_b_$daysAgo',
-          userId: 'guest_user',
-          name: 'PULL DAY ● WORKOUT B',
-          date: DateTime(dayDate.year, dayDate.month, dayDate.day, 12, 15),
-          durationSeconds: 3000, // 50 mins
-          totalVolumeKg: (7500 - weekNum * 140).toDouble(),
-          averageRpe: 8.0,
-          notes: 'Upper back and arms focus.',
-          exercises: [
-            const WorkoutExercise(
-              exerciseId: 'ex_barbell_row',
-              exerciseName: 'Bent-Over Barbell Row',
-              muscleGroup: 'Back',
-              sets: [
-                WorkoutSet(reps: 8, weightKg: 80.0, rpe: 8.0),
-                WorkoutSet(reps: 8, weightKg: 85.0, rpe: 8.5),
-              ],
-            ),
-            const WorkoutExercise(
-              exerciseId: 'ex_lat_pulldown',
-              exerciseName: 'Neutral Grip Lat Pulldown',
-              muscleGroup: 'Back',
-              sets: [
-                WorkoutSet(reps: 10, weightKg: 75.0, rpe: 8.0),
-                WorkoutSet(reps: 8, weightKg: 80.0, rpe: 8.5),
-              ],
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
-  // Sort newest first
-  workouts.sort((a, b) => b.date.compareTo(a.date));
-  return workouts;
-}

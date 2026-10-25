@@ -52,10 +52,8 @@ class AccountProfileNotifier extends Notifier<AccountProfile> {
         weightUnit: globalUser.weightUnit,
         preferredSplit: globalUser.preferredSplit ?? 'Push / Pull / Legs',
         cycleTrackingEnabled: globalUser.cyclesEnabled,
-        totalWorkouts:
-            globalUser.totalWorkouts > 0 ? globalUser.totalWorkouts : 24,
-        totalVolumeKg:
-            globalUser.totalVolumeKg > 0 ? globalUser.totalVolumeKg : 48600,
+        totalWorkouts: globalUser.totalWorkouts,
+        totalVolumeKg: globalUser.totalVolumeKg,
       );
     }
 

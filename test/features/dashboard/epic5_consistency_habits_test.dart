@@ -30,13 +30,11 @@ void main() {
       addTearDown(container.dispose);
 
       final initial = container.read(bodyMeasurementsProvider);
-      expect(initial.length, 3);
+      expect(initial.length, 0);
 
       final summary = container.read(recompositionSummaryProvider);
-      expect(summary.latestWeight, 79.2);
-      expect(summary.weightDelta30d, closeTo(-1.3, 0.05));
-      expect(summary.latestWaist, 82.2);
-      expect(summary.waistDelta30d, closeTo(-1.8, 0.05));
+      expect(summary.latestWeight, 0.0);
+      expect(summary.weightDelta30d, 0.0);
 
       // Add new measurement
       final newEntry = BodyMeasurementEntry(
@@ -53,7 +51,7 @@ void main() {
       await container.read(bodyMeasurementsProvider.notifier).addMeasurement(newEntry);
 
       final afterAdd = container.read(bodyMeasurementsProvider);
-      expect(afterAdd.length, 4);
+      expect(afterAdd.length, 1);
       expect(afterAdd.first.id, 'm_new_test');
 
       final updatedSummary = container.read(recompositionSummaryProvider);
@@ -62,7 +60,7 @@ void main() {
       // Delete measurement
       await container.read(bodyMeasurementsProvider.notifier).deleteMeasurement('m_new_test');
       final afterDelete = container.read(bodyMeasurementsProvider);
-      expect(afterDelete.length, 3);
+      expect(afterDelete.length, 0);
     });
   });
 

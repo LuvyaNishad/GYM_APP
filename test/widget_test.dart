@@ -25,6 +25,8 @@ void main() {
         ),
       ),
     );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
 
     // Initial page is Splash (Screen 01)
     expect(find.text('A E O N'), findsOneWidget);

@@ -23,8 +23,8 @@ class AccountProfile {
     this.cycleTrackingEnabled = false,
     this.audioCuesEnabled = true,
     this.hapticFeedbackEnabled = true,
-    this.totalWorkouts = 24,
-    this.totalVolumeKg = 48600,
+    this.totalWorkouts = 0,
+    this.totalVolumeKg = 0,
   });
 
   final String id;

@@ -2,9 +2,59 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:leon/features/dashboard/providers/dashboard_provider.dart';
 import 'package:leon/features/history/providers/history_provider.dart';
+import 'package:leon/models/workout_model.dart';
+
+class _TestHistoryWorkoutsNotifier extends HistoryWorkoutsNotifier {
+  _TestHistoryWorkoutsNotifier(this.initial);
+  final List<WorkoutModel> initial;
+
+  @override
+  List<WorkoutModel> build() => initial;
+}
 
 void main() {
+  final sampleWorkouts = [
+    WorkoutModel(
+      id: 'w1',
+      userId: 'u1',
+      name: 'Push Day A',
+      date: DateTime(2026, 10, 20),
+      durationSeconds: 3000,
+      totalVolumeKg: 6000,
+      exercises: const [],
+    ),
+    WorkoutModel(
+      id: 'w2',
+      userId: 'u1',
+      name: 'Pull Day A',
+      date: DateTime(2026, 10, 22),
+      durationSeconds: 3200,
+      totalVolumeKg: 7000,
+      exercises: const [],
+    ),
+    WorkoutModel(
+      id: 'w3',
+      userId: 'u1',
+      name: 'Leg Day A',
+      date: DateTime(2026, 10, 24),
+      durationSeconds: 3600,
+      totalVolumeKg: 8000,
+      exercises: const [],
+    ),
+  ];
+
   group('History & Calendar Sync Tests', () {
+    test('historyWorkoutsProvider starts completely clean with 0 workouts on fresh launch', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final workouts = container.read(historyWorkoutsProvider);
+      expect(workouts, isEmpty);
+
+      final loggedDates = container.read(loggedWorkoutDatesProvider);
+      expect(loggedDates, isEmpty);
+    });
+
     test('SelectedCalendarDate.select is idempotent and does not flip-flop', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
@@ -12,34 +62,31 @@ void main() {
       final notifier = container.read(selectedCalendarDateProvider.notifier);
       final testDate = DateTime(2026, 10, 8);
 
-      // Initial state is null
       expect(container.read(selectedCalendarDateProvider), isNull);
 
-      // First click: selects testDate
       notifier.select(testDate);
       expect(container.read(selectedCalendarDateProvider), testDate);
 
-      // Second click on the same date: retains testDate (does NOT toggle to null)
       notifier.select(testDate);
       expect(container.read(selectedCalendarDateProvider), testDate);
 
-      // Third click on the same date: still retains testDate
-      notifier.select(testDate);
-      expect(container.read(selectedCalendarDateProvider), testDate);
-
-      // Clear explicitly clears back to null
       notifier.clear();
       expect(container.read(selectedCalendarDateProvider), isNull);
     });
 
     test('historyWorkoutsProvider strictly enforces 1 workout per calendar day', () {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          historyWorkoutsProvider.overrideWith(
+            () => _TestHistoryWorkoutsNotifier(sampleWorkouts),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final workouts = container.read(historyWorkoutsProvider);
       expect(workouts, isNotEmpty);
 
-      // Verify no two workouts share the exact same calendar day
       final seenDays = <String>{};
       for (final w in workouts) {
         final key = '${w.date.year}-${w.date.month}-${w.date.day}';
@@ -53,13 +100,18 @@ void main() {
     });
 
     test('loggedWorkoutDatesProvider matches historyWorkoutsProvider dates 1:1', () {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          historyWorkoutsProvider.overrideWith(
+            () => _TestHistoryWorkoutsNotifier(sampleWorkouts),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final workouts = container.read(historyWorkoutsProvider);
       final loggedDates = container.read(loggedWorkoutDatesProvider);
 
-      // Every logged date MUST have an actual workout
       for (final loggedDate in loggedDates) {
         final matching = workouts.where(
           (w) =>
@@ -67,14 +119,9 @@ void main() {
               w.date.month == loggedDate.month &&
               w.date.day == loggedDate.day,
         );
-        expect(
-          matching.length,
-          equals(1),
-          reason: 'Logged green date $loggedDate must have exactly 1 workout',
-        );
+        expect(matching.length, equals(1));
       }
 
-      // Every workout in history MUST be present in loggedWorkoutDatesProvider
       for (final w in workouts) {
         final hasDate = loggedDates.any(
           (d) =>
@@ -82,67 +129,53 @@ void main() {
               d.month == w.date.month &&
               d.day == w.date.day,
         );
-        expect(
-          hasDate,
-          isTrue,
-          reason: 'Workout date ${w.date} must be present in loggedWorkoutDates',
-        );
+        expect(hasDate, isTrue);
       }
     });
 
-    test('Filtering by a red (missed/rest) day yields 0 workouts', () {
-      final container = ProviderContainer();
+    test('Filtering by a non-workout day yields 0 workouts', () {
+      final container = ProviderContainer(
+        overrides: [
+          historyWorkoutsProvider.overrideWith(
+            () => _TestHistoryWorkoutsNotifier(sampleWorkouts),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final workouts = container.read(historyWorkoutsProvider);
-      final loggedDates = container.read(loggedWorkoutDatesProvider);
+      final nonWorkoutDate = DateTime(2026, 10, 21); // In between w1 (20th) and w2 (22nd)
 
-      // Find a past date that is NOT in loggedDates (a rest or missed day)
-      final now = DateTime.now();
-      DateTime? nonWorkoutDate;
-      for (int i = 1; i <= 30; i++) {
-        final candidate = now.subtract(Duration(days: i));
-        final isLogged = loggedDates.any(
-          (d) =>
-              d.year == candidate.year &&
-              d.month == candidate.month &&
-              d.day == candidate.day,
-        );
-        if (!isLogged) {
-          nonWorkoutDate = DateTime(candidate.year, candidate.month, candidate.day);
-          break;
-        }
-      }
-
-      expect(nonWorkoutDate, isNotNull);
-
-      // When filtered by this non-workout date, zero workouts should be found
       final filtered = workouts.where(
         (w) =>
-            w.date.year == nonWorkoutDate!.year &&
+            w.date.year == nonWorkoutDate.year &&
             w.date.month == nonWorkoutDate.month &&
             w.date.day == nonWorkoutDate.day,
       );
       expect(filtered.isEmpty, isTrue);
     });
 
-    test('Filtering by a green (worked out) day yields exactly 1 workout', () {
-      final container = ProviderContainer();
+    test('Filtering by a worked out day yields exactly 1 workout', () {
+      final container = ProviderContainer(
+        overrides: [
+          historyWorkoutsProvider.overrideWith(
+            () => _TestHistoryWorkoutsNotifier(sampleWorkouts),
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final workouts = container.read(historyWorkoutsProvider);
-      final loggedDates = container.read(loggedWorkoutDatesProvider);
-
-      expect(loggedDates, isNotEmpty);
-      final firstGreenDate = loggedDates.first;
+      final targetDate = DateTime(2026, 10, 20);
 
       final filtered = workouts.where(
         (w) =>
-            w.date.year == firstGreenDate.year &&
-            w.date.month == firstGreenDate.month &&
-            w.date.day == firstGreenDate.day,
+            w.date.year == targetDate.year &&
+            w.date.month == targetDate.month &&
+            w.date.day == targetDate.day,
       );
       expect(filtered.length, equals(1));
+      expect(filtered.first.name, 'Push Day A');
     });
   });
 }

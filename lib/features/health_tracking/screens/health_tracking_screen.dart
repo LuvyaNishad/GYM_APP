@@ -307,11 +307,15 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                   Expanded(
                     child: _buildMetricTile(
                       label: 'WEIGHT',
-                      value: '${summary.latestWeight}',
-                      unit: 'KG',
-                      delta: summary.weightDelta30d != 0
-                          ? '${summary.weightDelta30d > 0 ? '+' : ''}${summary.weightDelta30d} kg'
-                          : 'STABLE',
+                      value: summary.latestWeight > 0
+                          ? '${summary.latestWeight}'
+                          : '--',
+                      unit: summary.latestWeight > 0 ? 'KG' : '',
+                      delta: summary.latestWeight > 0
+                          ? (summary.weightDelta30d != 0
+                              ? '${summary.weightDelta30d > 0 ? '+' : ''}${summary.weightDelta30d} kg'
+                              : 'STABLE')
+                          : 'NO DATA',
                       isPositiveBetter: false,
                     ),
                   ),
@@ -325,7 +329,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                       unit: '',
                       delta: summary.bodyFatDelta30d != null
                           ? '${summary.bodyFatDelta30d! > 0 ? '+' : ''}${summary.bodyFatDelta30d}%'
-                          : 'NO PRIOR',
+                          : 'NO DATA',
                       isPositiveBetter: false,
                     ),
                   ),
@@ -411,7 +415,50 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
         ),
         const SizedBox(height: 10),
 
-        for (final m in measurements) ...[
+        if (measurements.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+            decoration: BoxDecoration(
+              color: AppColors.charcoal,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppColors.steel.withValues(alpha: 0.4),
+              ),
+            ),
+            child: Column(
+              children: const [
+                Icon(
+                  Icons.straighten_rounded,
+                  size: 28,
+                  color: AppColors.textSecondary,
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'NO MEASUREMENTS LOGGED',
+                  style: TextStyle(
+                    fontFamily: 'JetBrains Mono',
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.pureWhite,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                SizedBox(height: 6),
+                Text(
+                  'Tap "Log Measurement" above to track weight, body fat, and body circumferences over time.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: AppTypography.fontBody,
+                    fontSize: 11.5,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          for (final m in measurements) ...[
           Container(
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(14),

@@ -7,7 +7,36 @@ import 'package:leon/features/history/providers/history_provider.dart';
 import 'package:leon/features/history/widgets/muscle_radar_tab_view.dart';
 import 'package:leon/features/history/widgets/overload_tab_view.dart';
 import 'package:leon/features/history/widgets/workout_history_card.dart';
+import 'package:leon/features/history/models/exercise_progress_model.dart';
 import 'package:leon/models/workout_model.dart';
+
+class _TestHistoryWorkoutsNotifier extends HistoryWorkoutsNotifier {
+  _TestHistoryWorkoutsNotifier(this.initial);
+  final List<WorkoutModel> initial;
+
+  @override
+  List<WorkoutModel> build() => initial;
+}
+
+final _testWorkoutFixture = WorkoutModel(
+  id: 'fixture_w1',
+  userId: 'u1',
+  name: 'PUSH DAY FOCUS',
+  date: DateTime(2026, 10, 20),
+  durationSeconds: 3600,
+  totalVolumeKg: 8500,
+  exercises: const [
+    WorkoutExercise(
+      exerciseId: 'ex_bench_press',
+      exerciseName: 'Barbell Bench Press',
+      muscleGroup: 'Chest',
+      sets: [
+        WorkoutSet(reps: 8, weightKg: 80.0),
+        WorkoutSet(reps: 6, weightKg: 90.0, isPr: true),
+      ],
+    ),
+  ],
+);
 
 void main() {
   group('Epic 4: StrengthMath Scientific Formula Tests', () {
@@ -51,7 +80,11 @@ void main() {
 
   group('Epic 4: HistoryWorkoutsNotifier Tests', () {
     test('updateWorkout modifies workout in state and preserves order', () async {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          historyWorkoutsProvider.overrideWith(() => _TestHistoryWorkoutsNotifier([_testWorkoutFixture])),
+        ],
+      );
       addTearDown(container.dispose);
 
       final workouts = container.read(historyWorkoutsProvider);
@@ -68,7 +101,11 @@ void main() {
     });
 
     test('deleteWorkout removes workout from state', () async {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          historyWorkoutsProvider.overrideWith(() => _TestHistoryWorkoutsNotifier([_testWorkoutFixture])),
+        ],
+      );
       addTearDown(container.dispose);
 
       final workouts = container.read(historyWorkoutsProvider);
@@ -84,15 +121,60 @@ void main() {
   });
 
   group('Epic 4: Widget Interactive Tests', () {
+    testWidgets('OverloadTabView shows empty state when no workouts recorded', (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: OverloadTabView(),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('NO OVERLOAD DATA YET'), findsOneWidget);
+    });
+
     testWidgets('OverloadTabView displays time range filter chips and opens Epley formula dialog',
         (tester) async {
       tester.view.physicalSize = const Size(800, 1400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
+      final testExerciseProgress = [
+        ExerciseProgressModel(
+          exerciseId: 'ex_bench_press',
+          exerciseName: 'Barbell Bench Press',
+          muscleGroup: 'Chest',
+          allTimeBest1RM: 110.0,
+          recentDeltaPercent: 5.0,
+          dataPoints: [
+            StrengthDataPoint(
+              date: DateTime.now().subtract(const Duration(days: 14)),
+              weightKg: 90.0,
+              reps: 6,
+              estimated1RM: 108.0,
+              volumeKg: 2700.0,
+            ),
+            StrengthDataPoint(
+              date: DateTime.now().subtract(const Duration(days: 2)),
+              weightKg: 95.0,
+              reps: 5,
+              estimated1RM: 110.8,
+              volumeKg: 2850.0,
+            ),
+          ],
+        ),
+      ];
+
       await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(
+        ProviderScope(
+          overrides: [
+            availableOverloadExercisesProvider.overrideWithValue(testExerciseProgress),
+          ],
+          child: const MaterialApp(
             home: Scaffold(
               body: SingleChildScrollView(
                 child: OverloadTabView(),

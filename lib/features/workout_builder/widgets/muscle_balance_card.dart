@@ -21,14 +21,17 @@ class MuscleBalanceCard extends StatelessWidget {
     // Identify thriving vs lacking muscles
     final List<String> thriving = [];
     final List<String> lacking = [];
+    final totalLogged = loggedVolume.values.fold<int>(0, (a, b) => a + b);
 
-    for (final muscle in MuscleRadarChart.kAxes) {
-      final logged = loggedVolume[muscle] ?? 0;
-      final planned = plannedVolume[muscle] ?? 12;
-      if (logged < 8 || logged < (planned * 0.5)) {
-        lacking.add(muscle);
-      } else {
-        thriving.add(muscle);
+    if (totalLogged > 0) {
+      for (final muscle in MuscleRadarChart.kAxes) {
+        final logged = loggedVolume[muscle] ?? 0;
+        final planned = plannedVolume[muscle] ?? 12;
+        if (logged < 8 || logged < (planned * 0.5)) {
+          lacking.add(muscle);
+        } else {
+          thriving.add(muscle);
+        }
       }
     }
 
@@ -190,7 +193,16 @@ class MuscleBalanceCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 6),
-                    Wrap(
+                    if (thriving.isEmpty)
+                      Text(
+                        totalLogged == 0 ? 'No workouts logged' : 'None yet',
+                        style: AppTypography.bodySmall.copyWith(
+                          fontSize: 11.5,
+                          color: AppColors.platinum,
+                        ),
+                      )
+                    else
+                      Wrap(
                       spacing: 6,
                       runSpacing: 4,
                       children: [
@@ -250,7 +262,7 @@ class MuscleBalanceCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     if (lacking.isEmpty)
                       Text(
-                        'All muscles in balance',
+                        totalLogged == 0 ? 'No deficit detected' : 'All muscles in balance',
                         style: AppTypography.bodySmall.copyWith(
                           fontSize: 11.5,
                           color: AppColors.platinum,

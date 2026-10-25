@@ -304,7 +304,24 @@ class MuscleRadarTabView extends ConsumerWidget {
 
               const SizedBox(height: 14),
 
-              for (final state in balance.recoveryStates)
+              if (balance.recoveryStates.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                  child: Center(
+                    child: Text(
+                      'No recovery tracking yet. Log workouts to compute individual muscle recovery times and readiness.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppTypography.fontBody,
+                        fontSize: 12.0,
+                        color: AppColors.textSecondary,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                for (final state in balance.recoveryStates)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Container(

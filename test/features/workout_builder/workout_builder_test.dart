@@ -45,7 +45,7 @@ void main() {
 
       final initial = container.read(splitsProvider);
       expect(initial.activeSplitId, 'split_ppl');
-      expect(initial.loggedVolume['Hamstrings'], 5);
+      expect(initial.loggedVolume['Hamstrings'], isNull);
 
       // Switch to Upper/Lower
       container.read(splitsProvider.notifier).switchActiveSplit('split_upper_lower');
@@ -53,7 +53,7 @@ void main() {
 
       // Auto-tune Hamstrings deficit
       container.read(splitsProvider.notifier).autoFixLaggingMuscle('Hamstrings');
-      expect(container.read(splitsProvider).loggedVolume['Hamstrings'], 11);
+      expect(container.read(splitsProvider).loggedVolume['Hamstrings'], 6);
     });
   });
 

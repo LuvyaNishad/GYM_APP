@@ -24,7 +24,8 @@ class BodyMeasurementsNotifier extends Notifier<List<BodyMeasurementEntry>> {
       return stored;
     }
 
-    return _buildSampleMeasurements();
+    // Clean initial state: zero fake measurements
+    return [];
   }
 
   Future<void> addMeasurement(BodyMeasurementEntry entry) async {
@@ -45,45 +46,6 @@ class BodyMeasurementsNotifier extends Notifier<List<BodyMeasurementEntry>> {
     } catch (_) {}
 
     state = state.where((e) => e.id != id).toList();
-  }
-
-  static List<BodyMeasurementEntry> _buildSampleMeasurements() {
-    final now = DateTime.now();
-    return [
-      BodyMeasurementEntry(
-        id: 'm_today',
-        date: now.subtract(const Duration(days: 2)),
-        weightKg: 79.2,
-        bodyFatPercent: 16.2,
-        waistCm: 82.2,
-        chestCm: 103.0,
-        armsCm: 37.8,
-        thighsCm: 58.5,
-        notes: 'Morning measurement fasted. Arms peaked.',
-      ),
-      BodyMeasurementEntry(
-        id: 'm_2weeks',
-        date: now.subtract(const Duration(days: 16)),
-        weightKg: 79.8,
-        bodyFatPercent: 16.8,
-        waistCm: 83.0,
-        chestCm: 102.5,
-        armsCm: 37.4,
-        thighsCm: 58.2,
-        notes: 'Mid-block check-in.',
-      ),
-      BodyMeasurementEntry(
-        id: 'm_month',
-        date: now.subtract(const Duration(days: 30)),
-        weightKg: 80.5,
-        bodyFatPercent: 17.5,
-        waistCm: 84.0,
-        chestCm: 102.0,
-        armsCm: 37.0,
-        thighsCm: 58.0,
-        notes: 'Baseline measurement.',
-      ),
-    ];
   }
 }
 
@@ -121,7 +83,7 @@ final recompositionSummaryProvider = Provider<RecompositionSummary>((ref) {
   final entries = ref.watch(bodyMeasurementsProvider);
   if (entries.isEmpty) {
     return const RecompositionSummary(
-      latestWeight: 75.0,
+      latestWeight: 0.0,
       weightDelta30d: 0.0,
     );
   }

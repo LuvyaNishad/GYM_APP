@@ -80,15 +80,7 @@ class SplitsNotifier extends Notifier<SplitsState> {
       splits: allSplits,
       activeSplitId: effectiveActiveId,
       expandedSplitId: null,
-      // Baseline 14-day logged volume showing real-world progress + small deficit in Hamstrings
-      loggedVolume: const {
-        'Chest': 16,
-        'Back': 14,
-        'Shoulders': 12,
-        'Quads': 11,
-        'Hamstrings': 5,
-        'Arms': 15,
-      },
+      loggedVolume: const {},
     );
   }
 

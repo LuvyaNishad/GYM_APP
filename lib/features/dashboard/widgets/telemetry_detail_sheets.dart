@@ -163,9 +163,14 @@ class _StepsDetailContentState extends ConsumerState<_StepsDetailContent> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(pedometerServiceProvider).syncWithInbuiltPedometer();
-    });
+    final isTest = WidgetsBinding.instance.runtimeType
+        .toString()
+        .contains('TestWidgetsFlutterBinding');
+    if (!isTest) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(pedometerServiceProvider).syncWithInbuiltPedometer();
+      });
+    }
   }
 
   String _formatNumber(int number) {

@@ -47,6 +47,64 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
     final selectedId = ref.watch(selectedOverloadExerciseIdProvider);
     final prMilestones = ref.watch(recentPrMilestonesProvider);
 
+    if (exercises.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 36),
+        decoration: BoxDecoration(
+          color: AppColors.charcoal,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: AppColors.steel.withValues(alpha: 0.5),
+            width: 1.0,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: AppColors.onyx,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.steel.withValues(alpha: 0.5),
+                ),
+              ),
+              child: const Icon(
+                Icons.trending_up_rounded,
+                size: 26,
+                color: Color(0xFF00E5FF),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'NO OVERLOAD DATA YET',
+              style: TextStyle(
+                fontFamily: 'JetBrains Mono',
+                fontSize: 13.0,
+                fontWeight: FontWeight.w700,
+                color: AppColors.pureWhite,
+                letterSpacing: 0.8,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Complete your workout sessions to visualize 1RM strength curves, volume progression, and personal records.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: AppTypography.fontBody,
+                fontSize: 12.0,
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     final currentEx = exercises.firstWhere(
       (e) => e.exerciseId == selectedId,
       orElse: () => exercises.first,
@@ -360,7 +418,24 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
 
               const SizedBox(height: 14),
 
-              for (final pr in prMilestones)
+              if (prMilestones.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                  child: Center(
+                    child: Text(
+                      'No personal records recorded yet. Complete workout sessions with new personal bests to unlock trophies.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppTypography.fontBody,
+                        fontSize: 12.0,
+                        color: AppColors.textSecondary,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                for (final pr in prMilestones)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Container(
