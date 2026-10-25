@@ -1,11 +1,11 @@
 /// Calories Bento Card for the LEON Dashboard.
 ///
-/// Minimal square card:
-/// - "Calories" header with subtle circular chevron
-/// - "Today" caption
-/// - Bold hero caloric burn readout (e.g. 2,390 kcal)
-/// - Clean circle graph with percentage in between
-/// - Tap interaction opens the deep calories detail pop-up modal sheet
+/// Features:
+/// - Clear metric identification: "Active Burn" from workouts
+/// - Correct unit: kcal
+/// - Progress ring only rendered when meaningful (calories > 0)
+/// - Clean intentional empty state when 0 calories recorded (no broken 0% rings)
+/// - Consistent 22dp radius and subtle #373942 border
 library;
 
 import 'package:flutter/material.dart';
@@ -17,7 +17,7 @@ import '../models/daily_telemetry_model.dart';
 import 'bento_donut_progress.dart';
 import 'telemetry_detail_sheets.dart';
 
-/// Minimal square Bento card displaying daily calories burned with a circular progress ring.
+/// Minimal square Bento card displaying daily active calories burned.
 class CaloriesBentoCard extends StatelessWidget {
   const CaloriesBentoCard({
     super.key,
@@ -31,7 +31,7 @@ class CaloriesBentoCard extends StatelessWidget {
   /// Optional card tap handler override.
   final VoidCallback? onTap;
 
-  static const Color _cardBg = AppColors.charcoal;
+  static const Color _cardBg = AppColors.cardBackground;
 
   String _formatNumber(int number) {
     return number.toString().replaceAllMapped(
@@ -42,6 +42,7 @@ class CaloriesBentoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasCalories = telemetry.calories > 0;
     final progress = telemetry.caloriesProgress;
     final progressPct = (progress * 100).toInt();
 
@@ -62,7 +63,7 @@ class CaloriesBentoCard extends StatelessWidget {
             color: _cardBg,
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: AppColors.steel.withValues(alpha: 0.5),
+              color: AppColors.subtleBorder,
               width: 1.0,
             ),
           ),
@@ -72,53 +73,46 @@ class CaloriesBentoCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // ── Header Row: Title + Chevron ──────────────────────────────
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text(
-                            '🔥',
-                            style: TextStyle(fontSize: 17.5),
-                          ),
-                          const SizedBox(width: 6),
-                          const Text(
-                            'Calories',
-                            style: TextStyle(
-                              fontFamily: AppTypography.fontDisplay,
-                              fontSize: 17.5,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.pureWhite,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
-                        ],
+                      const Text(
+                        '🔥',
+                        style: TextStyle(fontSize: 16),
                       ),
-                      Container(
-                        width: 22,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.08),
-                        ),
-                        child: const Icon(
-                          Icons.chevron_right_rounded,
-                          size: 15,
-                          color: AppColors.platinum,
+                      const SizedBox(width: 6),
+                      Text(
+                        'Calories',
+                        style: AppTypography.headlineSmall.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.pureWhite,
+                          letterSpacing: 0.2,
                         ),
                       ),
                     ],
                   ),
+                  Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.08),
+                    ),
+                    child: const Icon(
+                      Icons.chevron_right_rounded,
+                      size: 15,
+                      color: AppColors.platinum,
+                    ),
+                  ),
                 ],
               ),
 
-              // ── Bottom Row: Value + Circle Graph with % in between ─────────
+              // ── Bottom Row: Value + Progress Ring / Empty State Indicator ─
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -132,32 +126,53 @@ class CaloriesBentoCard extends StatelessWidget {
                           _formatNumber(telemetry.calories),
                           style: const TextStyle(
                             fontFamily: 'JetBrains Mono',
-                            fontSize: 22,
+                            fontSize: 24,
                             fontWeight: FontWeight.w800,
                             color: AppColors.pureWhite,
                             letterSpacing: -0.5,
                             height: 1.0,
                           ),
                         ),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: 4),
                         const Text(
-                          'kcal',
+                          'kcal active burn',
                           style: TextStyle(
                             fontFamily: AppTypography.fontBody,
-                            fontSize: 12.0,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.platinum,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  BentoDonutProgress(
-                    progress: progress,
-                    percentage: progressPct,
-                    size: 84,
-                    strokeWidth: 6.8,
-                  ),
+                  if (hasCalories)
+                    BentoDonutProgress(
+                      progress: progress,
+                      percentage: progressPct,
+                      size: 78,
+                      strokeWidth: 6.5,
+                    )
+                  else
+                    Container(
+                      width: 54,
+                      height: 54,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.surfaceSecondary,
+                        border: Border.all(
+                          color: AppColors.subtleBorder.withValues(alpha: 0.5),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.fitness_center_rounded,
+                          size: 22,
+                          color: AppColors.platinum,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ],

@@ -1,11 +1,11 @@
 /// Sleep Bento Card for the LEON Dashboard.
 ///
-/// Minimal square card:
-/// - "Sleep" header with subtle circular chevron
-/// - "Last Night" caption
-/// - Bold hero sleep duration readout (e.g. 7.5 hrs)
-/// - Clean circle graph with percentage in between
-/// - Tap interaction opens the deep sleep detail pop-up modal sheet
+/// Features:
+/// - Recorded sleep duration in hours (e.g. 7.5h)
+/// - Distinguishes missing sleep data (--) from 0 hours of sleep
+/// - No fabricated sleep-quality score
+/// - Intentional empty state: "No sleep logged" with tap-to-log prompt
+/// - Consistent 22dp radius and subtle #373942 border
 library;
 
 import 'package:flutter/material.dart';
@@ -17,7 +17,7 @@ import '../models/daily_telemetry_model.dart';
 import 'bento_bar_progress.dart';
 import 'telemetry_detail_sheets.dart';
 
-/// Minimal square Bento card displaying daily sleep duration with a slim progress bar.
+/// Minimal square Bento card displaying daily sleep duration.
 class SleepBentoCard extends StatelessWidget {
   const SleepBentoCard({
     super.key,
@@ -31,13 +31,14 @@ class SleepBentoCard extends StatelessWidget {
   /// Optional card tap handler override.
   final VoidCallback? onTap;
 
-  static const Color _cardBg = AppColors.charcoal;
+  static const Color _cardBg = AppColors.cardBackground;
 
   @override
   Widget build(BuildContext context) {
+    final hasSleep = telemetry.sleepHours > 0;
     final progress = telemetry.sleepProgress;
     final progressPct = (progress * 100).toInt();
-    final hoursStr = telemetry.sleepHours.toStringAsFixed(1);
+    final hoursStr = hasSleep ? telemetry.sleepHours.toStringAsFixed(1) : '--';
 
     return Material(
       color: Colors.transparent,
@@ -56,7 +57,7 @@ class SleepBentoCard extends StatelessWidget {
             color: _cardBg,
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: AppColors.steel.withValues(alpha: 0.5),
+              color: AppColors.subtleBorder,
               width: 1.0,
             ),
           ),
@@ -66,53 +67,46 @@ class SleepBentoCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // ── Header Row: Title + Chevron ──────────────────────────────
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text(
-                            '💤',
-                            style: TextStyle(fontSize: 17.5),
-                          ),
-                          const SizedBox(width: 6),
-                          const Text(
-                            'Sleep',
-                            style: TextStyle(
-                              fontFamily: AppTypography.fontDisplay,
-                              fontSize: 17.5,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.pureWhite,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
-                        ],
+                      const Text(
+                        '💤',
+                        style: TextStyle(fontSize: 16),
                       ),
-                      Container(
-                        width: 22,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.08),
-                        ),
-                        child: const Icon(
-                          Icons.chevron_right_rounded,
-                          size: 15,
-                          color: AppColors.platinum,
+                      const SizedBox(width: 6),
+                      Text(
+                        'Sleep',
+                        style: AppTypography.headlineSmall.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.pureWhite,
+                          letterSpacing: 0.2,
                         ),
                       ),
                     ],
                   ),
+                  Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.08),
+                    ),
+                    child: const Icon(
+                      Icons.chevron_right_rounded,
+                      size: 15,
+                      color: AppColors.platinum,
+                    ),
+                  ),
                 ],
               ),
 
-              // ── Bottom Section: Value & % Row + Horizontal Bar ────────────
+              // ── Bottom Section: Value & Progress Bar or Tap to Log ────────
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -129,11 +123,13 @@ class SleepBentoCard extends StatelessWidget {
                         children: [
                           Text(
                             hoursStr,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'JetBrains Mono',
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.pureWhite,
+                              color: hasSleep
+                                  ? AppColors.pureWhite
+                                  : AppColors.textMutedSlate,
                               letterSpacing: -0.4,
                             ),
                           ),
@@ -144,32 +140,62 @@ class SleepBentoCard extends StatelessWidget {
                               fontFamily: AppTypography.fontBody,
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary,
+                              color: AppColors.platinum,
                             ),
                           ),
                         ],
                       ),
-                      Text(
-                        '$progressPct%',
-                        style: const TextStyle(
-                          fontFamily: 'JetBrains Mono',
-                          fontSize: 13.0,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.pureWhite,
-                          letterSpacing: -0.2,
+                      if (hasSleep)
+                        Text(
+                          '$progressPct%',
+                          style: const TextStyle(
+                            fontFamily: 'JetBrains Mono',
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.pureWhite,
+                            letterSpacing: -0.2,
+                          ),
+                        )
+                      else
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceSecondary,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: AppColors.subtleBorder,
+                              width: 0.8,
+                            ),
+                          ),
+                          child: const Text(
+                            'Tap to log',
+                            style: TextStyle(
+                              fontFamily: AppTypography.fontBody,
+                              fontSize: 11.0,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.platinum,
+                            ),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                   const SizedBox(height: 6),
-                  FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: 0.72,
-                    child: BentoHorizontalBarProgress(
+                  if (hasSleep)
+                    BentoHorizontalBarProgress(
                       progress: progress,
-                      barHeight: 3.5,
+                      barHeight: 5.0,
+                      progressColor: AppColors.pureWhite,
+                    )
+                  else
+                    const Text(
+                      'No sleep logged',
+                      style: TextStyle(
+                        fontFamily: AppTypography.fontBody,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.platinum,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ],

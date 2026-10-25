@@ -1,15 +1,16 @@
 /// Hydration / Water Bento Card for the LEON Dashboard.
 ///
-/// Minimal square card:
-/// - "Hydration" header with subtle circular chevron
-/// - "Today" caption
-/// - Bold hero water intake readout (e.g. 2,750 ml)
-/// - Clean circle graph with percentage in between
-/// - Tap interaction opens the deep hydration detail pop-up modal sheet
+/// Features:
+/// - Logged quantity and unit: ml
+/// - Convenient 1-tap quick log action (+250ml)
+/// - Target progress shown only when entries exist
+/// - Intentional empty state: "Log your first drink" without broken empty bars
+/// - Consistent 22dp radius and subtle #373942 border
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
@@ -17,8 +18,8 @@ import '../models/daily_telemetry_model.dart';
 import 'bento_bar_progress.dart';
 import 'telemetry_detail_sheets.dart';
 
-/// Minimal square Bento card displaying daily hydration intake with a slim progress bar.
-class WaterBentoCard extends StatelessWidget {
+/// Minimal square Bento card displaying daily hydration intake.
+class WaterBentoCard extends ConsumerWidget {
   const WaterBentoCard({
     super.key,
     required this.telemetry,
@@ -31,7 +32,7 @@ class WaterBentoCard extends StatelessWidget {
   /// Optional card tap handler override.
   final VoidCallback? onTap;
 
-  static const Color _cardBg = AppColors.charcoal;
+  static const Color _cardBg = AppColors.cardBackground;
 
   String _formatNumber(int number) {
     return number.toString().replaceAllMapped(
@@ -41,7 +42,8 @@ class WaterBentoCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hasWater = telemetry.waterMl > 0;
     final progress = telemetry.waterProgress;
     final progressPct = (progress * 100).toInt();
 
@@ -62,7 +64,7 @@ class WaterBentoCard extends StatelessWidget {
             color: _cardBg,
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: AppColors.steel.withValues(alpha: 0.5),
+              color: AppColors.subtleBorder,
               width: 1.0,
             ),
           ),
@@ -72,53 +74,46 @@ class WaterBentoCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // ── Header Row: Title + Chevron ──────────────────────────────
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text(
-                            '💧',
-                            style: TextStyle(fontSize: 17.5),
-                          ),
-                          const SizedBox(width: 6),
-                          const Text(
-                            'Water',
-                            style: TextStyle(
-                              fontFamily: AppTypography.fontDisplay,
-                              fontSize: 17.5,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.pureWhite,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
-                        ],
+                      const Text(
+                        '💧',
+                        style: TextStyle(fontSize: 16),
                       ),
-                      Container(
-                        width: 22,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.08),
-                        ),
-                        child: const Icon(
-                          Icons.chevron_right_rounded,
-                          size: 15,
-                          color: AppColors.platinum,
+                      const SizedBox(width: 6),
+                      Text(
+                        'Water',
+                        style: AppTypography.headlineSmall.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.pureWhite,
+                          letterSpacing: 0.2,
                         ),
                       ),
                     ],
                   ),
+                  Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.08),
+                    ),
+                    child: const Icon(
+                      Icons.chevron_right_rounded,
+                      size: 15,
+                      color: AppColors.platinum,
+                    ),
+                  ),
                 ],
               ),
 
-              // ── Bottom Section: Value & % Row + Horizontal Bar ────────────
+              // ── Bottom Section: Value & Progress Bar or Quick Log ─────────
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -150,32 +145,76 @@ class WaterBentoCard extends StatelessWidget {
                               fontFamily: AppTypography.fontBody,
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary,
+                              color: AppColors.platinum,
                             ),
                           ),
                         ],
                       ),
-                      Text(
-                        '$progressPct%',
-                        style: const TextStyle(
-                          fontFamily: 'JetBrains Mono',
-                          fontSize: 13.0,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.pureWhite,
-                          letterSpacing: -0.2,
+                      if (hasWater)
+                        Text(
+                          '$progressPct%',
+                          style: const TextStyle(
+                            fontFamily: 'JetBrains Mono',
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.pureWhite,
+                            letterSpacing: -0.2,
+                          ),
+                        )
+                      else
+                        InkWell(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            ref.read(dailyTelemetryProvider.notifier).logWater(250);
+                          },
+                          borderRadius: BorderRadius.circular(6),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceSecondary,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: AppColors.subtleBorder,
+                                width: 0.8,
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.add, size: 12, color: AppColors.pureWhite),
+                                SizedBox(width: 2),
+                                Text(
+                                  '250ml',
+                                  style: TextStyle(
+                                    fontFamily: 'JetBrains Mono',
+                                    fontSize: 11.0,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.pureWhite,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                   const SizedBox(height: 6),
-                  FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: 0.72,
-                    child: BentoHorizontalBarProgress(
+                  if (hasWater)
+                    BentoHorizontalBarProgress(
                       progress: progress,
-                      barHeight: 3.5,
+                      barHeight: 5.0,
+                      progressColor: AppColors.pureWhite,
+                    )
+                  else
+                    const Text(
+                      'Log your first drink',
+                      style: TextStyle(
+                        fontFamily: AppTypography.fontBody,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.platinum,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ],

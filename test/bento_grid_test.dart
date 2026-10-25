@@ -126,12 +126,14 @@ void main() {
 
       var tapped = false;
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.dark,
-          home: Scaffold(
-            body: StepsBentoCard(
-              telemetry: telemetry,
-              onTap: () => tapped = true,
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.dark,
+            home: Scaffold(
+              body: StepsBentoCard(
+                telemetry: telemetry,
+                onTap: () => tapped = true,
+              ),
             ),
           ),
         ),
@@ -161,24 +163,26 @@ void main() {
       var sleepTapped = false;
 
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.dark,
-          home: Scaffold(
-            body: Column(
-              children: [
-                CaloriesBentoCard(
-                  telemetry: telemetry,
-                  onTap: () => calTapped = true,
-                ),
-                WaterBentoCard(
-                  telemetry: telemetry,
-                  onTap: () => waterTapped = true,
-                ),
-                SleepBentoCard(
-                  telemetry: telemetry,
-                  onTap: () => sleepTapped = true,
-                ),
-              ],
+        ProviderScope(
+          child: MaterialApp(
+            theme: AppTheme.dark,
+            home: Scaffold(
+              body: Column(
+                children: [
+                  CaloriesBentoCard(
+                    telemetry: telemetry,
+                    onTap: () => calTapped = true,
+                  ),
+                  WaterBentoCard(
+                    telemetry: telemetry,
+                    onTap: () => waterTapped = true,
+                  ),
+                  SleepBentoCard(
+                    telemetry: telemetry,
+                    onTap: () => sleepTapped = true,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

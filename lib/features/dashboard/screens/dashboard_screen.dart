@@ -1,10 +1,10 @@
 /// LEON Dashboard Screen.
 ///
 /// Features:
-/// - Clean, minimal, solid retractable calendar header
-/// - Compact footsteps bento card (8,420 steps, distance, clean activity bars)
-/// - Compact 2-column bento grid for calories & water intake + sleep
-/// - Compact daily workout card with prominent start workout button
+/// - Clean, minimal, solid retractable calendar header with unified date selection
+/// - Compact footsteps bento card (active, 0 steps, unavailable handling)
+/// - Compact 2-column bento grid for active calories burn & water intake + sleep
+/// - Compact daily workout card with prominent 52dp start workout button
 /// - Zero scroll: entire daily overview & start button fits cleanly on initial view
 /// - Clean dark Cyber-Slate palette without sloppy blur glows
 library;
@@ -15,9 +15,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../state/app_providers.dart';
+import '../../history/providers/history_provider.dart';
+import '../../../services/pedometer_service.dart';
 import '../models/daily_telemetry_model.dart';
 import '../providers/dashboard_provider.dart';
-import '../../../services/pedometer_service.dart';
 import '../widgets/calories_bento_card.dart';
 import '../widgets/daily_workout_bento_card.dart';
 import '../widgets/retractable_calendar_header.dart';
@@ -37,6 +38,7 @@ class DashboardScreen extends ConsumerWidget {
     final userProfile = ref.watch(userProfileProvider);
     final telemetry = ref.watch(dailyTelemetryProvider);
     final loggedWorkoutDates = ref.watch(loggedWorkoutDatesProvider);
+    final selectedCalendarDate = ref.watch(selectedCalendarDateProvider);
 
     final userName = (userProfile?.displayName.isNotEmpty ?? false)
         ? userProfile!.displayName
@@ -54,6 +56,10 @@ class DashboardScreen extends ConsumerWidget {
               userName: userName,
               avatarUrl: userProfile?.avatarUrl,
               initialExpanded: true,
+              selectedDate: selectedCalendarDate,
+              onDateSelected: (date) {
+                ref.read(selectedCalendarDateProvider.notifier).select(date);
+              },
               loggedWorkoutDates: loggedWorkoutDates,
             ),
           ),
@@ -70,39 +76,39 @@ class DashboardScreen extends ConsumerWidget {
               delegate: SliverChildListDelegate([
                 // ── 1. Compact Daily Workout / Start Workout Bento Card ───────
                 const DailyWorkoutBentoCard(),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 // ── 2. 4 Equal Square Bento Cards (2x2 Grid) ──────────────────
                 Row(
                   children: [
                     Expanded(
                       child: AspectRatio(
-                        aspectRatio: 1.05,
+                        aspectRatio: 1.02,
                         child: StepsBentoCard(telemetry: telemetry),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: AspectRatio(
-                        aspectRatio: 1.05,
+                        aspectRatio: 1.02,
                         child: CaloriesBentoCard(telemetry: telemetry),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
                       child: AspectRatio(
-                        aspectRatio: 1.45,
+                        aspectRatio: 1.42,
                         child: WaterBentoCard(telemetry: telemetry),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: AspectRatio(
-                        aspectRatio: 1.45,
+                        aspectRatio: 1.42,
                         child: SleepBentoCard(telemetry: telemetry),
                       ),
                     ),

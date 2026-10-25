@@ -12,7 +12,6 @@ library;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +21,29 @@ import 'package:permission_handler/permission_handler.dart';
 import '../core/constants/app_constants.dart';
 import '../features/dashboard/models/daily_telemetry_model.dart';
 import 'hive_service.dart';
+
+/// Step tracking connection and permission status.
+enum StepTrackingStatus {
+  active,
+  permissionDenied,
+  sensorUnavailable,
+  uninitialized,
+}
+
+class StepTrackingStatusNotifier extends Notifier<StepTrackingStatus> {
+  @override
+  StepTrackingStatus build() => StepTrackingStatus.uninitialized;
+
+  void setStatus(StepTrackingStatus status) {
+    state = status;
+  }
+}
+
+/// Provider exposing the current step tracking permission and sensor status.
+final stepTrackingStatusProvider =
+    NotifierProvider<StepTrackingStatusNotifier, StepTrackingStatus>(
+  StepTrackingStatusNotifier.new,
+);
 
 /// Provider exposing the active [PedometerService].
 final pedometerServiceProvider = Provider<PedometerService>((ref) {
@@ -70,7 +92,11 @@ class PedometerService {
     final isTest = WidgetsBinding.instance.runtimeType
         .toString()
         .contains('TestWidgetsFlutterBinding');
-    if (isTest) return;
+    if (isTest) {
+      _isAvailable = true;
+      _ref.read(stepTrackingStatusProvider.notifier).setStatus(StepTrackingStatus.active);
+      return;
+    }
 
     // Query native built-in step provider and immediate sensor reading
     await _syncWithNativePedometer();
@@ -79,12 +105,15 @@ class PedometerService {
     try {
       final status = await Permission.activityRecognition.status;
       if (status.isGranted) {
+        _ref.read(stepTrackingStatusProvider.notifier).setStatus(StepTrackingStatus.active);
         _startListening();
       } else {
         final requested = await Permission.activityRecognition.request();
         if (requested.isGranted) {
+          _ref.read(stepTrackingStatusProvider.notifier).setStatus(StepTrackingStatus.active);
           _startListening();
         } else {
+          _ref.read(stepTrackingStatusProvider.notifier).setStatus(StepTrackingStatus.permissionDenied);
           debugPrint('[PedometerService] Activity recognition permission not granted: $requested');
         }
       }
@@ -99,9 +128,12 @@ class PedometerService {
     try {
       final status = await Permission.activityRecognition.request();
       if (status.isGranted) {
+        _ref.read(stepTrackingStatusProvider.notifier).setStatus(StepTrackingStatus.active);
         await _syncWithNativePedometer();
         _startListening();
         return true;
+      } else {
+        _ref.read(stepTrackingStatusProvider.notifier).setStatus(StepTrackingStatus.permissionDenied);
       }
     } catch (e) {
       debugPrint('[PedometerService] requestPermission error: $e');
@@ -392,6 +424,7 @@ class PedometerService {
   void _onStepCountError(dynamic error) {
     debugPrint('[PedometerService] Step count error: $error');
     _isAvailable = false;
+    _ref.read(stepTrackingStatusProvider.notifier).setStatus(StepTrackingStatus.sensorUnavailable);
   }
 
   void _onPedestrianStatusChanged(PedestrianStatus event) {
@@ -400,57 +433,6 @@ class PedometerService {
 
   void _onPedestrianStatusError(dynamic error) {
     debugPrint('[PedometerService] Pedestrian status error: $error');
-  }
-
-  List<int> _generateRealisticHourlyDistribution(int totalSteps) {
-    final result = List<int>.filled(24, 0);
-    if (totalSteps <= 0) return result;
-
-    final nowHour = DateTime.now().hour.clamp(0, 23);
-    const startHour = 7;
-    if (nowHour < startHour) {
-      result[nowHour] = totalSteps;
-      return result;
-    }
-
-    const rawWeights = [
-      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, // 00:00 - 06:00
-      0.05, // 07:00
-      0.14, // 08:00 (morning walk peak)
-      0.18, // 09:00
-      0.06, // 10:00
-      0.05, // 11:00
-      0.15, // 12:00 (lunch walk peak)
-      0.12, // 13:00
-      0.04, // 14:00
-      0.05, // 15:00
-      0.08, // 16:00
-      0.16, // 17:00 (evening walk peak)
-      0.13, // 18:00
-      0.08, // 19:00
-      0.06, // 20:00
-      0.03, // 21:00
-      0.01, // 22:00
-      0.00, // 23:00
-    ];
-
-    double weightSum = 0.0;
-    for (int h = startHour; h <= nowHour; h++) {
-      weightSum += rawWeights[h];
-    }
-    if (weightSum <= 0.001) weightSum = 1.0;
-
-    int allocated = 0;
-    for (int h = startHour; h <= nowHour; h++) {
-      if (h == nowHour) {
-        result[h] = math.max(0, totalSteps - allocated);
-      } else {
-        final share = ((rawWeights[h] / weightSum) * totalSteps).round();
-        result[h] = share;
-        allocated += share;
-      }
-    }
-    return result;
   }
 
   void dispose() {

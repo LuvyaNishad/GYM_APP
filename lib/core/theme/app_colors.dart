@@ -17,6 +17,17 @@ abstract final class AppColors {
   static const Color pureWhite = Color(0xFFFFFFFF);
   static const Color pureBlack = Color(0xFF000000);
 
+  // ── Dashboard Refined Design Tokens ────────────────────────────────────────
+  static const Color dashboardBg = Color(0xFF10131B);
+  static const Color cardBackground = Color(0xFF25262C);
+  static const Color surfaceSecondary = Color(0xFF2D2F36);
+  static const Color subtleBorder = Color(0xFF373942);
+  static const Color primaryButton = Color(0xFFF4F4F5);
+  static const Color primaryButtonText = Color(0xFF161A23);
+  static const Color activeCyan = Color(0xFF00E5FF);
+  static const Color emeraldGreen = Color(0xFF00E676);
+  static const Color textMutedSlate = Color(0xFF8E929B);
+
   // ── Background Layers ─────────────────────────────────────────────────────
   static const Color background = onyx; // Deep dark slate (#0F131B)
   static const Color surface = charcoal; // Raised surface (#27262A)

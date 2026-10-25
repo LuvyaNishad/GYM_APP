@@ -38,6 +38,7 @@ class RetractableCalendarHeader extends StatefulWidget {
     required this.userName,
     this.avatarUrl,
     this.initialExpanded = true,
+    this.selectedDate,
     this.onDateSelected,
     this.loggedWorkoutDates = const <DateTime>{},
   });
@@ -50,6 +51,9 @@ class RetractableCalendarHeader extends StatefulWidget {
 
   /// Whether the calendar strip starts in the expanded weekly state (Phase 1).
   final bool initialExpanded;
+
+  /// Currently selected calendar date.
+  final DateTime? selectedDate;
 
   /// Callback when a calendar day is tapped.
   final ValueChanged<DateTime>? onDateSelected;
@@ -71,14 +75,12 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
   // Noguchi Monochrome Minimal palette
   static const Color _cardBg = AppColors.charcoal; // #27262A
   static const Color _pillSlotBg = Color(0xFF1B1C22); // Sleek dark slot
-  static const Color _todayAccent = AppColors.pureWhite; // Pure white for today
-  static const Color _loggedAccent = Color(0xFF00E676); // Emerald green for logged gym days
   static const double _tabHeight = 18.0;
 
   @override
   void initState() {
     super.initState();
-    _selectedDate = DateTime.now();
+    _selectedDate = widget.selectedDate ?? DateTime.now();
 
     final now = DateTime.now();
     // Sunday-based 7-day strip matching reference (S, M, T, W, T, F, S)
@@ -96,6 +98,14 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
       lowerBound: 0.0,
       upperBound: 2.0,
     );
+  }
+
+  @override
+  void didUpdateWidget(RetractableCalendarHeader oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedDate != null && widget.selectedDate != _selectedDate) {
+      _selectedDate = widget.selectedDate!;
+    }
   }
 
   @override
@@ -219,12 +229,12 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
           double extendedOpacity;
 
           if (t <= 1.0) {
-            expandableHeight = t * 74.0;
+            expandableHeight = t * 94.0;
             weeklyOpacity = t.clamp(0.0, 1.0);
             extendedOpacity = 0.0;
           } else {
             final p = t - 1.0;
-            expandableHeight = 74.0 + (p * 156.0);
+            expandableHeight = 94.0 + (p * 156.0);
             weeklyOpacity = (1.0 - p * 2.5).clamp(0.0, 1.0);
             extendedOpacity = ((p - 0.2) / 0.8).clamp(0.0, 1.0);
           }
@@ -454,33 +464,37 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
       return DayStatus.workedOut;
     }
 
-    if (d.isAfter(today) || d.isAtSameMomentAs(today)) {
+    if (d.isAfter(today)) {
       return DayStatus.future;
     }
 
-    if (d.weekday == DateTime.sunday || d.weekday == DateTime.wednesday) {
-      return DayStatus.rest;
-    }
-
-    return DayStatus.missed;
+    return DayStatus.rest;
   }
 
   Widget _buildWeeklyStrip(DateTime now) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        for (final date in _weekDays)
-          _buildDayPill(
-            date: date,
-            isSelected: date.year == _selectedDate.year &&
-                date.month == _selectedDate.month &&
-                date.day == _selectedDate.day,
-            isToday: date.year == now.year &&
-                date.month == now.month &&
-                date.day == now.day,
-            status: _getDayStatus(date, now),
-          ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final totalWidth = constraints.maxWidth;
+        final pillWidth = ((totalWidth - 36) / 7).clamp(42.0, 48.0);
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            for (final date in _weekDays)
+              _buildDayPill(
+                date: date,
+                pillWidth: pillWidth,
+                isSelected: date.year == _selectedDate.year &&
+                    date.month == _selectedDate.month &&
+                    date.day == _selectedDate.day,
+                isToday: date.year == now.year &&
+                    date.month == now.month &&
+                    date.day == now.day,
+                status: _getDayStatus(date, now),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -499,19 +513,40 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
 
   Widget _buildDayPill({
     required DateTime date,
+    required double pillWidth,
     required bool isSelected,
     required bool isToday,
     required DayStatus status,
   }) {
-    Color borderColor;
+    final isWorkedOut = status == DayStatus.workedOut;
+
+    // Surface background
+    final Color bgColor;
     if (isSelected) {
-      borderColor = isToday
-          ? Colors.white
-          : (status == DayStatus.workedOut
-              ? _loggedAccent
-              : const Color(0xFF00E5FF));
+      bgColor = const Color(0xFF1E2836);
+    } else if (isToday) {
+      bgColor = const Color(0xFF22242B);
     } else {
-      borderColor = AppColors.steel.withValues(alpha: 0.35);
+      bgColor = _pillSlotBg;
+    }
+
+    // Border
+    final Border border;
+    if (isSelected) {
+      border = Border.all(
+        color: AppColors.activeCyan,
+        width: 1.5,
+      );
+    } else if (isToday) {
+      border = Border.all(
+        color: Colors.white.withValues(alpha: 0.5),
+        width: 1.0,
+      );
+    } else {
+      border = Border.all(
+        color: AppColors.subtleBorder.withValues(alpha: 0.45),
+        width: 0.8,
+      );
     }
 
     return GestureDetector(
@@ -522,129 +557,51 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
         widget.onDateSelected?.call(date);
       },
       child: Container(
-        width: 44,
-        height: 56,
+        width: pillWidth,
+        height: 76,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
-          color: _pillSlotBg,
-          border: Border.all(
-            color: borderColor,
-            width: isSelected ? 1.5 : 0.8,
-          ),
+          color: bgColor,
+          border: border,
         ),
-        padding: const EdgeInsets.symmetric(vertical: 5),
+        padding: const EdgeInsets.symmetric(vertical: 7),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Weekday letter (Apple HIG floor: 11.0 pt, min 4.5:1 contrast)
+            // Weekday letter (12 sp)
             Text(
               _weekdayLetter(date.weekday),
               style: TextStyle(
                 fontFamily: AppTypography.fontDisplay,
-                fontSize: 11.0,
-                fontWeight: (isToday || status == DayStatus.workedOut || isSelected)
+                fontSize: 12.0,
+                fontWeight: (isToday || isSelected)
                     ? FontWeight.w700
                     : FontWeight.w500,
-                color: isToday
-                    ? _todayAccent
-                    : (status == DayStatus.workedOut
-                        ? _loggedAccent
-                        : (status == DayStatus.missed
-                            ? const Color(0xFFFF5252)
-                            : (isSelected ? Colors.white : AppColors.textSecondary))),
+                color: isSelected
+                    ? AppColors.activeCyan
+                    : (isToday
+                        ? AppColors.pureWhite
+                        : AppColors.textSecondary),
               ),
             ),
 
-            // Date Number Badge matching monthly calendar color-coding:
-            // - Today: Solid pure white circle with dark text
-            // - Worked out: Solid emerald green circle with dark text
-            // - Missed: Soft red circle with red text
-            // - Rest: Subtle dark slate circle with secondary text
-            // - Future: Clean mono numeral
+            // Date Number Badge
             if (isToday)
               Container(
                 width: 26,
                 height: 26,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _todayAccent,
+                  color: AppColors.pureWhite,
                 ),
                 child: Center(
                   child: Text(
                     '${date.day}',
                     style: const TextStyle(
                       fontFamily: 'JetBrains Mono',
-                      fontSize: 12.0,
+                      fontSize: 13.0,
                       fontWeight: FontWeight.w800,
                       color: AppColors.onyx,
-                    ),
-                  ),
-                ),
-              )
-            else if (status == DayStatus.workedOut)
-              Container(
-                width: 26,
-                height: 26,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _loggedAccent,
-                ),
-                child: Center(
-                  child: Text(
-                    '${date.day}',
-                    style: const TextStyle(
-                      fontFamily: 'JetBrains Mono',
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.onyx,
-                    ),
-                  ),
-                ),
-              )
-            else if (status == DayStatus.missed)
-              Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFFFF5252).withValues(alpha: 0.16),
-                  border: Border.all(
-                    color: const Color(0xFFFF5252).withValues(alpha: 0.45),
-                    width: 0.8,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    '${date.day}',
-                    style: const TextStyle(
-                      fontFamily: 'JetBrains Mono',
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFFFF5252),
-                    ),
-                  ),
-                ),
-              )
-            else if (status == DayStatus.rest)
-              Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.onyx.withValues(alpha: 0.65),
-                  border: Border.all(
-                    color: AppColors.steel.withValues(alpha: 0.35),
-                    width: 0.8,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    '${date.day}',
-                    style: const TextStyle(
-                      fontFamily: 'JetBrains Mono',
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -654,11 +611,28 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
                 '${date.day}',
                 style: TextStyle(
                   fontFamily: 'JetBrains Mono',
-                  fontSize: 12.0,
+                  fontSize: 14.5,
                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: isSelected ? Colors.white : AppColors.platinum,
+                  color: isSelected
+                      ? AppColors.pureWhite
+                      : (status == DayStatus.future
+                          ? AppColors.textMutedSlate
+                          : AppColors.pureWhite),
                 ),
               ),
+
+            // Bottom Status Indicator Dot
+            if (isWorkedOut)
+              Container(
+                width: 5.5,
+                height: 5.5,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.emeraldGreen,
+                ),
+              )
+            else
+              const SizedBox(width: 5.5, height: 5.5),
           ],
         ),
       ),
