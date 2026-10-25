@@ -51,11 +51,59 @@ class MainActivity : FlutterActivity() {
         val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         Log.d(TAG, "queryInbuiltSteps searching for today: $todayStr")
 
-        // 1. Primary: query live minute-by-minute step data directly from ColorOS / Realme StepProvider
         val hourly = MutableList(24) { 0 }
         var todayStepsSum = 0
         var foundTodayData = false
+        val historyMap = mutableMapOf<String, Int>()
 
+        // 1. Query day_statistic and day_statistic_v2 for daily aggregates & past records
+        val statisticUris = listOf(
+            "content://com.oplus.healthservice.stepprovider/day_statistic",
+            "content://com.oplus.healthservice.stepprovider/day_statistic_v2"
+        )
+        for (uriStr in statisticUris) {
+            var fbCursor: Cursor? = null
+            try {
+                val uri = Uri.parse(uriStr)
+                fbCursor = contentResolver.query(uri, null, null, null, null)
+                if (fbCursor != null && fbCursor.moveToFirst()) {
+                    val colNames = fbCursor.columnNames
+                    Log.d(TAG, "$uriStr columns: ${colNames.joinToString()}")
+                    var dateIdx = -1
+                    var stepIdx = -1
+                    for (i in colNames.indices) {
+                        val name = colNames[i].lowercase(Locale.getDefault())
+                        if (name == "date" || name == "day_date" || name == "day" || name == "record_date") dateIdx = i
+                        if (name == "step" || name == "amount" || name == "day_offset" || name == "total_step" || name == "day_step") {
+                            stepIdx = i
+                        }
+                    }
+                    if (stepIdx != -1) {
+                        do {
+                            val rawDate = if (dateIdx != -1) fbCursor.getString(dateIdx) else null
+                            val steps = fbCursor.getInt(stepIdx)
+                            if (rawDate != null && steps > 0) {
+                                val normDate = if (rawDate.length >= 10) rawDate.substring(0, 10) else rawDate
+                                if (normDate == todayStr) {
+                                    if (steps > todayStepsSum) {
+                                        todayStepsSum = steps
+                                        foundTodayData = true
+                                    }
+                                } else {
+                                    historyMap[normDate] = maxOf(historyMap[normDate] ?: 0, steps)
+                                }
+                            }
+                        } while (fbCursor.moveToNext())
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Query $uriStr failed: ${e.message}")
+            } finally {
+                fbCursor?.close()
+            }
+        }
+
+        // 2. Query minute-by-minute step_data directly from ColorOS / Realme StepProvider
         var cursor: Cursor? = null
         try {
             val uri = Uri.parse("content://com.oplus.healthservice.stepprovider/step_data")
@@ -79,14 +127,17 @@ class MainActivity : FlutterActivity() {
 
                 if (stepIdx != -1 && (timeIdx != -1 || tsIdx != -1)) {
                     val cal = Calendar.getInstance()
+                    var minuteStepsTodaySum = 0
+                    val minuteStepHistory = mutableMapOf<String, Int>()
+
                     do {
-                        var isToday = false
+                        var rowDate: String? = null
                         var hour = -1
 
                         if (timeIdx != -1) {
                             val timeStr = cursor.getString(timeIdx)
-                            if (timeStr != null && timeStr.startsWith(todayStr)) {
-                                isToday = true
+                            if (timeStr != null && timeStr.length >= 10) {
+                                rowDate = timeStr.substring(0, 10)
                                 if (timeStr.length >= 13) {
                                     val delimiter = timeStr[10]
                                     if (delimiter == '-' || delimiter == ' ' || delimiter == 'T') {
@@ -96,31 +147,38 @@ class MainActivity : FlutterActivity() {
                             }
                         }
 
-                        if (!isToday && tsIdx != -1) {
+                        if (rowDate == null && tsIdx != -1) {
                             val ts = cursor.getLong(tsIdx)
                             if (ts > 0) {
                                 cal.timeInMillis = ts
-                                val rowDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cal.time)
-                                if (rowDate == todayStr) {
-                                    isToday = true
-                                    hour = cal.get(Calendar.HOUR_OF_DAY)
-                                }
+                                rowDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cal.time)
+                                hour = cal.get(Calendar.HOUR_OF_DAY)
                             }
                         }
 
-                        if (isToday) {
-                            val steps = cursor.getInt(stepIdx)
-                            if (steps > 0) {
+                        val steps = cursor.getInt(stepIdx)
+                        if (rowDate != null && steps > 0) {
+                            if (rowDate == todayStr) {
                                 if (hour in 0..23) {
                                     hourly[hour] += steps
                                 }
-                                todayStepsSum += steps
+                                minuteStepsTodaySum += steps
                                 foundTodayData = true
+                            } else {
+                                minuteStepHistory[rowDate] = (minuteStepHistory[rowDate] ?: 0) + steps
                             }
                         }
                     } while (cursor.moveToNext())
 
-                    Log.d(TAG, "Extracted step_data today: sum=$todayStepsSum, hourly=$hourly")
+                    // Merge minuteStepHistory into historyMap
+                    for ((d, s) in minuteStepHistory) {
+                        historyMap[d] = maxOf(historyMap[d] ?: 0, s)
+                    }
+
+                    if (minuteStepsTodaySum > todayStepsSum) {
+                        todayStepsSum = minuteStepsTodaySum
+                    }
+                    Log.d(TAG, "Extracted step_data today: sum=$todayStepsSum, hourly=$hourly, historyCount=${historyMap.size}")
                 }
             }
         } catch (e: Exception) {
@@ -129,61 +187,33 @@ class MainActivity : FlutterActivity() {
             cursor?.close()
         }
 
-        if (foundTodayData || todayStepsSum > 0) {
-            return mapOf(
-                "todaySteps" to todayStepsSum,
-                "todayDate" to todayStr,
-                "history" to emptyMap<String, Int>(), // Clean 0 history
-                "hourlySteps" to hourly,
-                "source" to "oplus_step_data"
-            )
-        }
-
-        // 2. Secondary fallback: check day_statistic if step_data had no records for today
-        val fallbackUris = listOf(
-            "content://com.oplus.healthservice.stepprovider/day_statistic",
-            "content://com.oplus.healthservice.stepprovider/day_statistic_v2"
-        )
-        for (uriStr in fallbackUris) {
-            var fbCursor: Cursor? = null
-            try {
-                val uri = Uri.parse(uriStr)
-                fbCursor = contentResolver.query(uri, null, null, null, null)
-                if (fbCursor != null && fbCursor.moveToFirst()) {
-                    val colNames = fbCursor.columnNames
-                    var dateIdx = -1
-                    var stepIdx = -1
-                    for (i in colNames.indices) {
-                        val name = colNames[i].lowercase(Locale.getDefault())
-                        if (name == "date" || name == "day_date") dateIdx = i
-                        if (name == "step" || name == "amount" || name == "day_offset" || name == "total_step" || name == "day_step") {
-                            stepIdx = i
-                        }
-                    }
-                    if (stepIdx != -1) {
-                        do {
-                            val rowDate = if (dateIdx != -1) fbCursor.getString(dateIdx) else null
-                            val steps = fbCursor.getInt(stepIdx)
-                            if (rowDate == todayStr && steps > 0) {
-                                return mapOf(
-                                    "todaySteps" to steps,
-                                    "todayDate" to todayStr,
-                                    "history" to emptyMap<String, Int>(),
-                                    "hourlySteps" to null,
-                                    "source" to uriStr
-                                )
-                            }
-                        } while (fbCursor.moveToNext())
-                    }
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Fallback $uriStr failed: ${e.message}")
-            } finally {
-                fbCursor?.close()
+        // 3. Determine all-time record and date from history + today
+        var recordSteps = todayStepsSum
+        var recordDate = todayStr
+        for ((d, s) in historyMap) {
+            if (s > recordSteps) {
+                recordSteps = s
+                recordDate = d
             }
         }
 
-        Log.d(TAG, "No inbuilt step provider returned data for today")
+        val formattedRecordDate: String
+        val parts = recordDate.split("-")
+        formattedRecordDate = if (parts.size == 3) "${parts[2]}/${parts[1]}/${parts[0]}" else recordDate
+
+        if (foundTodayData || todayStepsSum > 0 || historyMap.isNotEmpty()) {
+            return mapOf(
+                "todaySteps" to todayStepsSum,
+                "todayDate" to todayStr,
+                "history" to historyMap,
+                "hourlySteps" to hourly,
+                "recordSteps" to recordSteps,
+                "recordDate" to formattedRecordDate,
+                "source" to "oplus_provider"
+            )
+        }
+
+        Log.d(TAG, "No inbuilt step provider returned data")
         return null
     }
 

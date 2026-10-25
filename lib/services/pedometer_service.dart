@@ -169,6 +169,29 @@ class PedometerService {
         }
       }
 
+      // Merge native historical days from inbuilt step provider
+      final rawHistory = inbuiltData?['history'] as Map?;
+      if (rawHistory != null && rawHistory.isNotEmpty) {
+        rawHistory.forEach((k, v) {
+          final count = (v as num).toInt();
+          if (count > 0) {
+            _historicalDays[k.toString()] = count;
+          }
+        });
+      }
+
+      // Merge native record from inbuilt step provider
+      final nativeRecord = (inbuiltData?['recordSteps'] as num?)?.toInt();
+      final nativeRecordDate = inbuiltData?['recordDate'] as String?;
+      if (nativeRecord != null && nativeRecord > 0) {
+        if (nativeRecord > _recordSteps) {
+          _recordSteps = nativeRecord;
+          if (nativeRecordDate != null && nativeRecordDate.isNotEmpty) {
+            _recordDate = nativeRecordDate;
+          }
+        }
+      }
+
       // If inbuilt today count has data (> 0), adopt it directly
       if (inbuiltTodaySteps != null && inbuiltTodaySteps > 0) {
         _todayCount = inbuiltTodaySteps;
@@ -192,6 +215,28 @@ class PedometerService {
         }
       }
 
+      // Ensure record is at least today's count
+      if (_todayCount > _recordSteps) {
+        _recordSteps = _todayCount;
+        final now = DateTime.now();
+        _recordDate = '${now.day}/${now.month}/${now.year}';
+      }
+
+      // If record is still 0, compute maximum across all historical days
+      if (_recordSteps == 0 && _historicalDays.isNotEmpty) {
+        for (final entry in _historicalDays.entries) {
+          if (entry.value > _recordSteps) {
+            _recordSteps = entry.value;
+            try {
+              final parts = entry.key.split('-');
+              _recordDate = '${parts[2]}/${parts[1]}/${parts[0]}';
+            } catch (_) {
+              _recordDate = entry.key;
+            }
+          }
+        }
+      }
+
       // 2. Query immediate hardware reading so we don't have to wait for physical movement
       final hwReading = await _nativeChannel.invokeMethod<int>('getImmediateHardwareSteps');
       if (hwReading != null && hwReading > 0) {
@@ -212,17 +257,23 @@ class PedometerService {
     final todayStr = _getTodayDateStr();
     final savedDate = hive.getSetting<String>(AppConstants.settingStepDate);
 
-    // Explicitly purge mock / stale keys so all records are zeroed out as requested
-    hive.deleteSetting(AppConstants.settingStepRecordSteps);
-    hive.deleteSetting(AppConstants.settingStepRecordDate);
-    hive.deleteSetting(AppConstants.settingStepHistory);
-
     _bootBase = hive.getSetting<int>(AppConstants.settingStepBootBase);
     _rebootOffset = hive.getSetting<int>(AppConstants.settingStepRebootOffset, fallback: 0) ?? 0;
     _lastHwReading = hive.getSetting<int>(AppConstants.settingStepLastHwReading);
-    _recordSteps = 0;
-    _recordDate = '--';
-    _historicalDays = {};
+    _recordSteps = hive.getSetting<int>(AppConstants.settingStepRecordSteps, fallback: 0) ?? 0;
+    _recordDate = hive.getSetting<String>(AppConstants.settingStepRecordDate, fallback: '--') ?? '--';
+
+    final historyRaw = hive.getSetting<String>(AppConstants.settingStepHistory);
+    if (historyRaw != null && historyRaw.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(historyRaw) as Map<String, dynamic>;
+        _historicalDays = decoded.map((k, v) => MapEntry(k, (v as num).toInt()));
+      } catch (_) {
+        _historicalDays = {};
+      }
+    } else {
+      _historicalDays = {};
+    }
 
     if (savedDate == todayStr) {
       _currentTrackingDate = todayStr;

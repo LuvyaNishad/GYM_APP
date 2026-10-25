@@ -178,7 +178,7 @@ class _StepsDetailContentState extends ConsumerState<_StepsDetailContent> {
   @override
   Widget build(BuildContext context) {
     final liveTelemetry = ref.watch(dailyTelemetryProvider);
-    final t = liveTelemetry.steps > 0
+    final t = liveTelemetry.steps > 0 || liveTelemetry.historicalDays.isNotEmpty
         ? liveTelemetry
         : widget.telemetry;
 
@@ -557,18 +557,9 @@ class _HistoricalStepTrackerCardState
     if (isDayTab) {
       if (maxStepsInData <= 0) {
         chartScale = 500;
-      } else if (maxStepsInData <= 250) {
-        chartScale = 250;
-      } else if (maxStepsInData <= 500) {
-        chartScale = 500;
-      } else if (maxStepsInData <= 1000) {
-        chartScale = 1000;
-      } else if (maxStepsInData <= 1500) {
-        chartScale = 1500;
-      } else if (maxStepsInData <= 2000) {
-        chartScale = 2000;
       } else {
-        chartScale = ((maxStepsInData * 1.25) ~/ 500 + 1) * 500;
+        final stepUnit = maxStepsInData > 1000 ? 500 : (maxStepsInData > 300 ? 100 : 50);
+        chartScale = ((maxStepsInData / stepUnit).ceil()) * stepUnit;
       }
     } else {
       chartScale = math.max(widget.telemetry.stepsGoal, maxStepsInData);
@@ -585,6 +576,15 @@ class _HistoricalStepTrackerCardState
     final bool hasSelection = _selectedDayIndex != null &&
         _selectedDayIndex! >= 0 &&
         _selectedDayIndex! < currentData.length;
+
+    final int defaultIndex;
+    if (isDayTab) {
+      defaultIndex = -1;
+    } else if (isWeekTab) {
+      defaultIndex = (now.weekday - 1).clamp(0, 6);
+    } else {
+      defaultIndex = currentData.length - 1;
+    }
 
     final String stepCountHeader;
     final int displayedSteps;
@@ -603,7 +603,7 @@ class _HistoricalStepTrackerCardState
         displayedKm = (displayedSteps * 0.000708).toStringAsFixed(2);
       }
     } else {
-      final activeIndex = hasSelection ? _selectedDayIndex! : (currentData.length - 1);
+      final activeIndex = hasSelection ? _selectedDayIndex! : defaultIndex;
       final activeItem = currentData[activeIndex];
       final isItemToday = activeItem.label == 'Today';
       stepCountHeader = isItemToday ? 'Step count' : 'Steps (${activeItem.label})';
@@ -675,7 +675,7 @@ class _HistoricalStepTrackerCardState
                                   item: currentData[i],
                                   isSelected: hasSelection
                                       ? (_selectedDayIndex == i)
-                                      : (!isDayTab && i == currentData.length - 1),
+                                      : (!isDayTab && i == defaultIndex),
                                   chartScale: chartScale,
                                   barAreaHeight: chartBarAreaHeight,
                                   labelHeight: bottomLabelHeight,
@@ -922,7 +922,9 @@ class _HistoricalStepTrackerCardState
                     decoration: BoxDecoration(
                       color: isSelected
                           ? Colors.white.withValues(alpha: 0.12)
-                          : const Color(0xFF1E2330),
+                          : (item.isFuture
+                              ? Colors.white.withValues(alpha: 0.04)
+                              : const Color(0xFF1E2330)),
                       borderRadius: BorderRadius.circular(barWidth / 2),
                     ),
                   ),
@@ -950,7 +952,9 @@ class _HistoricalStepTrackerCardState
                       decoration: BoxDecoration(
                         color: isSelected
                             ? const Color(0xFF00E5FF)
-                            : const Color(0xFF22C55E),
+                            : (isDayTab
+                                ? AppColors.pureWhite
+                                : (isToday ? const Color(0xFF22C55E) : AppColors.pureWhite)),
                         borderRadius: BorderRadius.circular(barWidth / 2),
                         boxShadow: isSelected
                             ? [
@@ -969,7 +973,9 @@ class _HistoricalStepTrackerCardState
                       width: barWidth,
                       height: 3.5,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2A3142),
+                        color: isSelected
+                            ? const Color(0xFF00E5FF)
+                            : const Color(0xFF2A3142),
                         borderRadius: BorderRadius.circular(barWidth / 2),
                       ),
                     ),
