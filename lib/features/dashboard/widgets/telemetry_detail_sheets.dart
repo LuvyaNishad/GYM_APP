@@ -14,8 +14,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:permission_handler/permission_handler.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../services/pedometer_service.dart';
 import '../models/daily_telemetry_model.dart';
 
 /// Shows the Step Count details modal sheet.
@@ -157,6 +160,14 @@ class _StepsDetailContent extends ConsumerStatefulWidget {
 class _StepsDetailContentState extends ConsumerState<_StepsDetailContent> {
   int _selectedTabIndex = 0; // 0: Day, 1: Week, 2: Month
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(pedometerServiceProvider).syncWithInbuiltPedometer();
+    });
+  }
+
   String _formatNumber(int number) {
     return number.toString().replaceAllMapped(
           RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
@@ -167,7 +178,14 @@ class _StepsDetailContentState extends ConsumerState<_StepsDetailContent> {
   @override
   Widget build(BuildContext context) {
     final liveTelemetry = ref.watch(dailyTelemetryProvider);
-    final t = liveTelemetry;
+    final t = liveTelemetry.steps > 0
+        ? liveTelemetry
+        : widget.telemetry;
+
+    final hasRecord = t.recordSingleDaySteps > 0;
+    final recordSteps = hasRecord ? t.recordSingleDaySteps : 0;
+    final recordKm = hasRecord ? t.recordSingleDayKm : 0.0;
+    final recordDateStr = hasRecord ? t.recordDate : '--';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,15 +212,104 @@ class _StepsDetailContentState extends ConsumerState<_StepsDetailContent> {
                 ),
               ],
             ),
-            IconButton(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.close_rounded, color: AppColors.platinum, size: 20),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
+            Row(
+              children: [
+                IconButton(
+                  tooltip: 'Sync Steps',
+                  onPressed: () async {
+                    HapticFeedback.lightImpact();
+                    await ref.read(pedometerServiceProvider).syncWithInbuiltPedometer();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Step data synced with device pedometer',
+                            style: TextStyle(fontSize: 12.0),
+                          ),
+                          duration: Duration(seconds: 2),
+                          backgroundColor: Color(0xFF1E2330),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.sync_rounded, color: Color(0xFF00E5FF), size: 20),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+                const SizedBox(width: 14),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close_rounded, color: AppColors.platinum, size: 20),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
             ),
           ],
         ),
         const SizedBox(height: 14),
+
+        // Activity Permission Prompt Banner (if needed)
+        FutureBuilder<PermissionStatus>(
+          future: Permission.activityRecognition.status,
+          builder: (context, snapshot) {
+            if (snapshot.hasData && !snapshot.data!.isGranted) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E2330),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.amber.withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.directions_walk_rounded, color: AppColors.amber, size: 20),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'Activity permission is needed to track hardware steps.',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: AppColors.pureWhite,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () async {
+                        final status = await Permission.activityRecognition.request();
+                        if (status.isPermanentlyDenied) {
+                          await openAppSettings();
+                        } else if (status.isGranted) {
+                          ref.read(pedometerServiceProvider).initialize();
+                          if (mounted) setState(() {});
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'Enable',
+                          style: TextStyle(
+                            fontSize: 12.0,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF00E5FF),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
 
         // 2. Day / Week / Month Tab Switcher
         Row(
@@ -273,29 +380,35 @@ class _StepsDetailContentState extends ConsumerState<_StepsDetailContent> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                t.recordDate,
-                style: const TextStyle(
-                  fontFamily: 'JetBrains Mono',
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.pureWhite,
+              Flexible(
+                child: Text(
+                  recordDateStr,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontFamily: 'JetBrains Mono',
+                    fontSize: 13.0,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.pureWhite,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               Text(
-                '${_formatNumber(t.recordSingleDaySteps)} steps',
+                '${_formatNumber(recordSteps)} steps',
                 style: const TextStyle(
                   fontFamily: 'JetBrains Mono',
-                  fontSize: 14.5,
+                  fontSize: 14.0,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF34D399),
                 ),
               ),
+              const SizedBox(width: 8),
               Text(
-                '${t.recordSingleDayKm} Kilometres',
+                '$recordKm km',
                 style: const TextStyle(
                   fontFamily: 'JetBrains Mono',
-                  fontSize: 13.0,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF94A3B8),
                 ),
@@ -341,6 +454,21 @@ class _HistoricalStepTrackerCardState
   }
 
   @override
+  void didUpdateWidget(covariant _HistoricalStepTrackerCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedTab != widget.selectedTab) {
+      setState(() {
+        _selectedDayIndex = null;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        }
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
@@ -348,87 +476,145 @@ class _HistoricalStepTrackerCardState
 
   @override
   Widget build(BuildContext context) {
-    // 30 days history leading up to today
-    final List<({String label, String displayLabel, int steps})> dayData = [
-      (label: '17', displayLabel: '17', steps: 4800),
-      (label: '18', displayLabel: '', steps: 6200),
-      (label: '19', displayLabel: '19', steps: 5300),
-      (label: '20', displayLabel: '', steps: 7100),
-      (label: '21', displayLabel: '21', steps: 4300),
-      (label: '22', displayLabel: '', steps: 6700),
-      (label: '23', displayLabel: '23', steps: 5900),
-      (label: '24', displayLabel: '', steps: 3800),
-      (label: '25', displayLabel: '25', steps: 6400),
-      (label: '26', displayLabel: '', steps: 7400),
-      (label: '27', displayLabel: '27', steps: 5200),
-      (label: '28', displayLabel: '', steps: 6900),
-      (label: '29', displayLabel: '29', steps: 4600),
-      (label: '30', displayLabel: '30', steps: 5000),
-      (label: '1', displayLabel: '', steps: 1200),
-      (label: '2', displayLabel: '2', steps: 5800),
-      (label: '3', displayLabel: '', steps: 4400),
-      (label: '4', displayLabel: '4', steps: 4700),
-      (label: '5', displayLabel: '', steps: 1100),
-      (label: '6', displayLabel: '6', steps: 3800),
-      (label: '7', displayLabel: '', steps: 4000),
-      (label: '8', displayLabel: '8', steps: 6500),
-      (label: '9', displayLabel: '', steps: 8000),
-      (label: '10', displayLabel: '10', steps: 3200),
-      (label: '11', displayLabel: '', steps: 5100),
-      (label: '12', displayLabel: '12', steps: 1000),
-      (label: '13', displayLabel: '', steps: 6200),
-      (label: '14', displayLabel: '14', steps: 5100),
-      (label: '15', displayLabel: '', steps: 3500),
-      (label: 'Today', displayLabel: 'Today', steps: widget.telemetry.steps),
-    ];
+    final now = DateTime.now();
+    final bool isDayTab = widget.selectedTab == 0;
+    final bool isWeekTab = widget.selectedTab == 1;
 
-    final List<({String label, String displayLabel, int steps})> weekData = [
-      (label: 'M', displayLabel: 'M', steps: 5800),
-      (label: 'T', displayLabel: 'T', steps: 4700),
-      (label: 'W', displayLabel: 'W', steps: 3800),
-      (label: 'T', displayLabel: 'T', steps: 6500),
-      (label: 'F', displayLabel: 'F', steps: 8000),
-      (label: 'S', displayLabel: 'S', steps: 3200),
-      (label: 'Today', displayLabel: 'Today', steps: widget.telemetry.steps),
-    ];
+    // 1. Day Tab: 24 Hours of Today (00:00 to 23:00) matching StepsBentoCard
+    final List<({String label, String displayLabel, int steps, bool isFuture})> dayData = [];
+    final hourlySteps = widget.telemetry.hourlySteps;
+    final currentHour = now.hour;
+    for (int h = 0; h < 24; h++) {
+      final steps = (hourlySteps.length > h) ? hourlySteps[h] : 0;
+      final isFuture = h > currentHour;
+      final hourStr = h.toString().padLeft(2, '0');
+      // Timeline hour markers matching StepsBentoCard: 00, 06, 12, 18
+      final displayLabel = (h == 0 || h == 6 || h == 12 || h == 18) ? hourStr : '';
+      dayData.add((
+        label: '$hourStr:00',
+        displayLabel: displayLabel,
+        steps: steps,
+        isFuture: isFuture,
+      ));
+    }
 
-    final List<({String label, String displayLabel, int steps})> monthData = [
-      (label: 'W1', displayLabel: 'W1', steps: 38200),
-      (label: 'W2', displayLabel: 'W2', steps: 41500),
-      (label: 'W3', displayLabel: 'W3', steps: 44800),
-      (label: 'W4', displayLabel: 'W4', steps: 39242),
-    ];
+    // 2. Week Tab: Current week Monday to Sunday
+    final List<({String label, String displayLabel, int steps, bool isFuture})> weekData = [];
+    const weekdayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final monday = now.subtract(Duration(days: now.weekday - 1));
+    for (int d = 0; d < 7; d++) {
+      final dayDate = monday.add(Duration(days: d));
+      final isToday = dayDate.year == now.year &&
+          dayDate.month == now.month &&
+          dayDate.day == now.day;
+      final isFuture = dayDate.isAfter(DateTime(now.year, now.month, now.day));
+      final dateKey =
+          '${dayDate.year}-${dayDate.month.toString().padLeft(2, '0')}-${dayDate.day.toString().padLeft(2, '0')}';
+      final steps = isToday
+          ? widget.telemetry.steps
+          : (isFuture ? 0 : (widget.telemetry.historicalDays[dateKey] ?? 0));
+      final label = isToday ? 'Today' : weekdayLabels[d];
+      weekData.add((
+        label: label,
+        displayLabel: label,
+        steps: steps,
+        isFuture: isFuture,
+      ));
+    }
 
-    final currentData = widget.selectedTab == 0
+    // 3. Month Tab: Real calendar days leading up to Today (last 30 days)
+    final List<({String label, String displayLabel, int steps, bool isFuture})> monthData = [];
+    for (int i = 29; i >= 0; i--) {
+      final date = now.subtract(Duration(days: i));
+      final isToday = i == 0;
+      final dateKey =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final steps = isToday
+          ? widget.telemetry.steps
+          : (widget.telemetry.historicalDays[dateKey] ?? 0);
+      final label = '${date.day}';
+      final displayLabel = (isToday || (date.day == 1 || date.day % 5 == 0)) ? label : '';
+      monthData.add((
+        label: isToday ? 'Today' : label,
+        displayLabel: displayLabel,
+        steps: steps,
+        isFuture: false,
+      ));
+    }
+
+    final currentData = isDayTab
         ? dayData
-        : widget.selectedTab == 1
+        : isWeekTab
             ? weekData
             : monthData;
 
-    final targetGoal = widget.selectedTab == 2 ? 50000 : widget.telemetry.stepsGoal;
-    final activeIndex = _selectedDayIndex != null && _selectedDayIndex! < currentData.length
-        ? _selectedDayIndex!
-        : (currentData.length - 1);
-    final activeItem = currentData[activeIndex];
-    final isToday = activeItem.label == 'Today';
-    final displayedSteps = activeItem.steps;
-    final displayedKm = (displayedSteps * 0.000708).toStringAsFixed(2);
-    final displayedGoal = targetGoal;
+    final int maxStepsInData = currentData.fold(
+      0,
+      (max, item) => item.steps > max ? item.steps : max,
+    );
+
+    final int chartScale;
+    if (isDayTab) {
+      if (maxStepsInData <= 0) {
+        chartScale = 500;
+      } else if (maxStepsInData <= 250) {
+        chartScale = 250;
+      } else if (maxStepsInData <= 500) {
+        chartScale = 500;
+      } else if (maxStepsInData <= 1000) {
+        chartScale = 1000;
+      } else if (maxStepsInData <= 1500) {
+        chartScale = 1500;
+      } else if (maxStepsInData <= 2000) {
+        chartScale = 2000;
+      } else {
+        chartScale = ((maxStepsInData * 1.25) ~/ 500 + 1) * 500;
+      }
+    } else {
+      chartScale = math.max(widget.telemetry.stepsGoal, maxStepsInData);
+    }
+
+    final ySteps = [
+      chartScale,
+      (chartScale * 0.75).toInt(),
+      (chartScale * 0.50).toInt(),
+      (chartScale * 0.25).toInt(),
+      0,
+    ];
+
+    final bool hasSelection = _selectedDayIndex != null &&
+        _selectedDayIndex! >= 0 &&
+        _selectedDayIndex! < currentData.length;
+
+    final String stepCountHeader;
+    final int displayedSteps;
+    final String displayedKm;
+    final int displayedGoal = widget.telemetry.stepsGoal;
+
+    if (isDayTab) {
+      if (hasSelection) {
+        final selItem = currentData[_selectedDayIndex!];
+        stepCountHeader = 'Steps (${selItem.label})';
+        displayedSteps = selItem.steps;
+        displayedKm = (displayedSteps * 0.000708).toStringAsFixed(2);
+      } else {
+        stepCountHeader = 'Step count';
+        displayedSteps = widget.telemetry.steps;
+        displayedKm = (displayedSteps * 0.000708).toStringAsFixed(2);
+      }
+    } else {
+      final activeIndex = hasSelection ? _selectedDayIndex! : (currentData.length - 1);
+      final activeItem = currentData[activeIndex];
+      final isItemToday = activeItem.label == 'Today';
+      stepCountHeader = isItemToday ? 'Step count' : 'Steps (${activeItem.label})';
+      displayedSteps = activeItem.steps;
+      displayedKm = (displayedSteps * 0.000708).toStringAsFixed(2);
+    }
 
     const double chartBarAreaHeight = 146.0;
     const double bottomLabelHeight = 24.0;
     const double totalChartHeight = chartBarAreaHeight + bottomLabelHeight;
     const double yAxisWidth = 38.0;
-
-    final ySteps = widget.selectedTab == 0
-        ? [8000, 6000, 4000, 2000, 0]
-        : [
-            targetGoal,
-            (targetGoal * 0.75).toInt(),
-            (targetGoal * 0.5).toInt(),
-            (targetGoal * 0.25).toInt(),
-            0
-          ];
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
@@ -440,12 +626,12 @@ class _HistoricalStepTrackerCardState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Scrollable Chart with Fixed Y-Axis
+          // Chart with Fixed Y-Axis
           SizedBox(
             height: totalChartHeight,
             child: Row(
               children: [
-                // Scrollable bars area
+                // Bars Area
                 Expanded(
                   child: Stack(
                     children: [
@@ -458,28 +644,59 @@ class _HistoricalStepTrackerCardState
                           ),
                         ),
                       ),
-                      // Horizontally scrollable day bars
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        controller: _scrollController,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            const SizedBox(width: 4),
-                            for (int i = 0; i < currentData.length; i++) ...[
-                              _buildBarColumn(
-                                index: i,
-                                item: currentData[i],
-                                isSelected: i == activeIndex,
-                                targetGoal: targetGoal,
-                                barAreaHeight: chartBarAreaHeight,
-                                labelHeight: bottomLabelHeight,
-                              ),
+                      // Bars (Fitted for Day/Week, Scrollable for Month)
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final double availableWidth = constraints.maxWidth;
+                          final double slotWidth;
+                          final double barWidth;
+                          final bool shouldScroll;
+
+                          if (isDayTab) {
+                            slotWidth = (availableWidth / 24).clamp(10.0, 24.0);
+                            barWidth = (slotWidth * 0.52).clamp(4.0, 8.5);
+                            shouldScroll = slotWidth * 24 > availableWidth + 1;
+                          } else if (isWeekTab) {
+                            slotWidth = availableWidth / 7;
+                            barWidth = 14.0;
+                            shouldScroll = false;
+                          } else {
+                            slotWidth = 24.0;
+                            barWidth = 10.0;
+                            shouldScroll = true;
+                          }
+
+                          final barsRow = Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              for (int i = 0; i < currentData.length; i++) ...[
+                                _buildBarColumn(
+                                  index: i,
+                                  item: currentData[i],
+                                  isSelected: hasSelection
+                                      ? (_selectedDayIndex == i)
+                                      : (!isDayTab && i == currentData.length - 1),
+                                  chartScale: chartScale,
+                                  barAreaHeight: chartBarAreaHeight,
+                                  labelHeight: bottomLabelHeight,
+                                  slotWidth: slotWidth,
+                                  barWidth: barWidth,
+                                  isDayTab: isDayTab,
+                                ),
+                              ],
                             ],
-                            const SizedBox(width: 8),
-                          ],
-                        ),
+                          );
+
+                          if (shouldScroll) {
+                            return SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              controller: _scrollController,
+                              physics: const BouncingScrollPhysics(),
+                              child: barsRow,
+                            );
+                          }
+                          return barsRow;
+                        },
                       ),
                     ],
                   ),
@@ -577,7 +794,7 @@ class _HistoricalStepTrackerCardState
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        isToday ? 'Step count' : 'Steps (${activeItem.label})',
+                        stepCountHeader,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -593,9 +810,9 @@ class _HistoricalStepTrackerCardState
                           fontFamily: 'JetBrains Mono',
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
-                          color: activeIndex == currentData.length - 1
-                              ? const Color(0xFF22C55E)
-                              : const Color(0xFF00E5FF),
+                          color: hasSelection
+                              ? const Color(0xFF00E5FF)
+                              : const Color(0xFF22C55E),
                         ),
                       ),
                       const Text(
@@ -659,22 +876,32 @@ class _HistoricalStepTrackerCardState
 
   Widget _buildBarColumn({
     required int index,
-    required ({String label, String displayLabel, int steps}) item,
+    required ({String label, String displayLabel, int steps, bool isFuture}) item,
     required bool isSelected,
-    required int targetGoal,
+    required int chartScale,
     required double barAreaHeight,
     required double labelHeight,
+    required double slotWidth,
+    required double barWidth,
+    required bool isDayTab,
   }) {
-    final double progress = (item.steps / targetGoal).clamp(0.04, 1.0);
+    final bool hasSteps = item.steps > 0;
+    final double progress = hasSteps
+        ? (item.steps / chartScale).clamp(0.04, 1.0)
+        : 0.0;
     final double fillHeight = progress * barAreaHeight;
     final bool isToday = item.label == 'Today';
-    const double barWidth = 10.0;
-    final double slotWidth = isToday ? 38.0 : 26.0;
 
     return InkWell(
       onTap: () {
         HapticFeedback.selectionClick();
-        setState(() => _selectedDayIndex = index);
+        setState(() {
+          if (_selectedDayIndex == index) {
+            _selectedDayIndex = null;
+          } else {
+            _selectedDayIndex = index;
+          }
+        });
       },
       borderRadius: BorderRadius.circular(6),
       child: SizedBox(
@@ -700,8 +927,8 @@ class _HistoricalStepTrackerCardState
                     ),
                   ),
 
-                  // Today's dashed goal guideline
-                  if (isToday && progress < 1.0)
+                  // Goal guideline (only for Today on Week and Month tabs)
+                  if (!isDayTab && isToday && hasSteps && progress < 1.0)
                     Positioned(
                       top: 0,
                       bottom: fillHeight,
@@ -716,50 +943,63 @@ class _HistoricalStepTrackerCardState
                     ),
 
                   // Active Filled Bar
-                  Container(
-                    width: barWidth,
-                    height: fillHeight,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? const Color(0xFF00E5FF)
-                          : const Color(0xFF22C55E),
-                      borderRadius: BorderRadius.circular(barWidth / 2),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
-                                blurRadius: 6,
-                                spreadRadius: 1,
-                              ),
-                            ]
-                          : null,
+                  if (fillHeight > 0)
+                    Container(
+                      width: barWidth,
+                      height: fillHeight,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? const Color(0xFF00E5FF)
+                            : const Color(0xFF22C55E),
+                        borderRadius: BorderRadius.circular(barWidth / 2),
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
+                                  blurRadius: 6,
+                                  spreadRadius: 1,
+                                ),
+                              ]
+                            : null,
+                      ),
+                    )
+                  else if (!item.isFuture && !hasSteps)
+                    // Subtle baseline dot for non-active hours/days
+                    Container(
+                      width: barWidth,
+                      height: 3.5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2A3142),
+                        borderRadius: BorderRadius.circular(barWidth / 2),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
 
-            // Date / Day Label
+            // Date / Hour Label
             SizedBox(
               height: labelHeight,
               child: Center(
-                child: Text(
-                  item.displayLabel,
-                  softWrap: false,
-                  overflow: TextOverflow.visible,
-                  style: TextStyle(
-                    fontFamily: 'JetBrains Mono',
-                    fontSize: 11.0,
-                    color: isSelected
-                        ? const Color(0xFF00E5FF)
-                        : isToday
-                            ? const Color(0xFF22C55E)
-                            : const Color(0xFF94A3B8),
-                    fontWeight: isSelected || isToday
-                        ? FontWeight.w700
-                        : FontWeight.w500,
-                  ),
-                ),
+                child: item.displayLabel.isNotEmpty
+                    ? Text(
+                        item.displayLabel,
+                        softWrap: false,
+                        overflow: TextOverflow.visible,
+                        style: TextStyle(
+                          fontFamily: 'JetBrains Mono',
+                          fontSize: 11.0,
+                          color: isSelected
+                              ? const Color(0xFF00E5FF)
+                              : isToday
+                                  ? const Color(0xFF22C55E)
+                                  : const Color(0xFF94A3B8),
+                          fontWeight: isSelected || isToday
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
               ),
             ),
           ],

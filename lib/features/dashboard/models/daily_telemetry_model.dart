@@ -4,41 +4,30 @@
 /// calorie burn/consumption, hydration intake, and goal milestones.
 library;
 
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/constants/app_constants.dart';
+import '../../../services/hive_service.dart';
 
 /// Daily telemetry data points for the dashboard bento grid.
 
 class DailyTelemetry {
   const DailyTelemetry({
-    this.steps = 5282,
+    this.steps = 0,
     this.stepsGoal = 8000,
-    this.distanceKm = 3.74,
-    this.calories = 2390,
+    this.distanceKm = 0.0,
+    this.calories = 0,
     this.caloriesGoal = 3000,
-    this.waterMl = 2750,
+    this.waterMl = 0,
     this.waterGoalMl = 3500,
-    this.sleepHours = 7.5,
+    this.sleepHours = 0.0,
     this.sleepGoalHours = 8.0,
-    this.hourlySteps = const [
-      80, 190, 420, 680, 1150, 1680, 2450, 3120, 3950, 4480, 4920, 5282
-    ],
-    this.historicalDays = const {
-      '30': 5000,
-      '2': 5800,
-      '4': 4700,
-      '6': 3800,
-      '8': 6500,
-      '9': 8000,
-      '10': 3200,
-      '12': 1000,
-      '13': 6200,
-      '14': 5100,
-      '15': 3500,
-      'Today': 5282,
-    },
-    this.recordSingleDaySteps = 17024,
-    this.recordSingleDayKm = 11.97,
-    this.recordDate = '26/6/2026',
+    this.hourlySteps = const [],
+    this.historicalDays = const {},
+    this.recordSingleDaySteps = 0,
+    this.recordSingleDayKm = 0.0,
+    this.recordDate = '--',
   });
 
   /// Total steps taken today.
@@ -134,7 +123,101 @@ class DailyTelemetry {
 class DailyTelemetryNotifier extends Notifier<DailyTelemetry> {
   @override
   DailyTelemetry build() {
-    return const DailyTelemetry();
+    final hive = ref.watch(hiveServiceProvider);
+    final now = DateTime.now();
+    final todayStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final savedDate = hive.getSetting<String>(AppConstants.settingStepDate);
+
+    int todaySteps = 0;
+    List<int> hourlySteps = List<int>.filled(24, 0);
+    Map<String, int> history = {};
+
+    final historyRaw = hive.getSetting<String>(AppConstants.settingStepHistory);
+    if (historyRaw != null && historyRaw.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(historyRaw) as Map<String, dynamic>;
+        history = decoded.map((k, v) => MapEntry(k, (v as num).toInt()));
+      } catch (_) {}
+    }
+
+    int recordSteps =
+        hive.getSetting<int>(AppConstants.settingStepRecordSteps, fallback: 0) ??
+            0;
+    String recordDate = hive.getSetting<String>(
+          AppConstants.settingStepRecordDate,
+          fallback: '--',
+        ) ??
+        '--';
+
+    if (savedDate == todayStr) {
+      todaySteps =
+          hive.getSetting<int>(AppConstants.settingStepTodayCount, fallback: 0) ??
+              0;
+      final hourlyRaw =
+          hive.getSetting<String>(AppConstants.settingStepHourlyDistribution);
+      if (hourlyRaw != null && hourlyRaw.isNotEmpty) {
+        try {
+          final decoded = jsonDecode(hourlyRaw) as List<dynamic>;
+          hourlySteps = decoded.map((e) => (e as num).toInt()).toList();
+          if (hourlySteps.length != 24) {
+            hourlySteps = List<int>.filled(24, 0);
+          }
+        } catch (_) {}
+      }
+    } else if (savedDate != null) {
+      // Midnight rollover if previous day's steps were not archived yet
+      final prevSteps =
+          hive.getSetting<int>(AppConstants.settingStepTodayCount, fallback: 0) ??
+              0;
+      if (prevSteps > 0) {
+        history[savedDate] = prevSteps;
+        if (prevSteps > recordSteps) {
+          recordSteps = prevSteps;
+          try {
+            final parts = savedDate.split('-');
+            recordDate = '${parts[2]}/${parts[1]}/${parts[0]}';
+          } catch (_) {
+            recordDate = savedDate;
+          }
+        }
+      }
+    }
+
+    final distanceKm =
+        double.parse((todaySteps * 0.000708).toStringAsFixed(2));
+    final recordKm =
+        double.parse((recordSteps * 0.000708).toStringAsFixed(2));
+
+    return DailyTelemetry(
+      steps: todaySteps,
+      distanceKm: distanceKm,
+      hourlySteps: hourlySteps,
+      historicalDays: history,
+      recordSingleDaySteps: recordSteps,
+      recordSingleDayKm: recordKm,
+      recordDate: recordDate,
+    );
+  }
+
+  void updateDailyStepTelemetry({
+    required int steps,
+    required double distanceKm,
+    required List<int> hourlySteps,
+    required Map<String, int> historicalDays,
+    required int recordSingleDaySteps,
+    required double recordSingleDayKm,
+    required String recordDate,
+  }) {
+    state = state.copyWith(
+      steps: steps,
+      distanceKm: distanceKm,
+      hourlySteps: hourlySteps,
+      historicalDays: historicalDays,
+      recordSingleDaySteps: recordSingleDaySteps,
+      recordSingleDayKm: recordSingleDayKm,
+      recordDate: recordDate,
+    );
   }
 
   void updateSteps(int steps, double distanceKm) {

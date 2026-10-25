@@ -147,40 +147,48 @@ class _SlimBarGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const int totalBars = 16;
+    const int totalBars = 24;
+    final currentHour = DateTime.now().hour;
     final int maxVal = hourlySteps.isNotEmpty
         ? hourlySteps.reduce((a, b) => a > b ? a : b)
-        : 1;
-
-    final List<double> normalizedHeights = List.generate(totalBars, (index) {
-      if (hourlySteps.isEmpty) return 0.15;
-      final dataIdx = (index * hourlySteps.length) ~/ totalBars;
-      final val = hourlySteps[dataIdx.clamp(0, hourlySteps.length - 1)];
-      if (val <= 0) return 0.12;
-      return (val / (maxVal > 0 ? maxVal : 1)).clamp(0.18, 1.0);
-    });
+        : 0;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // 16 slim vertical lines (increased height to 40)
+        // 24 slim vertical bars representing hours 00:00 to 23:00
         SizedBox(
           height: 40,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
-            children: List.generate(totalBars, (i) {
-              final heightPct = normalizedHeights[i];
-              final bool hasActivity = i < (totalBars * 0.75);
+            children: List.generate(totalBars, (hour) {
+              final isFuture = hour > currentHour;
+              final steps = (hourlySteps.length > hour) ? hourlySteps[hour] : 0;
+              final bool hasSteps = steps > 0;
+
+              final double barHeight;
+              final Color barColor;
+
+              if (isFuture) {
+                barHeight = 4.0;
+                barColor = AppColors.steel.withValues(alpha: 0.18);
+              } else if (!hasSteps) {
+                barHeight = 4.0;
+                barColor = AppColors.steel.withValues(alpha: 0.35);
+              } else {
+                final double fraction = maxVal > 0 ? (steps / maxVal) : 0.0;
+                barHeight = (fraction * 34.0 + 6.0).clamp(6.0, 40.0);
+                barColor = AppColors.pureWhite;
+              }
+
               return Container(
-                width: 2.8,
-                height: (heightPct * 40).clamp(5.0, 40.0),
+                width: 2.4,
+                height: barHeight,
                 decoration: BoxDecoration(
-                  color: hasActivity
-                      ? AppColors.pureWhite
-                      : AppColors.steel.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(1.5),
+                  color: barColor,
+                  borderRadius: BorderRadius.circular(1.2),
                 ),
               );
             }),
