@@ -1,16 +1,16 @@
 /// LEON Atmospheric Ambient Glow Backdrop.
 ///
 /// Features:
-/// - Subtle, diffuse bluish-grayish-white / cold slate aura behind glass cards
+/// - Prominent, luminescent gradient: brilliant whitish origin spreading out into vibrant electric blue
+/// - High-performance hardware acceleration with zero GC allocations in render loop
+/// - Snappy, instant 140ms transition when switching sections
 /// - Screen-aware spatial positioning:
-///   * Tab 0 (Home / Dashboard): Pools from the bottom-up behind bento cards & floating nav
+///   * Tab 0 (Home / Dashboard): Whitish bottom origin spreading upward behind cards
 ///   * Tab 1 (Workouts): Emits from both left and right flanks as tactical framing brackets
-///   * Tab 2 (Exercises): Pools from the top-right horizon behind search & categories
-///   * Tab 3 (History): Wide center-horizon ribbon framing heatmap & consistency charts
-///   * Tab 4 (Profile): Top-center avatar halo and soft lower anchor
-/// - Fluid animated glide transition when switching screens
+///   * Tab 2 (Exercises): Top-right horizon spreading down behind search & filters
+///   * Tab 3 (History): Wide center-horizon ribbon framing charts
+///   * Tab 4 (Profile): Top-center avatar halo
 /// - Organic, subtle breathing micro-motion (sine-wave idle drift)
-/// - Pure GPU-accelerated gradient shader (120Hz locked, 0% CPU overhead)
 library;
 
 import 'dart:math' as math;
@@ -47,58 +47,60 @@ class _GlowConfig {
   final double radiusB;
   final double opacityB;
 
+  // ── Prominent Glow Configurations ──────────────────────────────────────────
+  // Opacities increased to 0.42-0.48 for strong luminescence while keeping contrast.
   static const _GlowConfig home = _GlowConfig(
-    alignmentA: Alignment(-0.25, 0.95),
-    radiusA: 1.25,
-    opacityA: 0.16,
-    alignmentB: Alignment(0.25, 0.95),
-    radiusB: 1.25,
-    opacityB: 0.16,
+    alignmentA: Alignment(-0.18, 1.02),
+    radiusA: 1.20,
+    opacityA: 0.48,
+    alignmentB: Alignment(0.18, 1.02),
+    radiusB: 1.20,
+    opacityB: 0.48,
   );
 
   static const _GlowConfig workouts = _GlowConfig(
-    alignmentA: Alignment(-1.15, 0.15),
-    radiusA: 1.10,
-    opacityA: 0.15,
-    alignmentB: Alignment(1.15, 0.35),
-    radiusB: 1.10,
-    opacityB: 0.15,
+    alignmentA: Alignment(-1.08, 0.18),
+    radiusA: 1.05,
+    opacityA: 0.44,
+    alignmentB: Alignment(1.08, 0.32),
+    radiusB: 1.05,
+    opacityB: 0.44,
   );
 
   static const _GlowConfig exercises = _GlowConfig(
-    alignmentA: Alignment(0.70, -0.75),
+    alignmentA: Alignment(0.75, -0.85),
     radiusA: 1.15,
-    opacityA: 0.16,
-    alignmentB: Alignment(-0.60, -0.40),
-    radiusB: 0.85,
-    opacityB: 0.10,
+    opacityA: 0.46,
+    alignmentB: Alignment(-0.65, -0.45),
+    radiusB: 0.90,
+    opacityB: 0.32,
   );
 
   static const _GlowConfig history = _GlowConfig(
-    alignmentA: Alignment(-0.75, 0.15),
-    radiusA: 1.20,
-    opacityA: 0.14,
-    alignmentB: Alignment(0.75, 0.25),
-    radiusB: 1.20,
-    opacityB: 0.14,
+    alignmentA: Alignment(-0.85, 0.15),
+    radiusA: 1.15,
+    opacityA: 0.42,
+    alignmentB: Alignment(0.85, 0.22),
+    radiusB: 1.15,
+    opacityB: 0.42,
   );
 
   static const _GlowConfig profile = _GlowConfig(
-    alignmentA: Alignment(0.0, -0.85),
-    radiusA: 1.10,
-    opacityA: 0.16,
-    alignmentB: Alignment(0.0, 0.75),
-    radiusB: 0.75,
-    opacityB: 0.09,
+    alignmentA: Alignment(0.0, -0.92),
+    radiusA: 1.15,
+    opacityA: 0.46,
+    alignmentB: Alignment(0.0, 0.70),
+    radiusB: 0.80,
+    opacityB: 0.28,
   );
 
   static const _GlowConfig center = _GlowConfig(
     alignmentA: Alignment(0.0, 0.0),
-    radiusA: 1.0,
-    opacityA: 0.15,
-    alignmentB: Alignment(0.0, 0.4),
-    radiusB: 0.8,
-    opacityB: 0.10,
+    radiusA: 1.05,
+    opacityA: 0.44,
+    alignmentB: Alignment(0.0, 0.35),
+    radiusB: 0.85,
+    opacityB: 0.30,
   );
 
   static _GlowConfig forIndex(int index) {
@@ -187,9 +189,10 @@ class _AtmosphericGlowBackdropState extends State<AtmosphericGlowBackdrop>
     _fromConfig = initial;
     _toConfig = initial;
 
+    // Fast, snappy 140ms transition for near-instant response when switching tabs
     _transitionController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 550),
+      duration: const Duration(milliseconds: 140),
       value: 1.0,
     );
 
@@ -214,6 +217,7 @@ class _AtmosphericGlowBackdropState extends State<AtmosphericGlowBackdrop>
         _transitionController.value,
       );
       _toConfig = target;
+      // Snappy forward animation with easeOutQuad for instant visual presence
       _transitionController.forward(from: 0.0);
     }
   }
@@ -230,7 +234,7 @@ class _AtmosphericGlowBackdropState extends State<AtmosphericGlowBackdrop>
     final painter = AnimatedBuilder(
       animation: Listenable.merge([_transitionController, _breathingController]),
       builder: (context, _) {
-        final transitionProgress = Curves.easeOutCubic.transform(
+        final transitionProgress = Curves.easeOutQuad.transform(
           _transitionController.value,
         );
         final currentConfig = _GlowConfig.lerp(
@@ -246,9 +250,9 @@ class _AtmosphericGlowBackdropState extends State<AtmosphericGlowBackdrop>
         return CustomPaint(
           painter: _AtmosphericGlowPainter(
             config: currentConfig,
-            driftX: breathSine * 0.035,
-            driftY: breathCosine * 0.025,
-            pulseFactor: 1.0 + (breathSine * 0.05),
+            driftX: breathSine * 0.025,
+            driftY: breathCosine * 0.020,
+            pulseFactor: 1.0 + (breathSine * 0.04),
           ),
           size: Size.infinite,
         );
@@ -282,72 +286,76 @@ class _AtmosphericGlowPainter extends CustomPainter {
   final double driftY;
   final double pulseFactor;
 
-  // Cold glacial slate-white palette
-  static const Color _glowTintCore = Color(0xFFB8D0E8);
-  static const Color _glowTintMid = Color(0xFF648CAE);
-  static const Color _glowTintOuter = Color(0xFF1E293B);
+  // ── Whitish-to-Blue Palette Stops ──────────────────────────────────────────
+  // Starts with brilliant white at origin, spreading into electric cyan-blue,
+  // then oceanic deep blue, dissolving into dark obsidian.
+  static const Color _colorWhiteCore = Color(0xFFFFFFFF);
+  static const Color _colorIceHighlight = Color(0xFFE0F2FE);
+  static const Color _colorElectricCyan = Color(0xFF38BDF8);
+  static const Color _colorOceanicBlue = Color(0xFF0284C7);
+  static const Color _colorDeepSlateBlue = Color(0xFF0C4A6E);
+
+  static const List<double> _glowStops = [0.0, 0.14, 0.36, 0.62, 0.84, 1.0];
+
+  // Reused cached Paint instances to prevent GC allocation overhead during 120 FPS render
+  static final Paint _bgPaint = Paint()..color = AppColors.dashboardBg;
+  static final Paint _paintA = Paint()..blendMode = BlendMode.screen;
+  static final Paint _paintB = Paint()..blendMode = BlendMode.screen;
 
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
 
     // 1. Deep solid background canvas
-    canvas.drawRect(
-      rect,
-      Paint()..color = AppColors.dashboardBg,
-    );
+    canvas.drawRect(rect, _bgPaint);
 
     // 2. Primary Atmospheric Emitter (Source A)
     final adjustedAlignA = Alignment(
       (config.alignmentA.x + driftX).clamp(-1.5, 1.5),
       (config.alignmentA.y + driftY).clamp(-1.5, 1.5),
     );
-    final opA = (config.opacityA * pulseFactor).clamp(0.0, 0.35);
+    final opA = (config.opacityA * pulseFactor).clamp(0.0, 0.65);
 
     final shaderA = RadialGradient(
       center: adjustedAlignA,
       radius: config.radiusA * pulseFactor,
       colors: [
-        _glowTintCore.withValues(alpha: opA),
-        _glowTintMid.withValues(alpha: opA * 0.45),
-        _glowTintOuter.withValues(alpha: opA * 0.12),
+        _colorWhiteCore.withValues(alpha: opA),
+        _colorIceHighlight.withValues(alpha: opA * 0.88),
+        _colorElectricCyan.withValues(alpha: opA * 0.65),
+        _colorOceanicBlue.withValues(alpha: opA * 0.38),
+        _colorDeepSlateBlue.withValues(alpha: opA * 0.12),
         Colors.transparent,
       ],
-      stops: const [0.0, 0.32, 0.68, 1.0],
+      stops: _glowStops,
     ).createShader(rect);
 
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..shader = shaderA
-        ..blendMode = BlendMode.screen,
-    );
+    _paintA.shader = shaderA;
+    canvas.drawRect(rect, _paintA);
 
     // 3. Secondary Atmospheric Emitter (Source B)
     final adjustedAlignB = Alignment(
       (config.alignmentB.x - driftX).clamp(-1.5, 1.5),
       (config.alignmentB.y - driftY).clamp(-1.5, 1.5),
     );
-    final opB = (config.opacityB * pulseFactor).clamp(0.0, 0.35);
+    final opB = (config.opacityB * pulseFactor).clamp(0.0, 0.65);
 
     final shaderB = RadialGradient(
       center: adjustedAlignB,
       radius: config.radiusB * pulseFactor,
       colors: [
-        _glowTintCore.withValues(alpha: opB),
-        _glowTintMid.withValues(alpha: opB * 0.40),
-        _glowTintOuter.withValues(alpha: opB * 0.10),
+        _colorWhiteCore.withValues(alpha: opB),
+        _colorIceHighlight.withValues(alpha: opB * 0.88),
+        _colorElectricCyan.withValues(alpha: opB * 0.65),
+        _colorOceanicBlue.withValues(alpha: opB * 0.38),
+        _colorDeepSlateBlue.withValues(alpha: opB * 0.12),
         Colors.transparent,
       ],
-      stops: const [0.0, 0.30, 0.65, 1.0],
+      stops: _glowStops,
     ).createShader(rect);
 
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..shader = shaderB
-        ..blendMode = BlendMode.screen,
-    );
+    _paintB.shader = shaderB;
+    canvas.drawRect(rect, _paintB);
   }
 
   @override
