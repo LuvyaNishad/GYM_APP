@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../shared/widgets/acrylic_card.dart';
 import '../models/split_model.dart';
 import '../providers/splits_provider.dart';
 import '../widgets/create_routine_sheet.dart';
@@ -208,16 +209,15 @@ class _RoutineLibraryScreenState extends ConsumerState<RoutineLibraryScreen>
         final split = splits[index];
         final isActive = split.id == activeSplitId;
 
-        return Container(
+        return AcrylicCard(
+          borderRadius: 16,
           margin: const EdgeInsets.only(bottom: 14),
-          decoration: BoxDecoration(
-            color: AppColors.charcoal,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isActive ? AppColors.primary : AppColors.steel.withValues(alpha: 0.6),
-              width: isActive ? 1.5 : 1.0,
-            ),
-          ),
+          borderColor: isActive
+              ? AppColors.primary
+              : AppColors.steel.withValues(alpha: 0.70),
+          borderWidth: isActive ? 1.5 : 1.0,
+          glowColor: isActive ? Colors.white.withValues(alpha: 0.08) : null,
+          padding: EdgeInsets.zero,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

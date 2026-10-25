@@ -28,6 +28,16 @@ abstract final class AppColors {
   static const Color emeraldGreen = Color(0xFF00E676);
   static const Color textMutedSlate = Color(0xFF8E929B);
 
+  // ── Acrylic Material Tokens ───────────────────────────────────────────────
+  /// Slight acrylic card background tint (translucent slate-charcoal at ~74% opacity).
+  /// Allows the atmospheric ambient glow to subtly permeate through without
+  /// washing out numbers, charts, or text contrast.
+  static const Color acrylicBackground = Color(0xBD1E2330); // ~74% opacity
+  static const Color acrylicBackgroundSecondary = Color(0xB8141722); // ~72% opacity
+  static const Color acrylicBorder = Color(0x33FFFFFF); // hairline specular stroke
+  static const Color acrylicHighlight = Color(0x0FFFFFFF); // delicate top specular sheen
+  static const double acrylicBlurSigma = 10.0; // slight acrylic frosted blur
+
   // ── Atmospheric Ambient Glow Tokens ────────────────────────────────────────
   /// Core frosty blueish-grayish-white aura tint (subtle glass backlighting)
   static const Color ambientGlowCore = Color(0xFFB8D0E8);

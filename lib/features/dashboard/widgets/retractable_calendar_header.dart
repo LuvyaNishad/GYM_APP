@@ -72,9 +72,9 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
   late DateTime _selectedDate;
   late final List<DateTime> _weekDays;
 
-  // Noguchi Monochrome Minimal palette
-  static const Color _cardBg = AppColors.charcoal; // #27262A
-  static const Color _pillSlotBg = Color(0xFF1B1C22); // Sleek dark slot
+  // Noguchi Monochrome Minimal palette with slight acrylic translucency
+  static const Color _cardBg = Color(0xCC202430); // ~80% opacity dark slate
+  static const Color _pillSlotBg = Color(0x991B1C22); // ~60% opacity sleek dark slot
   static const double _tabHeight = 18.0;
 
   @override
@@ -523,9 +523,9 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
     // Surface background
     final Color bgColor;
     if (isSelected) {
-      bgColor = const Color(0xFF1E2836);
+      bgColor = const Color(0xFF1E2836).withValues(alpha: 0.85);
     } else if (isToday) {
-      bgColor = const Color(0xFF22242B);
+      bgColor = const Color(0xFF22242B).withValues(alpha: 0.80);
     } else {
       bgColor = _pillSlotBg;
     }

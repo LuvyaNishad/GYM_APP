@@ -17,6 +17,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../models/split_model.dart';
+import '../../../shared/widgets/acrylic_card.dart';
 import '../../history/providers/history_provider.dart';
 import '../../workout_session/providers/active_session_provider.dart';
 import '../providers/workout_rotation_provider.dart';
@@ -55,8 +56,6 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
 
   /// Optional tap callback for inspecting workout details.
   final VoidCallback? onTap;
-
-  static const Color _cardBg = AppColors.cardBackground;
 
   static String _shortMuscleName(String muscle) {
     final upper = muscle.toUpperCase();
@@ -184,34 +183,20 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
       }
     }
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: Material(
-        color: _cardBg,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(22),
-          side: BorderSide(
-            color: isSessionActive
-                ? AppColors.activeCyan
-                : AppColors.subtleBorder,
-            width: isSessionActive ? 1.5 : 1.0,
-          ),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(22),
-          onTap: () {
-            HapticFeedback.lightImpact();
-            _openDetails(context);
-          },
-          splashColor: Colors.white.withValues(alpha: 0.08),
-          highlightColor: Colors.white.withValues(alpha: 0.03),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // ── Top Row: Status Badges + Clean Secondary Controls ───────
+    return AcrylicCard(
+      borderRadius: 22,
+      borderColor: isSessionActive
+          ? AppColors.activeCyan
+          : AppColors.subtleBorder.withValues(alpha: 0.75),
+      borderWidth: isSessionActive ? 1.5 : 1.0,
+      glowColor: isSessionActive ? AppColors.activeCyan : null,
+      padding: const EdgeInsets.all(16),
+      onTap: () => _openDetails(context),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── Top Row: Status Badges + Clean Secondary Controls ───────
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -426,9 +411,6 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
     );
   }
 }

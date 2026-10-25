@@ -9,10 +9,10 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../shared/widgets/acrylic_card.dart';
 import '../models/daily_telemetry_model.dart';
 import 'bento_donut_progress.dart';
 import 'telemetry_detail_sheets.dart';
@@ -31,8 +31,6 @@ class CaloriesBentoCard extends StatelessWidget {
   /// Optional card tap handler override.
   final VoidCallback? onTap;
 
-  static const Color _cardBg = AppColors.cardBackground;
-
   String _formatNumber(int number) {
     return number.toString().replaceAllMapped(
           RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
@@ -46,32 +44,20 @@ class CaloriesBentoCard extends StatelessWidget {
     final progress = telemetry.caloriesProgress;
     final progressPct = (progress * 100).toInt();
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          if (onTap != null) {
-            onTap!();
-          } else {
-            showCaloriesDetailSheet(context, telemetry);
-          }
-        },
-        borderRadius: BorderRadius.circular(22),
-        child: Container(
-          decoration: BoxDecoration(
-            color: _cardBg,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: AppColors.subtleBorder,
-              width: 1.0,
-            ),
-          ),
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+    return AcrylicCard(
+      borderRadius: 22,
+      padding: const EdgeInsets.all(14),
+      onTap: () {
+        if (onTap != null) {
+          onTap!();
+        } else {
+          showCaloriesDetailSheet(context, telemetry);
+        }
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
               // ── Header Row: Title + Chevron ──────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -177,8 +163,6 @@ class CaloriesBentoCard extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
     );
   }
 }

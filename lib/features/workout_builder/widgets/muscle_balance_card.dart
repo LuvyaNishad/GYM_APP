@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../shared/widgets/acrylic_card.dart';
 import 'muscle_radar_chart.dart';
 
 /// Bento card housing the Muscle Radar balance system with diagnostics and auto-tune actions.
@@ -35,12 +36,9 @@ class MuscleBalanceCard extends StatelessWidget {
       }
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.charcoal,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.steel, width: 1.0),
-      ),
+    return AcrylicCard(
+      borderRadius: 16,
+      borderColor: AppColors.steel.withValues(alpha: 0.70),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

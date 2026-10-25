@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../models/user_model.dart';
+import '../../../shared/widgets/acrylic_card.dart';
 import '../../../state/app_providers.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import '../../onboarding/widgets/goal_selector_sheet.dart';
@@ -12,8 +13,6 @@ import '../../onboarding/widgets/goal_selector_sheet.dart';
 /// specifically tailored to the user's active training goal (Bulk, Cut, Strength, Muscle).
 class GoalKpiBentoCard extends ConsumerWidget {
   const GoalKpiBentoCard({super.key});
-
-  static const Color _cardBg = AppColors.charcoal;
 
   void _showGoalSelectorSheet(BuildContext context, WidgetRef ref) {
     showGoalSelectorSheet(context, ref);
@@ -24,20 +23,13 @@ class GoalKpiBentoCard extends ConsumerWidget {
     final goalConfig = ref.watch(trainingGoalConfigProvider);
     final user = ref.watch(userProfileProvider);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: _cardBg,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.steel.withValues(alpha: 0.5),
-          width: 1.0,
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return AcrylicCard(
+      borderRadius: 20,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+      borderColor: AppColors.steel.withValues(alpha: 0.65),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
             // Header: Goal Badge + Title + Edit Goal Icon
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -189,7 +181,6 @@ class GoalKpiBentoCard extends ConsumerWidget {
             ),
           ],
         ),
-      ),
     );
   }
 
