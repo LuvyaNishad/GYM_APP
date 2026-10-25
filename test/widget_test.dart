@@ -12,7 +12,7 @@ class _FakeHiveService extends HiveService {
 }
 
 void main() {
-  testWidgets('LEON Onboarding Screen renders correctly', (WidgetTester tester) async {
+  testWidgets('AEON Onboarding Screen renders correctly', (WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -27,7 +27,7 @@ void main() {
     );
 
     // Initial page is Splash (Screen 01)
-    expect(find.text('L E O N'), findsOneWidget);
+    expect(find.text('A E O N'), findsOneWidget);
     expect(find.text('PREMIUM FITNESS OS'), findsOneWidget);
   });
 }

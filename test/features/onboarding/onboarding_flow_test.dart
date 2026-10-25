@@ -98,7 +98,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 350));
 
       // Screen 0: Splash
-      expect(find.text('L E O N'), findsOneWidget);
+      expect(find.text('A E O N'), findsOneWidget);
       expect(find.text('PREMIUM FITNESS OS'), findsOneWidget);
       expect(find.text('TAP ANYWHERE TO ENTER'), findsOneWidget);
 

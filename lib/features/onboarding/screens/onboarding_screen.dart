@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/aeon_logo.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/leon_button.dart';
@@ -189,20 +190,27 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                 ],
               ),
-              child: Text(
-                'L E O N',
-                style: AppTypography.displayLarge.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 8.0,
-                  fontSize: 42,
-                  shadows: [
-                    const Shadow(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const AeonLogo(size: 110, showGlow: true),
+                  const SizedBox(height: 12),
+                  Text(
+                    'A E O N',
+                    style: AppTypography.displayLarge.copyWith(
                       color: AppColors.primary,
-                      blurRadius: 24,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 8.0,
+                      fontSize: 32,
+                      shadows: [
+                        const Shadow(
+                          color: AppColors.primary,
+                          blurRadius: 20,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 12),

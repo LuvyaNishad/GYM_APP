@@ -3,7 +3,7 @@ abstract final class AppConstants {
   AppConstants._();
 
   // ── App Meta ──────────────────────────────────────────────────────────────
-  static const String appName = 'LEON';
+  static const String appName = 'AEON';
   static const String appVersion = '1.0.0';
 
   // ── Route names (mirrors AppRouter path constants) ────────────────────────
@@ -53,6 +53,17 @@ abstract final class AppConstants {
   static const String settingPrimaryGoal = 'primary_goal';
   static const String settingTargetWeight = 'target_weight';
   static const String settingActiveSessionData = 'active_session_data';
+
+  // ── Step Tracking Settings Keys ───────────────────────────────────────────
+  static const String settingStepDate = 'step_tracking_date';
+  static const String settingStepTodayCount = 'step_today_count';
+  static const String settingStepBootBase = 'step_boot_base';
+  static const String settingStepRebootOffset = 'step_reboot_offset';
+  static const String settingStepLastHwReading = 'step_last_hw_reading';
+  static const String settingStepHourlyDistribution = 'step_hourly_distribution';
+  static const String settingStepHistory = 'step_history_by_date';
+  static const String settingStepRecordSteps = 'step_record_steps';
+  static const String settingStepRecordDate = 'step_record_date';
 
   // ── Animation Durations ───────────────────────────────────────────────────
   static const Duration animFast = Duration(milliseconds: 150);

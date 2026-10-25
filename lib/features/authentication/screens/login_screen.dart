@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/widgets/aeon_logo.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/glass_card.dart';
@@ -80,18 +81,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Tactical Header
+                    // AEON Physical Acrylic Brand Mark
+                    const AeonLogo(size: 96, showGlow: true),
+                    const SizedBox(height: 14),
                     Text(
-                      'L E O N',
+                      'A E O N',
                       style: AppTypography.displayLarge.copyWith(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 8,
-                        fontSize: 38,
+                        fontSize: 28,
                         shadows: [
                           const Shadow(
                             color: AppColors.primary,
-                            blurRadius: 20,
+                            blurRadius: 16,
                           ),
                         ],
                       ),
