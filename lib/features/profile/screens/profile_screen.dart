@@ -37,7 +37,7 @@ class ProfileScreen extends ConsumerWidget {
     final profile = ref.watch(accountProfileProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         bottom: false,
         child: CustomScrollView(

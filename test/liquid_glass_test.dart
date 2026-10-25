@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:leon/core/theme/app_theme.dart';
+import 'package:leon/shared/widgets/atmospheric_glow_backdrop.dart';
 import 'package:leon/shared/widgets/glass_nav_pill.dart';
 import 'package:leon/shared/widgets/liquid_glass.dart';
 
@@ -74,6 +75,60 @@ void main() {
       expect(navPillIndexFor('/analytics'), 3);
       expect(navPillIndexFor('/profile'), 4);
       expect(navPillIndexFor('/unknown-route'), -1);
+    });
+
+    testWidgets('AtmosphericGlowBackdrop renders and transitions across tabs without error',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          home: const Scaffold(
+            body: AtmosphericGlowBackdrop(
+              activeIndex: 0,
+              child: Center(child: Text('Home Screen Content')),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byType(AtmosphericGlowBackdrop), findsOneWidget);
+      expect(find.text('Home Screen Content'), findsOneWidget);
+
+      // Rebuild with Workouts (tab 1)
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          home: const Scaffold(
+            body: AtmosphericGlowBackdrop(
+              activeIndex: 1,
+              child: Center(child: Text('Workouts Screen Content')),
+            ),
+          ),
+        ),
+      );
+
+      // Advance animation halfway
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(find.text('Workouts Screen Content'), findsOneWidget);
+
+      // Settle transition
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byType(AtmosphericGlowBackdrop), findsOneWidget);
+
+      // Rebuild with preset
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          home: const Scaffold(
+            body: AtmosphericGlowBackdrop(
+              preset: GlowPreset.center,
+              child: Center(child: Text('Center Preset Content')),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Center Preset Content'), findsOneWidget);
     });
   });
 }

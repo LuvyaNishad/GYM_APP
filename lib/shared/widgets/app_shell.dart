@@ -13,6 +13,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'atmospheric_glow_backdrop.dart';
 import 'glass_nav_pill.dart';
 
 class AppShell extends StatelessWidget {
@@ -36,6 +37,9 @@ class AppShell extends StatelessWidget {
 
     return Stack(
       children: [
+        Positioned.fill(
+          child: AtmosphericGlowBackdrop(activeIndex: activeIndex),
+        ),
         Positioned.fill(child: child),
         Positioned(
           left: 0,

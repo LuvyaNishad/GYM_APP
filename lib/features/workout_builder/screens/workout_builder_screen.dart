@@ -52,9 +52,9 @@ class WorkoutBuilderScreen extends ConsumerWidget {
     ];
 
     return Scaffold(
-      backgroundColor: AppColors.onyx,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: AppColors.onyx,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(

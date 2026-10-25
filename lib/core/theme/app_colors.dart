@@ -28,6 +28,14 @@ abstract final class AppColors {
   static const Color emeraldGreen = Color(0xFF00E676);
   static const Color textMutedSlate = Color(0xFF8E929B);
 
+  // ── Atmospheric Ambient Glow Tokens ────────────────────────────────────────
+  /// Core frosty blueish-grayish-white aura tint (subtle glass backlighting)
+  static const Color ambientGlowCore = Color(0xFFB8D0E8);
+  /// Mid spread misty slate-blue ambient tint
+  static const Color ambientGlowMid = Color(0xFF648CAE);
+  /// Deep outer slate dispersion tint
+  static const Color ambientGlowOuter = Color(0xFF1E293B);
+
   // ── Background Layers ─────────────────────────────────────────────────────
   static const Color background = onyx; // Deep dark slate (#0F131B)
   static const Color surface = charcoal; // Raised surface (#27262A)
