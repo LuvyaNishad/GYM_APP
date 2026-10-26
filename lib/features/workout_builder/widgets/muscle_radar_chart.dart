@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
@@ -81,20 +82,22 @@ class _MuscleRadarChartState extends State<MuscleRadarChart>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, _) {
-        return CustomPaint(
-          size: Size(widget.size, widget.size),
-          painter: _MuscleRadarPainter(
-            axes: MuscleRadarChart.kAxes,
-            plannedVolume: widget.plannedVolume,
-            loggedVolume: widget.loggedVolume,
-            maxSetsScale: widget.maxSetsScale,
-            progress: _animation.value,
-          ),
-        );
-      },
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _animation,
+        builder: (context, _) {
+          return CustomPaint(
+            size: Size(widget.size, widget.size),
+            painter: _MuscleRadarPainter(
+              axes: MuscleRadarChart.kAxes,
+              plannedVolume: widget.plannedVolume,
+              loggedVolume: widget.loggedVolume,
+              maxSetsScale: widget.maxSetsScale,
+              progress: _animation.value,
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -292,7 +295,8 @@ class _MuscleRadarPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _MuscleRadarPainter oldDelegate) {
     return oldDelegate.progress != progress ||
-        oldDelegate.plannedVolume != plannedVolume ||
-        oldDelegate.loggedVolume != loggedVolume;
+        oldDelegate.maxSetsScale != maxSetsScale ||
+        !mapEquals(oldDelegate.plannedVolume, plannedVolume) ||
+        !mapEquals(oldDelegate.loggedVolume, loggedVolume);
   }
 }

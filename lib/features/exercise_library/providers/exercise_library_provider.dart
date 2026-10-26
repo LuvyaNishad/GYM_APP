@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/exercise_library_item.dart';
@@ -90,14 +91,21 @@ final exerciseRepositoryProvider = Provider<ExerciseRepository>((ref) {
 
 /// Riverpod notifier managing the Exercise Library catalog and filtering
 class ExerciseLibraryNotifier extends Notifier<ExerciseLibraryState> {
+  static const searchDebounceDuration = Duration(milliseconds: 150);
+  Timer? _searchDebounce;
+  String? _pendingSearchQuery;
+
   @override
   ExerciseLibraryState build() {
     ref.keepAlive();
+    ref.onDispose(_cancelSearch);
     final repo = ref.watch(exerciseRepositoryProvider);
 
     // Initial load trigger
     if (!repo.isLoaded) {
-      Future.microtask(() => loadCatalog());
+      Future.microtask(() {
+        if (ref.mounted) loadCatalog();
+      });
     }
 
     final all = repo.allExercises;
@@ -114,15 +122,22 @@ class ExerciseLibraryNotifier extends Notifier<ExerciseLibraryState> {
   Future<void> loadCatalog() async {
     state = state.copyWith(isLoading: true);
     await _repository.loadCatalog();
+    if (!ref.mounted) return;
     final all = _repository.allExercises;
     state = state.copyWith(
       allExercises: all,
-      filteredExercises: all,
       isLoading: false,
     );
+    _applyFilter(state.filter);
   }
 
   void _applyFilter(ExerciseFilterState newFilter) {
+    // A filter tap during typing commits the latest query and cancels stale work.
+    final pendingQuery = _pendingSearchQuery;
+    if (pendingQuery != null) {
+      newFilter = newFilter.copyWith(searchQuery: pendingQuery);
+      _cancelSearch();
+    }
     final filtered = _repository.filter(
       searchQuery: newFilter.searchQuery,
       category: newFilter.selectedCategory,
@@ -147,7 +162,29 @@ class ExerciseLibraryNotifier extends Notifier<ExerciseLibraryState> {
   }
 
   void setSearchQuery(String query) {
+    _cancelSearch();
     _applyFilter(state.filter.copyWith(searchQuery: query));
+  }
+
+  /// Text entry stays immediate; filtering runs after typing settles.
+  void debounceSearchQuery(String query) {
+    _cancelSearch();
+    if (query.trim().isEmpty) {
+      setSearchQuery(query);
+      return;
+    }
+    _pendingSearchQuery = query;
+    _searchDebounce = Timer(searchDebounceDuration, () {
+      _pendingSearchQuery = null;
+      _searchDebounce = null;
+      _applyFilter(state.filter.copyWith(searchQuery: query));
+    });
+  }
+
+  void _cancelSearch() {
+    _searchDebounce?.cancel();
+    _searchDebounce = null;
+    _pendingSearchQuery = null;
   }
 
   void setCategory(String category) {
@@ -179,6 +216,7 @@ class ExerciseLibraryNotifier extends Notifier<ExerciseLibraryState> {
   }
 
   void clearAll() {
+    _cancelSearch();
     _applyFilter(const ExerciseFilterState());
   }
 

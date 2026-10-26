@@ -6,10 +6,12 @@
 /// - No fabricated sleep-quality score
 /// - Intentional empty state: "No sleep logged" with tap-to-log prompt
 /// - Consistent 22dp radius and subtle #373942 border
+/// - Fine-grained Riverpod rebuild scoping: watches only sleep metrics via [select] when telemetry is omitted
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
@@ -18,15 +20,16 @@ import 'bento_bar_progress.dart';
 import 'telemetry_detail_sheets.dart';
 
 /// Minimal square Bento card displaying daily sleep duration.
-class SleepBentoCard extends StatelessWidget {
+class SleepBentoCard extends ConsumerWidget {
   const SleepBentoCard({
     super.key,
-    required this.telemetry,
+    this.telemetry,
     this.onTap,
   });
 
-  /// Telemetry data source.
-  final DailyTelemetry telemetry;
+  /// Optional telemetry data source override.
+  /// When null, watches only the relevant sleep fields via Riverpod [select].
+  final DailyTelemetry? telemetry;
 
   /// Optional card tap handler override.
   final VoidCallback? onTap;
@@ -34,11 +37,18 @@ class SleepBentoCard extends StatelessWidget {
   static const Color _cardBg = AppColors.cardBackground;
 
   @override
-  Widget build(BuildContext context) {
-    final hasSleep = telemetry.sleepHours > 0;
-    final progress = telemetry.sleepProgress;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final double sleepHours = telemetry != null
+        ? telemetry!.sleepHours
+        : ref.watch(dailyTelemetryProvider.select((t) => t.sleepHours));
+    final double sleepProgress = telemetry != null
+        ? telemetry!.sleepProgress
+        : ref.watch(dailyTelemetryProvider.select((t) => t.sleepProgress));
+
+    final hasSleep = sleepHours > 0;
+    final progress = sleepProgress;
     final progressPct = (progress * 100).toInt();
-    final hoursStr = hasSleep ? telemetry.sleepHours.toStringAsFixed(1) : '--';
+    final hoursStr = hasSleep ? sleepHours.toStringAsFixed(1) : '--';
 
     return Material(
       color: Colors.transparent,
@@ -48,7 +58,9 @@ class SleepBentoCard extends StatelessWidget {
           if (onTap != null) {
             onTap!();
           } else {
-            showSleepDetailSheet(context, telemetry);
+            final DailyTelemetry effectiveTelemetry =
+                telemetry ?? ref.read(dailyTelemetryProvider);
+            showSleepDetailSheet(context, effectiveTelemetry);
           }
         },
         borderRadius: BorderRadius.circular(22),

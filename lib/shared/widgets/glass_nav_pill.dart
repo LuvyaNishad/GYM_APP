@@ -459,9 +459,9 @@ class _NavPillButtonState extends State<_NavPillButton> {
         },
         onTapUp: (_) {
           setState(() => _isDown = false);
-          widget.onTap();
         },
         onTapCancel: () => setState(() => _isDown = false),
+        onTap: widget.onTap,
         child: AnimatedScale(
           scale: _isDown ? 0.94 : (widget.isActive ? 1.03 : 1.0),
           duration: const Duration(milliseconds: 100),

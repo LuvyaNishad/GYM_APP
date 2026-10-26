@@ -6,10 +6,12 @@
 /// - Progress ring only rendered when meaningful (calories > 0)
 /// - Clean intentional empty state when 0 calories recorded (no broken 0% rings)
 /// - Consistent 22dp radius and subtle #373942 border
+/// - Fine-grained Riverpod rebuild scoping: watches only calorie metrics via [select] when telemetry is omitted
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
@@ -18,15 +20,16 @@ import 'bento_donut_progress.dart';
 import 'telemetry_detail_sheets.dart';
 
 /// Minimal square Bento card displaying daily active calories burned.
-class CaloriesBentoCard extends StatelessWidget {
+class CaloriesBentoCard extends ConsumerWidget {
   const CaloriesBentoCard({
     super.key,
-    required this.telemetry,
+    this.telemetry,
     this.onTap,
   });
 
-  /// Telemetry data source.
-  final DailyTelemetry telemetry;
+  /// Optional telemetry data source override.
+  /// When null, watches only the relevant calorie fields via Riverpod [select].
+  final DailyTelemetry? telemetry;
 
   /// Optional card tap handler override.
   final VoidCallback? onTap;
@@ -41,9 +44,16 @@ class CaloriesBentoCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final hasCalories = telemetry.calories > 0;
-    final progress = telemetry.caloriesProgress;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final int calories = telemetry != null
+        ? telemetry!.calories
+        : ref.watch(dailyTelemetryProvider.select((t) => t.calories));
+    final double caloriesProgress = telemetry != null
+        ? telemetry!.caloriesProgress
+        : ref.watch(dailyTelemetryProvider.select((t) => t.caloriesProgress));
+
+    final hasCalories = calories > 0;
+    final progress = caloriesProgress;
     final progressPct = (progress * 100).toInt();
 
     return Material(
@@ -54,7 +64,9 @@ class CaloriesBentoCard extends StatelessWidget {
           if (onTap != null) {
             onTap!();
           } else {
-            showCaloriesDetailSheet(context, telemetry);
+            final DailyTelemetry effectiveTelemetry =
+                telemetry ?? ref.read(dailyTelemetryProvider);
+            showCaloriesDetailSheet(context, effectiveTelemetry);
           }
         },
         borderRadius: BorderRadius.circular(22),
@@ -123,7 +135,7 @@ class CaloriesBentoCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          _formatNumber(telemetry.calories),
+                          _formatNumber(calories),
                           style: const TextStyle(
                             fontFamily: 'JetBrains Mono',
                             fontSize: 24,

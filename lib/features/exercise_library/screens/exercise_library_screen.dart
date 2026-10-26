@@ -130,7 +130,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                 ),
                 child: TextField(
                   controller: _searchController,
-                  onChanged: notifier.setSearchQuery,
+                  onChanged: notifier.debounceSearchQuery,
                   style: AppTypography.bodyMedium.copyWith(color: AppColors.pureWhite, fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Search ${state.allExercises.length} exercises, muscles, equipment...',

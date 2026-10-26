@@ -7,6 +7,7 @@
 ///   3. Unavailable: distinct "Not connected" / "Tap to enable" state with permission trigger
 /// - Clean 22dp rounded corners and subtle #373942 border
 /// - Apple HIG compliant typography and touch targets
+/// - Fine-grained Riverpod rebuild scoping: watches only step metrics via [select] when telemetry is omitted
 library;
 
 import 'package:flutter/material.dart';
@@ -23,12 +24,13 @@ import 'telemetry_detail_sheets.dart';
 class StepsBentoCard extends ConsumerWidget {
   const StepsBentoCard({
     super.key,
-    required this.telemetry,
+    this.telemetry,
     this.onTap,
   });
 
-  /// Daily telemetry source data.
-  final DailyTelemetry telemetry;
+  /// Optional daily telemetry source override.
+  /// When null, watches only the relevant step fields via Riverpod [select].
+  final DailyTelemetry? telemetry;
 
   /// Optional card tap handler override.
   final VoidCallback? onTap;
@@ -49,6 +51,16 @@ class StepsBentoCard extends ConsumerWidget {
     final isSensorUnavailable = trackingStatus == StepTrackingStatus.sensorUnavailable;
     final isUnavailable = isPermissionDenied || isSensorUnavailable;
 
+    final int steps = telemetry != null
+        ? telemetry!.steps
+        : ref.watch(dailyTelemetryProvider.select((t) => t.steps));
+    final double distanceKm = telemetry != null
+        ? telemetry!.distanceKm
+        : ref.watch(dailyTelemetryProvider.select((t) => t.distanceKm));
+    final List<int> hourlySteps = telemetry != null
+        ? telemetry!.hourlySteps
+        : ref.watch(dailyTelemetryProvider.select((t) => t.hourlySteps));
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -61,7 +73,9 @@ class StepsBentoCard extends ConsumerWidget {
           if (onTap != null) {
             onTap!();
           } else {
-            showStepsDetailSheet(context, telemetry);
+            final DailyTelemetry effectiveTelemetry =
+                telemetry ?? ref.read(dailyTelemetryProvider);
+            showStepsDetailSheet(context, effectiveTelemetry);
           }
         },
         borderRadius: BorderRadius.circular(22),
@@ -98,48 +112,51 @@ class StepsBentoCard extends ConsumerWidget {
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: AppColors.pureWhite,
-                          letterSpacing: 0.2,
                         ),
                       ),
                     ],
                   ),
                   Container(
-                    width: 22,
-                    height: 22,
+                    width: 26,
+                    height: 26,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.08),
+                      color: AppColors.surfaceSecondary,
+                      border: Border.all(
+                        color: AppColors.subtleBorder.withValues(alpha: 0.6),
+                        width: 0.8,
+                      ),
                     ),
                     child: const Icon(
                       Icons.chevron_right_rounded,
-                      size: 15,
+                      size: 16,
                       color: AppColors.platinum,
                     ),
                   ),
                 ],
               ),
 
-              // ── Hero Stat & Supporting Status ─────────────────────────────
+              // ── Middle: Metric Value or Unavailable ───────────────────────
               if (isUnavailable)
-                Column(
+                const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
+                    Text(
                       '--',
                       style: TextStyle(
                         fontFamily: 'JetBrains Mono',
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textMutedSlate,
-                        letterSpacing: -0.5,
+                        color: AppColors.platinum,
+                        letterSpacing: -0.4,
                         height: 1.0,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
-                      isPermissionDenied ? 'Tap to enable' : 'Data unavailable',
-                      style: const TextStyle(
+                      'Data unavailable',
+                      style: TextStyle(
                         fontFamily: AppTypography.fontBody,
                         fontSize: 11.5,
                         fontWeight: FontWeight.w500,
@@ -154,7 +171,7 @@ class StepsBentoCard extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      _formatNumber(telemetry.steps),
+                      _formatNumber(steps),
                       style: const TextStyle(
                         fontFamily: 'JetBrains Mono',
                         fontSize: 26,
@@ -165,21 +182,16 @@ class StepsBentoCard extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Builder(
-                      builder: (context) {
-                        final kmValue = telemetry.distanceKm;
-                        return Text(
-                          telemetry.steps > 0
-                              ? '$kmValue km'
-                              : 'Move to track steps',
-                          style: const TextStyle(
-                            fontFamily: AppTypography.fontBody,
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.platinum,
-                          ),
-                        );
-                      },
+                    Text(
+                      steps > 0
+                          ? '$distanceKm km'
+                          : 'Move to track steps',
+                      style: const TextStyle(
+                        fontFamily: AppTypography.fontBody,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.platinum,
+                      ),
                     ),
                   ],
                 ),
@@ -210,8 +222,8 @@ class StepsBentoCard extends ConsumerWidget {
                       Expanded(
                         child: Text(
                           isPermissionDenied
-                              ? 'Sensor permission needed'
-                              : 'No hardware sensor',
+                            ? 'Sensor permission needed'
+                            : 'No hardware sensor',
                           style: const TextStyle(
                             fontFamily: AppTypography.fontBody,
                             fontSize: 11.0,
@@ -227,7 +239,7 @@ class StepsBentoCard extends ConsumerWidget {
                 )
               else
                 _SlimBarGraph(
-                  hourlySteps: telemetry.hourlySteps,
+                  hourlySteps: hourlySteps,
                 ),
             ],
           ),

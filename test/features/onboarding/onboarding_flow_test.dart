@@ -108,7 +108,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       // Screen 1: Welcome
-      expect(find.text('WELCOME TO LEON'), findsOneWidget);
+      expect(find.text('WELCOME TO AEON'), findsOneWidget);
       expect(find.text('CUSTOMIZE SETUP (2 MIN)'), findsOneWidget);
       expect(
           find.text('CONTINUE AS GUEST'), findsOneWidget);

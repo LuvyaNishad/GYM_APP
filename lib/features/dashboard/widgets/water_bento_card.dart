@@ -6,6 +6,7 @@
 /// - Target progress shown only when entries exist
 /// - Intentional empty state: "Log your first drink" without broken empty bars
 /// - Consistent 22dp radius and subtle #373942 border
+/// - Fine-grained Riverpod rebuild scoping: watches only hydration metrics via [select] when telemetry is omitted
 library;
 
 import 'package:flutter/material.dart';
@@ -22,12 +23,13 @@ import 'telemetry_detail_sheets.dart';
 class WaterBentoCard extends ConsumerWidget {
   const WaterBentoCard({
     super.key,
-    required this.telemetry,
+    this.telemetry,
     this.onTap,
   });
 
-  /// Telemetry data source.
-  final DailyTelemetry telemetry;
+  /// Optional telemetry data override.
+  /// When null, watches only the relevant hydration fields via Riverpod [select].
+  final DailyTelemetry? telemetry;
 
   /// Optional card tap handler override.
   final VoidCallback? onTap;
@@ -43,8 +45,15 @@ class WaterBentoCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hasWater = telemetry.waterMl > 0;
-    final progress = telemetry.waterProgress;
+    final int waterMl = telemetry != null
+        ? telemetry!.waterMl
+        : ref.watch(dailyTelemetryProvider.select((t) => t.waterMl));
+    final double waterProgress = telemetry != null
+        ? telemetry!.waterProgress
+        : ref.watch(dailyTelemetryProvider.select((t) => t.waterProgress));
+
+    final hasWater = waterMl > 0;
+    final progress = waterProgress;
     final progressPct = (progress * 100).toInt();
 
     return Material(
@@ -55,7 +64,9 @@ class WaterBentoCard extends ConsumerWidget {
           if (onTap != null) {
             onTap!();
           } else {
-            showHydrationDetailSheet(context, telemetry);
+            final DailyTelemetry effectiveTelemetry =
+                telemetry ?? ref.read(dailyTelemetryProvider);
+            showHydrationDetailSheet(context, effectiveTelemetry);
           }
         },
         borderRadius: BorderRadius.circular(22),
@@ -129,7 +140,7 @@ class WaterBentoCard extends ConsumerWidget {
                         textBaseline: TextBaseline.alphabetic,
                         children: [
                           Text(
-                            _formatNumber(telemetry.waterMl),
+                            _formatNumber(waterMl),
                             style: const TextStyle(
                               fontFamily: 'JetBrains Mono',
                               fontSize: 22,

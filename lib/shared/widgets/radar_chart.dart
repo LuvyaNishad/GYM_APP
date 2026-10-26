@@ -13,6 +13,7 @@ library;
 import 'dart:math' as math;
 import 'dart:ui' show PointMode;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -83,15 +84,17 @@ class _LeonRadarChartState extends State<LeonRadarChart>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) => CustomPaint(
-        size: Size.infinite,
-        painter: _RadarChartPainter(
-          axes: widget.axes,
-          maxValue: widget.maxValue,
-          weakThreshold: widget.weakThreshold,
-          progress: _controller.value,
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) => CustomPaint(
+          size: Size.infinite,
+          painter: _RadarChartPainter(
+            axes: widget.axes,
+            maxValue: widget.maxValue,
+            weakThreshold: widget.weakThreshold,
+            progress: _controller.value,
+          ),
         ),
       ),
     );
@@ -279,7 +282,10 @@ class _RadarChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RadarChartPainter old) =>
-      old.progress != progress || old.axes != axes;
+      old.progress != progress ||
+      old.maxValue != maxValue ||
+      old.weakThreshold != weakThreshold ||
+      !listEquals(old.axes, axes);
 }
 
 extension on _RadarChartPainter {

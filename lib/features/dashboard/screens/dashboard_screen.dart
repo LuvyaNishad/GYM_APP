@@ -7,6 +7,7 @@
 /// - Compact daily workout card with prominent 52dp start workout button
 /// - Zero scroll: entire daily overview & start button fits cleanly on initial view
 /// - Clean dark Cyber-Slate palette without sloppy blur glows
+/// - Granular Riverpod rebuild scoping: bento cards watch their own projections via [select]
 library;
 
 import 'package:flutter/material.dart';
@@ -17,7 +18,6 @@ import '../../../shared/widgets/app_shell.dart';
 import '../../../state/app_providers.dart';
 import '../../history/providers/history_provider.dart';
 import '../../../services/pedometer_service.dart';
-import '../models/daily_telemetry_model.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/calories_bento_card.dart';
 import '../widgets/daily_workout_bento_card.dart';
@@ -36,7 +36,6 @@ class DashboardScreen extends ConsumerWidget {
     ref.watch(pedometerServiceProvider);
 
     final userProfile = ref.watch(userProfileProvider);
-    final telemetry = ref.watch(dailyTelemetryProvider);
     final loggedWorkoutDates = ref.watch(loggedWorkoutDatesProvider);
     final selectedCalendarDate = ref.watch(selectedCalendarDateProvider);
 
@@ -74,37 +73,38 @@ class DashboardScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
 
                 // ── 2. 4 Equal Square Bento Cards (2x2 Grid) ──────────────────
-                Row(
+                // Each bento card granularly watches only its own metrics via .select(...)
+                const Row(
                   children: [
                     Expanded(
                       child: AspectRatio(
                         aspectRatio: 1.02,
-                        child: StepsBentoCard(telemetry: telemetry),
+                        child: StepsBentoCard(),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: AspectRatio(
                         aspectRatio: 1.02,
-                        child: CaloriesBentoCard(telemetry: telemetry),
+                        child: CaloriesBentoCard(),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                Row(
+                const Row(
                   children: [
                     Expanded(
                       child: AspectRatio(
                         aspectRatio: 1.42,
-                        child: WaterBentoCard(telemetry: telemetry),
+                        child: WaterBentoCard(),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: AspectRatio(
                         aspectRatio: 1.42,
-                        child: SleepBentoCard(telemetry: telemetry),
+                        child: SleepBentoCard(),
                       ),
                     ),
                   ],

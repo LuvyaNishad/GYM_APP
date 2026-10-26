@@ -157,12 +157,12 @@ void main() {
 
       // Verify clipboard contents
       expect(clipboardData, isNotNull);
-      expect(clipboardData, contains('LEON WORKOUT SUMMARY'));
+      expect(clipboardData, contains('AEON WORKOUT SUMMARY'));
       expect(clipboardData, contains('PULL DAY HYPERTROPHY'));
       expect(clipboardData, contains('Barbell Deadlift'));
       expect(clipboardData, contains('120.0kg × 5'));
       expect(clipboardData, contains('[Warmup]'));
-      expect(clipboardData, contains('Tracked with LEON'));
+      expect(clipboardData, contains('Tracked with AEON'));
     });
   });
 }

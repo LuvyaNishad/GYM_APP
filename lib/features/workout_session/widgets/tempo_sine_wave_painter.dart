@@ -179,17 +179,19 @@ class _TempoSineWaveWidgetState extends State<TempoSineWaveWidget>
         final smoothCycleProgress = _getSmoothCycleProgress();
         final smoothPhaseProgress = _getSmoothPhaseProgress();
 
-        return SizedBox(
-          height: widget.height,
-          width: double.infinity,
-          child: CustomPaint(
-            painter: _BiomechanicalWavePainter(
-              cycleProgress: smoothCycleProgress,
-              phaseProgress: smoothPhaseProgress,
-              phase: widget.state.phase,
-              preset: widget.state.preset,
-              isConcentricFirst: widget.state.isConcentricFirst,
-              pulseProgress: _tickerController.value,
+        return RepaintBoundary(
+          child: SizedBox(
+            height: widget.height,
+            width: double.infinity,
+            child: CustomPaint(
+              painter: _BiomechanicalWavePainter(
+                cycleProgress: smoothCycleProgress,
+                phaseProgress: smoothPhaseProgress,
+                phase: widget.state.phase,
+                preset: widget.state.preset,
+                isConcentricFirst: widget.state.isConcentricFirst,
+                pulseProgress: _tickerController.value,
+              ),
             ),
           ),
         );
