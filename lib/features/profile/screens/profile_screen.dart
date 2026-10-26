@@ -115,11 +115,11 @@ class ProfileScreen extends ConsumerWidget {
 
             // ── Main Content Cards ─────────────────────────────────────────
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
+              padding: EdgeInsets.fromLTRB(
                 16,
                 0,
                 16,
-                AppShell.reservedBottomSpace + 24,
+                AppShell.bottomPadding(context, extra: 32),
               ),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([

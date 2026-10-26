@@ -1,18 +1,17 @@
-/// LEON main-tab shell with interactive horizontal sliding / swiping navigation.
+/// LEON / AEON main-tab shell with instant, zero-peeking persistent tab branches.
 ///
 /// Features:
-/// - Smooth horizontal gesture swiping (swipe right-to-left / left-to-right) across all 5 main sections:
+/// - Instant tab switching between the 5 main sections using [IndexedStack]:
 ///   * Tab 0: Home / Dashboard
 ///   * Tab 1: Workouts / Training Splits
 ///   * Tab 2: Exercises / Movement Library
 ///   * Tab 3: History / Analytics
 ///   * Tab 4: Account / Profile
-/// - High-performance PageView with BouncingScrollPhysics for tactile momentum and edge elasticity
-/// - AutomaticKeepAlive on all 5 tabs so scroll positions, inputs, and states are preserved across swipes
-/// - Bidirectional sync between gesture swiping, the floating [GlassNavPill], and GoRouter routes
+/// - [PageStorageKey] preserves scroll positions and state for every tab independently.
+/// - [TickerMode] pauses tickers and animations on offscreen tabs, eliminating background CPU/GPU drain.
+/// - [GlassNavPill] integration with clear bottom padding calculation for all scrollable views.
 library;
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -39,22 +38,27 @@ class AppShell extends StatefulWidget {
 
   static const double _margin = 16;
 
+  /// Returns the total clearance padding required for scrollables to clear
+  /// the floating [GlassNavPill] plus device system safe-area insets (e.g. gesture bar, 3-button bar).
+  static double bottomPadding(BuildContext context, {double extra = 24.0}) {
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    return reservedBottomSpace + bottomInset + extra;
+  }
+
   @override
   State<AppShell> createState() => _AppShellState();
 }
 
 class _AppShellState extends State<AppShell> {
-  late PageController _pageController;
   late int _currentIndex;
-  bool _isProgrammaticScroll = false;
 
   /// The 5 persistent tab screens in display order.
   static const List<Widget> _tabScreens = <Widget>[
-    _KeepAliveTab(child: DashboardScreen()),
-    _KeepAliveTab(child: WorkoutBuilderScreen()),
-    _KeepAliveTab(child: ExerciseLibraryScreen()),
-    _KeepAliveTab(child: HistoryScreen()),
-    _KeepAliveTab(child: ProfileScreen()),
+    DashboardScreen(),
+    WorkoutBuilderScreen(),
+    ExerciseLibraryScreen(),
+    HistoryScreen(),
+    ProfileScreen(),
   ];
 
   @override
@@ -64,7 +68,6 @@ class _AppShellState extends State<AppShell> {
     _currentIndex = (initialIndex >= 0 && initialIndex < kNavPillTabs.length)
         ? initialIndex
         : 0;
-    _pageController = PageController(initialPage: _currentIndex);
   }
 
   @override
@@ -75,44 +78,9 @@ class _AppShellState extends State<AppShell> {
       if (targetIndex >= 0 &&
           targetIndex < kNavPillTabs.length &&
           targetIndex != _currentIndex) {
-        _currentIndex = targetIndex;
-        if (_pageController.hasClients) {
-          final currentPage = _pageController.page?.round();
-          if (currentPage != targetIndex) {
-            _isProgrammaticScroll = true;
-            _pageController
-                .animateToPage(
-                  targetIndex,
-                  duration: const Duration(milliseconds: 280),
-                  curve: Curves.easeOutCubic,
-                )
-                .then((_) {
-                  if (mounted) {
-                    _isProgrammaticScroll = false;
-                  }
-                });
-          }
-        }
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  void _onPageChanged(int index) {
-    if (_currentIndex == index) return;
-    setState(() {
-      _currentIndex = index;
-    });
-
-    if (!_isProgrammaticScroll) {
-      final targetRoute = kNavPillTabs[index].route;
-      if (widget.location != targetRoute) {
-        GoRouter.maybeOf(context)?.go(targetRoute);
+        setState(() {
+          _currentIndex = targetIndex;
+        });
       }
     }
   }
@@ -122,44 +90,37 @@ class _AppShellState extends State<AppShell> {
     setState(() {
       _currentIndex = index;
     });
-
-    _isProgrammaticScroll = true;
-    if (_pageController.hasClients) {
-      _pageController
-          .animateToPage(
-            index,
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeOutCubic,
-          )
-          .then((_) {
-            if (mounted) {
-              _isProgrammaticScroll = false;
-            }
-          });
+    final targetRoute = kNavPillTabs[index].route;
+    if (widget.location != targetRoute) {
+      GoRouter.maybeOf(context)?.go(targetRoute);
     }
-    GoRouter.maybeOf(context)?.go(kNavPillTabs[index].route);
   }
 
   @override
   Widget build(BuildContext context) {
     final activeIndex = navPillIndexFor(widget.location);
     final isKnownTab = activeIndex >= 0 && activeIndex < kNavPillTabs.length;
+    final currentIndex = isKnownTab ? _currentIndex : activeIndex;
 
     return ColoredBox(
       color: AppColors.background,
       child: Stack(
         children: [
-          // 1. Interactive horizontally swipeable main sections
+          // 1. Instant, zero-peeking persistent tab branches
           Positioned.fill(
             child: isKnownTab
-                ? PageView(
-                    controller: _pageController,
-                    onPageChanged: _onPageChanged,
-                    physics: const BouncingScrollPhysics(
-                      parent: AlwaysScrollableScrollPhysics(),
-                    ),
-                    dragStartBehavior: DragStartBehavior.down,
-                    children: _tabScreens,
+                ? IndexedStack(
+                    index: currentIndex,
+                    children: [
+                      for (int i = 0; i < _tabScreens.length; i++)
+                        TickerMode(
+                          enabled: i == currentIndex,
+                          child: KeyedSubtree(
+                            key: PageStorageKey<String>('tab_$i'),
+                            child: _tabScreens[i],
+                          ),
+                        ),
+                    ],
                   )
                 : (widget.child ?? const SizedBox.shrink()),
           ),
@@ -179,7 +140,7 @@ class _AppShellState extends State<AppShell> {
                   AppShell._margin,
                 ),
                 child: GlassNavPill(
-                  activeIndex: isKnownTab ? _currentIndex : activeIndex,
+                  activeIndex: currentIndex,
                   onTabSelected: _onTabSelected,
                 ),
               ),
@@ -188,27 +149,5 @@ class _AppShellState extends State<AppShell> {
         ],
       ),
     );
-  }
-}
-
-/// Helper wrapper that guarantees the state, scroll offset, and controllers of
-/// each tab remain alive when swiping between sections.
-class _KeepAliveTab extends StatefulWidget {
-  const _KeepAliveTab({required this.child});
-  final Widget child;
-
-  @override
-  State<_KeepAliveTab> createState() => _KeepAliveTabState();
-}
-
-class _KeepAliveTabState extends State<_KeepAliveTab>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    return widget.child;
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../shared/widgets/app_shell.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
@@ -208,7 +209,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                       ? _buildEmptyState(notifier)
                       : ListView.builder(
                           physics: const BouncingScrollPhysics(),
-                          padding: const EdgeInsets.fromLTRB(0, 6, 0, 120),
+                          padding: EdgeInsets.fromLTRB(0, 6, 0, AppShell.bottomPadding(context, extra: 24)),
                           itemCount: state.filteredExercises.length,
                           itemBuilder: (context, index) {
                             final exercise = state.filteredExercises[index];

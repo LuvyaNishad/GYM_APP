@@ -57,12 +57,7 @@ class HistoryScreen extends ConsumerWidget {
 
           // ── 2. Content Area Below Calendar ────────────────────────────────
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              16,
-              14,
-              16,
-              AppShell.reservedBottomSpace + 16,
-            ),
+            padding: EdgeInsets.fromLTRB(16, 14, 16, AppShell.bottomPadding(context, extra: 24)),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

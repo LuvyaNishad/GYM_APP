@@ -7,8 +7,8 @@ import 'package:leon/shared/widgets/glass_nav_pill.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('AppShell Horizontal Sliding / Swiping Tests', () {
-    testWidgets('AppShell renders PageView and GlassNavPill with solid background',
+  group('AppShell Navigation & Layout Tests', () {
+    testWidgets('AppShell renders IndexedStack and GlassNavPill with solid background',
         (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
@@ -21,70 +21,19 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 300));
 
-      // PageView is present with BouncingScrollPhysics
-      final pageViewFinder = find.byType(PageView);
-      expect(pageViewFinder, findsOneWidget);
+      // IndexedStack is present with 5 children
+      final indexedStackFinder = find.byType(IndexedStack);
+      expect(indexedStackFinder, findsOneWidget);
 
-      final pageView = tester.widget<PageView>(pageViewFinder);
-      expect(pageView.physics, isA<BouncingScrollPhysics>());
+      final indexedStack = tester.widget<IndexedStack>(indexedStackFinder);
+      expect(indexedStack.index, 0);
+      expect(indexedStack.children.length, 5);
 
       // GlassNavPill is present
       expect(find.byType(GlassNavPill), findsOneWidget);
     });
 
-    testWidgets('Swiping right-to-left moves from Dashboard to Workouts',
-        (tester) async {
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: AppShell(location: '/dashboard'),
-            ),
-          ),
-        ),
-      );
-      await tester.pump(const Duration(milliseconds: 300));
-
-      // Initial page is 0
-      final pageViewBefore = tester.widget<PageView>(find.byType(PageView));
-      expect(pageViewBefore.controller?.page?.round(), 0);
-
-      // Swipe horizontally from right to left (drag by -500 pixels)
-      await tester.drag(find.byType(PageView), const Offset(-500, 0));
-      await tester.pump(const Duration(milliseconds: 400));
-
-      // Verify PageView advanced to page 1
-      final pageViewAfter = tester.widget<PageView>(find.byType(PageView));
-      expect(pageViewAfter.controller?.page?.round(), 1);
-    });
-
-    testWidgets('Swiping left-to-right moves back to previous section',
-        (tester) async {
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: AppShell(location: '/workout-builder'),
-            ),
-          ),
-        ),
-      );
-      await tester.pump(const Duration(milliseconds: 300));
-
-      // Initial page is 1 (Workouts)
-      final pageViewBefore = tester.widget<PageView>(find.byType(PageView));
-      expect(pageViewBefore.controller?.page?.round(), 1);
-
-      // Swipe left-to-right (drag from left to right by +500 pixels)
-      await tester.drag(find.byType(PageView), const Offset(500, 0));
-      await tester.pump(const Duration(milliseconds: 400));
-
-      // Verify PageView returned to page 0 (Dashboard)
-      final pageViewAfter = tester.widget<PageView>(find.byType(PageView));
-      expect(pageViewAfter.controller?.page?.round(), 0);
-    });
-
-    testWidgets('Tapping on a nav pill tab animates PageView to target tab',
+    testWidgets('Tapping on a nav pill tab switches IndexedStack to target tab',
         (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
@@ -97,20 +46,73 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 300));
 
+      // Initial tab is 0
+      var indexedStack = tester.widget<IndexedStack>(find.byType(IndexedStack));
+      expect(indexedStack.index, 0);
+
       // Tap on 'Exercises' tab in the nav pill
       final exercisesTab = find.text('Exercises');
       expect(exercisesTab, findsOneWidget);
 
       await tester.tap(exercisesTab);
-      // Pump multiple animation ticks to advance the PageController animation
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 150));
-      await tester.pump(const Duration(milliseconds: 200));
-      await tester.pump(const Duration(milliseconds: 200));
+      await tester.pump(const Duration(milliseconds: 300));
 
-      // Verify page controller navigated to index 2 (Exercises)
-      final pageView = tester.widget<PageView>(find.byType(PageView));
-      expect(pageView.controller?.page?.round(), 2);
+      // Verify IndexedStack switched to index 2 (Exercises)
+      indexedStack = tester.widget<IndexedStack>(find.byType(IndexedStack));
+      expect(indexedStack.index, 2);
+    });
+
+    testWidgets('Tapping Workouts and Account tabs updates active index cleanly',
+        (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: AppShell(location: '/'),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Tap Workouts
+      await tester.tap(find.text('Workouts'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      var indexedStack = tester.widget<IndexedStack>(find.byType(IndexedStack));
+      expect(indexedStack.index, 1);
+
+      // Tap Account
+      await tester.tap(find.text('Account'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      indexedStack = tester.widget<IndexedStack>(find.byType(IndexedStack));
+      expect(indexedStack.index, 4);
+    });
+
+    testWidgets('AppShell.bottomPadding computes total clearance with safe area',
+        (tester) async {
+      double? computedPadding;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(
+              padding: EdgeInsets.only(bottom: 34.0),
+            ),
+            child: Builder(
+              builder: (context) {
+                computedPadding = AppShell.bottomPadding(context, extra: 24.0);
+                return const SizedBox();
+              },
+            ),
+          ),
+        ),
+      );
+
+      // reservedBottomSpace (102.0) + bottomInset (34.0) + extra (24.0) = 160.0
+      expect(computedPadding, equals(160.0));
     });
   });
 }
