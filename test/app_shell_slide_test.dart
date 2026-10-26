@@ -91,6 +91,47 @@ void main() {
       expect(indexedStack.index, 4);
     });
 
+    testWidgets('Horizontal swipe gestures navigate forward and backward between tabs',
+        (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: AppShell(location: '/'),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+
+      var indexedStack = tester.widget<IndexedStack>(find.byType(IndexedStack));
+      expect(indexedStack.index, 0);
+
+      // Fling left (right-to-left) to advance from Home (0) to Workouts (1)
+      await tester.fling(find.byType(IndexedStack), const Offset(-400, 0), 1000.0);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      indexedStack = tester.widget<IndexedStack>(find.byType(IndexedStack));
+      expect(indexedStack.index, 1);
+
+      // Fling left again to advance from Workouts (1) to Exercises (2)
+      await tester.fling(find.byType(IndexedStack), const Offset(-400, 0), 1000.0);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      indexedStack = tester.widget<IndexedStack>(find.byType(IndexedStack));
+      expect(indexedStack.index, 2);
+
+      // Fling right (left-to-right) to go back from Exercises (2) to Workouts (1)
+      await tester.fling(find.byType(IndexedStack), const Offset(400, 0), 1000.0);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      indexedStack = tester.widget<IndexedStack>(find.byType(IndexedStack));
+      expect(indexedStack.index, 1);
+    });
+
     testWidgets('AppShell.bottomPadding computes total clearance with safe area',
         (tester) async {
       double? computedPadding;

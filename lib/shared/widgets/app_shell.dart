@@ -13,6 +13,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -51,6 +52,7 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   late int _currentIndex;
+  double _horizontalDragDelta = 0.0;
 
   /// The 5 persistent tab screens in display order.
   static const List<Widget> _tabScreens = <Widget>[
@@ -106,21 +108,52 @@ class _AppShellState extends State<AppShell> {
       color: AppColors.background,
       child: Stack(
         children: [
-          // 1. Instant, zero-peeking persistent tab branches
+          // 1. Instant, zero-peeking persistent tab branches with fast swipe gesture
           Positioned.fill(
             child: isKnownTab
-                ? IndexedStack(
-                    index: currentIndex,
-                    children: [
-                      for (int i = 0; i < _tabScreens.length; i++)
-                        TickerMode(
-                          enabled: i == currentIndex,
-                          child: KeyedSubtree(
-                            key: PageStorageKey<String>('tab_$i'),
-                            child: _tabScreens[i],
+                ? GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onHorizontalDragStart: (_) {
+                      _horizontalDragDelta = 0.0;
+                    },
+                    onHorizontalDragUpdate: (details) {
+                      _horizontalDragDelta += details.delta.dx;
+                    },
+                    onHorizontalDragEnd: (details) {
+                      final velocity = details.primaryVelocity ?? 0.0;
+                      const double kDistanceThreshold = 50.0;
+                      const double kVelocityThreshold = 250.0;
+
+                      final isSwipeNext = velocity < -kVelocityThreshold ||
+                          _horizontalDragDelta < -kDistanceThreshold;
+                      final isSwipePrev = velocity > kVelocityThreshold ||
+                          _horizontalDragDelta > kDistanceThreshold;
+
+                      if (isSwipeNext && _currentIndex < _tabScreens.length - 1) {
+                        HapticFeedback.lightImpact();
+                        _onTabSelected(_currentIndex + 1);
+                      } else if (isSwipePrev && _currentIndex > 0) {
+                        HapticFeedback.lightImpact();
+                        _onTabSelected(_currentIndex - 1);
+                      }
+                      _horizontalDragDelta = 0.0;
+                    },
+                    onHorizontalDragCancel: () {
+                      _horizontalDragDelta = 0.0;
+                    },
+                    child: IndexedStack(
+                      index: currentIndex,
+                      children: [
+                        for (int i = 0; i < _tabScreens.length; i++)
+                          TickerMode(
+                            enabled: i == currentIndex,
+                            child: KeyedSubtree(
+                              key: PageStorageKey<String>('tab_$i'),
+                              child: _tabScreens[i],
+                            ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   )
                 : (widget.child ?? const SizedBox.shrink()),
           ),
