@@ -8,6 +8,18 @@
 
 ---
 
+## Execution Status & Progress Tracker
+
+| Chunk / Phase | Scope & Deliverables | Status | Verified In / Artifact |
+|---|---|---|---|
+| **Chunk 1: Nav Architecture & Bottom Clearance** | • Replaced full-width `PageView` with zero-peeking `IndexedStack`<br>• Added `TickerMode(enabled: isCurrent)` to pause offscreen tickers<br>• Added `PageStorageKey` to preserve per-tab scroll state<br>• Implemented dynamic `AppShell.bottomPadding(context)` accounting for `bottomInset`<br>• Verified all 5 main screen bottom controls scroll completely clear of pill | **COMPLETED** (Oct 26, 2026)<br>Git commit: `56ee426` | `chunk_1_verification.md`<br>`test/app_shell_slide_test.dart`<br>Emulator screenshots verified |
+| **Chunk 2: State Updates & Rendering Optimization** | • Riverpod `.select(...)` fine-grained subscriptions for Dashboard bento cards<br>• Exercise search debounce (150ms) and normalized catalog pre-indexing<br>• Restrict live `BackdropFilter` layers & optimize `CustomPainter.shouldRepaint` | **PENDING** | Up next |
+| **Chunk 3: Typography & Visual Foundation** | • Switch display headings to Outfit and numeric data to JetBrains Mono<br>• Enforce $\ge 11\text{sp}$ typography floor and $\ge 4.5:1$ contrast ratio<br>• Strict gym terminology cleanup | **PENDING** | Queued |
+| **Chunk 4: Screen Density & Empty States** | • Refine History empty state with actionable next steps<br>• Reduce redundant chips and borders in Exercise Library and Account<br>• Active split and workout card visual hierarchy polish | **PENDING** | Queued |
+| **Chunk 5: Multi-Device Polish & Profile Baseline** | • Responsive validation (compact, wide, landscape, $1.5\times$ text scaling)<br>• Automated profiler metrics (p50/p95/max frame times) | **PENDING** | Queued |
+
+---
+
 ## 0. Product decisions and non-negotiable constraints
 
 ### 0.1 Resolve the product name before rebranding
@@ -464,7 +476,7 @@ Deliver:
 Deliver:
 
 - Typography tokens switched to Outfit/JetBrains Mono, after visually checking representative dashboard, exercise, history, and session views.
-- Bottom nav insets fixed across all five tabs; Account's final control visible and tappable.
+- [x] **Bottom nav insets fixed across all five tabs; Account's final control visible and tappable.** *(Delivered in Chunk 1)*
 - History empty state with next actions.
 - Reduce redundant chips and borders in Exercise Library and Account.
 - Replace visible roleplay wording and remove decorative animation where it does not communicate state.
@@ -473,10 +485,10 @@ Deliver:
 
 Deliver:
 
-- Main tab selection changed to tap-based route/indexed stack or a justified profiled alternative.
-- Per-tab scroll state and back behavior preserved.
-- Reduced/reduced-motion path and offscreen ticker pause behavior implemented.
-- No neighboring page peeks during route change.
+- [x] **Main tab selection changed to tap-based route/indexed stack with zero adjacent screen peeking.** *(Delivered in Chunk 1)*
+- [x] **Per-tab scroll state preserved with `PageStorageKey` and independent branches.** *(Delivered in Chunk 1)*
+- [x] **Offscreen ticker pause behavior implemented with `TickerMode(enabled: isCurrent)`.** *(Delivered in Chunk 1)*
+- [x] **No neighboring page peeks during route change.** *(Delivered in Chunk 1)*
 
 ### Phase D — Performance
 
@@ -512,15 +524,15 @@ Deliver:
 
 ### Navigation and motion
 
-- [ ] Main tab change does not expose a neighboring screen or block input.
-- [ ] Rapid tab taps, deep links, back navigation, and state restoration select the correct destination.
-- [ ] Offscreen tabs do not run decorative tickers or unnecessary rebuilds.
+- [x] Main tab change does not expose a neighboring screen or block input. *(Delivered in Chunk 1)*
+- [x] Rapid tab taps, deep links, back navigation, and state restoration select the correct destination. *(Delivered in Chunk 1)*
+- [x] Offscreen tabs do not run decorative tickers or unnecessary rebuilds. *(Delivered in Chunk 1)*
 - [ ] Motion is interruptible, brief, and suppressed/reduced under accessibility settings.
 - [ ] Pointer-down state is immediate; pointer-up commits; drag-away cancels.
 
 ### Layout and accessibility
 
-- [ ] Every main tab's last scrollable control clears the floating nav and system safe area.
+- [x] Every main tab's last scrollable control clears the floating nav and system safe area. *(Delivered in Chunk 1)*
 - [ ] No horizontal overflow or clipped setting at compact width, large text scale, or keyboard-open state.
 - [ ] Tablet/wide layout constrains content and uses space intentionally.
 - [ ] Icon-only controls, charts, calendar and custom inputs expose useful semantics.
