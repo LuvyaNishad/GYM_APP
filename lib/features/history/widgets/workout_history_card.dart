@@ -60,7 +60,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
 
   String _generateWorkoutSummary(WorkoutModel w) {
     final buffer = StringBuffer();
-    buffer.writeln('LEON WORKOUT SUMMARY 🏋️');
+    buffer.writeln('AEON WORKOUT SUMMARY 🏋️');
     buffer.writeln(w.name.toUpperCase());
     buffer.writeln('${_formatDate(w.date)} • ${_formatDuration(w.durationSeconds)}');
     final totalSets = w.exercises.fold<int>(0, (s, e) => s + e.sets.length);
@@ -77,7 +77,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
       }
       buffer.writeln('');
     }
-    buffer.write('Tracked with LEON');
+    buffer.write('Tracked with AEON');
     return buffer.toString();
   }
 

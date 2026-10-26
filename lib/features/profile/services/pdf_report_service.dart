@@ -18,8 +18,8 @@ class PdfReportService {
     AccountProfile profile,
   ) async {
     final pdf = pw.Document(
-      title: 'LEON Monthly Training Report — ${profile.displayName}',
-      author: 'LEON Fitness OS',
+      title: 'AEON Monthly Training Report — ${profile.displayName}',
+      author: 'AEON Fitness OS',
     );
 
     const darkBg = PdfColor.fromInt(0xFF141722);
@@ -57,7 +57,7 @@ class PdfReportService {
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         pw.Text(
-                          'LEON',
+                          'AEON',
                           style: pw.TextStyle(
                             color: cyanAccent,
                             fontSize: 26,
@@ -295,7 +295,7 @@ class PdfReportService {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Text(
-                      'LEON HIGH-PERFORMANCE FITNESS OS',
+                      'AEON HIGH-PERFORMANCE FITNESS OS',
                       style: pw.TextStyle(
                         color: textSecondary,
                         fontSize: 8,

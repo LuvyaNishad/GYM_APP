@@ -82,7 +82,7 @@ class _ReportPreviewSheetState extends State<_ReportPreviewSheet> {
 
   void _copySummaryText() {
     final summary = '''
-# LEON PERFORMANCE REPORT
+# AEON PERFORMANCE REPORT
 Athlete: ${widget.profile.displayName}
 Date: ${DateTime.now().toIso8601String().substring(0, 10)}
 Height: ${widget.profile.formattedHeight}
