@@ -75,7 +75,7 @@ int navPillIndexFor(String location) {
   for (var i = 0; i < kNavPillTabs.length; i++) {
     final route = kNavPillTabs[i].route;
     final matches = route == AppConstants.routeDashboard
-        ? location == route
+        ? (location == route || location == '/dashboard')
         : location.startsWith(route);
     if (matches && route.length >= bestLength) {
       bestIndex = i;
