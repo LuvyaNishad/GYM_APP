@@ -12,6 +12,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../state/app_providers.dart';
 import '../../history/providers/history_provider.dart';
@@ -44,7 +45,7 @@ class DashboardScreen extends ConsumerWidget {
         : 'Leon';
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [

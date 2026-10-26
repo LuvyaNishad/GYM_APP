@@ -39,7 +39,7 @@ class HistoryScreen extends ConsumerWidget {
     final summary = ref.watch(historySummaryProvider);
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [

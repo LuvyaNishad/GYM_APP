@@ -10,19 +10,18 @@
 /// - High-performance PageView with BouncingScrollPhysics for tactile momentum and edge elasticity
 /// - AutomaticKeepAlive on all 5 tabs so scroll positions, inputs, and states are preserved across swipes
 /// - Bidirectional sync between gesture swiping, the floating [GlassNavPill], and GoRouter routes
-/// - Real-time synchronization with [AtmosphericGlowBackdrop] so ambient glow glides with the active section
 library;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/theme/app_colors.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
 import '../../features/exercise_library/screens/exercise_library_screen.dart';
 import '../../features/history/screens/history_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/workout_builder/screens/workout_builder_screen.dart';
-import 'atmospheric_glow_backdrop.dart';
 import 'glass_nav_pill.dart';
 
 class AppShell extends StatefulWidget {
@@ -146,52 +145,48 @@ class _AppShellState extends State<AppShell> {
     final activeIndex = navPillIndexFor(widget.location);
     final isKnownTab = activeIndex >= 0 && activeIndex < kNavPillTabs.length;
 
-    return Stack(
-      children: [
-        // 1. Hardware-accelerated atmospheric glow backdrop
-        Positioned.fill(
-          child: AtmosphericGlowBackdrop(
-            activeIndex: isKnownTab ? _currentIndex : activeIndex,
+    return ColoredBox(
+      color: AppColors.background,
+      child: Stack(
+        children: [
+          // 1. Interactive horizontally swipeable main sections
+          Positioned.fill(
+            child: isKnownTab
+                ? PageView(
+                    controller: _pageController,
+                    onPageChanged: _onPageChanged,
+                    physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics(),
+                    ),
+                    dragStartBehavior: DragStartBehavior.down,
+                    children: _tabScreens,
+                  )
+                : (widget.child ?? const SizedBox.shrink()),
           ),
-        ),
 
-        // 2. Interactive horizontally swipeable main sections
-        Positioned.fill(
-          child: isKnownTab
-              ? PageView(
-                  controller: _pageController,
-                  onPageChanged: _onPageChanged,
-                  physics: const BouncingScrollPhysics(
-                    parent: AlwaysScrollableScrollPhysics(),
-                  ),
-                  dragStartBehavior: DragStartBehavior.down,
-                  children: _tabScreens,
-                )
-              : (widget.child ?? const SizedBox.shrink()),
-        ),
-
-        // 3. Floating glass navigation pill with tubelight indicator
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                24,
-                0,
-                24,
-                AppShell._margin,
-              ),
-              child: GlassNavPill(
-                activeIndex: isKnownTab ? _currentIndex : activeIndex,
-                onTabSelected: _onTabSelected,
+          // 2. Floating glass navigation pill with tubelight indicator
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  24,
+                  0,
+                  24,
+                  AppShell._margin,
+                ),
+                child: GlassNavPill(
+                  activeIndex: isKnownTab ? _currentIndex : activeIndex,
+                  onTabSelected: _onTabSelected,
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

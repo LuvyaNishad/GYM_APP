@@ -55,9 +55,9 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
     final notifier = ref.read(exerciseLibraryProvider.notifier);
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.onyx,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.onyx,
         elevation: 0,
         centerTitle: false,
         leading: Navigator.canPop(context)

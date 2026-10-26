@@ -9,10 +9,10 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../shared/widgets/acrylic_card.dart';
 import '../models/daily_telemetry_model.dart';
 import 'bento_bar_progress.dart';
 import 'telemetry_detail_sheets.dart';
@@ -31,6 +31,8 @@ class SleepBentoCard extends StatelessWidget {
   /// Optional card tap handler override.
   final VoidCallback? onTap;
 
+  static const Color _cardBg = AppColors.cardBackground;
+
   @override
   Widget build(BuildContext context) {
     final hasSleep = telemetry.sleepHours > 0;
@@ -38,20 +40,32 @@ class SleepBentoCard extends StatelessWidget {
     final progressPct = (progress * 100).toInt();
     final hoursStr = hasSleep ? telemetry.sleepHours.toStringAsFixed(1) : '--';
 
-    return AcrylicCard(
-      borderRadius: 22,
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      onTap: () {
-        if (onTap != null) {
-          onTap!();
-        } else {
-          showSleepDetailSheet(context, telemetry);
-        }
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          if (onTap != null) {
+            onTap!();
+          } else {
+            showSleepDetailSheet(context, telemetry);
+          }
+        },
+        borderRadius: BorderRadius.circular(22),
+        child: Container(
+          decoration: BoxDecoration(
+            color: _cardBg,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: AppColors.subtleBorder,
+              width: 1.0,
+            ),
+          ),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
               // ── Header Row: Title + Chevron ──────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -186,6 +200,8 @@ class SleepBentoCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
     );
   }
 }

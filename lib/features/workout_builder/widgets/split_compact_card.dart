@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../shared/widgets/acrylic_card.dart';
 import '../models/split_model.dart';
 import 'muscle_balance_card.dart';
 import 'split_day_workout_card.dart';
@@ -36,15 +35,27 @@ class SplitCompactCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AcrylicCard(
-      borderRadius: 18,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
       margin: const EdgeInsets.only(bottom: 20),
-      borderColor: isActive
-          ? AppColors.pureWhite
-          : AppColors.steel.withValues(alpha: 0.70),
-      borderWidth: isActive ? 1.5 : 1.0,
-      glowColor: isActive ? Colors.white.withValues(alpha: 0.08) : null,
-      padding: EdgeInsets.zero,
+      decoration: BoxDecoration(
+        color: AppColors.charcoal,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isActive ? AppColors.pureWhite : AppColors.steel,
+          width: isActive ? 1.5 : 1.0,
+        ),
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                )
+              ]
+            : null,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

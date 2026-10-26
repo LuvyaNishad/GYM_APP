@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:leon/shared/widgets/app_shell.dart';
-import 'package:leon/shared/widgets/atmospheric_glow_backdrop.dart';
 import 'package:leon/shared/widgets/glass_nav_pill.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('AppShell Horizontal Sliding / Swiping Tests', () {
-    testWidgets('AppShell renders PageView, AtmosphericGlowBackdrop, and GlassNavPill',
+    testWidgets('AppShell renders PageView and GlassNavPill with solid background',
         (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
@@ -28,9 +27,6 @@ void main() {
 
       final pageView = tester.widget<PageView>(pageViewFinder);
       expect(pageView.physics, isA<BouncingScrollPhysics>());
-
-      // AtmosphericGlowBackdrop is present
-      expect(find.byType(AtmosphericGlowBackdrop), findsOneWidget);
 
       // GlassNavPill is present
       expect(find.byType(GlassNavPill), findsOneWidget);

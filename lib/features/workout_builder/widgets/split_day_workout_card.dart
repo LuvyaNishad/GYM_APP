@@ -31,7 +31,7 @@ class _SplitDayWorkoutCardState extends State<SplitDayWorkoutCard> {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.onyx.withValues(alpha: 0.72),
+          color: AppColors.onyx,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.steel.withValues(alpha: 0.5)),
         ),
@@ -64,9 +64,9 @@ class _SplitDayWorkoutCardState extends State<SplitDayWorkoutCard> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.onyx.withValues(alpha: 0.72),
+        color: AppColors.onyx,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.steel.withValues(alpha: 0.70), width: 1.0),
+        border: Border.all(color: AppColors.steel, width: 1.0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

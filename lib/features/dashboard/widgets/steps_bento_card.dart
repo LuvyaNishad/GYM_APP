@@ -10,12 +10,12 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../services/pedometer_service.dart';
-import '../../../shared/widgets/acrylic_card.dart';
 import '../models/daily_telemetry_model.dart';
 import 'telemetry_detail_sheets.dart';
 
@@ -33,6 +33,8 @@ class StepsBentoCard extends ConsumerWidget {
   /// Optional card tap handler override.
   final VoidCallback? onTap;
 
+  static const Color _cardBg = AppColors.cardBackground;
+
   String _formatNumber(int number) {
     return number.toString().replaceAllMapped(
           RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
@@ -47,24 +49,36 @@ class StepsBentoCard extends ConsumerWidget {
     final isSensorUnavailable = trackingStatus == StepTrackingStatus.sensorUnavailable;
     final isUnavailable = isPermissionDenied || isSensorUnavailable;
 
-    return AcrylicCard(
-      borderRadius: 22,
-      padding: const EdgeInsets.all(14),
-      onTap: () {
-        if (isPermissionDenied) {
-          ref.read(pedometerServiceProvider).requestPermission();
-          return;
-        }
-        if (onTap != null) {
-          onTap!();
-        } else {
-          showStepsDetailSheet(context, telemetry);
-        }
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          if (isPermissionDenied) {
+            ref.read(pedometerServiceProvider).requestPermission();
+            return;
+          }
+          if (onTap != null) {
+            onTap!();
+          } else {
+            showStepsDetailSheet(context, telemetry);
+          }
+        },
+        borderRadius: BorderRadius.circular(22),
+        child: Container(
+          decoration: BoxDecoration(
+            color: _cardBg,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: AppColors.subtleBorder,
+              width: 1.0,
+            ),
+          ),
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
               // ── Header Row: Title + Chevron ──────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -217,6 +231,8 @@ class StepsBentoCard extends ConsumerWidget {
                 ),
             ],
           ),
+        ),
+      ),
     );
   }
 }

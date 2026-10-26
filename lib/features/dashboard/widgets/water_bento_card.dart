@@ -14,7 +14,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../shared/widgets/acrylic_card.dart';
 import '../models/daily_telemetry_model.dart';
 import 'bento_bar_progress.dart';
 import 'telemetry_detail_sheets.dart';
@@ -33,6 +32,8 @@ class WaterBentoCard extends ConsumerWidget {
   /// Optional card tap handler override.
   final VoidCallback? onTap;
 
+  static const Color _cardBg = AppColors.cardBackground;
+
   String _formatNumber(int number) {
     return number.toString().replaceAllMapped(
           RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
@@ -46,20 +47,32 @@ class WaterBentoCard extends ConsumerWidget {
     final progress = telemetry.waterProgress;
     final progressPct = (progress * 100).toInt();
 
-    return AcrylicCard(
-      borderRadius: 22,
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      onTap: () {
-        if (onTap != null) {
-          onTap!();
-        } else {
-          showHydrationDetailSheet(context, telemetry);
-        }
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          if (onTap != null) {
+            onTap!();
+          } else {
+            showHydrationDetailSheet(context, telemetry);
+          }
+        },
+        borderRadius: BorderRadius.circular(22),
+        child: Container(
+          decoration: BoxDecoration(
+            color: _cardBg,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: AppColors.subtleBorder,
+              width: 1.0,
+            ),
+          ),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
               // ── Header Row: Title + Chevron ──────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -206,6 +219,8 @@ class WaterBentoCard extends ConsumerWidget {
               ),
             ],
           ),
+        ),
+      ),
     );
   }
 }
