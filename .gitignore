@@ -46,6 +46,15 @@ stitch_screens/
 *.bat
 *.cmd
 
+# ── Internal Documentation, Roadmaps, Prompts & Scratch Notes (Local Only) ───
+*.md
+!README.md
+!ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md
+*.txt
+!CMakeLists.txt
+docs/
+reference images/
+components/
 
 # ── pubspec.lock ──────────────────────────────────────────────────────────────
 # Solo project — uncomment the line below if you want to ignore it
