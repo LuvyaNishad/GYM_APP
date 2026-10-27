@@ -17,7 +17,8 @@ class ExerciseLibraryScreen extends ConsumerStatefulWidget {
   const ExerciseLibraryScreen({super.key});
 
   @override
-  ConsumerState<ExerciseLibraryScreen> createState() => _ExerciseLibraryScreenState();
+  ConsumerState<ExerciseLibraryScreen> createState() =>
+      _ExerciseLibraryScreenState();
 }
 
 class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
@@ -63,7 +64,11 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
         centerTitle: false,
         leading: Navigator.canPop(context)
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppColors.pureWhite),
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 20,
+                  color: AppColors.pureWhite,
+                ),
                 onPressed: () => Navigator.of(context).pop(),
               )
             : null,
@@ -88,7 +93,11 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                   ),
                 );
               },
-              icon: const Icon(Icons.add_rounded, size: 16, color: AppColors.pureWhite),
+              icon: const Icon(
+                Icons.add_rounded,
+                size: 16,
+                color: AppColors.pureWhite,
+              ),
               label: Text(
                 'CUSTOM',
                 style: AppTypography.labelSmall.copyWith(
@@ -100,13 +109,13 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
               ),
               style: TextButton.styleFrom(
                 backgroundColor: AppColors.charcoal,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
-                  side: const BorderSide(
-                    color: AppColors.steel,
-                    width: 1.0,
-                  ),
+                  side: const BorderSide(color: AppColors.steel, width: 1.0),
                 ),
               ),
             ),
@@ -123,25 +132,34 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.charcoal,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.steel,
-                    width: 1.0,
-                  ),
+                  border: Border.all(color: AppColors.steel, width: 1.0),
                 ),
                 child: TextField(
                   controller: _searchController,
                   onChanged: notifier.debounceSearchQuery,
-                  style: AppTypography.bodyMedium.copyWith(color: AppColors.pureWhite, fontSize: 14),
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.pureWhite,
+                    fontSize: 14,
+                  ),
                   decoration: InputDecoration(
-                    hintText: 'Search ${state.allExercises.length} exercises, muscles, equipment...',
+                    hintText:
+                        'Search ${state.allExercises.length} exercises, muscles, equipment...',
                     hintStyle: AppTypography.bodySmall.copyWith(
                       color: AppColors.textMuted,
                       fontSize: 13,
                     ),
-                    prefixIcon: const Icon(Icons.search_rounded, color: AppColors.platinum, size: 20),
+                    prefixIcon: const Icon(
+                      Icons.search_rounded,
+                      color: AppColors.platinum,
+                      size: 20,
+                    ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear_rounded, color: AppColors.platinum, size: 18),
+                            icon: const Icon(
+                              Icons.clear_rounded,
+                              color: AppColors.platinum,
+                              size: 18,
+                            ),
                             onPressed: () {
                               _searchController.clear();
                               notifier.setSearchQuery('');
@@ -149,7 +167,10 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                           )
                         : null,
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
                   ),
                 ),
               ),
@@ -183,10 +204,13 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                       },
                       borderRadius: BorderRadius.circular(4),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 2,
+                        ),
                         child: Text(
                           'CLEAR ALL',
-                          style: AppTypography.monoSmall.copyWith(
+                          style: AppTypography.bodySmall.copyWith(
                             fontSize: 11.0,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 0.8,
@@ -203,23 +227,30 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
             Expanded(
               child: state.isLoading
                   ? const Center(
-                      child: CircularProgressIndicator(color: AppColors.pureWhite),
+                      child: CircularProgressIndicator(
+                        color: AppColors.pureWhite,
+                      ),
                     )
                   : state.filteredExercises.isEmpty
-                      ? _buildEmptyState(notifier)
-                      : ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          padding: EdgeInsets.fromLTRB(0, 6, 0, AppShell.bottomPadding(context, extra: 24)),
-                          itemCount: state.filteredExercises.length,
-                          itemBuilder: (context, index) {
-                            final exercise = state.filteredExercises[index];
-                            return ExerciseLibraryCard(
-                              exercise: exercise,
-                              onTap: () => _openDetailSheet(exercise),
-                              onQuickAdd: () => _openAddToRoutine(exercise),
-                            );
-                          },
-                        ),
+                  ? _buildEmptyState(notifier)
+                  : ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(
+                        0,
+                        6,
+                        0,
+                        AppShell.bottomPadding(context, extra: 24),
+                      ),
+                      itemCount: state.filteredExercises.length,
+                      itemBuilder: (context, index) {
+                        final exercise = state.filteredExercises[index];
+                        return ExerciseLibraryCard(
+                          exercise: exercise,
+                          onTap: () => _openDetailSheet(exercise),
+                          onQuickAdd: () => _openAddToRoutine(exercise),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -239,10 +270,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
               decoration: BoxDecoration(
                 color: AppColors.charcoal,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.steel,
-                  width: 1.0,
-                ),
+                border: Border.all(color: AppColors.steel, width: 1.0),
               ),
               child: const Icon(
                 Icons.search_off_rounded,
@@ -277,7 +305,10 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.pureWhite,
                 foregroundColor: AppColors.onyx,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),

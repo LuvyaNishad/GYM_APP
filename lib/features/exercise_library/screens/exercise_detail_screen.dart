@@ -7,6 +7,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../workout_session/providers/active_session_provider.dart';
+import '../../workout_session/providers/exercise_favorites_provider.dart';
 import '../models/exercise_library_item.dart';
 import '../providers/exercise_library_provider.dart';
 import '../widgets/add_to_routine_dialog.dart';
@@ -24,16 +25,19 @@ class ExerciseDetailScreen extends ConsumerWidget {
     super.key,
     this.exercise,
     this.exerciseId,
+    this.fromSession = false,
   });
 
   final ExerciseLibraryItem? exercise;
   final String? exerciseId;
+  final bool fromSession;
 
   static const ExerciseLibraryItem _fallbackExercise = ExerciseLibraryItem(
     id: 'barbell-bench-press',
     name: 'Barbell Bench Press',
     category: 'Chest',
-    description: 'Horizontal compound barbell pressing movement for chest, front deltoids, and triceps.',
+    description:
+        'Horizontal compound barbell pressing movement for chest, front deltoids, and triceps.',
     primaryMuscles: ['pectoralis major', 'pectoralis minor'],
     secondaryMuscles: ['anterior deltoids', 'triceps brachii'],
     equipment: ['barbell', 'flat bench'],
@@ -49,7 +53,8 @@ class ExerciseDetailScreen extends ConsumerWidget {
       'Lower the bar with controlled tempo until light contact with sternum.',
       'Drive powerfully upward pressing feet into the floor until lock.',
     ],
-    coachingNotes: 'Retract and depress shoulder blades throughout the entire set. Never flare elbows to 90 degrees.',
+    coachingNotes:
+        'Retract and depress shoulder blades throughout the entire set. Never flare elbows to 90 degrees.',
     defaultRestSeconds: 120,
     alternatives: ['dumbbell-bench-press', 'incline-dumbbell-press'],
   );
@@ -67,7 +72,20 @@ class ExerciseDetailScreen extends ConsumerWidget {
       resolved = found;
     }
 
-    final alternatives = ref.read(exerciseLibraryProvider.notifier).getAlternatives(resolved.id);
+    final alternatives = ref
+        .read(exerciseLibraryProvider.notifier)
+        .getAlternatives(resolved.id);
+    final favorite = ref.watch(exerciseFavoritesProvider).contains(resolved.name);
+    final activeSession = ref.watch(
+      activeSessionProvider.select(
+        (s) => (
+          s.isActive,
+          s.exercises.any(
+            (e) => e.name.toLowerCase() == resolved.name.toLowerCase(),
+          ),
+        ),
+      ),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -94,19 +112,23 @@ class ExerciseDetailScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.bookmark_border_rounded,
+            tooltip: favorite ? 'Remove favorite' : 'Add favorite',
+            icon: Icon(
+              favorite ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
               color: AppColors.platinum,
               size: 22,
             ),
-            onPressed: () {
-              HapticFeedback.selectionClick();
-              ScaffoldMessenger.of(context).showSnackBar(
+            onPressed: () async {
+              try {
+                await ref.read(exerciseFavoritesProvider.notifier).toggle(resolved.name);
+              } catch (_) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   backgroundColor: AppColors.charcoal,
                   behavior: SnackBarBehavior.floating,
                   content: Text(
-                    'Saved ${resolved.name} to favorites',
+                    'Could not save favorite. Try again.',
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.pureWhite,
                       fontSize: 12.0,
@@ -114,6 +136,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
                   ),
                 ),
               );
+              }
             },
           ),
         ],
@@ -142,7 +165,10 @@ class ExerciseDetailScreen extends ConsumerWidget {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.primary.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(6),
@@ -153,7 +179,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
                             child: Text(
                               resolved.category.toUpperCase(),
                               style: const TextStyle(
-                                fontFamily: 'JetBrains Mono',
+                                fontFamily: AppTypography.fontMono,
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.w800,
                                 color: AppColors.primary,
@@ -163,7 +189,10 @@ class ExerciseDetailScreen extends ConsumerWidget {
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(6),
@@ -171,7 +200,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
                             child: Text(
                               resolved.exerciseType.toUpperCase(),
                               style: const TextStyle(
-                                fontFamily: 'JetBrains Mono',
+                                fontFamily: AppTypography.fontMono,
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.platinum,
@@ -180,7 +209,10 @@ class ExerciseDetailScreen extends ConsumerWidget {
                           ),
                           const Spacer(),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.06),
                               borderRadius: BorderRadius.circular(6),
@@ -188,7 +220,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
                             child: Text(
                               '${resolved.defaultRestSeconds}s REST',
                               style: const TextStyle(
-                                fontFamily: 'JetBrains Mono',
+                                fontFamily: AppTypography.fontMono,
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.platinum,
@@ -256,7 +288,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
                                 Text(
                                   'PRIMARY',
                                   style: const TextStyle(
-                                    fontFamily: 'JetBrains Mono',
+                                    fontFamily: AppTypography.fontBody,
                                     fontSize: 11.0,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.primary,
@@ -268,18 +300,25 @@ class ExerciseDetailScreen extends ConsumerWidget {
                                   runSpacing: 6,
                                   children: resolved.primaryMuscles.map((m) {
                                     return Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: AppColors.primary.withValues(alpha: 0.12),
+                                        color: AppColors.primary.withValues(
+                                          alpha: 0.12,
+                                        ),
                                         borderRadius: BorderRadius.circular(6),
                                         border: Border.all(
-                                          color: AppColors.primary.withValues(alpha: 0.4),
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.4,
+                                          ),
                                         ),
                                       ),
                                       child: Text(
                                         m.toUpperCase(),
                                         style: const TextStyle(
-                                          fontFamily: 'JetBrains Mono',
+                                          fontFamily: AppTypography.fontMono,
                                           fontSize: 11.0,
                                           fontWeight: FontWeight.w700,
                                           color: AppColors.primary,
@@ -299,7 +338,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
                                 Text(
                                   'SECONDARY',
                                   style: const TextStyle(
-                                    fontFamily: 'JetBrains Mono',
+                                    fontFamily: AppTypography.fontBody,
                                     fontSize: 11.0,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.platinum,
@@ -311,15 +350,20 @@ class ExerciseDetailScreen extends ConsumerWidget {
                                   runSpacing: 6,
                                   children: resolved.secondaryMuscles.map((m) {
                                     return Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.06),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.06,
+                                        ),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Text(
                                         m.toUpperCase(),
                                         style: const TextStyle(
-                                          fontFamily: 'JetBrains Mono',
+                                          fontFamily: AppTypography.fontMono,
                                           fontSize: 11.0,
                                           fontWeight: FontWeight.w600,
                                           color: AppColors.platinum,
@@ -373,7 +417,11 @@ class ExerciseDetailScreen extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 14),
-                      for (int i = 0; i < resolved.instructions.length; i++) ...[
+                      for (
+                        int i = 0;
+                        i < resolved.instructions.length;
+                        i++
+                      ) ...[
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -383,13 +431,16 @@ class ExerciseDetailScreen extends ConsumerWidget {
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.08),
                                 shape: BoxShape.circle,
-                                border: Border.all(color: AppColors.steel, width: 1),
+                                border: Border.all(
+                                  color: AppColors.steel,
+                                  width: 1,
+                                ),
                               ),
                               child: Center(
                                 child: Text(
                                   '${i + 1}',
                                   style: const TextStyle(
-                                    fontFamily: 'JetBrains Mono',
+                                    fontFamily: AppTypography.fontMono,
                                     fontSize: 11.0,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.pureWhite,
@@ -505,30 +556,38 @@ class ExerciseDetailScreen extends ConsumerWidget {
                           children: alternatives.map((alt) {
                             return Container(
                               margin: const EdgeInsets.only(bottom: 8),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.04),
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: AppColors.steel, width: 0.8),
+                                border: Border.all(
+                                  color: AppColors.steel,
+                                  width: 0.8,
+                                ),
                               ),
                               child: Row(
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           alt.name,
-                                          style: AppTypography.bodySmall.copyWith(
-                                            fontSize: 13.0,
-                                            fontWeight: FontWeight.w700,
-                                            color: AppColors.pureWhite,
-                                          ),
+                                          style: AppTypography.bodySmall
+                                              .copyWith(
+                                                fontSize: 13.0,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.pureWhite,
+                                              ),
                                         ),
                                         Text(
                                           alt.equipmentDisplay.toUpperCase(),
                                           style: const TextStyle(
-                                            fontFamily: 'JetBrains Mono',
+                                            fontFamily: AppTypography.fontMono,
                                             fontSize: 11.0,
                                             color: AppColors.platinum,
                                           ),
@@ -540,7 +599,9 @@ class ExerciseDetailScreen extends ConsumerWidget {
                                     onPressed: () {
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
-                                          builder: (_) => ExerciseDetailScreen(exercise: alt),
+                                          builder: (_) => ExerciseDetailScreen(
+                                            exercise: alt,
+                                          ),
                                         ),
                                       );
                                     },
@@ -620,17 +681,27 @@ class ExerciseDetailScreen extends ConsumerWidget {
               child: ElevatedButton(
                 onPressed: () {
                   HapticFeedback.heavyImpact();
+                  if (fromSession && activeSession.$2) {
+                    Navigator.of(context).pop();
+                    return;
+                  }
                   final session = ref.read(activeSessionProvider);
                   final notifier = ref.read(activeSessionProvider.notifier);
 
                   if (!session.isActive) {
-                    notifier.startSession(splitName: 'CUSTOM WORKOUT');
+                    notifier.startEmptySession(splitName: 'Custom Workout');
                   }
 
-                  final activeEx = resolved.toActiveExercise();
+                  final activeEx = resolved.toActiveExercise(
+                    defaultWeightKg: 0,
+                  );
                   notifier.addExercise(activeEx);
 
-                  context.push(AppConstants.routeWorkoutSession);
+                  if (fromSession) {
+                    Navigator.of(context).pop();
+                  } else {
+                    context.push(AppConstants.routeWorkoutSession);
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -642,7 +713,11 @@ class ExerciseDetailScreen extends ConsumerWidget {
                   minimumSize: const Size(0, 46),
                 ),
                 child: Text(
-                  'START WORKOUT',
+                  fromSession && activeSession.$2
+                      ? 'RETURN TO WORKOUT'
+                      : activeSession.$1
+                      ? 'ADD TO WORKOUT'
+                      : 'START WORKOUT',
                   style: AppTypography.labelSmall.copyWith(
                     fontFamily: AppTypography.fontDisplay,
                     fontSize: 12.0,
@@ -672,7 +747,8 @@ class Exercise1RmCalculatorCard extends StatefulWidget {
   final int initialReps;
 
   @override
-  State<Exercise1RmCalculatorCard> createState() => _Exercise1RmCalculatorCardState();
+  State<Exercise1RmCalculatorCard> createState() =>
+      _Exercise1RmCalculatorCardState();
 }
 
 class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
@@ -683,8 +759,12 @@ class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
   @override
   void initState() {
     super.initState();
-    _weightController = TextEditingController(text: widget.initialWeight.toStringAsFixed(0));
-    _repsController = TextEditingController(text: widget.initialReps.toString());
+    _weightController = TextEditingController(
+      text: widget.initialWeight.toStringAsFixed(0),
+    );
+    _repsController = TextEditingController(
+      text: widget.initialReps.toString(),
+    );
     _recalculate();
   }
 
@@ -746,7 +826,7 @@ class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
           Text(
             'Epley Formula: 1RM = Weight × (1 + Reps / 30)',
             style: const TextStyle(
-              fontFamily: 'JetBrains Mono',
+              fontFamily: AppTypography.fontMono,
               fontSize: 11.0,
               color: AppColors.platinum,
             ),
@@ -769,10 +849,12 @@ class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
                     const SizedBox(height: 6),
                     TextField(
                       controller: _weightController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       onChanged: (_) => _recalculate(),
                       style: const TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontMono,
                         fontSize: 14.0,
                         fontWeight: FontWeight.w700,
                         color: AppColors.pureWhite,
@@ -780,7 +862,10 @@ class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white.withValues(alpha: 0.05),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: const BorderSide(color: AppColors.steel),
@@ -791,7 +876,9 @@ class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: AppColors.primary),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
                     ),
@@ -817,7 +904,7 @@ class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
                       keyboardType: TextInputType.number,
                       onChanged: (_) => _recalculate(),
                       style: const TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontMono,
                         fontSize: 14.0,
                         fontWeight: FontWeight.w700,
                         color: AppColors.pureWhite,
@@ -825,7 +912,10 @@ class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white.withValues(alpha: 0.05),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: const BorderSide(color: AppColors.steel),
@@ -836,7 +926,9 @@ class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: AppColors.primary),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
                     ),
@@ -861,7 +953,7 @@ class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
                 Text(
                   'ESTIMATED 1RM:',
                   style: const TextStyle(
-                    fontFamily: 'JetBrains Mono',
+                    fontFamily: AppTypography.fontMono,
                     fontSize: 12.0,
                     fontWeight: FontWeight.w800,
                     color: AppColors.primary,
@@ -871,7 +963,7 @@ class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
                 Text(
                   '${_calculated1Rm.toStringAsFixed(1)} kg',
                   style: const TextStyle(
-                    fontFamily: 'JetBrains Mono',
+                    fontFamily: AppTypography.fontMono,
                     fontSize: 18.0,
                     fontWeight: FontWeight.w900,
                     color: AppColors.primary,
@@ -885,4 +977,3 @@ class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
     );
   }
 }
-

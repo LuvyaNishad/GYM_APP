@@ -190,7 +190,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
         title: const Text(
           'DELETE WORKOUT LOG',
           style: TextStyle(
-            fontFamily: 'JetBrains Mono',
+            fontFamily: AppTypography.fontBody,
             fontSize: 14.5,
             fontWeight: FontWeight.w700,
             color: AppColors.danger,
@@ -211,7 +211,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
             child: const Text(
               'CANCEL',
               style: TextStyle(
-                fontFamily: 'JetBrains Mono',
+                fontFamily: AppTypography.fontBody,
                 fontSize: 12.0,
                 color: AppColors.textSecondary,
               ),
@@ -222,7 +222,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
             child: const Text(
               'DELETE',
               style: TextStyle(
-                fontFamily: 'JetBrains Mono',
+                fontFamily: AppTypography.fontBody,
                 fontSize: 12.0,
                 fontWeight: FontWeight.w700,
                 color: AppColors.danger,
@@ -323,7 +323,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
           TextField(
             controller: _nameController,
             style: const TextStyle(
-              fontFamily: 'JetBrains Mono',
+              fontFamily: AppTypography.fontMono,
               fontSize: 13.0,
               fontWeight: FontWeight.w700,
               color: AppColors.pureWhite,
@@ -331,7 +331,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
             decoration: InputDecoration(
               labelText: 'WORKOUT NAME',
               labelStyle: const TextStyle(
-                fontFamily: 'JetBrains Mono',
+                fontFamily: AppTypography.fontMono,
                 fontSize: 11.0,
                 color: AppColors.textSecondary,
                 letterSpacing: 0.6,
@@ -402,7 +402,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                             child: Text(
                               ex.muscleGroup.toUpperCase(),
                               style: const TextStyle(
-                                fontFamily: 'JetBrains Mono',
+                                fontFamily: AppTypography.fontMono,
                                 fontSize: 11.0,
                                 color: AppColors.textSecondary,
                               ),
@@ -420,7 +420,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                             child: Text(
                               'SET',
                               style: TextStyle(
-                                fontFamily: 'JetBrains Mono',
+                                fontFamily: AppTypography.fontBody,
                                 fontSize: 11.0,
                                 color: AppColors.textSecondary,
                               ),
@@ -430,7 +430,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                             child: Text(
                               'KG',
                               style: TextStyle(
-                                fontFamily: 'JetBrains Mono',
+                                fontFamily: AppTypography.fontBody,
                                 fontSize: 11.0,
                                 color: AppColors.textSecondary,
                               ),
@@ -441,7 +441,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                             child: Text(
                               'REPS',
                               style: TextStyle(
-                                fontFamily: 'JetBrains Mono',
+                                fontFamily: AppTypography.fontBody,
                                 fontSize: 11.0,
                                 color: AppColors.textSecondary,
                               ),
@@ -463,7 +463,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                                 child: Text(
                                   '${sIdx + 1}',
                                   style: const TextStyle(
-                                    fontFamily: 'JetBrains Mono',
+                                    fontFamily: AppTypography.fontMono,
                                     fontSize: 12.0,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.platinum,
@@ -479,7 +479,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                                     keyboardType:
                                         const TextInputType.numberWithOptions(decimal: true),
                                     style: const TextStyle(
-                                      fontFamily: 'JetBrains Mono',
+                                      fontFamily: AppTypography.fontMono,
                                       fontSize: 12.0,
                                       color: AppColors.pureWhite,
                                     ),
@@ -506,7 +506,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                                     controller: ex.sets[sIdx].repsController,
                                     keyboardType: TextInputType.number,
                                     style: const TextStyle(
-                                      fontFamily: 'JetBrains Mono',
+                                      fontFamily: AppTypography.fontMono,
                                       fontSize: 12.0,
                                       color: AppColors.pureWhite,
                                     ),
@@ -591,7 +591,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                           label: const Text(
                             'ADD SET',
                             style: TextStyle(
-                              fontFamily: 'JetBrains Mono',
+                              fontFamily: AppTypography.fontBody,
                               fontSize: 11.0,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFF00E5FF),
@@ -627,7 +627,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                   child: const Text(
                     'DELETE',
                     style: TextStyle(
-                      fontFamily: 'JetBrains Mono',
+                      fontFamily: AppTypography.fontBody,
                       fontSize: 12.0,
                       fontWeight: FontWeight.w700,
                       color: AppColors.danger,
@@ -649,7 +649,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                   child: const Text(
                     'SAVE CHANGES',
                     style: TextStyle(
-                      fontFamily: 'JetBrains Mono',
+                      fontFamily: AppTypography.fontBody,
                       fontSize: 12.5,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,

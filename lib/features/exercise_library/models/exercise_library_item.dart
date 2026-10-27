@@ -68,7 +68,16 @@ class ExerciseLibraryItem {
   String get primaryMusclesDisplay {
     if (primaryMuscles.isEmpty) return category;
     return primaryMuscles
-        .map((m) => m.split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '))
+        .map(
+          (m) => m
+              .split(' ')
+              .map(
+                (w) => w.isNotEmpty
+                    ? '${w[0].toUpperCase()}${w.substring(1)}'
+                    : '',
+              )
+              .join(' '),
+        )
         .join(', ');
   }
 
@@ -76,7 +85,16 @@ class ExerciseLibraryItem {
   String get secondaryMusclesDisplay {
     if (secondaryMuscles.isEmpty) return 'None';
     return secondaryMuscles
-        .map((m) => m.split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '))
+        .map(
+          (m) => m
+              .split(' ')
+              .map(
+                (w) => w.isNotEmpty
+                    ? '${w[0].toUpperCase()}${w.substring(1)}'
+                    : '',
+              )
+              .join(' '),
+        )
         .join(', ');
   }
 
@@ -84,7 +102,16 @@ class ExerciseLibraryItem {
   String get equipmentDisplay {
     if (equipment.isEmpty) return primaryEquipment.toUpperCase();
     return equipment
-        .map((e) => e.split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '))
+        .map(
+          (e) => e
+              .split(' ')
+              .map(
+                (w) => w.isNotEmpty
+                    ? '${w[0].toUpperCase()}${w.substring(1)}'
+                    : '',
+              )
+              .join(' '),
+        )
         .join(', ');
   }
 
@@ -144,6 +171,8 @@ class ExerciseLibraryItem {
         reps: defaultReps,
         rir: 2.0,
         rpe: 8.0,
+        weightKgRight: isUnilateral ? defaultWeightKg : null,
+        repsRight: isUnilateral ? defaultReps : null,
       ),
     );
 
@@ -155,6 +184,7 @@ class ExerciseLibraryItem {
       sets: sets,
       notes: coachingNotes.isNotEmpty ? coachingNotes : null,
       restDurationSeconds: customRestSeconds ?? defaultRestSeconds,
+      isUnilateral: isUnilateral,
     );
   }
 
@@ -166,10 +196,7 @@ class ExerciseLibraryItem {
   }) {
     final sets = List.generate(
       targetSets,
-      (index) => WorkoutSet(
-        weightKg: defaultWeightKg,
-        reps: defaultReps,
-      ),
+      (index) => WorkoutSet(weightKg: defaultWeightKg, reps: defaultReps),
     );
 
     return WorkoutExercise(
@@ -181,27 +208,27 @@ class ExerciseLibraryItem {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'category': category,
-        'sub_category': subCategory,
-        'description': description,
-        'primary_muscles': primaryMuscles,
-        'secondary_muscles': secondaryMuscles,
-        'equipment': equipment,
-        'primary_equipment': primaryEquipment,
-        'movement_pattern': movementPattern,
-        'exercise_type': exerciseType,
-        'difficulty': difficulty,
-        'tags': tags,
-        'instructions': instructions,
-        'coaching_notes': coachingNotes,
-        'safety_notes': safetyNotes,
-        'logging_suggestions': loggingSuggestions,
-        'default_rest_seconds': defaultRestSeconds,
-        'is_custom': isCustom,
-        'alternatives': alternatives,
-      };
+    'id': id,
+    'name': name,
+    'category': category,
+    'sub_category': subCategory,
+    'description': description,
+    'primary_muscles': primaryMuscles,
+    'secondary_muscles': secondaryMuscles,
+    'equipment': equipment,
+    'primary_equipment': primaryEquipment,
+    'movement_pattern': movementPattern,
+    'exercise_type': exerciseType,
+    'difficulty': difficulty,
+    'tags': tags,
+    'instructions': instructions,
+    'coaching_notes': coachingNotes,
+    'safety_notes': safetyNotes,
+    'logging_suggestions': loggingSuggestions,
+    'default_rest_seconds': defaultRestSeconds,
+    'is_custom': isCustom,
+    'alternatives': alternatives,
+  };
 
   /// Determines default neuromuscular rest period based on exercise mechanics & fatigue profile.
   static int defaultRestForExercise({
@@ -288,21 +315,37 @@ class ExerciseLibraryItem {
       category: json['category'] as String? ?? 'General',
       subCategory: json['sub_category'] as String? ?? '',
       description: json['description'] as String? ?? '',
-      primaryMuscles: (json['primary_muscles'] as List?)?.map((e) => e.toString()).toList() ?? const [],
-      secondaryMuscles: (json['secondary_muscles'] as List?)?.map((e) => e.toString()).toList() ?? const [],
-      equipment: (json['equipment'] as List?)?.map((e) => e.toString()).toList() ?? const [],
+      primaryMuscles:
+          (json['primary_muscles'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      secondaryMuscles:
+          (json['secondary_muscles'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      equipment:
+          (json['equipment'] as List?)?.map((e) => e.toString()).toList() ??
+          const [],
       primaryEquipment: json['primary_equipment'] as String? ?? 'barbell',
       movementPattern: json['movement_pattern'] as String? ?? 'general',
       exerciseType: json['exercise_type'] as String? ?? 'compound',
       difficulty: json['difficulty'] as String? ?? 'beginner to intermediate',
-      tags: (json['tags'] as List?)?.map((e) => e.toString()).toList() ?? const [],
-      instructions: (json['instructions'] as List?)?.map((e) => e.toString()).toList() ?? const [],
+      tags:
+          (json['tags'] as List?)?.map((e) => e.toString()).toList() ??
+          const [],
+      instructions:
+          (json['instructions'] as List?)?.map((e) => e.toString()).toList() ??
+          const [],
       coachingNotes: json['coaching_notes'] as String? ?? '',
       safetyNotes: json['safety_notes'] as String? ?? '',
       loggingSuggestions: json['logging_suggestions'] as String? ?? '',
       defaultRestSeconds: computedRest,
       isCustom: json['is_custom'] as bool? ?? false,
-      alternatives: (json['alternatives'] as List?)?.map((e) => e.toString()).toList() ?? const [],
+      alternatives:
+          (json['alternatives'] as List?)?.map((e) => e.toString()).toList() ??
+          const [],
     );
   }
 

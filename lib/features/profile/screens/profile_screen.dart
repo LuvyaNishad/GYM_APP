@@ -98,7 +98,7 @@ class ProfileScreen extends ConsumerWidget {
                           Text(
                             'ACTIVE LIFTER',
                             style: TextStyle(
-                              fontFamily: 'JetBrains Mono',
+                              fontFamily: AppTypography.fontBody,
                               fontSize: 11.0,
                               fontWeight: FontWeight.w700,
                               color: AppColors.primary,
@@ -227,7 +227,7 @@ class _IdentityCard extends StatelessWidget {
                     Text(
                       'Member since ${_formatMonthYear(profile.memberSince)}',
                       style: const TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontMono,
                         fontSize: 11.0,
                         color: AppColors.platinum,
                       ),
@@ -390,7 +390,7 @@ class _BiometricsCard extends StatelessWidget {
                             Text(
                               '${profile.bmi.toStringAsFixed(1)} · ${profile.bmiCategory}',
                               style: const TextStyle(
-                                fontFamily: 'JetBrains Mono',
+                                fontFamily: AppTypography.fontMono,
                                 fontSize: 12.0,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.pureWhite,
@@ -434,7 +434,7 @@ class _BiometricsCard extends StatelessWidget {
                       Text(
                         '${profile.maintenanceCaloriesEstimate} kcal/day',
                         style: const TextStyle(
-                          fontFamily: 'JetBrains Mono',
+                          fontFamily: AppTypography.fontMono,
                           fontSize: 12.0,
                           fontWeight: FontWeight.w700,
                           color: AppColors.pureWhite,
@@ -469,7 +469,7 @@ class _BiometricsCard extends StatelessWidget {
                   Text(
                     '${(profile.goalProgress * 100).toInt()}%',
                     style: const TextStyle(
-                      fontFamily: 'JetBrains Mono',
+                      fontFamily: AppTypography.fontMono,
                       fontSize: 12.0,
                       fontWeight: FontWeight.w700,
                       color: AppColors.primary,
@@ -588,7 +588,7 @@ class _TrainingPreferencesCard extends ConsumerWidget {
               child: Text(
                 profile.experienceLevel.toUpperCase(),
                 style: const TextStyle(
-                  fontFamily: 'JetBrains Mono',
+                  fontFamily: AppTypography.fontMono,
                   fontSize: 11.0,
                   fontWeight: FontWeight.w700,
                   color: AppColors.platinum,
@@ -652,7 +652,7 @@ class _TrainingPreferencesCard extends ConsumerWidget {
                           child: Text(
                             '${sec}s',
                             style: TextStyle(
-                              fontFamily: 'JetBrains Mono',
+                              fontFamily: AppTypography.fontMono,
                               fontSize: 11.5,
                               fontWeight:
                                   isSel ? FontWeight.w800 : FontWeight.w500,
@@ -697,7 +697,7 @@ class _TrainingPreferencesCard extends ConsumerWidget {
                 child: Text(
                   '${profile.barbellTareKg.toStringAsFixed(0)} kg',
                   style: const TextStyle(
-                    fontFamily: 'JetBrains Mono',
+                    fontFamily: AppTypography.fontMono,
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
                     color: AppColors.pureWhite,
@@ -918,7 +918,7 @@ class _AppSettingsCard extends ConsumerWidget {
                 child: Text(
                   profile.weightUnit.toUpperCase(),
                   style: const TextStyle(
-                    fontFamily: 'JetBrains Mono',
+                    fontFamily: AppTypography.fontMono,
                     fontSize: 12.0,
                     fontWeight: FontWeight.w700,
                     color: AppColors.pureWhite,
@@ -1406,7 +1406,7 @@ class _MetricBlock extends StatelessWidget {
             Text(
               value,
               style: const TextStyle(
-                fontFamily: 'JetBrains Mono',
+                fontFamily: AppTypography.fontMono,
                 fontSize: 14.5,
                 fontWeight: FontWeight.w800,
                 color: AppColors.pureWhite,

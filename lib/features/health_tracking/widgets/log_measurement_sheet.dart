@@ -231,7 +231,7 @@ class _LogMeasurementSheetState extends ConsumerState<LogMeasurementSheet> {
                     decoration: InputDecoration(
                       labelText: 'CHECK-IN NOTES (OPTIONAL)',
                       labelStyle: const TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontMono,
                         fontSize: 11.0,
                         color: AppColors.textSecondary,
                         letterSpacing: 0.5,
@@ -268,7 +268,7 @@ class _LogMeasurementSheetState extends ConsumerState<LogMeasurementSheet> {
               child: const Text(
                 'SAVE MEASUREMENTS',
                 style: TextStyle(
-                  fontFamily: 'JetBrains Mono',
+                  fontFamily: AppTypography.fontBody,
                   fontSize: 12.5,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.5,
@@ -290,7 +290,7 @@ class _LogMeasurementSheetState extends ConsumerState<LogMeasurementSheet> {
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       style: const TextStyle(
-        fontFamily: 'JetBrains Mono',
+        fontFamily: AppTypography.fontMono,
         fontSize: 13.0,
         fontWeight: FontWeight.w700,
         color: AppColors.pureWhite,
@@ -298,14 +298,14 @@ class _LogMeasurementSheetState extends ConsumerState<LogMeasurementSheet> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(
-          fontFamily: 'JetBrains Mono',
+          fontFamily: AppTypography.fontMono,
           fontSize: 11.0,
           color: AppColors.textSecondary,
           letterSpacing: 0.5,
         ),
         suffixText: suffix,
         suffixStyle: const TextStyle(
-          fontFamily: 'JetBrains Mono',
+          fontFamily: AppTypography.fontMono,
           fontSize: 11.0,
           color: Color(0xFF00E5FF),
         ),

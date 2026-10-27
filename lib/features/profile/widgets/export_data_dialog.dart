@@ -189,7 +189,7 @@ ${DateTime.now().toIso8601String().substring(0, 10)},PR,Deadlift,180,kg''';
                       child: Text(
                         fmt,
                         style: TextStyle(
-                          fontFamily: 'JetBrains Mono',
+                          fontFamily: AppTypography.fontMono,
                           fontSize: 12.0,
                           fontWeight:
                               isSel ? FontWeight.w700 : FontWeight.w500,
@@ -221,7 +221,7 @@ ${DateTime.now().toIso8601String().substring(0, 10)},PR,Deadlift,180,kg''';
               child: Text(
                 data,
                 style: const TextStyle(
-                  fontFamily: 'JetBrains Mono',
+                  fontFamily: AppTypography.fontMono,
                   fontSize: 11.5,
                   color: AppColors.platinum,
                   height: 1.4,

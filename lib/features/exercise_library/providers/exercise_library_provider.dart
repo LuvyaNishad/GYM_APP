@@ -124,10 +124,7 @@ class ExerciseLibraryNotifier extends Notifier<ExerciseLibraryState> {
     await _repository.loadCatalog();
     if (!ref.mounted) return;
     final all = _repository.allExercises;
-    state = state.copyWith(
-      allExercises: all,
-      isLoading: false,
-    );
+    state = state.copyWith(allExercises: all, isLoading: false);
     _applyFilter(state.filter);
   }
 
@@ -147,10 +144,7 @@ class ExerciseLibraryNotifier extends Notifier<ExerciseLibraryState> {
       onlyCustom: newFilter.onlyCustom,
     );
 
-    state = state.copyWith(
-      filter: newFilter,
-      filteredExercises: filtered,
-    );
+    state = state.copyWith(filter: newFilter, filteredExercises: filtered);
   }
 
   void toggleOnlyCustom() {
@@ -195,7 +189,9 @@ class ExerciseLibraryNotifier extends Notifier<ExerciseLibraryState> {
 
   void setEquipment(String equipment) {
     final current = state.filter.selectedEquipment;
-    final next = (current == equipment && equipment != 'All') ? 'All' : equipment;
+    final next = (current == equipment && equipment != 'All')
+        ? 'All'
+        : equipment;
     _applyFilter(state.filter.copyWith(selectedEquipment: next));
   }
 
@@ -207,7 +203,9 @@ class ExerciseLibraryNotifier extends Notifier<ExerciseLibraryState> {
 
   void setDifficulty(String difficulty) {
     final current = state.filter.selectedDifficulty;
-    final next = (current == difficulty && difficulty != 'All') ? 'All' : difficulty;
+    final next = (current == difficulty && difficulty != 'All')
+        ? 'All'
+        : difficulty;
     _applyFilter(state.filter.copyWith(selectedDifficulty: next));
   }
 
@@ -234,5 +232,5 @@ class ExerciseLibraryNotifier extends Notifier<ExerciseLibraryState> {
 
 final exerciseLibraryProvider =
     NotifierProvider<ExerciseLibraryNotifier, ExerciseLibraryState>(
-  ExerciseLibraryNotifier.new,
-);
+      ExerciseLibraryNotifier.new,
+    );

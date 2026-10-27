@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:leon/core/theme/app_colors.dart';
+import 'package:leon/core/theme/app_typography.dart';
 
 import '../../../models/exercise_model.dart';
 
@@ -46,7 +48,7 @@ class ExerciseCardWidget extends StatelessWidget {
                       child: Text(
                         exercise.name,
                         style: const TextStyle(
-                          fontFamily: 'Outfit',
+                          fontFamily: AppTypography.fontBody,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
@@ -56,20 +58,22 @@ class ExerciseCardWidget extends StatelessWidget {
                     if (exercise.isWarmup)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
-                          color: Colors.orangeAccent.withValues(alpha: 0.15),
+                          color: AppColors.warning.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
-                              color:
-                                  Colors.orangeAccent.withValues(alpha: 0.4)),
+                            color: AppColors.warning.withValues(alpha: 0.4),
+                          ),
                         ),
                         child: const Text(
                           'WARM-UP',
                           style: TextStyle(
-                            fontFamily: 'JetBrainsMono',
+                            fontFamily: AppTypography.fontBody,
                             fontSize: 11,
-                            color: Colors.orangeAccent,
+                            color: AppColors.warning,
                             letterSpacing: 1,
                           ),
                         ),
@@ -80,9 +84,9 @@ class ExerciseCardWidget extends StatelessWidget {
                 Text(
                   '${exercise.primaryMuscleGroup.toUpperCase()} · ${exercise.equipment.toUpperCase()}',
                   style: const TextStyle(
-                    fontFamily: 'JetBrainsMono',
+                    fontFamily: AppTypography.fontMono,
                     fontSize: 11,
-                    color: Color(0xFF94A3B8),
+                    color: AppColors.textMuted,
                     letterSpacing: 0.8,
                   ),
                 ),
@@ -103,7 +107,7 @@ class ExerciseCardWidget extends StatelessWidget {
                   const Text(
                     'RPE',
                     style: TextStyle(
-                      fontFamily: 'JetBrainsMono',
+                      fontFamily: AppTypography.fontBody,
                       fontSize: 11,
                       color: Color(0xFF00E5FF),
                       letterSpacing: 1,
@@ -112,7 +116,7 @@ class ExerciseCardWidget extends StatelessWidget {
                   Text(
                     '${exercise.rpe}',
                     style: const TextStyle(
-                      fontFamily: 'JetBrainsMono',
+                      fontFamily: AppTypography.fontMono,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF00E5FF),
@@ -132,20 +136,20 @@ class ExerciseCardWidget extends StatelessWidget {
       case 'chest':
       case 'shoulders':
       case 'triceps':
-        return const Color(0xFF00E5FF);
+        return AppColors.chartPush;
       case 'pull':
       case 'back':
       case 'biceps':
-        return const Color(0xFF69FF47);
+        return AppColors.chartPull;
       case 'legs':
       case 'quads':
       case 'hamstrings':
       case 'glutes':
-        return const Color(0xFFFF6B35);
+        return AppColors.chartLegs;
       case 'core':
-        return const Color(0xFFFFD600);
+        return AppColors.chartCore;
       default:
-        return Colors.white38;
+        return AppColors.textMuted;
     }
   }
 }

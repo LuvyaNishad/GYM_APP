@@ -82,7 +82,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
             const Text(
               'NO OVERLOAD DATA YET',
               style: TextStyle(
-                fontFamily: 'JetBrains Mono',
+                fontFamily: AppTypography.fontBody,
                 fontSize: 13.0,
                 fontWeight: FontWeight.w700,
                 color: AppColors.pureWhite,
@@ -186,7 +186,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                       Text(
                         'ESTIMATED 1RM',
                         style: const TextStyle(
-                          fontFamily: 'JetBrains Mono',
+                          fontFamily: AppTypography.fontMono,
                           fontSize: 11.0,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textSecondary,
@@ -201,7 +201,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                           Text(
                             '${currentEx.allTimeBest1RM}',
                             style: const TextStyle(
-                              fontFamily: 'JetBrains Mono',
+                              fontFamily: AppTypography.fontMono,
                               fontSize: 28.0,
                               fontWeight: FontWeight.w800,
                               color: AppColors.pureWhite,
@@ -211,7 +211,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                           const Text(
                             'KG',
                             style: TextStyle(
-                              fontFamily: 'JetBrains Mono',
+                              fontFamily: AppTypography.fontBody,
                               fontSize: 14.0,
                               fontWeight: FontWeight.w700,
                               color: AppColors.textSecondary,
@@ -246,7 +246,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                         Text(
                           '+${currentEx.recentDeltaPercent}%',
                           style: const TextStyle(
-                            fontFamily: 'JetBrains Mono',
+                            fontFamily: AppTypography.fontMono,
                             fontSize: 12.0,
                             fontWeight: FontWeight.w800,
                             color: Color(0xFF00E5FF),
@@ -267,7 +267,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                   const Text(
                     'PROGRESSION CURVE',
                     style: TextStyle(
-                      fontFamily: 'JetBrains Mono',
+                      fontFamily: AppTypography.fontBody,
                       fontSize: 11.0,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textSecondary,
@@ -301,7 +301,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                             child: Text(
                               range,
                               style: TextStyle(
-                                fontFamily: 'JetBrains Mono',
+                                fontFamily: AppTypography.fontMono,
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.w700,
                                 color: _selectedRange == range
@@ -387,7 +387,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                       Text(
                         'PR TROPHY WALL',
                         style: const TextStyle(
-                          fontFamily: 'JetBrains Mono',
+                          fontFamily: AppTypography.fontBody,
                           fontSize: 12.5,
                           fontWeight: FontWeight.w800,
                           color: AppColors.pureWhite,
@@ -406,7 +406,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                     child: Text(
                       '${prMilestones.length} ACHIEVED',
                       style: const TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontMono,
                         fontSize: 11.0,
                         fontWeight: FontWeight.w700,
                         color: AppColors.platinum,
@@ -468,7 +468,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                             Text(
                               pr.recordType.toUpperCase(),
                               style: const TextStyle(
-                                fontFamily: 'JetBrains Mono',
+                                fontFamily: AppTypography.fontMono,
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textSecondary,
@@ -482,7 +482,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                             Text(
                               pr.valueFormatted,
                               style: const TextStyle(
-                                fontFamily: 'JetBrains Mono',
+                                fontFamily: AppTypography.fontMono,
                                 fontSize: 13.0,
                                 fontWeight: FontWeight.w800,
                                 color: AppColors.pureWhite,
@@ -492,7 +492,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                             Text(
                               pr.deltaFormatted,
                               style: const TextStyle(
-                                fontFamily: 'JetBrains Mono',
+                                fontFamily: AppTypography.fontMono,
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.w700,
                                 color: Color(0xFF00E676),
@@ -572,7 +572,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                   child: Text(
                     'W${idx + 1}',
                     style: const TextStyle(
-                      fontFamily: 'JetBrains Mono',
+                      fontFamily: AppTypography.fontMono,
                       fontSize: 11.0,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textSecondary,
@@ -590,7 +590,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                 return Text(
                   '${val.toInt()}k',
                   style: const TextStyle(
-                    fontFamily: 'JetBrains Mono',
+                    fontFamily: AppTypography.fontMono,
                     fontSize: 11.0,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textSecondary,
@@ -690,7 +690,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                     Text(
                       'EPLEY EQUATION',
                       style: TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontBody,
                         fontSize: 11.0,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF00E5FF),
@@ -700,7 +700,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                     Text(
                       '1RM = Weight × (1 + Reps / 30)',
                       style: TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontMono,
                         fontSize: 13.0,
                         fontWeight: FontWeight.w800,
                         color: AppColors.pureWhite,
@@ -723,7 +723,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
               Text(
                 '${ex.exerciseName.toUpperCase()} REP-MAX TARGETS',
                 style: const TextStyle(
-                  fontFamily: 'JetBrains Mono',
+                  fontFamily: AppTypography.fontMono,
                   fontSize: 11.0,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textSecondary,
@@ -751,7 +751,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                             Text(
                               '${repTable[i]['percent']}% (${repTable[i]['reps']} rep${repTable[i]['reps'] > 1 ? 's' : ''})',
                               style: const TextStyle(
-                                fontFamily: 'JetBrains Mono',
+                                fontFamily: AppTypography.fontMono,
                                 fontSize: 11.5,
                                 color: AppColors.platinum,
                               ),
@@ -759,7 +759,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                             Text(
                               '${repTable[i]['weightKg']} KG',
                               style: const TextStyle(
-                                fontFamily: 'JetBrains Mono',
+                                fontFamily: AppTypography.fontMono,
                                 fontSize: 12.0,
                                 fontWeight: FontWeight.w800,
                                 color: AppColors.pureWhite,
@@ -788,7 +788,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
             child: const Text(
               'CLOSE',
               style: TextStyle(
-                fontFamily: 'JetBrains Mono',
+                fontFamily: AppTypography.fontBody,
                 fontSize: 12.0,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF00E5FF),

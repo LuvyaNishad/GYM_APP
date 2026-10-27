@@ -47,18 +47,18 @@ class ExerciseCard extends StatelessWidget {
                 if (onRemove != null)
                   GestureDetector(
                     onTap: onRemove,
-                    child: const Icon(Icons.close,
-                        size: 16, color: AppColors.textMuted),
+                    child: const Icon(
+                      Icons.close,
+                      size: 16,
+                      color: AppColors.textMuted,
+                    ),
                   ),
               ],
             ),
             const SizedBox(height: 4),
             _MuscleTag(muscleGroup: muscleGroup),
             const SizedBox(height: 8),
-            Text(
-              '$sets × $reps',
-              style: AppTypography.monoSmall,
-            ),
+            Text('$sets × $reps', style: AppTypography.monoSmall),
           ],
         ),
       ),
@@ -71,11 +71,11 @@ class _MuscleTag extends StatelessWidget {
   final String muscleGroup;
 
   Color _color() => switch (muscleGroup.toLowerCase()) {
-        'push' => AppColors.chartPush,
-        'pull' => AppColors.chartPull,
-        'legs' => AppColors.chartLegs,
-        _ => AppColors.textMuted,
-      };
+    'push' => AppColors.chartPush,
+    'pull' => AppColors.chartPull,
+    'legs' => AppColors.chartLegs,
+    _ => AppColors.textMuted,
+  };
 
   @override
   Widget build(BuildContext context) {

@@ -35,7 +35,8 @@ class SelectedOverloadExerciseId extends Notifier<String> {
 
 final selectedOverloadExerciseIdProvider =
     NotifierProvider<SelectedOverloadExerciseId, String>(
-        SelectedOverloadExerciseId.new);
+      SelectedOverloadExerciseId.new,
+    );
 
 /// Currently selected calendar date in the History screen.
 /// Null = no single-day filter (shows all sessions).
@@ -52,11 +53,10 @@ class SelectedCalendarDate extends Notifier<DateTime?> {
 }
 
 final selectedCalendarDateProvider =
-    NotifierProvider<SelectedCalendarDate, DateTime?>(
-        SelectedCalendarDate.new);
+    NotifierProvider<SelectedCalendarDate, DateTime?>(SelectedCalendarDate.new);
 
 /// Notifier for all completed workouts, newest first.
-/// Enforces strictly 1 workout per calendar day and supports historical edits.
+/// Retains every session, including multiple workouts on one calendar day.
 class HistoryWorkoutsNotifier extends Notifier<List<WorkoutModel>> {
   @override
   List<WorkoutModel> build() {
@@ -76,18 +76,8 @@ class HistoryWorkoutsNotifier extends Notifier<List<WorkoutModel>> {
     }
 
     if (stored.isNotEmpty) {
-      // Deduplicate: strictly 1 workout per calendar day (keep newest for each day)
-      final Map<String, WorkoutModel> dayMap = {};
-      for (final w in stored) {
-        final key =
-            '${w.date.year}-${w.date.month.toString().padLeft(2, '0')}-${w.date.day.toString().padLeft(2, '0')}';
-        if (!dayMap.containsKey(key) || w.date.isAfter(dayMap[key]!.date)) {
-          dayMap[key] = w;
-        }
-      }
-      final deduplicated = dayMap.values.toList()
-        ..sort((a, b) => b.date.compareTo(a.date));
-      return deduplicated;
+      stored.sort((a, b) => b.date.compareTo(a.date));
+      return stored;
     }
 
     // Clean initial state: zero fake workouts
@@ -129,7 +119,8 @@ class HistoryWorkoutsNotifier extends Notifier<List<WorkoutModel>> {
 
 final historyWorkoutsProvider =
     NotifierProvider<HistoryWorkoutsNotifier, List<WorkoutModel>>(
-        HistoryWorkoutsNotifier.new);
+      HistoryWorkoutsNotifier.new,
+    );
 
 /// Computes streak, compliance, tonnage, and gamification ranks.
 final historySummaryProvider = Provider<HistorySummaryModel>((ref) {
@@ -180,11 +171,12 @@ final historySummaryProvider = Provider<HistorySummaryModel>((ref) {
   final nextTarget = (level * 6000.0);
 
   // Compute active streak from workout dates
-  final sortedDates = workouts
-      .map((w) => DateTime(w.date.year, w.date.month, w.date.day))
-      .toSet()
-      .toList()
-    ..sort((a, b) => b.compareTo(a));
+  final sortedDates =
+      workouts
+          .map((w) => DateTime(w.date.year, w.date.month, w.date.day))
+          .toSet()
+          .toList()
+        ..sort((a, b) => b.compareTo(a));
 
   int currentStreak = 0;
   final now = DateTime.now();
@@ -192,7 +184,8 @@ final historySummaryProvider = Provider<HistorySummaryModel>((ref) {
   final yesterdayMidnight = todayMidnight.subtract(const Duration(days: 1));
 
   if (sortedDates.isNotEmpty &&
-      (sortedDates.first == todayMidnight || sortedDates.first == yesterdayMidnight)) {
+      (sortedDates.first == todayMidnight ||
+          sortedDates.first == yesterdayMidnight)) {
     var checkDate = sortedDates.first;
     for (final d in sortedDates) {
       if (d == checkDate) {
@@ -224,82 +217,85 @@ final historySummaryProvider = Provider<HistorySummaryModel>((ref) {
 });
 
 /// Available exercises for progressive overload selection.
-final availableOverloadExercisesProvider = Provider<List<ExerciseProgressModel>>((ref) {
-  final workouts = ref.watch(historyWorkoutsProvider);
-  if (workouts.isEmpty) return const [];
+final availableOverloadExercisesProvider =
+    Provider<List<ExerciseProgressModel>>((ref) {
+      final workouts = ref.watch(historyWorkoutsProvider);
+      if (workouts.isEmpty) return const [];
 
-  final Map<String, List<StrengthDataPoint>> pointsByEx = {};
-  final Map<String, String> namesByEx = {};
-  final Map<String, String> muscleByEx = {};
+      final Map<String, List<StrengthDataPoint>> pointsByEx = {};
+      final Map<String, String> namesByEx = {};
+      final Map<String, String> muscleByEx = {};
 
-  final chronological = workouts.reversed.toList();
-  for (final w in chronological) {
-    for (final ex in w.exercises) {
-      final key = ex.exerciseId;
-      namesByEx[key] = ex.exerciseName;
-      muscleByEx[key] = ex.muscleGroup;
+      final chronological = workouts.reversed.toList();
+      for (final w in chronological) {
+        for (final ex in w.exercises) {
+          final key = ex.exerciseId;
+          namesByEx[key] = ex.exerciseName;
+          muscleByEx[key] = ex.muscleGroup;
 
-      double maxWeight = 0;
-      int maxReps = 0;
-      double exVolume = 0;
+          double maxWeight = 0;
+          int maxReps = 0;
+          double exVolume = 0;
 
-      for (final s in ex.sets) {
-        if (s.isWarmup) continue;
-        exVolume += s.weightKg * s.reps;
-        if (s.weightKg > maxWeight) {
-          maxWeight = s.weightKg;
-          maxReps = s.reps;
+          for (final s in ex.sets) {
+            if (s.isWarmup) continue;
+            exVolume += s.weightKg * s.reps;
+            if (s.weightKg > maxWeight) {
+              maxWeight = s.weightKg;
+              maxReps = s.reps;
+            }
+          }
+
+          if (maxWeight > 0) {
+            final e1rm = StrengthMath.calculateEpley1RM(maxWeight, maxReps);
+            pointsByEx
+                .putIfAbsent(key, () => [])
+                .add(
+                  StrengthDataPoint(
+                    date: w.date,
+                    weightKg: maxWeight,
+                    reps: maxReps,
+                    estimated1RM: double.parse(e1rm.toStringAsFixed(1)),
+                    volumeKg: exVolume,
+                  ),
+                );
+          }
         }
       }
 
-      if (maxWeight > 0) {
-        final e1rm = StrengthMath.calculateEpley1RM(maxWeight, maxReps);
-        pointsByEx.putIfAbsent(key, () => []).add(
-              StrengthDataPoint(
-                date: w.date,
-                weightKg: maxWeight,
-                reps: maxReps,
-                estimated1RM: double.parse(e1rm.toStringAsFixed(1)),
-                volumeKg: exVolume,
-              ),
-            );
+      final results = <ExerciseProgressModel>[];
+      for (final entry in namesByEx.entries) {
+        final pts = pointsByEx[entry.key] ?? [];
+        if (pts.isEmpty) continue;
+
+        double best1rm = 0;
+        for (final p in pts) {
+          if (p.estimated1RM > best1rm) best1rm = p.estimated1RM;
+        }
+
+        double deltaPercent = 0.0;
+        if (pts.length >= 2) {
+          final first = pts.first.estimated1RM;
+          final last = pts.last.estimated1RM;
+          if (first > 0) {
+            deltaPercent = ((last - first) / first) * 100;
+          }
+        }
+
+        results.add(
+          ExerciseProgressModel(
+            exerciseId: entry.key,
+            exerciseName: entry.value,
+            muscleGroup: muscleByEx[entry.key] ?? 'Chest',
+            dataPoints: pts,
+            allTimeBest1RM: best1rm,
+            recentDeltaPercent: double.parse(deltaPercent.toStringAsFixed(1)),
+          ),
+        );
       }
-    }
-  }
 
-  final results = <ExerciseProgressModel>[];
-  for (final entry in namesByEx.entries) {
-    final pts = pointsByEx[entry.key] ?? [];
-    if (pts.isEmpty) continue;
-
-    double best1rm = 0;
-    for (final p in pts) {
-      if (p.estimated1RM > best1rm) best1rm = p.estimated1RM;
-    }
-
-    double deltaPercent = 0.0;
-    if (pts.length >= 2) {
-      final first = pts.first.estimated1RM;
-      final last = pts.last.estimated1RM;
-      if (first > 0) {
-        deltaPercent = ((last - first) / first) * 100;
-      }
-    }
-
-    results.add(
-      ExerciseProgressModel(
-        exerciseId: entry.key,
-        exerciseName: entry.value,
-        muscleGroup: muscleByEx[entry.key] ?? 'Chest',
-        dataPoints: pts,
-        allTimeBest1RM: best1rm,
-        recentDeltaPercent: double.parse(deltaPercent.toStringAsFixed(1)),
-      ),
-    );
-  }
-
-  return results;
-});
+      return results;
+    });
 
 /// Recent PR breakthroughs for the trophy wall.
 final recentPrMilestonesProvider = Provider<List<PrMilestone>>((ref) {
@@ -364,7 +360,9 @@ final muscleBalanceProvider = Provider<MuscleBalanceModel>((ref) {
       } else if (group.contains('hamstring')) {
         hamstrings += vol;
         muscleCategory = 'Hamstrings';
-      } else if (group.contains('tricep') || group.contains('bicep') || group.contains('arm')) {
+      } else if (group.contains('tricep') ||
+          group.contains('bicep') ||
+          group.contains('arm')) {
         arms += vol;
         muscleCategory = 'Arms';
       } else {
@@ -390,8 +388,7 @@ final muscleBalanceProvider = Provider<MuscleBalanceModel>((ref) {
           'Romanian Deadlift (RDL)',
           'Seated Leg Curls (Lengthened Bias)',
         ],
-        rationale:
-            'Posterior chain volume is below anterior quads.',
+        rationale: 'Posterior chain volume is below anterior quads.',
       ),
     );
   }

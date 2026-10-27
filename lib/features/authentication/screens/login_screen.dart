@@ -146,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               keyboardType: TextInputType.emailAddress,
                               style: AppTypography.bodyMedium.copyWith(
                                 color: AppColors.textPrimary,
-                                fontFamily: 'JetBrainsMono',
+                                fontFamily: AppTypography.fontMono,
                               ),
                               decoration: InputDecoration(
                                 prefixIcon: const Icon(
@@ -191,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               obscureText: _obscurePassword,
                               style: AppTypography.bodyMedium.copyWith(
                                 color: AppColors.textPrimary,
-                                fontFamily: 'JetBrainsMono',
+                                fontFamily: AppTypography.fontMono,
                               ),
                               decoration: InputDecoration(
                                 prefixIcon: const Icon(
@@ -270,7 +270,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(width: 8),
                         Text(
                           '•',
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.2)),
+                          style: const TextStyle(color: AppColors.textMuted),
                         ),
                         const SizedBox(width: 8),
                         TextButton(

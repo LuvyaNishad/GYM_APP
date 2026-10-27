@@ -6,6 +6,16 @@ import 'package:leon/features/history/widgets/workout_history_card.dart';
 import 'package:leon/features/workout_session/models/active_session_state.dart';
 import 'package:leon/features/workout_session/providers/active_session_provider.dart';
 import 'package:leon/models/workout_model.dart';
+import 'package:leon/features/history/providers/history_provider.dart';
+import 'package:leon/services/hive_service.dart';
+import '../../helpers/memory_hive_service.dart';
+
+class _History extends HistoryWorkoutsNotifier {
+  _History(this.workouts);
+  final List<WorkoutModel> workouts;
+  @override
+  List<WorkoutModel> build() => workouts;
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -33,136 +43,176 @@ void main() {
         exerciseName: 'Lat Pulldown',
         muscleGroup: 'Back',
         sets: [
-          WorkoutSet(reps: 10, weightKg: 70.0),
+          WorkoutSet(reps: 10, weightKg: 70.0, weightKgRight: 65, repsRight: 9),
         ],
       ),
     ],
   );
 
   group('Pillar D Improvements - Workout History Actions Tests', () {
-    testWidgets('WorkoutHistoryCard displays REPEAT WORKOUT and SHARE buttons when expanded', (tester) async {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+    testWidgets(
+      'WorkoutHistoryCard displays REPEAT WORKOUT and SHARE buttons when expanded',
+      (tester) async {
+        final container = ProviderContainer(
+          overrides: [
+            historyWorkoutsProvider.overrideWith(() => _History([testWorkout])),
+            hiveServiceProvider.overrideWithValue(MemoryHiveService()),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: WorkoutHistoryCard(
-                  workout: testWorkout,
-                  initiallyExpanded: true,
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: WorkoutHistoryCard(
+                    workout: testWorkout,
+                    initiallyExpanded: true,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // Verify buttons exist
-      expect(find.text('REPEAT WORKOUT'), findsOneWidget);
-      expect(find.text('SHARE'), findsOneWidget);
-      expect(find.text('EDIT'), findsOneWidget);
-    });
+        // Verify buttons exist
+        expect(find.text('REPEAT WORKOUT'), findsOneWidget);
+        expect(find.text('SHARE'), findsOneWidget);
+        expect(find.text('EDIT'), findsOneWidget);
+      },
+    );
 
-    testWidgets('REPEAT WORKOUT starts active session with historical exercises and sets', (tester) async {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+    testWidgets(
+      'REPEAT WORKOUT starts active session with historical exercises and sets',
+      (tester) async {
+        final container = ProviderContainer(
+          overrides: [
+            historyWorkoutsProvider.overrideWith(() => _History([testWorkout])),
+            hiveServiceProvider.overrideWithValue(MemoryHiveService()),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: WorkoutHistoryCard(
-                  workout: testWorkout,
-                  initiallyExpanded: true,
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: WorkoutHistoryCard(
+                    workout: testWorkout,
+                    initiallyExpanded: true,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // Tap REPEAT WORKOUT
-      final repeatBtn = find.text('REPEAT WORKOUT');
-      await tester.tap(repeatBtn);
-      await tester.pump(const Duration(milliseconds: 200));
+        // A confirmed repeat must replace the existing draft, not resume it.
+        container
+            .read(activeSessionProvider.notifier)
+            .startSession(splitName: 'Existing draft');
+        final repeatBtn = find.text('REPEAT WORKOUT');
+        await tester.tap(repeatBtn);
+        await tester.pump(const Duration(milliseconds: 350));
+        await tester.tap(find.text('REPEAT WORKOUT').last);
+        await tester.pump(const Duration(milliseconds: 500));
 
-      // Active session should now be running with testWorkout's exercises
-      final session = container.read(activeSessionProvider);
-      expect(session.isActive, isTrue);
-      expect(session.splitName, equals('Pull Day Hypertrophy'));
-      expect(session.exercises.length, equals(2));
+        // Active session should now be running with testWorkout's exercises
+        final session = container.read(activeSessionProvider);
+        expect(session.isActive, isTrue);
+        expect(session.splitName, equals('Pull Day Hypertrophy'));
+        expect(session.exercises.length, equals(2));
 
-      // Check first exercise mapped accurately
-      final firstEx = session.exercises.first;
-      expect(firstEx.name, equals('Barbell Deadlift'));
-      expect(firstEx.sets.length, equals(3));
-      expect(firstEx.sets[0].isWarmup, isTrue);
-      expect(firstEx.sets[0].setType, equals(ActiveSetType.warmup));
-      expect(firstEx.sets[0].weightKg, equals(60.0));
-      expect(firstEx.sets[1].weightKg, equals(120.0));
-      expect(firstEx.sets[1].previousWeightKg, equals(120.0));
-      expect(firstEx.sets[1].isCompleted, isFalse); // Ready to be performed today
+        // Check first exercise mapped accurately
+        final firstEx = session.exercises.first;
+        expect(firstEx.name, equals('Barbell Deadlift'));
+        expect(firstEx.sets.length, equals(3));
+        expect(firstEx.sets[0].isWarmup, isTrue);
+        expect(firstEx.sets[0].setType, equals(ActiveSetType.warmup));
+        expect(firstEx.sets[0].weightKg, equals(60.0));
+        expect(firstEx.sets[1].weightKg, equals(120.0));
+        expect(firstEx.sets[1].previousWeightKg, equals(120.0));
+        expect(
+          firstEx.sets[1].isCompleted,
+          isFalse,
+        ); // Ready to be performed today
 
-      // Clean up session ticker before test finishes
-      container.read(activeSessionProvider.notifier).cancelSession();
-    });
+        expect(session.exercises.last.isUnilateral, isTrue);
+        expect(session.exercises.last.sets.single.weightKgRight, 65);
+        expect(session.exercises.last.sets.single.repsRight, 9);
+        expect(session.exercises.last.sets.single.effortLogged, isFalse);
 
-    testWidgets('SHARE copies formatted summary to clipboard and shows SnackBar', (tester) async {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+        // Clean up session ticker before test finishes
+        container.read(activeSessionProvider.notifier).cancelSession();
+      },
+    );
 
-      String? clipboardData;
-      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        SystemChannels.platform,
-        (MethodCall methodCall) async {
-          if (methodCall.method == 'Clipboard.setData') {
-            clipboardData = (methodCall.arguments as Map)['text'] as String?;
+    testWidgets(
+      'SHARE copies formatted summary to clipboard and shows SnackBar',
+      (tester) async {
+        final container = ProviderContainer(
+          overrides: [
+            historyWorkoutsProvider.overrideWith(() => _History([testWorkout])),
+            hiveServiceProvider.overrideWithValue(MemoryHiveService()),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        String? clipboardData;
+        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          (MethodCall methodCall) async {
+            if (methodCall.method == 'Clipboard.setData') {
+              clipboardData = (methodCall.arguments as Map)['text'] as String?;
+              return null;
+            }
             return null;
-          }
-          return null;
-        },
-      );
+          },
+        );
 
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: WorkoutHistoryCard(
-                  workout: testWorkout,
-                  initiallyExpanded: true,
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: WorkoutHistoryCard(
+                    workout: testWorkout,
+                    initiallyExpanded: true,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // Tap SHARE
-      final shareBtn = find.text('SHARE');
-      await tester.tap(shareBtn);
-      await tester.pumpAndSettle();
+        // Tap SHARE
+        final shareBtn = find.text('SHARE');
+        await tester.tap(shareBtn);
+        await tester.pumpAndSettle();
 
-      // Verify SnackBar shown
-      expect(find.text('Workout summary copied to clipboard!'), findsOneWidget);
+        // Verify SnackBar shown
+        expect(
+          find.text('Workout summary copied to clipboard!'),
+          findsOneWidget,
+        );
 
-      // Verify clipboard contents
-      expect(clipboardData, isNotNull);
-      expect(clipboardData, contains('AEON WORKOUT SUMMARY'));
-      expect(clipboardData, contains('PULL DAY HYPERTROPHY'));
-      expect(clipboardData, contains('Barbell Deadlift'));
-      expect(clipboardData, contains('120.0kg × 5'));
-      expect(clipboardData, contains('[Warmup]'));
-      expect(clipboardData, contains('Tracked with AEON'));
-    });
+        // Verify clipboard contents
+        expect(clipboardData, isNotNull);
+        expect(clipboardData, contains('AEON WORKOUT SUMMARY'));
+        expect(clipboardData, contains('PULL DAY HYPERTROPHY'));
+        expect(clipboardData, contains('Barbell Deadlift'));
+        expect(clipboardData, contains('120.0kg × 5'));
+        expect(clipboardData, contains('[Warmup]'));
+        expect(clipboardData, contains('Tracked with AEON'));
+      },
+    );
   });
 }

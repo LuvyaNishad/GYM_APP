@@ -47,213 +47,90 @@ class FakeHiveService extends HiveService {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  late FakeHiveService fakeHive;
-
+  late FakeHiveService hive;
+  late ProviderContainer container;
   setUp(() {
-    fakeHive = FakeHiveService();
+    hive = FakeHiveService();
+    container = ProviderContainer(
+      overrides: [hiveServiceProvider.overrideWithValue(hive)],
+    );
   });
+  tearDown(() => container.dispose());
 
-  Widget buildTestWidget({
-    required Widget child,
-    required ProviderContainer container,
-  }) {
-    return UncontrolledProviderScope(
-      container: container,
-      child: MaterialApp(
-        theme: AppTheme.dark,
-        home: Scaffold(body: child),
+  Future<void> open(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(540, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          theme: AppTheme.dark,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => showCreateRoutineSheet(context),
+                child: const Text('Open editor'),
+              ),
+            ),
+          ),
+        ),
       ),
     );
+    await tester.tap(find.text('Open editor'));
+    await tester.pumpAndSettle();
   }
 
-  group('Pillar E Improvements - Routine Editor & Builder Tests', () {
-    testWidgets('E1: CreateRoutineSheet renders edit icons and renames day via dialog',
-        (tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      final container = ProviderContainer(
-        overrides: [
-          hiveServiceProvider.overrideWithValue(fakeHive),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      await tester.pumpWidget(
-        buildTestWidget(
-          child: const CreateRoutineSheet(),
-          container: container,
-        ),
-      );
+  testWidgets(
+    'Day accordion supports direct renaming without saving the draft',
+    (tester) async {
+      await open(tester);
+      expect(find.text('Workout 1'), findsWidgets);
+      await tester.enterText(find.byType(TextFormField).first, 'Leg Day');
+      await tester.pump();
+      expect(find.text('Leg Day'), findsWidgets);
+      expect(container.read(splitsProvider).customSplits, isEmpty);
+      await tester.tap(find.byTooltip('Cancel editing'));
       await tester.pumpAndSettle();
+      expect(container.read(splitsProvider).customSplits, isEmpty);
+    },
+  );
 
-      // Verify initial default day names exist
-      expect(find.text('Workout Day 1'), findsOneWidget);
-      expect(find.byIcon(Icons.edit_outlined), findsWidgets);
+  testWidgets('Recovery day toggle remains part of the draft', (tester) async {
+    await open(tester);
+    await tester.tap(find.text('Workout 2'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(Switch).first);
+    await tester.pumpAndSettle();
+    expect(tester.widget<Switch>(find.byType(Switch).first).value, true);
+    expect(container.read(splitsProvider).customSplits, isEmpty);
+  });
 
-      // Tap on Workout Day 1 to open rename dialog
-      await tester.tap(find.text('Workout Day 1'));
-      await tester.pumpAndSettle();
+  testWidgets('Saving a two-day empty routine does not activate it', (
+    tester,
+  ) async {
+    await open(tester);
+    final initial = container.read(splitsProvider).activeSplitId;
+    await tester.tap(find.text('SAVE ROUTINE'));
+    await tester.pumpAndSettle();
+    final saved = container.read(splitsProvider).customSplits.single;
+    expect(saved.workouts.length, 2);
+    expect(saved.workouts.every((day) => day.exercises.isEmpty), true);
+    expect(container.read(splitsProvider).activeSplitId, initial);
+  });
 
-      // Verify dialog appears
-      expect(find.text('EDIT WORKOUT DAY'), findsOneWidget);
-      expect(find.text('DAY NAME'), findsOneWidget);
-      expect(find.text('SUBTITLE / FOCUS'), findsOneWidget);
-      expect(find.text('Mark as Rest Day'), findsOneWidget);
-
-      // Verify suggestion chips are present
-      expect(find.text('Push Day'), findsOneWidget);
-      expect(find.text('Pull Day'), findsOneWidget);
-      expect(find.text('Leg Day'), findsOneWidget);
-
-      // Tap 'Leg Day' suggestion chip
-      await tester.tap(find.text('Leg Day'));
-      await tester.pumpAndSettle();
-
-      // Tap SAVE in dialog
-      await tester.tap(find.widgetWithText(FilledButton, 'SAVE'));
-      await tester.pumpAndSettle();
-
-      // Verify day name is updated to 'Leg Day'
-      expect(find.text('Leg Day'), findsOneWidget);
-      expect(find.text('Workout Day 1'), findsNothing);
-    });
-
-    testWidgets('E1: Allows toggling a day to Rest Day via rename dialog',
-        (tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      final container = ProviderContainer(
-        overrides: [
-          hiveServiceProvider.overrideWithValue(fakeHive),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      await tester.pumpWidget(
-        buildTestWidget(
-          child: const CreateRoutineSheet(),
-          container: container,
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      // Tap on Day 2
-      await tester.tap(find.text('Workout Day 2'));
-      await tester.pumpAndSettle();
-
-      // Toggle rest day switch inside dialog
-      final restSwitch = find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.byType(Switch),
-      );
-      expect(restSwitch, findsOneWidget);
-      await tester.tap(restSwitch);
-      await tester.pumpAndSettle();
-
-      // Save
-      await tester.tap(find.widgetWithText(FilledButton, 'SAVE'));
-      await tester.pumpAndSettle();
-
-      // Verify Day 2 now displays 'Rest Day'
-      expect(find.text('Rest Day'), findsWidgets);
-    });
-
-    testWidgets('E2: Displays SET AS ACTIVE ROUTINE toggle and switches active split when true',
-        (tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      final container = ProviderContainer(
-        overrides: [
-          hiveServiceProvider.overrideWithValue(fakeHive),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      await tester.pumpWidget(
-        buildTestWidget(
-          child: const CreateRoutineSheet(),
-          container: container,
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      // Verify toggle presence
-      expect(find.text('SET AS ACTIVE ROUTINE'), findsOneWidget);
-      expect(find.text('Apply immediately to Home dashboard'), findsOneWidget);
-
-      final initialActive = container.read(splitsProvider).activeSplitId;
-
-      // Tap SAVE ROUTINE with active toggle ON
-      await tester.tap(find.widgetWithText(FilledButton, 'SAVE ROUTINE'));
-      await tester.pumpAndSettle();
-
-      final updatedActive = container.read(splitsProvider).activeSplitId;
-      expect(updatedActive, isNot(equals(initialActive)));
-      expect(updatedActive.startsWith('custom_split_'), isTrue);
-    });
-
-    testWidgets('E2: Does NOT switch active split when SET AS ACTIVE ROUTINE toggle is disabled',
-        (tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      final container = ProviderContainer(
-        overrides: [
-          hiveServiceProvider.overrideWithValue(fakeHive),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      await tester.pumpWidget(
-        buildTestWidget(
-          child: const CreateRoutineSheet(),
-          container: container,
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      final initialActive = container.read(splitsProvider).activeSplitId;
-
-      // Find the active routine switch in the bottom container
-      final activeSwitch = find.descendant(
-        of: find.byType(CreateRoutineSheet),
-        matching: find.byType(Switch),
-      );
-      expect(activeSwitch, findsOneWidget);
-
-      // Toggle off
-      await tester.tap(activeSwitch);
-      await tester.pumpAndSettle();
-
-      // Tap SAVE ROUTINE
-      await tester.tap(find.widgetWithText(FilledButton, 'SAVE ROUTINE'));
-      await tester.pumpAndSettle();
-
-      final afterSaveActive = container.read(splitsProvider).activeSplitId;
-      // Active split should remain unchanged
-      expect(afterSaveActive, equals(initialActive));
-      // But custom split was saved
-      expect(container.read(splitsProvider).customSplits.isNotEmpty, isTrue);
-    });
+  testWidgets('Make active is a separate explicit action after saving', (
+    tester,
+  ) async {
+    await open(tester);
+    await tester.tap(find.text('SAVE ROUTINE'));
+    await tester.pumpAndSettle();
+    final saved = container.read(splitsProvider).customSplits.single;
+    await tester.tap(find.text('Make active'));
+    await tester.pumpAndSettle();
+    expect(container.read(splitsProvider).activeSplitId, saved.id);
   });
 }

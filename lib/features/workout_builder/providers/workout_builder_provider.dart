@@ -19,5 +19,5 @@ class WorkoutBuilderNotifier extends Notifier<List<String>> {
 
 final workoutBuilderProvider =
     NotifierProvider<WorkoutBuilderNotifier, List<String>>(
-  WorkoutBuilderNotifier.new,
-);
+      WorkoutBuilderNotifier.new,
+    );

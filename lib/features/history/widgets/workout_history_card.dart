@@ -38,8 +38,18 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
 
   String _formatDate(DateTime dt) {
     const months = [
-      'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-      'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC',
     ];
     return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
   }
@@ -53,7 +63,8 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
     final intVol = volume.toInt();
     if (intVol >= 1000) {
       final k = (intVol / 1000).toStringAsFixed(1);
-      return '$k' 'K KG';
+      return '$k'
+          'K KG';
     }
     return '$intVol KG';
   }
@@ -62,9 +73,13 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
     final buffer = StringBuffer();
     buffer.writeln('AEON WORKOUT SUMMARY 🏋️');
     buffer.writeln(w.name.toUpperCase());
-    buffer.writeln('${_formatDate(w.date)} • ${_formatDuration(w.durationSeconds)}');
+    buffer.writeln(
+      '${_formatDate(w.date)} • ${_formatDuration(w.durationSeconds)}',
+    );
     final totalSets = w.exercises.fold<int>(0, (s, e) => s + e.sets.length);
-    buffer.writeln('Volume: ${_formatTonnage(w.totalVolumeKg ?? 0)} • Sets: $totalSets');
+    buffer.writeln(
+      'Volume: ${_formatTonnage(w.totalVolumeKg ?? 0)} • Sets: $totalSets',
+    );
     buffer.writeln('');
     buffer.writeln('EXERCISES:');
     for (final ex in w.exercises) {
@@ -73,7 +88,9 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
         final s = ex.sets[i];
         final warmupTag = s.isWarmup ? ' [Warmup]' : '';
         final prTag = s.isPr ? ' 🏆 PR' : '';
-        buffer.writeln('  Set ${i + 1}: ${s.weightKg}kg × ${s.reps}$warmupTag$prTag');
+        buffer.writeln(
+          '  Set ${i + 1}: ${s.weightKg}kg × ${s.reps}$warmupTag$prTag',
+        );
       }
       buffer.writeln('');
     }
@@ -95,7 +112,11 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
         ),
         content: Row(
           children: [
-            const Icon(Icons.check_circle_rounded, color: AppColors.pureWhite, size: 18),
+            const Icon(
+              Icons.check_circle_rounded,
+              color: AppColors.pureWhite,
+              size: 18,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -173,6 +194,21 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
       );
 
       if (shouldReplace != true) return;
+      try {
+        await ref.read(activeSessionProvider.notifier).discardSession();
+      } catch (_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Could not discard the current workout. Try again.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+      if (!context.mounted) return;
     }
 
     final mappedExercises = widget.workout.exercises.map((ex) {
@@ -180,6 +216,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
         exerciseId: ex.exerciseId,
         name: ex.exerciseName,
         muscleGroup: ex.muscleGroup,
+        isUnilateral: ex.sets.any((s) => s.repsRight != null),
         sets: ex.sets.asMap().entries.map((entry) {
           final idx = entry.key;
           final s = entry.value;
@@ -187,8 +224,8 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
             setNumber: idx + 1,
             weightKg: s.weightKg,
             reps: s.reps,
-            previousWeightKg: s.weightKg,
-            previousReps: s.reps,
+            weightKgRight: s.weightKgRight,
+            repsRight: s.repsRight,
             isCompleted: false,
             setType: s.isWarmup ? ActiveSetType.warmup : ActiveSetType.normal,
           );
@@ -196,16 +233,16 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
       );
     }).toList();
 
-    ref.read(activeSessionProvider.notifier).startSession(
-      splitName: widget.workout.name,
-      initialExercises: mappedExercises,
-    );
+    ref
+        .read(activeSessionProvider.notifier)
+        .startSession(
+          splitName: widget.workout.name,
+          initialExercises: mappedExercises,
+        );
 
     if (context.mounted) {
       Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => const WorkoutSessionScreen(),
-        ),
+        MaterialPageRoute<void>(builder: (_) => const WorkoutSessionScreen()),
       );
     }
   }
@@ -253,7 +290,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
                     Text(
                       _formatDate(w.date),
                       style: const TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontMono,
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textSecondary,
@@ -267,9 +304,13 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
                         if (prCount > 0) ...[
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 3),
+                              horizontal: 7,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF00E676).withValues(alpha: 0.15),
+                              color: const Color(
+                                0xFF00E676,
+                              ).withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: const Color(0xFF00E676),
@@ -279,11 +320,14 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text('🏆 ', style: TextStyle(fontSize: 11)),
+                                const Text(
+                                  '🏆 ',
+                                  style: TextStyle(fontSize: 11),
+                                ),
                                 Text(
                                   '$prCount PR${prCount > 1 ? 'S' : ''}',
                                   style: const TextStyle(
-                                    fontFamily: 'JetBrains Mono',
+                                    fontFamily: AppTypography.fontMono,
                                     fontSize: 11.0,
                                     fontWeight: FontWeight.w800,
                                     color: Color(0xFF00E676),
@@ -296,7 +340,9 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
                         ],
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 7, vertical: 3),
+                            horizontal: 7,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.steel.withValues(alpha: 0.4),
                             borderRadius: BorderRadius.circular(8),
@@ -304,7 +350,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
                           child: Text(
                             _formatDuration(w.durationSeconds),
                             style: const TextStyle(
-                              fontFamily: 'JetBrains Mono',
+                              fontFamily: AppTypography.fontMono,
                               fontSize: 11.0,
                               fontWeight: FontWeight.w700,
                               color: AppColors.platinum,
@@ -382,7 +428,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
                               Text(
                                 ex.muscleGroup.toUpperCase(),
                                 style: const TextStyle(
-                                  fontFamily: 'JetBrains Mono',
+                                  fontFamily: AppTypography.fontMono,
                                   fontSize: 11.0,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.textSecondary,
@@ -398,11 +444,17 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
                               for (int i = 0; i < ex.sets.length; i++)
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: ex.sets[i].isPr
-                                        ? const Color(0xFF00E676).withValues(alpha: 0.15)
-                                        : AppColors.steel.withValues(alpha: 0.3),
+                                        ? const Color(
+                                            0xFF00E676,
+                                          ).withValues(alpha: 0.15)
+                                        : AppColors.steel.withValues(
+                                            alpha: 0.3,
+                                          ),
                                     borderRadius: BorderRadius.circular(6),
                                     border: ex.sets[i].isPr
                                         ? Border.all(
@@ -414,7 +466,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
                                   child: Text(
                                     '${ex.sets[i].weightKg}kg × ${ex.sets[i].reps}',
                                     style: TextStyle(
-                                      fontFamily: 'JetBrains Mono',
+                                      fontFamily: AppTypography.fontMono,
                                       fontSize: 11.0,
                                       fontWeight: FontWeight.w600,
                                       color: ex.sets[i].isPr
@@ -443,7 +495,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
                           ),
                           label: Text(
                             'REPEAT WORKOUT',
-                            style: AppTypography.monoSmall.copyWith(
+                            style: AppTypography.bodySmall.copyWith(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w800,
                               color: AppColors.onyx,
@@ -471,7 +523,10 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
                           minimumSize: const Size(0, 38),
                         ),
                         icon: const Icon(
@@ -481,7 +536,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
                         ),
                         label: Text(
                           'SHARE',
-                          style: AppTypography.monoSmall.copyWith(
+                          style: AppTypography.bodySmall.copyWith(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w700,
                             color: AppColors.pureWhite,
@@ -502,12 +557,15 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
                           minimumSize: const Size(0, 38),
                         ),
                         child: Text(
                           'EDIT',
-                          style: AppTypography.monoSmall.copyWith(
+                          style: AppTypography.bodySmall.copyWith(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w700,
                             color: AppColors.platinum,
@@ -536,7 +594,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
       child: Text(
         text,
         style: const TextStyle(
-          fontFamily: 'JetBrains Mono',
+          fontFamily: AppTypography.fontMono,
           fontSize: 11.0,
           fontWeight: FontWeight.w600,
           color: AppColors.platinum,

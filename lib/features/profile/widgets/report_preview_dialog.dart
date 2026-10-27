@@ -211,7 +211,7 @@ Rest Timer Default: ${widget.profile.defaultRestSeconds}s
                       child: const Text(
                         'PDF READY',
                         style: TextStyle(
-                          fontFamily: 'JetBrains Mono',
+                          fontFamily: AppTypography.fontBody,
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: AppColors.primary,
@@ -337,7 +337,7 @@ Rest Timer Default: ${widget.profile.defaultRestSeconds}s
           Text(
             val,
             style: const TextStyle(
-              fontFamily: 'JetBrains Mono',
+              fontFamily: AppTypography.fontMono,
               fontSize: 12.5,
               fontWeight: FontWeight.w600,
               color: AppColors.pureWhite,

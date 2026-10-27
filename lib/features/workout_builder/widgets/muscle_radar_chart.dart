@@ -201,8 +201,7 @@ class _MuscleRadarPainter extends CustomPainter {
       final labelY = center.dy + labelRadius * math.sin(angle);
 
       // Determine label text style (highlight lacking vs optimal)
-      final isLacking = loggedSets < 8;
-      final labelColor = isLacking ? AppColors.pureWhite : AppColors.platinum;
+      const labelColor = AppColors.platinum;
 
       final span = TextSpan(
         children: [
@@ -216,11 +215,11 @@ class _MuscleRadarPainter extends CustomPainter {
             ),
           ),
           TextSpan(
-            text: '$loggedSets/${plannedSets}s',
+            text: '$loggedSets/$plannedSets sets',
             style: AppTypography.monoSmall.copyWith(
               fontSize: 11.0,
               fontWeight: FontWeight.w600,
-              color: isLacking ? const Color(0xFFFFB300) : AppColors.platinum,
+              color: AppColors.platinum,
             ),
           ),
         ],
@@ -245,7 +244,7 @@ class _MuscleRadarPainter extends CustomPainter {
       final angle = -math.pi / 2 + (i * angleStep);
       final axisName = axes[i];
       final sets = plannedVolume[axisName] ?? 0;
-      final normalized = (sets / maxSetsScale).clamp(0.1, 1.0);
+      final normalized = (sets / maxSetsScale).clamp(0.0, 1.0);
       final r = maxRadius * normalized * progress;
       final x = center.dx + r * math.cos(angle);
       final y = center.dy + r * math.sin(angle);
@@ -268,7 +267,7 @@ class _MuscleRadarPainter extends CustomPainter {
       final angle = -math.pi / 2 + (i * angleStep);
       final axisName = axes[i];
       final sets = loggedVolume[axisName] ?? 0;
-      final normalized = (sets / maxSetsScale).clamp(0.08, 1.0);
+      final normalized = (sets / maxSetsScale).clamp(0.0, 1.0);
       final r = maxRadius * normalized * progress;
       final x = center.dx + r * math.cos(angle);
       final y = center.dy + r * math.sin(angle);

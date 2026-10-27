@@ -10,7 +10,8 @@ class ExerciseFilterModal extends ConsumerStatefulWidget {
   const ExerciseFilterModal({super.key});
 
   @override
-  ConsumerState<ExerciseFilterModal> createState() => _ExerciseFilterModalState();
+  ConsumerState<ExerciseFilterModal> createState() =>
+      _ExerciseFilterModalState();
 }
 
 class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
@@ -98,10 +99,7 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
           decoration: BoxDecoration(
             color: AppColors.onyx.withValues(alpha: 0.96),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border.all(
-              color: AppColors.steel,
-              width: 1.0,
-            ),
+            border: Border.all(color: AppColors.steel, width: 1.0),
           ),
           padding: EdgeInsets.only(
             top: 12,
@@ -142,7 +140,10 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
                     TextButton(
                       onPressed: _resetAll,
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         minimumSize: const Size(60, 36),
                       ),
                       child: Text(
@@ -174,8 +175,12 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
                       _buildSectionHeader('EXERCISE SOURCE'),
                       _buildWrapSelector(
                         options: const ['All Movements', 'Custom Only'],
-                        selected: _tempOnlyCustom ? 'Custom Only' : 'All Movements',
-                        onSelected: (val) => setState(() => _tempOnlyCustom = val == 'Custom Only'),
+                        selected: _tempOnlyCustom
+                            ? 'Custom Only'
+                            : 'All Movements',
+                        onSelected: (val) => setState(
+                          () => _tempOnlyCustom = val == 'Custom Only',
+                        ),
                       ),
                       const SizedBox(height: 18),
 
@@ -183,7 +188,8 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
                       _buildWrapSelector(
                         options: _categories,
                         selected: _tempCategory,
-                        onSelected: (val) => setState(() => _tempCategory = val),
+                        onSelected: (val) =>
+                            setState(() => _tempCategory = val),
                       ),
                       const SizedBox(height: 18),
 
@@ -191,7 +197,8 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
                       _buildWrapSelector(
                         options: _equipment,
                         selected: _tempEquipment,
-                        onSelected: (val) => setState(() => _tempEquipment = val),
+                        onSelected: (val) =>
+                            setState(() => _tempEquipment = val),
                       ),
                       const SizedBox(height: 18),
 
@@ -207,7 +214,8 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
                       _buildWrapSelector(
                         options: _difficulties,
                         selected: _tempDifficulty,
-                        onSelected: (val) => setState(() => _tempDifficulty = val),
+                        onSelected: (val) =>
+                            setState(() => _tempDifficulty = val),
                       ),
                       const SizedBox(height: 12),
                     ],
@@ -280,9 +288,7 @@ class _ExerciseFilterModalState extends ConsumerState<ExerciseFilterModal> {
             duration: const Duration(milliseconds: 140),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.pureWhite
-                  : AppColors.charcoal,
+              color: isSelected ? AppColors.pureWhite : AppColors.charcoal,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: isSelected ? AppColors.pureWhite : AppColors.steel,

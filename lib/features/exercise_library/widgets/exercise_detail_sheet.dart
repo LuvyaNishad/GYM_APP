@@ -21,7 +21,8 @@ class ExerciseDetailSheet extends ConsumerStatefulWidget {
   final ValueChanged<ExerciseLibraryItem> onAddToWorkout;
 
   @override
-  ConsumerState<ExerciseDetailSheet> createState() => _ExerciseDetailSheetState();
+  ConsumerState<ExerciseDetailSheet> createState() =>
+      _ExerciseDetailSheetState();
 }
 
 class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
@@ -58,15 +59,17 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
             child: Container(
               decoration: BoxDecoration(
                 color: AppColors.onyx.withValues(alpha: 0.96),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                border: Border.all(
-                  color: AppColors.steel,
-                  width: 1.0,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
                 ),
+                border: Border.all(color: AppColors.steel, width: 1.0),
               ),
               child: ListView(
                 controller: scrollController,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 children: [
                   // ── Top Notch / Grabber Handle ─────────────────────────
                   Center(
@@ -103,10 +106,28 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                               spacing: 6,
                               runSpacing: 4,
                               children: [
-                                _buildBadge(_currentExercise.category.toUpperCase(), AppColors.pureWhite, true),
-                                _buildBadge(_currentExercise.movementPatternDisplay.toUpperCase(), AppColors.platinum, false),
-                                _buildBadge(_currentExercise.exerciseType.toUpperCase(), AppColors.platinum, false),
-                                _buildBadge(_currentExercise.difficultyDisplay.toUpperCase(), AppColors.platinum, false),
+                                _buildBadge(
+                                  _currentExercise.category.toUpperCase(),
+                                  AppColors.pureWhite,
+                                  true,
+                                ),
+                                _buildBadge(
+                                  _currentExercise.movementPatternDisplay
+                                      .toUpperCase(),
+                                  AppColors.platinum,
+                                  false,
+                                ),
+                                _buildBadge(
+                                  _currentExercise.exerciseType.toUpperCase(),
+                                  AppColors.platinum,
+                                  false,
+                                ),
+                                _buildBadge(
+                                  _currentExercise.difficultyDisplay
+                                      .toUpperCase(),
+                                  AppColors.platinum,
+                                  false,
+                                ),
                               ],
                             ),
                           ],
@@ -114,10 +135,16 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                       ),
                       IconButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close_rounded, color: AppColors.platinum),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: AppColors.platinum,
+                        ),
                         iconSize: 22,
                         padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                        constraints: const BoxConstraints(
+                          minWidth: 44,
+                          minHeight: 44,
+                        ),
                       ),
                     ],
                   ),
@@ -163,7 +190,11 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                       Navigator.of(context).pop();
                       widget.onAddToWorkout(_currentExercise);
                     },
-                    icon: const Icon(Icons.add_rounded, size: 20, color: AppColors.onyx),
+                    icon: const Icon(
+                      Icons.add_rounded,
+                      size: 20,
+                      color: AppColors.onyx,
+                    ),
                     label: Text(
                       'ADD TO WORKOUT',
                       style: AppTypography.labelSmall.copyWith(
@@ -194,7 +225,11 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                         extra: _currentExercise,
                       );
                     },
-                    icon: const Icon(Icons.menu_book_rounded, size: 18, color: AppColors.pureWhite),
+                    icon: const Icon(
+                      Icons.menu_book_rounded,
+                      size: 18,
+                      color: AppColors.pureWhite,
+                    ),
                     label: Text(
                       'FULL FORM GUIDE & 1RM CALCULATOR',
                       style: AppTypography.labelSmall.copyWith(
@@ -206,7 +241,10 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                     ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.pureWhite,
-                      side: const BorderSide(color: AppColors.steel, width: 1.0),
+                      side: const BorderSide(
+                        color: AppColors.steel,
+                        width: 1.0,
+                      ),
                       minimumSize: const Size(double.infinity, 44),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -280,10 +318,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                       decoration: BoxDecoration(
                         color: AppColors.charcoal,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: AppColors.steel,
-                          width: 1.0,
-                        ),
+                        border: Border.all(color: AppColors.steel, width: 1.0),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,7 +356,10 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                           onTap: () => _switchToExercise(alt),
                           borderRadius: BorderRadius.circular(10),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.charcoal,
                               borderRadius: BorderRadius.circular(10),
@@ -340,15 +378,17 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         alt.name,
-                                        style: AppTypography.bodyMedium.copyWith(
-                                          fontSize: 13.5,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.pureWhite,
-                                        ),
+                                        style: AppTypography.bodyMedium
+                                            .copyWith(
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.pureWhite,
+                                            ),
                                       ),
                                       Text(
                                         '${alt.primaryEquipment.toUpperCase()} · ${alt.primaryMusclesDisplay}',
@@ -400,10 +440,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
       decoration: BoxDecoration(
         color: isFilled ? AppColors.steel : AppColors.onyx,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(
-          color: AppColors.steel,
-          width: 0.8,
-        ),
+        border: Border.all(color: AppColors.steel, width: 0.8),
       ),
       child: Text(
         label,
@@ -427,10 +464,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
       decoration: BoxDecoration(
         color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: AppColors.steel,
-          width: 1.0,
-        ),
+        border: Border.all(color: AppColors.steel, width: 1.0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -466,10 +500,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
       decoration: BoxDecoration(
         color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: AppColors.steel,
-          width: 1.0,
-        ),
+        border: Border.all(color: AppColors.steel, width: 1.0),
       ),
       child: Row(
         children: [
@@ -492,7 +523,7 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
               children: [
                 Text(
                   'PERSONAL BEST RECORD',
-                  style: AppTypography.monoSmall.copyWith(
+                  style: AppTypography.bodySmall.copyWith(
                     fontSize: 11.0,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.6,

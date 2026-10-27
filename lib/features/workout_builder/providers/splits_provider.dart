@@ -6,6 +6,8 @@ import '../../../services/hive_service.dart';
 import '../../workout_session/providers/active_session_provider.dart';
 import '../data/split_presets.dart';
 import '../models/split_model.dart';
+import '../../history/providers/history_provider.dart';
+import 'weekly_volume_provider.dart';
 
 /// State of training splits, active tracking program, and volume history.
 class SplitsState {
@@ -21,8 +23,10 @@ class SplitsState {
   final String? expandedSplitId;
   final Map<String, int> loggedVolume;
 
-  TrainingSplitModel get activeSplit =>
-      splits.firstWhere((s) => s.id == activeSplitId, orElse: () => splits.first);
+  TrainingSplitModel get activeSplit => splits.firstWhere(
+    (s) => s.id == activeSplitId,
+    orElse: () => splits.first,
+  );
 
   List<TrainingSplitModel> get presetSplits =>
       splits.where((s) => !s.isCustom).toList();
@@ -40,8 +44,9 @@ class SplitsState {
     return SplitsState(
       splits: splits ?? this.splits,
       activeSplitId: activeSplitId ?? this.activeSplitId,
-      expandedSplitId:
-          clearExpanded ? null : (expandedSplitId ?? this.expandedSplitId),
+      expandedSplitId: clearExpanded
+          ? null
+          : (expandedSplitId ?? this.expandedSplitId),
       loggedVolume: loggedVolume ?? this.loggedVolume,
     );
   }
@@ -63,34 +68,36 @@ class SplitsNotifier extends Notifier<SplitsState> {
       customSplits = [];
     }
 
-    final allSplits = [
-      ...kPresetSplits,
-      ...customSplits,
-    ];
+    final allSplits = [...kPresetSplits, ...customSplits];
 
-    final savedActiveId = hive.getSetting<String>(
-      AppConstants.settingActiveSplitId,
-      fallback: 'split_ppl',
-    ) ?? 'split_ppl';
+    final savedActiveId =
+        hive.getSetting<String>(
+          AppConstants.settingActiveSplitId,
+          fallback: 'split_ppl',
+        ) ??
+        'split_ppl';
 
-    final effectiveActiveId =
-        allSplits.any((s) => s.id == savedActiveId) ? savedActiveId : allSplits.first.id;
+    final effectiveActiveId = allSplits.any((s) => s.id == savedActiveId)
+        ? savedActiveId
+        : allSplits.first.id;
 
     return SplitsState(
       splits: allSplits,
       activeSplitId: effectiveActiveId,
       expandedSplitId: null,
-      loggedVolume: const {},
+      loggedVolume: completedWeeklyMuscleSets(
+        ref.watch(historyWorkoutsProvider),
+        DateTime.now(),
+      ),
     );
   }
 
   /// Switches the actively tracked training split.
   void switchActiveSplit(String splitId) {
-    state = state.copyWith(
-      activeSplitId: splitId,
-      clearExpanded: true,
-    );
-    ref.read(hiveServiceProvider).putSetting(AppConstants.settingActiveSplitId, splitId);
+    state = state.copyWith(activeSplitId: splitId, clearExpanded: true);
+    ref
+        .read(hiveServiceProvider)
+        .putSetting(AppConstants.settingActiveSplitId, splitId);
   }
 
   /// Saves a custom training split to state and local storage.
@@ -149,7 +156,9 @@ class SplitsNotifier extends Notifier<SplitsState> {
     state = state.copyWith(
       splits: filtered,
       activeSplitId: newActive,
-      expandedSplitId: state.expandedSplitId == splitId ? newActive : state.expandedSplitId,
+      expandedSplitId: state.expandedSplitId == splitId
+          ? newActive
+          : state.expandedSplitId,
     );
     await hive.putSetting(AppConstants.settingActiveSplitId, newActive);
   }
@@ -165,11 +174,15 @@ class SplitsNotifier extends Notifier<SplitsState> {
 
   /// Launches an active workout session with the selected day's exercises.
   void startWorkoutFromDay(BuildContext context, SplitWorkoutDay day) {
-    final activeExercises =
-        day.exercises.map((e) => e.toActiveExerciseState()).toList();
+    final activeExercises = day.exercises
+        .map((e) => e.toActiveExerciseState())
+        .toList();
 
-    ref.read(activeSessionProvider.notifier).startSession(
-          splitName: '${state.activeSplit.shortName} ● ${day.name.toUpperCase()}',
+    ref
+        .read(activeSessionProvider.notifier)
+        .startSession(
+          splitName:
+              '${state.activeSplit.shortName} ● ${day.name.toUpperCase()}',
           initialExercises: activeExercises,
         );
 
@@ -178,8 +191,10 @@ class SplitsNotifier extends Notifier<SplitsState> {
 
   /// Starts a freestyle / empty active workout session with 0 exercises preloaded.
   void startEmptyWorkout(BuildContext context) {
-    ref.read(activeSessionProvider.notifier).startSession(
-          splitName: 'FREESTYLE ● UNSTRUCTURED SESSION',
+    ref
+        .read(activeSessionProvider.notifier)
+        .startSession(
+          splitName: 'Freestyle Workout',
           initialExercises: const [],
         );
 
@@ -189,11 +204,8 @@ class SplitsNotifier extends Notifier<SplitsState> {
   /// Automatically fixes a lagging muscle deficit by adding a high-yield exercise
   /// and updating the logged/planned balance.
   void autoFixLaggingMuscle(String muscleGroup) {
-    final currentLogged = Map<String, int>.from(state.loggedVolume);
-    final currentVal = currentLogged[muscleGroup] ?? 0;
-    currentLogged[muscleGroup] = currentVal + 6;
-
-    state = state.copyWith(loggedVolume: currentLogged);
+    // Kept for older callers; only completed workouts can change logged volume.
+    // Current UI opens the routine editor so the user can review plan changes.
   }
 }
 

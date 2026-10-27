@@ -36,10 +36,7 @@ class ExerciseLibraryCard extends StatelessWidget {
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: AppColors.steel,
-                width: 1.0,
-              ),
+              border: Border.all(color: AppColors.steel, width: 1.0),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -69,14 +66,17 @@ class ExerciseLibraryCard extends StatelessWidget {
                           if (exercise.isCustom) ...[
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.steel,
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Text(
                                 'CUSTOM',
-                                style: AppTypography.monoSmall.copyWith(
+                                style: AppTypography.bodySmall.copyWith(
                                   fontSize: 11.0,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 0.6,
@@ -188,10 +188,7 @@ class ExerciseLibraryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isFilled ? AppColors.steel : AppColors.onyx,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: AppColors.steel,
-          width: 0.8,
-        ),
+        border: Border.all(color: AppColors.steel, width: 0.8),
       ),
       child: Text(
         label,

@@ -80,7 +80,9 @@ class _CustomExerciseCreatorScreenState
       exerciseType: _exerciseType,
       difficulty: 'intermediate',
       tags: ['custom', _category.toLowerCase(), _equipment],
-      instructions: cues.isNotEmpty ? [cues] : ['Execute movement with controlled form.'],
+      instructions: cues.isNotEmpty
+          ? [cues]
+          : ['Execute movement with controlled form.'],
       coachingNotes: cues,
       defaultRestSeconds: _restSeconds,
       isCustom: true,
@@ -102,7 +104,11 @@ class _CustomExerciseCreatorScreenState
         ),
         content: Row(
           children: [
-            const Icon(Icons.check_circle_rounded, color: AppColors.pureWhite, size: 20),
+            const Icon(
+              Icons.check_circle_rounded,
+              color: AppColors.pureWhite,
+              size: 20,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -129,7 +135,11 @@ class _CustomExerciseCreatorScreenState
         backgroundColor: AppColors.onyx,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppColors.pureWhite),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: AppColors.pureWhite,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -153,8 +163,12 @@ class _CustomExerciseCreatorScreenState
               const SizedBox(height: 6),
               TextFormField(
                 controller: _nameController,
-                style: AppTypography.bodyMedium.copyWith(color: AppColors.pureWhite),
-                decoration: _inputDecoration(hintText: 'e.g. Arsenal Strength Hack Squat'),
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.pureWhite,
+                ),
+                decoration: _inputDecoration(
+                  hintText: 'e.g. Arsenal Strength Hack Squat',
+                ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
                     return 'Please enter an exercise name';
@@ -176,14 +190,19 @@ class _CustomExerciseCreatorScreenState
                     onTap: () => setState(() => _category = cat),
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AppColors.pureWhite
                             : AppColors.charcoal,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: isSelected ? AppColors.pureWhite : AppColors.steel,
+                          color: isSelected
+                              ? AppColors.pureWhite
+                              : AppColors.steel,
                           width: 1.0,
                         ),
                       ),
@@ -191,8 +210,12 @@ class _CustomExerciseCreatorScreenState
                         cat,
                         style: AppTypography.labelSmall.copyWith(
                           fontSize: 12.0,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                          color: isSelected ? AppColors.onyx : AppColors.platinum,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: isSelected
+                              ? AppColors.onyx
+                              : AppColors.platinum,
                         ),
                       ),
                     ),
@@ -206,8 +229,12 @@ class _CustomExerciseCreatorScreenState
               const SizedBox(height: 6),
               TextFormField(
                 controller: _primaryMusclesController,
-                style: AppTypography.bodyMedium.copyWith(color: AppColors.pureWhite),
-                decoration: _inputDecoration(hintText: 'e.g. Quadriceps, Gluteus Maximus'),
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.pureWhite,
+                ),
+                decoration: _inputDecoration(
+                  hintText: 'e.g. Quadriceps, Gluteus Maximus',
+                ),
               ),
               const SizedBox(height: 18),
 
@@ -218,10 +245,7 @@ class _CustomExerciseCreatorScreenState
                 decoration: BoxDecoration(
                   color: AppColors.charcoal,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: AppColors.steel,
-                    width: 1.0,
-                  ),
+                  border: Border.all(color: AppColors.steel, width: 1.0),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: DropdownButtonHideUnderline(
@@ -229,7 +253,10 @@ class _CustomExerciseCreatorScreenState
                     value: _equipment,
                     isExpanded: true,
                     dropdownColor: AppColors.charcoal,
-                    icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.platinum),
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: AppColors.platinum,
+                    ),
                     items: _equipmentOptions.map((opt) {
                       return DropdownMenuItem<String>(
                         value: opt,
@@ -271,7 +298,9 @@ class _CustomExerciseCreatorScreenState
                                 : AppColors.charcoal,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: isSelected ? AppColors.pureWhite : AppColors.steel,
+                              color: isSelected
+                                  ? AppColors.pureWhite
+                                  : AppColors.steel,
                               width: 1.0,
                             ),
                           ),
@@ -280,8 +309,12 @@ class _CustomExerciseCreatorScreenState
                               type.toUpperCase(),
                               style: AppTypography.monoSmall.copyWith(
                                 fontSize: 12.0,
-                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                color: isSelected ? AppColors.onyx : AppColors.platinum,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? AppColors.onyx
+                                    : AppColors.platinum,
                               ),
                             ),
                           ),
@@ -313,7 +346,9 @@ class _CustomExerciseCreatorScreenState
                                 : AppColors.charcoal,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: isSelected ? AppColors.pureWhite : AppColors.steel,
+                              color: isSelected
+                                  ? AppColors.pureWhite
+                                  : AppColors.steel,
                               width: 1.0,
                             ),
                           ),
@@ -322,8 +357,12 @@ class _CustomExerciseCreatorScreenState
                               '${secs}s',
                               style: AppTypography.monoSmall.copyWith(
                                 fontSize: 12.0,
-                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                color: isSelected ? AppColors.onyx : AppColors.platinum,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? AppColors.onyx
+                                    : AppColors.platinum,
                               ),
                             ),
                           ),
@@ -341,8 +380,14 @@ class _CustomExerciseCreatorScreenState
               TextFormField(
                 controller: _cuesController,
                 maxLines: 3,
-                style: AppTypography.bodySmall.copyWith(color: AppColors.pureWhite, fontSize: 13),
-                decoration: _inputDecoration(hintText: 'e.g. Feet shoulder width, drive through heels, full depth.'),
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.pureWhite,
+                  fontSize: 13,
+                ),
+                decoration: _inputDecoration(
+                  hintText:
+                      'e.g. Feet shoulder width, drive through heels, full depth.',
+                ),
               ),
               const SizedBox(height: 30),
 

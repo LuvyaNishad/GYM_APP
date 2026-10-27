@@ -3,11 +3,7 @@ import '../../exercise_library/models/exercise_library_item.dart';
 import '../../workout_session/models/active_session_state.dart';
 
 /// Status indicating volume sufficiency for hypertrophy/recovery.
-enum MuscleVolumeStatus {
-  lacking,
-  optimal,
-  high,
-}
+enum MuscleVolumeStatus { lacking, optimal, high }
 
 /// A planned exercise within a routine or split workout day.
 @immutable
@@ -48,10 +44,10 @@ class PlannedExercise {
         reps: int.tryParse(repRange.split('–').first.trim()) ?? 10,
         rir: targetRir,
         rpe: 10.0 - targetRir,
-        previousWeightKg: targetWeightKg,
-        previousReps: int.tryParse(repRange.split('–').first.trim()) ?? 10,
         weightKgRight: isUnilateral ? targetWeightKg : null,
-        repsRight: isUnilateral ? (int.tryParse(repRange.split('–').first.trim()) ?? 10) : null,
+        repsRight: isUnilateral
+            ? (int.tryParse(repRange.split('–').first.trim()) ?? 10)
+            : null,
       ),
     );
 
@@ -123,7 +119,8 @@ class PlannedExercise {
           );
 
     final explicitUnilateral = json['isUnilateral'] as bool?;
-    final inferredUnilateral = explicitUnilateral ??
+    final inferredUnilateral =
+        explicitUnilateral ??
         (name.toLowerCase().contains('single-arm') ||
             name.toLowerCase().contains('single arm') ||
             name.toLowerCase().contains('single-leg') ||
@@ -210,13 +207,19 @@ class SplitWorkoutDay {
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
       subtitle: json['subtitle'] as String? ?? '',
-      targetMuscles: (json['targetMuscles'] as List<dynamic>?)
+      targetMuscles:
+          (json['targetMuscles'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           const [],
       isRestDay: json['isRestDay'] as bool? ?? false,
-      exercises: (json['exercises'] as List<dynamic>?)
-              ?.map((e) => PlannedExercise.fromJson(Map<String, dynamic>.from(e as Map)))
+      exercises:
+          (json['exercises'] as List<dynamic>?)
+              ?.map(
+                (e) => PlannedExercise.fromJson(
+                  Map<String, dynamic>.from(e as Map),
+                ),
+              )
               .toList() ??
           const [],
       estimatedDurationMinutes:
@@ -252,8 +255,7 @@ class TrainingSplitModel {
 
   int get totalWorkouts => workouts.where((w) => !w.isRestDay).length;
 
-  int get totalWeeklySets =>
-      workouts.fold(0, (sum, w) => sum + w.totalSets);
+  int get totalWeeklySets => workouts.fold(0, (sum, w) => sum + w.totalSets);
 
   TrainingSplitModel copyWith({
     String? id,
@@ -298,12 +300,19 @@ class TrainingSplitModel {
       daysPerWeek: (json['daysPerWeek'] as num?)?.toInt() ?? 4,
       description: json['description'] as String? ?? '',
       isCustom: json['isCustom'] as bool? ?? true,
-      workouts: (json['workouts'] as List<dynamic>?)
-              ?.map((w) => SplitWorkoutDay.fromJson(Map<String, dynamic>.from(w as Map)))
+      workouts:
+          (json['workouts'] as List<dynamic>?)
+              ?.map(
+                (w) => SplitWorkoutDay.fromJson(
+                  Map<String, dynamic>.from(w as Map),
+                ),
+              )
               .toList() ??
           const [],
-      plannedMuscleSets: (json['plannedMuscleSets'] as Map<dynamic, dynamic>?)
-              ?.map((k, v) => MapEntry(k.toString(), (v as num).toInt())) ??
+      plannedMuscleSets:
+          (json['plannedMuscleSets'] as Map<dynamic, dynamic>?)?.map(
+            (k, v) => MapEntry(k.toString(), (v as num).toInt()),
+          ) ??
           const {},
     );
   }

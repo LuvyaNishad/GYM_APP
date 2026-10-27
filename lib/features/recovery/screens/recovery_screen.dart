@@ -100,7 +100,7 @@ class RecoveryScreen extends StatelessWidget {
             child: const Text(
               'UNDERSTOOD',
               style: TextStyle(
-                fontFamily: 'JetBrains Mono',
+                fontFamily: AppTypography.fontBody,
                 fontSize: 12.0,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF00E5FF),

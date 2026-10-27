@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:leon/core/theme/app_colors.dart';
+import 'package:leon/core/theme/app_typography.dart';
 
 /// A single page in the [OnboardingScreen] [PageView].
 ///
@@ -47,7 +49,7 @@ class OnboardingPageWidget extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: AppTypography.fontBody,
               fontSize: 32,
               fontWeight: FontWeight.bold,
               color: Colors.white,
@@ -62,9 +64,9 @@ class OnboardingPageWidget extends StatelessWidget {
           Text(
             subtitle,
             style: const TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: AppTypography.fontBody,
               fontSize: 16,
-              color: Colors.white54,
+              color: AppColors.textSecondary,
               height: 1.6,
             ),
           ),

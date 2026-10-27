@@ -28,10 +28,7 @@ class ExerciseFilterBar extends ConsumerWidget {
     'Bodyweight',
   ];
 
-  static const List<String> _quickTypes = [
-    'Compound',
-    'Isolation',
-  ];
+  static const List<String> _quickTypes = ['Compound', 'Isolation'];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -61,10 +58,7 @@ class ExerciseFilterBar extends ConsumerWidget {
           // ── Vertical Subtle Divider ────────────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            child: Container(
-              width: 1,
-              color: AppColors.steel,
-            ),
+            child: Container(width: 1, color: AppColors.steel),
           ),
 
           // ── High-Visibility "Custom" Filter Chip ───────────────────────
@@ -77,7 +71,9 @@ class ExerciseFilterBar extends ConsumerWidget {
 
           // ── Category Toggle Chips ──────────────────────────────────────
           ..._quickCategories.map((category) {
-            final isSelected = state.filter.selectedCategory.toLowerCase() == category.toLowerCase();
+            final isSelected =
+                state.filter.selectedCategory.toLowerCase() ==
+                category.toLowerCase();
             return _FilterChip(
               label: category,
               isSelected: isSelected,
@@ -87,7 +83,9 @@ class ExerciseFilterBar extends ConsumerWidget {
 
           // ── Equipment Toggle Chips ─────────────────────────────────────
           ..._quickEquipment.map((equipment) {
-            final isSelected = state.filter.selectedEquipment.toLowerCase() == equipment.toLowerCase();
+            final isSelected =
+                state.filter.selectedEquipment.toLowerCase() ==
+                equipment.toLowerCase();
             return _FilterChip(
               label: equipment,
               isSelected: isSelected,
@@ -97,7 +95,8 @@ class ExerciseFilterBar extends ConsumerWidget {
 
           // ── Type Toggle Chips ──────────────────────────────────────────
           ..._quickTypes.map((type) {
-            final isSelected = state.filter.selectedType.toLowerCase() == type.toLowerCase();
+            final isSelected =
+                state.filter.selectedType.toLowerCase() == type.toLowerCase();
             return _FilterChip(
               label: type,
               isSelected: isSelected,
@@ -111,10 +110,7 @@ class ExerciseFilterBar extends ConsumerWidget {
 }
 
 class _MasterFilterButton extends StatelessWidget {
-  const _MasterFilterButton({
-    required this.activeCount,
-    required this.onTap,
-  });
+  const _MasterFilterButton({required this.activeCount, required this.onTap});
 
   final int activeCount;
   final VoidCallback onTap;
@@ -135,14 +131,10 @@ class _MasterFilterButton extends StatelessWidget {
             duration: const Duration(milliseconds: 180),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: hasActive
-                  ? AppColors.pureWhite
-                  : AppColors.charcoal,
+              color: hasActive ? AppColors.pureWhite : AppColors.charcoal,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: hasActive
-                    ? AppColors.pureWhite
-                    : AppColors.steel,
+                color: hasActive ? AppColors.pureWhite : AppColors.steel,
                 width: 1.0,
               ),
             ),
@@ -209,14 +201,10 @@ class _FilterChip extends StatelessWidget {
               duration: const Duration(milliseconds: 160),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.pureWhite
-                    : AppColors.charcoal,
+                color: isSelected ? AppColors.pureWhite : AppColors.charcoal,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: isSelected
-                      ? AppColors.pureWhite
-                      : AppColors.steel,
+                  color: isSelected ? AppColors.pureWhite : AppColors.steel,
                   width: 1.0,
                 ),
               ),
@@ -236,7 +224,9 @@ class _FilterChip extends StatelessWidget {
                       label,
                       style: AppTypography.labelSmall.copyWith(
                         fontSize: 12.0,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
                         letterSpacing: 0.4,
                         color: isSelected ? AppColors.onyx : AppColors.platinum,
                       ),

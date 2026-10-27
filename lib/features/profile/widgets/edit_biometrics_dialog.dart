@@ -173,7 +173,7 @@ class _EditBiometricsSheetState extends ConsumerState<_EditBiometricsSheet> {
             controller: _heightController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             style: const TextStyle(
-              fontFamily: 'JetBrains Mono',
+              fontFamily: AppTypography.fontMono,
               fontSize: 15,
               color: AppColors.pureWhite,
             ),
@@ -234,7 +234,7 @@ class _EditBiometricsSheetState extends ConsumerState<_EditBiometricsSheet> {
             controller: _weightController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             style: const TextStyle(
-              fontFamily: 'JetBrains Mono',
+              fontFamily: AppTypography.fontMono,
               fontSize: 15,
               color: AppColors.pureWhite,
             ),
@@ -281,7 +281,7 @@ class _EditBiometricsSheetState extends ConsumerState<_EditBiometricsSheet> {
             controller: _targetWeightController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             style: const TextStyle(
-              fontFamily: 'JetBrains Mono',
+              fontFamily: AppTypography.fontMono,
               fontSize: 15,
               color: AppColors.pureWhite,
             ),
@@ -377,7 +377,7 @@ class _EditBiometricsSheetState extends ConsumerState<_EditBiometricsSheet> {
         child: Text(
           unit.toUpperCase(),
           style: TextStyle(
-            fontFamily: 'JetBrains Mono',
+            fontFamily: AppTypography.fontMono,
             fontSize: 11,
             fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
             color: isSel ? AppColors.primary : AppColors.textSecondary,

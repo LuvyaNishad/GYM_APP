@@ -10,6 +10,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:leon/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -89,7 +90,7 @@ class HistoryScreen extends ConsumerWidget {
                                 Text(
                                   '${_formatTonnage(summary.totalTonnageKg)} LIFTED',
                                   style: const TextStyle(
-                                    fontFamily: 'JetBrains Mono',
+                                    fontFamily: AppTypography.fontMono,
                                     fontSize: 11.5,
                                     fontWeight: FontWeight.w800,
                                     color: AppColors.pureWhite,
@@ -101,7 +102,7 @@ class HistoryScreen extends ConsumerWidget {
                             Text(
                               'NEXT: ${_formatTonnage(summary.nextLevelTonnageTarget)}',
                               style: const TextStyle(
-                                fontFamily: 'JetBrains Mono',
+                                fontFamily: AppTypography.fontMono,
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textSecondary,

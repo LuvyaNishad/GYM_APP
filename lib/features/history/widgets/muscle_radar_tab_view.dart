@@ -81,7 +81,7 @@ class MuscleRadarTabView extends ConsumerWidget {
                           const Text(
                             'MUSCLE SYMMETRY RADAR',
                             style: TextStyle(
-                              fontFamily: 'JetBrains Mono',
+                              fontFamily: AppTypography.fontBody,
                               fontSize: 12.0,
                               fontWeight: FontWeight.w800,
                               color: AppColors.pureWhite,
@@ -120,7 +120,7 @@ class MuscleRadarTabView extends ConsumerWidget {
                     child: const Text(
                       '6 AXES',
                       style: TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontMono,
                         fontSize: 11.0,
                         fontWeight: FontWeight.w700,
                         color: AppColors.platinum,
@@ -194,7 +194,7 @@ class MuscleRadarTabView extends ConsumerWidget {
                       Text(
                         'LAGGING DETECTED: ${adv.muscleName.toUpperCase()}',
                         style: const TextStyle(
-                          fontFamily: 'JetBrains Mono',
+                          fontFamily: AppTypography.fontMono,
                           fontSize: 12.0,
                           fontWeight: FontWeight.w800,
                           color: Color(0xFFFFB300),
@@ -218,7 +218,7 @@ class MuscleRadarTabView extends ConsumerWidget {
                   Text(
                     'RECOMMENDED EXERCISES:',
                     style: const TextStyle(
-                      fontFamily: 'JetBrains Mono',
+                      fontFamily: AppTypography.fontBody,
                       fontSize: 11.0,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textSecondary,
@@ -244,7 +244,7 @@ class MuscleRadarTabView extends ConsumerWidget {
                           child: Text(
                             ex,
                             style: const TextStyle(
-                              fontFamily: 'JetBrains Mono',
+                              fontFamily: AppTypography.fontMono,
                               fontSize: 11.0,
                               fontWeight: FontWeight.w600,
                               color: AppColors.platinum,
@@ -281,7 +281,7 @@ class MuscleRadarTabView extends ConsumerWidget {
                       Text(
                         'MUSCLE READINESS STATE',
                         style: const TextStyle(
-                          fontFamily: 'JetBrains Mono',
+                          fontFamily: AppTypography.fontBody,
                           fontSize: 12.0,
                           fontWeight: FontWeight.w800,
                           color: AppColors.pureWhite,
@@ -293,7 +293,7 @@ class MuscleRadarTabView extends ConsumerWidget {
                   const Text(
                     'HOURS SINCE HIT',
                     style: TextStyle(
-                      fontFamily: 'JetBrains Mono',
+                      fontFamily: AppTypography.fontBody,
                       fontSize: 11.0,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textSecondary,
@@ -361,7 +361,7 @@ class MuscleRadarTabView extends ConsumerWidget {
                                 Text(
                                   _getStatusLabel(state.status),
                                   style: TextStyle(
-                                    fontFamily: 'JetBrains Mono',
+                                    fontFamily: AppTypography.fontMono,
                                     fontSize: 11.0,
                                     fontWeight: FontWeight.w700,
                                     color: _getStatusColor(state.status),
@@ -374,7 +374,7 @@ class MuscleRadarTabView extends ConsumerWidget {
                         Text(
                           '${state.hoursSinceLastTrained}H AGO',
                           style: const TextStyle(
-                            fontFamily: 'JetBrains Mono',
+                            fontFamily: AppTypography.fontMono,
                             fontSize: 12.0,
                             fontWeight: FontWeight.w700,
                             color: AppColors.platinum,
@@ -424,7 +424,7 @@ class MuscleRadarTabView extends ConsumerWidget {
       case RecoveryStatus.recovering:
         return const Color(0xFFFFB300);
       case RecoveryStatus.overdue:
-        return const Color(0xFFFF5252);
+        return AppColors.warning;
     }
   }
 
@@ -478,7 +478,7 @@ class MuscleRadarTabView extends ConsumerWidget {
             child: const Text(
               'UNDERSTOOD',
               style: TextStyle(
-                fontFamily: 'JetBrains Mono',
+                fontFamily: AppTypography.fontBody,
                 fontSize: 12.0,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF00E5FF),

@@ -100,7 +100,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                           child: Text(
                             'DAILY METRICS',
                             style: TextStyle(
-                              fontFamily: 'JetBrains Mono',
+                              fontFamily: AppTypography.fontBody,
                               fontSize: 11.5,
                               fontWeight: FontWeight.w700,
                               color: _selectedTabIndex == 0
@@ -131,7 +131,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                           child: Text(
                             'RECOMPOSITION',
                             style: TextStyle(
-                              fontFamily: 'JetBrains Mono',
+                              fontFamily: AppTypography.fontBody,
                               fontSize: 11.5,
                               fontWeight: FontWeight.w700,
                               color: _selectedTabIndex == 1
@@ -182,7 +182,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                                     : '--',
                                 unit: 'bpm',
                                 icon: Icons.favorite_border_outlined,
-                                accentColor: const Color(0xFFFF5252),
+                                accentColor: AppColors.warning,
                               ),
                             ),
                           ],
@@ -267,7 +267,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                   const Text(
                     'BODY COMPOSITION CHECK-IN',
                     style: TextStyle(
-                      fontFamily: 'JetBrains Mono',
+                      fontFamily: AppTypography.fontBody,
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textSecondary,
@@ -293,7 +293,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                     label: const Text(
                       'LOG',
                       style: TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontBody,
                         fontSize: 11.0,
                         fontWeight: FontWeight.w800,
                       ),
@@ -406,7 +406,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
         const Text(
           'MEASUREMENT LOG HISTORY',
           style: TextStyle(
-            fontFamily: 'JetBrains Mono',
+            fontFamily: AppTypography.fontBody,
             fontSize: 11.5,
             fontWeight: FontWeight.w700,
             color: AppColors.textSecondary,
@@ -437,7 +437,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                 Text(
                   'NO MEASUREMENTS LOGGED',
                   style: TextStyle(
-                    fontFamily: 'JetBrains Mono',
+                    fontFamily: AppTypography.fontBody,
                     fontSize: 12.0,
                     fontWeight: FontWeight.w700,
                     color: AppColors.pureWhite,
@@ -479,7 +479,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                     Text(
                       _formatDate(m.date),
                       style: const TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontMono,
                         fontSize: 11.0,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textSecondary,
@@ -489,7 +489,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                     Text(
                       '${m.weightKg} KG · ${m.bodyFatPercent ?? '--'}% BF',
                       style: const TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontMono,
                         fontSize: 13.0,
                         fontWeight: FontWeight.w800,
                         color: AppColors.pureWhite,
@@ -553,7 +553,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
           Text(
             label,
             style: const TextStyle(
-              fontFamily: 'JetBrains Mono',
+              fontFamily: AppTypography.fontMono,
               fontSize: 11.0,
               fontWeight: FontWeight.w600,
               color: AppColors.textSecondary,
@@ -567,7 +567,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
               Text(
                 value,
                 style: const TextStyle(
-                  fontFamily: 'JetBrains Mono',
+                  fontFamily: AppTypography.fontMono,
                   fontSize: 20.0,
                   fontWeight: FontWeight.w800,
                   color: AppColors.pureWhite,
@@ -578,7 +578,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                 Text(
                   unit,
                   style: const TextStyle(
-                    fontFamily: 'JetBrains Mono',
+                    fontFamily: AppTypography.fontMono,
                     fontSize: 11.5,
                     color: AppColors.textSecondary,
                   ),
@@ -590,7 +590,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
           Text(
             delta,
             style: const TextStyle(
-              fontFamily: 'JetBrains Mono',
+              fontFamily: AppTypography.fontMono,
               fontSize: 11.0,
               fontWeight: FontWeight.w700,
               color: Color(0xFF00E5FF),
@@ -625,7 +625,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
               Text(
                 label,
                 style: const TextStyle(
-                  fontFamily: 'JetBrains Mono',
+                  fontFamily: AppTypography.fontMono,
                   fontSize: 11.0,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textSecondary,
@@ -638,7 +638,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
           Text(
             value,
             style: const TextStyle(
-              fontFamily: 'JetBrains Mono',
+              fontFamily: AppTypography.fontMono,
               fontSize: 16.0,
               fontWeight: FontWeight.w800,
               color: AppColors.pureWhite,
@@ -649,7 +649,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
             Text(
               delta,
               style: const TextStyle(
-                fontFamily: 'JetBrains Mono',
+                fontFamily: AppTypography.fontMono,
                 fontSize: 11.0,
                 color: Color(0xFF00E5FF),
               ),
@@ -682,7 +682,7 @@ class _SectionHeader extends StatelessWidget {
         Text(
           label,
           style: const TextStyle(
-            fontFamily: 'JetBrains Mono',
+            fontFamily: AppTypography.fontMono,
             fontSize: 11.0,
             color: AppColors.textSecondary,
             letterSpacing: 1.5,
@@ -692,7 +692,7 @@ class _SectionHeader extends StatelessWidget {
           Text(
             'SYNCED ${_formatTime(timestamp!)}',
             style: const TextStyle(
-              fontFamily: 'JetBrains Mono',
+              fontFamily: AppTypography.fontMono,
               fontSize: 11.0,
               color: AppColors.textSecondary,
               letterSpacing: 1.0,

@@ -55,7 +55,7 @@ class OnboardingTopBar extends StatelessWidget {
                 Text(
                   stepLabel,
                   style: AppTypography.labelSmall.copyWith(
-                    fontFamily: 'JetBrainsMono',
+                    fontFamily: AppTypography.fontMono,
                     color: AppColors.textSecondary,
                     letterSpacing: 2.0,
                     fontWeight: FontWeight.w600,

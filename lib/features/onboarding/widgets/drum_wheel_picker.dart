@@ -35,7 +35,10 @@ class _DrumWheelPickerState extends State<DrumWheelPicker> {
   @override
   void initState() {
     super.initState();
-    _selectedValue = widget.initialValue.clamp(widget.minValue, widget.maxValue);
+    _selectedValue = widget.initialValue.clamp(
+      widget.minValue,
+      widget.maxValue,
+    );
     final initialIndex = _selectedValue - widget.minValue;
     _controller = FixedExtentScrollController(initialItem: initialIndex);
   }
@@ -44,7 +47,10 @@ class _DrumWheelPickerState extends State<DrumWheelPicker> {
   void didUpdateWidget(covariant DrumWheelPicker oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.initialValue != oldWidget.initialValue) {
-      final target = widget.initialValue.clamp(widget.minValue, widget.maxValue);
+      final target = widget.initialValue.clamp(
+        widget.minValue,
+        widget.maxValue,
+      );
       if (target != _selectedValue) {
         _selectedValue = target;
         final targetIndex = target - widget.minValue;
@@ -116,10 +122,7 @@ class _DrumWheelPickerState extends State<DrumWheelPicker> {
                         color: AppColors.primary,
                         shape: BoxShape.circle,
                         boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary,
-                            blurRadius: 8,
-                          ),
+                          BoxShadow(color: AppColors.primary, blurRadius: 8),
                         ],
                       ),
                     ),
@@ -130,10 +133,7 @@ class _DrumWheelPickerState extends State<DrumWheelPicker> {
                         color: AppColors.primary,
                         shape: BoxShape.circle,
                         boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary,
-                            blurRadius: 8,
-                          ),
+                          BoxShadow(color: AppColors.primary, blurRadius: 8),
                         ],
                       ),
                     ),
@@ -143,62 +143,46 @@ class _DrumWheelPickerState extends State<DrumWheelPicker> {
             ),
 
             // Scroll Wheel
-            ShaderMask(
-              shaderCallback: (Rect bounds) {
-                return const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black,
-                    Colors.black,
-                    Colors.transparent,
-                  ],
-                  stops: [0.0, 0.25, 0.75, 1.0],
-                ).createShader(bounds);
+            ListWheelScrollView.useDelegate(
+              controller: _controller,
+              itemExtent: widget.itemHeight,
+              perspective: 0.003,
+              diameterRatio: widget.diameterRatio,
+              physics: const FixedExtentScrollPhysics(),
+              onSelectedItemChanged: (index) {
+                final val = widget.minValue + index;
+                setState(() => _selectedValue = val);
+                widget.onChanged(val);
               },
-              blendMode: BlendMode.dstIn,
-              child: ListWheelScrollView.useDelegate(
-                controller: _controller,
-                itemExtent: widget.itemHeight,
-                perspective: 0.003,
-                diameterRatio: widget.diameterRatio,
-                physics: const FixedExtentScrollPhysics(),
-                onSelectedItemChanged: (index) {
+              childDelegate: ListWheelChildBuilderDelegate(
+                childCount: count,
+                builder: (context, index) {
                   final val = widget.minValue + index;
-                  setState(() => _selectedValue = val);
-                  widget.onChanged(val);
-                },
-                childDelegate: ListWheelChildBuilderDelegate(
-                  childCount: count,
-                  builder: (context, index) {
-                    final val = widget.minValue + index;
-                    final isSelected = val == _selectedValue;
+                  final isSelected = val == _selectedValue;
 
-                    return Center(
-                      child: Text(
-                        '$val',
-                        style: isSelected
-                            ? AppTypography.dataLarge.copyWith(
-                                fontSize: 36,
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w700,
-                                shadows: [
-                                  const Shadow(
-                                    color: AppColors.primary,
-                                    blurRadius: 16,
-                                  ),
-                                ],
-                              )
-                            : AppTypography.dataLarge.copyWith(
-                                fontSize: 26,
-                                color: Colors.white.withValues(alpha: 0.3),
-                                fontWeight: FontWeight.w400,
-                              ),
-                      ),
-                    );
-                  },
-                ),
+                  return Center(
+                    child: Text(
+                      '$val',
+                      style: isSelected
+                          ? AppTypography.dataLarge.copyWith(
+                              fontSize: 36,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w700,
+                              shadows: [
+                                const Shadow(
+                                  color: AppColors.primary,
+                                  blurRadius: 16,
+                                ),
+                              ],
+                            )
+                          : AppTypography.dataLarge.copyWith(
+                              fontSize: 26,
+                              color: AppColors.textMuted,
+                              fontWeight: FontWeight.w400,
+                            ),
+                    ),
+                  );
+                },
               ),
             ),
 
@@ -209,7 +193,7 @@ class _DrumWheelPickerState extends State<DrumWheelPicker> {
                 child: Text(
                   widget.unit.toUpperCase(),
                   style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.primary.withValues(alpha: 0.7),
+                    color: AppColors.textSecondary,
                     letterSpacing: 2.0,
                     fontWeight: FontWeight.w600,
                   ),

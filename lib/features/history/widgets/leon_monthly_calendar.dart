@@ -17,6 +17,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:leon/core/theme/app_typography.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -27,12 +28,7 @@ import '../providers/history_provider.dart';
 
 enum _CalendarNavView { days, months, years }
 
-enum DayStatus {
-  workedOut,
-  missed,
-  rest,
-  future,
-}
+enum DayStatus { workedOut, missed, rest, future }
 
 class LeonMonthlyCalendar extends ConsumerStatefulWidget {
   const LeonMonthlyCalendar({
@@ -90,8 +86,7 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
   void initState() {
     super.initState();
     final now = DateTime.now();
-    _displayedMonth =
-        widget.initialMonth ?? DateTime(now.year, now.month, 1);
+    _displayedMonth = widget.initialMonth ?? DateTime(now.year, now.month, 1);
     _focusedDate = DateTime(now.year, now.month, now.day);
     _yearAnchor = _displayedMonth.year;
 
@@ -277,10 +272,10 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
                         switchOutCurve: Curves.easeInCubic,
                         child: switch (_navView) {
                           _CalendarNavView.days => _buildDaysView(
-                              loggedDates: loggedDates,
-                              selectedDate: selectedDate,
-                              today: today,
-                            ),
+                            loggedDates: loggedDates,
+                            selectedDate: selectedDate,
+                            today: today,
+                          ),
                           _CalendarNavView.months => _buildMonthsView(),
                           _CalendarNavView.years => _buildYearsView(),
                         },
@@ -293,7 +288,10 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
                             alignment: Alignment.topCenter,
                             heightFactor: _collapseController.value,
                             child: Opacity(
-                              opacity: _collapseController.value.clamp(0.0, 1.0),
+                              opacity: _collapseController.value.clamp(
+                                0.0,
+                                1.0,
+                              ),
                               child: Padding(
                                 padding: const EdgeInsets.only(top: 10),
                                 child: _buildMinimalLegend(),
@@ -366,19 +364,19 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: _navView == _CalendarNavView.months
-                      ? const Color(0xFF00E5FF).withValues(alpha: 0.15)
+                      ? AppColors.amber.withValues(alpha: 0.15)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   monthName.toUpperCase(),
                   style: TextStyle(
-                    fontFamily: 'Outfit',
+                    fontFamily: AppTypography.fontBody,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.0,
                     color: _navView == _CalendarNavView.months
-                        ? const Color(0xFF00E5FF)
+                        ? AppColors.amber
                         : AppColors.pureWhite,
                   ),
                 ),
@@ -386,10 +384,7 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
             ),
             Text(
               '  |  ',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary.withValues(alpha: 0.4),
-              ),
+              style: TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
             GestureDetector(
               onTap: () {
@@ -404,19 +399,19 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: _navView == _CalendarNavView.years
-                      ? const Color(0xFF00E5FF).withValues(alpha: 0.15)
+                      ? AppColors.amber.withValues(alpha: 0.15)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   '${_displayedMonth.year}',
                   style: TextStyle(
-                    fontFamily: 'JetBrains Mono',
+                    fontFamily: AppTypography.fontMono,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.6,
                     color: _navView == _CalendarNavView.years
-                        ? const Color(0xFF00E5FF)
+                        ? AppColors.amber
                         : AppColors.pureWhite,
                   ),
                 ),
@@ -475,7 +470,7 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
                       child: Text(
                         label,
                         style: const TextStyle(
-                          fontFamily: 'JetBrains Mono',
+                          fontFamily: AppTypography.fontMono,
                           fontSize: 11.0,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textSecondary,
@@ -551,9 +546,7 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
               setState(() {
                 _focusedDate = date;
               });
-              ref
-                  .read(selectedCalendarDateProvider.notifier)
-                  .select(date);
+              ref.read(selectedCalendarDateProvider.notifier).select(date);
               widget.onDateSelected?.call(date);
             },
             child: SizedBox(
@@ -585,40 +578,40 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
     FontWeight fontWeight = FontWeight.w600;
 
     if (isToday) {
-      // Current day with solid pure white
+      // Current day with a solid neutral badge
       circleBg = AppColors.pureWhite;
       textColor = AppColors.onyx;
       fontWeight = FontWeight.w800;
     } else if (status == DayStatus.workedOut) {
       if (isCurrentMonth) {
-        // Current month completed day: solid emerald green
-        circleBg = const Color(0xFF00E676);
+        // Current month completed day: solid silver
+        circleBg = AppColors.platinum;
         textColor = AppColors.onyx;
         fontWeight = FontWeight.w800;
       } else {
-        // Prev/next month completed day: greyed out green (green, but not prominent)
-        circleBg = const Color(0xFF00E676).withValues(alpha: 0.18);
+        // Adjacent-month completed day: neutral tint and readable date
+        circleBg = AppColors.platinum.withValues(alpha: 0.18);
         circleBorder = Border.all(
-          color: const Color(0xFF00E676).withValues(alpha: 0.35),
+          color: AppColors.platinum.withValues(alpha: 0.35),
           width: 0.8,
         );
-        textColor = const Color(0xFF00E676).withValues(alpha: 0.60);
+        textColor = AppColors.textMuted;
         fontWeight = FontWeight.w600;
       }
     } else if (status == DayStatus.missed) {
       if (isCurrentMonth) {
-        // Missed day in current month: muted soft red circle
-        circleBg = const Color(0xFFFF5252).withValues(alpha: 0.16);
+        // Missed day in current month: amber warning
+        circleBg = AppColors.warning.withValues(alpha: 0.16);
         circleBorder = Border.all(
-          color: const Color(0xFFFF5252).withValues(alpha: 0.45),
+          color: AppColors.warning.withValues(alpha: 0.45),
           width: 0.8,
         );
-        textColor = const Color(0xFFFF5252);
+        textColor = AppColors.warning;
         fontWeight = FontWeight.w700;
       } else {
-        // Prev month missed day: dimmed faint red
-        circleBg = const Color(0xFFFF5252).withValues(alpha: 0.08);
-        textColor = Colors.white.withValues(alpha: 0.25);
+        // Adjacent-month missed day: warning tint and readable date
+        circleBg = AppColors.warning.withValues(alpha: 0.08);
+        textColor = AppColors.textMuted;
       }
     } else if (status == DayStatus.rest) {
       if (isCurrentMonth) {
@@ -630,14 +623,14 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
         );
         textColor = AppColors.textSecondary;
       } else {
-        textColor = Colors.white.withValues(alpha: 0.25);
+        textColor = AppColors.textMuted;
       }
     } else {
       // Future / upcoming day
       if (isCurrentMonth) {
-        textColor = AppColors.pureWhite.withValues(alpha: 0.85);
+        textColor = AppColors.textPrimary;
       } else {
-        textColor = Colors.white.withValues(alpha: 0.25);
+        textColor = AppColors.textMuted;
       }
     }
 
@@ -648,14 +641,11 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF00E5FF).withValues(alpha: 0.15)
+              ? AppColors.amber.withValues(alpha: 0.15)
               : Colors.transparent,
           shape: BoxShape.circle,
           border: isSelected
-              ? Border.all(
-                  color: const Color(0xFF00E5FF),
-                  width: 1.6,
-                )
+              ? Border.all(color: AppColors.amber, width: 1.6)
               : null,
         ),
         child: Container(
@@ -670,7 +660,7 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
           child: Text(
             '${date.day}',
             style: TextStyle(
-              fontFamily: 'JetBrains Mono',
+              fontFamily: AppTypography.fontMono,
               fontSize: 11.5,
               fontWeight: fontWeight,
               color: textColor,
@@ -708,12 +698,12 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: isSelected
-                  ? const Color(0xFF00E5FF)
+                  ? AppColors.amber
                   : AppColors.steel.withValues(alpha: 0.25),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: isSelected
-                    ? const Color(0xFF00E5FF)
+                    ? AppColors.amber
                     : AppColors.steel.withValues(alpha: 0.4),
                 width: 1.0,
               ),
@@ -721,7 +711,7 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
             child: Text(
               name,
               style: TextStyle(
-                fontFamily: 'JetBrains Mono',
+                fontFamily: AppTypography.fontMono,
                 fontSize: 12.0,
                 fontWeight: FontWeight.w700,
                 color: isSelected ? AppColors.onyx : AppColors.pureWhite,
@@ -746,7 +736,7 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
           child: Text(
             '$startYear – ${startYear + 11}',
             style: const TextStyle(
-              fontFamily: 'JetBrains Mono',
+              fontFamily: AppTypography.fontMono,
               fontSize: 11.5,
               fontWeight: FontWeight.w600,
               color: AppColors.textSecondary,
@@ -778,12 +768,12 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color(0xFF00E5FF)
+                      ? AppColors.amber
                       : AppColors.steel.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFF00E5FF)
+                        ? AppColors.amber
                         : AppColors.steel.withValues(alpha: 0.4),
                     width: 1.0,
                   ),
@@ -791,7 +781,7 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
                 child: Text(
                   '$year',
                   style: TextStyle(
-                    fontFamily: 'JetBrains Mono',
+                    fontFamily: AppTypography.fontMono,
                     fontSize: 12.0,
                     fontWeight: FontWeight.w700,
                     color: isSelected ? AppColors.onyx : AppColors.pureWhite,
@@ -820,22 +810,10 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildLegendItem(
-            color: const Color(0xFF00E676),
-            label: 'WORKOUT',
-          ),
-          _buildLegendItem(
-            color: AppColors.pureWhite,
-            label: 'TODAY',
-          ),
-          _buildLegendItem(
-            color: const Color(0xFFFF5252),
-            label: 'MISSED',
-          ),
-          _buildLegendItem(
-            color: const Color(0xFF64748B),
-            label: 'REST',
-          ),
+          _buildLegendItem(color: AppColors.platinum, label: 'WORKOUT'),
+          _buildLegendItem(color: AppColors.pureWhite, label: 'TODAY'),
+          _buildLegendItem(color: AppColors.warning, label: 'MISSED'),
+          _buildLegendItem(color: const Color(0xFF64748B), label: 'REST'),
         ],
       ),
     );
@@ -848,16 +826,13 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
         Container(
           width: 6,
           height: 6,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 5),
         Text(
           label,
           style: const TextStyle(
-            fontFamily: 'JetBrains Mono',
+            fontFamily: AppTypography.fontMono,
             fontSize: 11.0,
             fontWeight: FontWeight.w700,
             color: AppColors.textSecondary,

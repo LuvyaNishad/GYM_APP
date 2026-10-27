@@ -203,10 +203,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       letterSpacing: 8.0,
                       fontSize: 32,
                       shadows: [
-                        const Shadow(
-                          color: AppColors.primary,
-                          blurRadius: 20,
-                        ),
+                        const Shadow(color: AppColors.primary, blurRadius: 20),
                       ],
                     ),
                   ),
@@ -230,10 +227,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               height: 44,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.primary,
-                  width: 2.0,
-                ),
+                border: Border.all(color: AppColors.primary, width: 2.0),
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.primary.withValues(alpha: 0.6),
@@ -367,36 +361,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         'sub': 'Hypertrophy',
         'icon': Icons.fitness_center_rounded,
       },
-      {
-        'title': 'STRENGTH',
-        'sub': 'Maximal PRs',
-        'icon': Icons.bolt_rounded,
-      },
+      {'title': 'STRENGTH', 'sub': 'Maximal PRs', 'icon': Icons.bolt_rounded},
       {
         'title': 'LOSE FAT',
         'sub': 'Caloric Deficit',
         'icon': Icons.local_fire_department_rounded,
       },
-      {
-        'title': 'ATHLETIC',
-        'sub': 'Conditioning',
-        'icon': Icons.speed_rounded,
-      },
+      {'title': 'ATHLETIC', 'sub': 'Conditioning', 'icon': Icons.speed_rounded},
     ];
 
     final experienceLevels = [
-      {
-        'level': 'BEGINNER',
-        'freq': '< 1 YR',
-      },
-      {
-        'level': 'INTERMEDIATE',
-        'freq': '1 - 3 YRS',
-      },
-      {
-        'level': 'ADVANCED',
-        'freq': '3+ YRS',
-      },
+      {'level': 'BEGINNER', 'freq': '< 1 YR'},
+      {'level': 'INTERMEDIATE', 'freq': '1 - 3 YRS'},
+      {'level': 'ADVANCED', 'freq': '3+ YRS'},
     ];
 
     return Padding(
@@ -431,8 +408,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           // Question 1: Primary Goal (2x2 Grid)
           Row(
             children: [
-              const Icon(Icons.track_changes_rounded,
-                  size: 16, color: AppColors.primary),
+              const Icon(
+                Icons.track_changes_rounded,
+                size: 16,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -458,15 +438,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             crossAxisSpacing: 8,
             childAspectRatio: 2.3,
             children: objectives.map((item) {
-              final isSelected = state.primaryGoal == item['title'] ||
+              final isSelected =
+                  state.primaryGoal == item['title'] ||
                   (item['title'] == 'STRENGTH' &&
                       state.primaryGoal == 'INCREASE STRENGTH');
               return InkWell(
                 onTap: () => notifier.setPrimaryGoal(item['title'] as String),
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     color: isSelected
@@ -494,21 +477,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                item['title'] as String,
-                                maxLines: 1,
-                                softWrap: false,
-                                style: AppTypography.headlineSmall.copyWith(
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : AppColors.textPrimary,
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.4,
-                                ),
+                            Text(
+                              item['title'] as String,
+                              maxLines: 2,
+                              textAlign: TextAlign.center,
+                              style: AppTypography.headlineSmall.copyWith(
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.textPrimary,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.4,
                               ),
                             ),
                             Text(
@@ -536,8 +515,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           // Question 2: Experience Tier (3 horizontal segments)
           Row(
             children: [
-              const Icon(Icons.military_tech_rounded,
-                  size: 16, color: AppColors.primary),
+              const Icon(
+                Icons.military_tech_rounded,
+                size: 16,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -567,7 +549,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 11, horizontal: 2),
+                        vertical: 11,
+                        horizontal: 2,
+                      ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         color: isSelected
@@ -585,20 +569,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 2),
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                item['level'] as String,
-                                maxLines: 1,
-                                softWrap: false,
-                                style: AppTypography.headlineSmall.copyWith(
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : AppColors.textPrimary,
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.4,
-                                ),
+                            child: Text(
+                              item['level'] as String,
+                              maxLines: 2,
+                              textAlign: TextAlign.center,
+                              style: AppTypography.headlineSmall.copyWith(
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.textPrimary,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.4,
                               ),
                             ),
                           ),
@@ -681,9 +662,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF1E2537),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -695,7 +674,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 6),
+                        horizontal: 16,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: state.isWeightKg
                             ? AppColors.primary.withValues(alpha: 0.20)
@@ -703,8 +684,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         borderRadius: BorderRadius.circular(12),
                         border: state.isWeightKg
                             ? Border.all(
-                                color: AppColors.primary
-                                    .withValues(alpha: 0.40))
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.40,
+                                ),
+                              )
                             : null,
                       ),
                       child: Text(
@@ -726,7 +709,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 6),
+                        horizontal: 16,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: !state.isWeightKg
                             ? AppColors.primary.withValues(alpha: 0.20)
@@ -734,8 +719,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         borderRadius: BorderRadius.circular(12),
                         border: !state.isWeightKg
                             ? Border.all(
-                                color: AppColors.primary
-                                    .withValues(alpha: 0.40))
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.40,
+                                ),
+                              )
                             : null,
                       ),
                       child: Text(
@@ -783,7 +770,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         style: AppTypography.headlineMedium.copyWith(
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.w800,
-                          fontFamily: 'JetBrainsMono',
+                          fontFamily: AppTypography.fontMono,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -792,17 +779,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         children: [
                           IconButton(
                             visualDensity: VisualDensity.compact,
-                            icon: const Icon(Icons.remove_circle_outline,
-                                color: AppColors.primary, size: 22),
-                            onPressed: () => notifier
-                                .setHeight((state.height - 1).clamp(120, 230)),
+                            icon: const Icon(
+                              Icons.remove_circle_outline,
+                              color: AppColors.primary,
+                              size: 22,
+                            ),
+                            onPressed: () => notifier.setHeight(
+                              (state.height - 1).clamp(120, 230),
+                            ),
                           ),
                           IconButton(
                             visualDensity: VisualDensity.compact,
-                            icon: const Icon(Icons.add_circle_outline,
-                                color: AppColors.primary, size: 22),
-                            onPressed: () => notifier
-                                .setHeight((state.height + 1).clamp(120, 230)),
+                            icon: const Icon(
+                              Icons.add_circle_outline,
+                              color: AppColors.primary,
+                              size: 22,
+                            ),
+                            onPressed: () => notifier.setHeight(
+                              (state.height + 1).clamp(120, 230),
+                            ),
                           ),
                         ],
                       ),
@@ -835,7 +830,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         style: AppTypography.headlineMedium.copyWith(
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.w800,
-                          fontFamily: 'JetBrainsMono',
+                          fontFamily: AppTypography.fontMono,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -844,17 +839,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         children: [
                           IconButton(
                             visualDensity: VisualDensity.compact,
-                            icon: const Icon(Icons.remove_circle_outline,
-                                color: AppColors.primary, size: 22),
+                            icon: const Icon(
+                              Icons.remove_circle_outline,
+                              color: AppColors.primary,
+                              size: 22,
+                            ),
                             onPressed: () => notifier.setWeight(
-                                (state.weight - 0.5).clamp(40, 200)),
+                              (state.weight - 0.5).clamp(40, 200),
+                            ),
                           ),
                           IconButton(
                             visualDensity: VisualDensity.compact,
-                            icon: const Icon(Icons.add_circle_outline,
-                                color: AppColors.primary, size: 22),
+                            icon: const Icon(
+                              Icons.add_circle_outline,
+                              color: AppColors.primary,
+                              size: 22,
+                            ),
                             onPressed: () => notifier.setWeight(
-                                (state.weight + 0.5).clamp(40, 200)),
+                              (state.weight + 0.5).clamp(40, 200),
+                            ),
                           ),
                         ],
                       ),
@@ -892,7 +895,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       style: AppTypography.headlineSmall.copyWith(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.w800,
-                        fontFamily: 'JetBrainsMono',
+                        fontFamily: AppTypography.fontMono,
                         fontSize: 15,
                       ),
                     ),
@@ -904,30 +907,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     Expanded(
                       child: InkWell(
                         onTap: () => notifier.setTargetWeight(
-                            state.weight - (state.isWeightKg ? 4.0 : 4.08)),
+                          state.weight - (state.isWeightKg ? 4.0 : 4.08),
+                        ),
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              vertical: 6, horizontal: 4),
+                            vertical: 6,
+                            horizontal: 4,
+                          ),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
                             color: Colors.white.withValues(alpha: 0.04),
                             border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.1)),
+                              color: Colors.white.withValues(alpha: 0.1),
+                            ),
                           ),
                           child: Center(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                state.isWeightKg
-                                    ? 'Cut (-4 kg)'
-                                    : 'Cut (-9 lbs)',
-                                maxLines: 1,
-                                softWrap: false,
-                                style: AppTypography.labelSmall.copyWith(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 11.0,
-                                ),
+                            child: Text(
+                              state.isWeightKg ? 'Cut (-4 kg)' : 'Cut (-9 lbs)',
+                              maxLines: 2,
+                              textAlign: TextAlign.center,
+                              style: AppTypography.labelSmall.copyWith(
+                                color: AppColors.textSecondary,
+                                fontSize: 11.0,
                               ),
                             ),
                           ),
@@ -941,24 +943,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              vertical: 6, horizontal: 4),
+                            vertical: 6,
+                            horizontal: 4,
+                          ),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
                             color: Colors.white.withValues(alpha: 0.04),
                             border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.1)),
+                              color: Colors.white.withValues(alpha: 0.1),
+                            ),
                           ),
                           child: Center(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                'Maintain',
-                                maxLines: 1,
-                                softWrap: false,
-                                style: AppTypography.labelSmall.copyWith(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 11.0,
-                                ),
+                            child: Text(
+                              'Maintain',
+                              maxLines: 2,
+                              textAlign: TextAlign.center,
+                              style: AppTypography.labelSmall.copyWith(
+                                color: AppColors.textSecondary,
+                                fontSize: 11.0,
                               ),
                             ),
                           ),
@@ -969,30 +971,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     Expanded(
                       child: InkWell(
                         onTap: () => notifier.setTargetWeight(
-                            state.weight + (state.isWeightKg ? 4.0 : 4.08)),
+                          state.weight + (state.isWeightKg ? 4.0 : 4.08),
+                        ),
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              vertical: 6, horizontal: 4),
+                            vertical: 6,
+                            horizontal: 4,
+                          ),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
                             color: Colors.white.withValues(alpha: 0.04),
                             border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.1)),
+                              color: Colors.white.withValues(alpha: 0.1),
+                            ),
                           ),
                           child: Center(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                state.isWeightKg
-                                    ? 'Bulk (+4 kg)'
-                                    : 'Bulk (+9 lbs)',
-                                maxLines: 1,
-                                softWrap: false,
-                                style: AppTypography.labelSmall.copyWith(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 11.0,
-                                ),
+                            child: Text(
+                              state.isWeightKg
+                                  ? 'Bulk (+4 kg)'
+                                  : 'Bulk (+9 lbs)',
+                              maxLines: 2,
+                              textAlign: TextAlign.center,
+                              style: AppTypography.labelSmall.copyWith(
+                                color: AppColors.textSecondary,
+                                fontSize: 11.0,
                               ),
                             ),
                           ),
@@ -1088,8 +1091,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.calendar_today_rounded,
-                      size: 16, color: AppColors.primary),
+                  const Icon(
+                    Icons.calendar_today_rounded,
+                    size: 16,
+                    color: AppColors.primary,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'DAYS PER WEEK',
@@ -1171,8 +1177,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           // Question 6: Training Split
           Row(
             children: [
-              const Icon(Icons.dashboard_customize_rounded,
-                  size: 16, color: AppColors.primary),
+              const Icon(
+                Icons.dashboard_customize_rounded,
+                size: 16,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -1198,8 +1207,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 onTap: () => notifier.setPreferredSplit(item['id'] as String),
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     color: isSelected
@@ -1324,8 +1335,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           // Question 7: Areas to protect / Injuries
           Row(
             children: [
-              const Icon(Icons.health_and_safety_rounded,
-                  size: 16, color: AppColors.primary),
+              const Icon(
+                Icons.health_and_safety_rounded,
+                size: 16,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -1362,14 +1376,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 },
                 borderRadius: BorderRadius.circular(10),
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     color: isSelected
                         ? (isNone
-                            ? AppColors.primary.withValues(alpha: 0.15)
-                            : AppColors.secondary.withValues(alpha: 0.15))
+                              ? AppColors.primary.withValues(alpha: 0.15)
+                              : AppColors.secondary.withValues(alpha: 0.15))
                         : Colors.white.withValues(alpha: 0.04),
                     border: Border.all(
                       color: isSelected
@@ -1398,8 +1414,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           // Equipment Profile
           Row(
             children: [
-              const Icon(Icons.handyman_rounded,
-                  size: 16, color: AppColors.primary),
+              const Icon(
+                Icons.handyman_rounded,
+                size: 16,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -1427,8 +1446,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 onTap: () => notifier.toggleEquipment(gear),
                 borderRadius: BorderRadius.circular(10),
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     color: isSelected
@@ -1485,31 +1506,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           'day': '01',
           'name': 'Upper Body A',
           'focus': 'Bench Press, Barbell Row, OHP',
-          'color': AppColors.primary
+          'color': AppColors.primary,
         },
         {
           'day': '02',
           'name': 'Lower Body A',
           'focus': 'Squat, Romanian Deadlift, Calves',
-          'color': AppColors.secondary
+          'color': AppColors.secondary,
         },
         {
           'day': '03',
           'name': 'Active Recovery',
           'focus': 'Mobility & Light Cardio',
-          'color': Colors.greenAccent
+          'color': AppColors.textPrimary,
         },
         {
           'day': '04',
           'name': 'Upper Body B',
           'focus': 'Incline DB Press, Pull-ups, Arms',
-          'color': AppColors.primary
+          'color': AppColors.primary,
         },
         {
           'day': '05',
           'name': 'Lower Body B',
           'focus': 'Deadlift, Leg Press, Core',
-          'color': AppColors.secondary
+          'color': AppColors.secondary,
         },
       ];
     } else if (state.preferredSplit == 'Full Body') {
@@ -1518,31 +1539,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           'day': '01',
           'name': 'Full Body A',
           'focus': 'Squat, Bench Press, Barbell Row',
-          'color': AppColors.primary
+          'color': AppColors.primary,
         },
         {
           'day': '02',
           'name': 'Active Recovery',
           'focus': 'Mobility & Core Stability',
-          'color': Colors.greenAccent
+          'color': AppColors.textPrimary,
         },
         {
           'day': '03',
           'name': 'Full Body B',
           'focus': 'Deadlift, Overhead Press, Pull-ups',
-          'color': AppColors.secondary
+          'color': AppColors.secondary,
         },
         {
           'day': '04',
           'name': 'Rest Day',
           'focus': 'Active Recovery & Stretching',
-          'color': Colors.greenAccent
+          'color': AppColors.textPrimary,
         },
         {
           'day': '05',
           'name': 'Full Body C',
           'focus': 'Leg Press, Incline DB, Lat Pulldown',
-          'color': AppColors.primary
+          'color': AppColors.primary,
         },
       ];
     } else if (state.preferredSplit == 'Arnold Split') {
@@ -1551,31 +1572,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           'day': '01',
           'name': 'Chest & Back',
           'focus': 'Bench Press, Barbell Rows, Flyes',
-          'color': AppColors.primary
+          'color': AppColors.primary,
         },
         {
           'day': '02',
           'name': 'Shoulders & Arms',
           'focus': 'OHP, Lateral Raises, Biceps/Triceps',
-          'color': AppColors.secondary
+          'color': AppColors.secondary,
         },
         {
           'day': '03',
           'name': 'Legs & Lower Body',
           'focus': 'Squats, Romanian Deadlifts, Calves',
-          'color': AppColors.purple
+          'color': AppColors.purple,
         },
         {
           'day': '04',
           'name': 'Chest & Back B',
           'focus': 'Incline Press, Lat Pulldowns',
-          'color': AppColors.primary
+          'color': AppColors.primary,
         },
         {
           'day': '05',
           'name': 'Shoulders & Arms B',
           'focus': 'Dumbbell Shoulder Press, Arm Super-sets',
-          'color': AppColors.secondary
+          'color': AppColors.secondary,
         },
       ];
     } else {
@@ -1585,37 +1606,37 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           'day': '01',
           'name': 'Push Day',
           'focus': 'Chest, Shoulders, Triceps',
-          'color': AppColors.primary
+          'color': AppColors.primary,
         },
         {
           'day': '02',
           'name': 'Pull Day',
           'focus': 'Back, Biceps, Rear Delts',
-          'color': AppColors.purple
+          'color': AppColors.purple,
         },
         {
           'day': '03',
           'name': 'Leg Day',
           'focus': 'Quads, Hamstrings, Calves',
-          'color': AppColors.secondary
+          'color': AppColors.secondary,
         },
         {
           'day': '04',
           'name': 'Push Day B',
           'focus': 'Incline Press, Lateral Raises, Dips',
-          'color': AppColors.primary
+          'color': AppColors.primary,
         },
         {
           'day': '05',
           'name': 'Pull Day B',
           'focus': 'Barbell Rows, Pull-ups, Curls',
-          'color': AppColors.purple
+          'color': AppColors.purple,
         },
         {
           'day': '06',
           'name': 'Leg Day B',
           'focus': 'Romanian Deadlifts, Leg Press',
-          'color': AppColors.secondary
+          'color': AppColors.secondary,
         },
       ];
     }
@@ -1662,7 +1683,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(10),
@@ -1714,8 +1737,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
                 return GlassCard(
                   borderRadius: 14,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                   child: Row(
                     children: [
                       Text(
@@ -1756,8 +1781,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: (item['color'] as Color)
-                                  .withValues(alpha: 0.6),
+                              color: (item['color'] as Color).withValues(
+                                alpha: 0.6,
+                              ),
                               blurRadius: 6,
                             ),
                           ],

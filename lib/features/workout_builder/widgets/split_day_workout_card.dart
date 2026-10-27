@@ -37,7 +37,11 @@ class _SplitDayWorkoutCardState extends State<SplitDayWorkoutCard> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.bedtime_outlined, size: 18, color: AppColors.platinum),
+            const Icon(
+              Icons.bedtime_outlined,
+              size: 18,
+              color: AppColors.platinum,
+            ),
             const SizedBox(width: 10),
             Text(
               'DAY ${widget.dayIndex + 1}: REST & RECOVERY',
@@ -53,7 +57,7 @@ class _SplitDayWorkoutCardState extends State<SplitDayWorkoutCard> {
               'Growth phase',
               style: AppTypography.bodySmall.copyWith(
                 fontSize: 11.5,
-                color: AppColors.platinum.withValues(alpha: 0.7),
+                color: AppColors.textMuted,
               ),
             ),
           ],
@@ -173,7 +177,10 @@ class _SplitDayWorkoutCardState extends State<SplitDayWorkoutCard> {
                     children: [
                       for (final muscle in widget.day.targetMuscles)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 2.5,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.charcoal,
                             borderRadius: BorderRadius.circular(4),
@@ -271,7 +278,7 @@ class _SplitDayWorkoutCardState extends State<SplitDayWorkoutCard> {
                 ),
                 label: Text(
                   'START WORKOUT',
-                  style: AppTypography.monoSmall.copyWith(
+                  style: AppTypography.bodySmall.copyWith(
                     fontSize: 12.0,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1.0,

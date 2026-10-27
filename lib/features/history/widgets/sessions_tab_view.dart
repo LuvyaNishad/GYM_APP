@@ -88,7 +88,7 @@ class _SessionsTabViewState extends ConsumerState<SessionsTabView> {
                     Text(
                       'FILTER: ${_formatDate(selectedDate).toUpperCase()}',
                       style: const TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontMono,
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF00E5FF),
@@ -110,7 +110,7 @@ class _SessionsTabViewState extends ConsumerState<SessionsTabView> {
                     child: const Text(
                       'CLEAR',
                       style: TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontBody,
                         fontSize: 11.0,
                         fontWeight: FontWeight.w700,
                         color: AppColors.pureWhite,
@@ -150,7 +150,7 @@ class _SessionsTabViewState extends ConsumerState<SessionsTabView> {
                     child: Text(
                       filter,
                       style: TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontMono,
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,
                         color: _selectedFilter == filter
@@ -242,7 +242,7 @@ class _SessionsTabViewState extends ConsumerState<SessionsTabView> {
         ? AppColors.textSecondary
         : isRest
             ? AppColors.textSecondary
-            : const Color(0xFFFF5252);
+            : AppColors.warning;
 
     return Container(
       width: double.infinity,
@@ -267,7 +267,7 @@ class _SessionsTabViewState extends ConsumerState<SessionsTabView> {
           Text(
             title,
             style: TextStyle(
-              fontFamily: 'JetBrains Mono',
+              fontFamily: AppTypography.fontMono,
               fontSize: 12.0,
               fontWeight: FontWeight.w800,
               color: accentColor,
@@ -279,7 +279,7 @@ class _SessionsTabViewState extends ConsumerState<SessionsTabView> {
             subtitle,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontFamily: 'Outfit',
+              fontFamily: AppTypography.fontBody,
               fontSize: 12.0,
               color: AppColors.textSecondary,
             ),
@@ -300,7 +300,7 @@ class _SessionsTabViewState extends ConsumerState<SessionsTabView> {
               child: const Text(
                 'SHOW ALL WORKOUTS',
                 style: TextStyle(
-                  fontFamily: 'JetBrains Mono',
+                  fontFamily: AppTypography.fontBody,
                   fontSize: 11.0,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF00E5FF),

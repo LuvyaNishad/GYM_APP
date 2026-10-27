@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:leon/core/theme/app_colors.dart';
+import 'package:leon/core/theme/app_typography.dart';
 import 'dart:ui' as ui;
 
 /// An individual health metric display card for the Health Tracking screen.
@@ -45,9 +47,9 @@ class HealthMetricCard extends StatelessWidget {
                   Text(
                     label,
                     style: const TextStyle(
-                      fontFamily: 'JetBrainsMono',
+                      fontFamily: AppTypography.fontMono,
                       fontSize: 11,
-                      color: Color(0xFF94A3B8),
+                      color: AppColors.textMuted,
                       letterSpacing: 1.5,
                     ),
                   ),
@@ -59,7 +61,7 @@ class HealthMetricCard extends StatelessWidget {
               Text(
                 value,
                 style: TextStyle(
-                  fontFamily: 'JetBrainsMono',
+                  fontFamily: AppTypography.fontMono,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: accentColor,
@@ -69,9 +71,9 @@ class HealthMetricCard extends StatelessWidget {
               Text(
                 unit,
                 style: const TextStyle(
-                  fontFamily: 'JetBrainsMono',
+                  fontFamily: AppTypography.fontMono,
                   fontSize: 11,
-                  color: Color(0xFF94A3B8),
+                  color: AppColors.textMuted,
                 ),
               ),
             ],
