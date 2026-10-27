@@ -15,34 +15,43 @@ import '../../../shared/widgets/radar_chart.dart';
 /// - Staggered draw-on 3-axis radar chart
 /// - Tactical intelligence warning callout banner with 1-tap route action
 class RadarChartWidget extends StatelessWidget {
-  const RadarChartWidget({
-    super.key,
-    this.snapshot,
-    this.weakThreshold = 0.4,
-  });
+  const RadarChartWidget({super.key, this.snapshot, this.weakThreshold = 0.4});
 
   final RadarSnapshot? snapshot;
   final double weakThreshold;
 
   static RadarSnapshot get _demo => RadarSnapshot(
-        weekStart: DateTime.now(),
-        pushVolume: 8200,
-        pullVolume: 2600,
-        legsVolume: 7400,
-      );
+    weekStart: DateTime.now(),
+    pushVolume: 8200,
+    pullVolume: 2600,
+    legsVolume: 7400,
+  );
 
   @override
   Widget build(BuildContext context) {
     final data = snapshot ?? _demo;
     final axes = <RadarAxis>[
-      RadarAxis(label: 'PUSH', value: data.pushVolume, color: AppColors.chartPush),
-      RadarAxis(label: 'PULL', value: data.pullVolume, color: AppColors.chartPull),
-      RadarAxis(label: 'LEGS', value: data.legsVolume, color: AppColors.chartLegs),
+      RadarAxis(
+        label: 'PUSH',
+        value: data.pushVolume,
+        color: AppColors.chartPush,
+      ),
+      RadarAxis(
+        label: 'PULL',
+        value: data.pullVolume,
+        color: AppColors.chartPull,
+      ),
+      RadarAxis(
+        label: 'LEGS',
+        value: data.legsVolume,
+        color: AppColors.chartLegs,
+      ),
     ];
 
     final maxVolume = axes.fold<double>(0, (m, a) => math.max(m, a.value));
     final weakest = axes.reduce((a, b) => a.value <= b.value ? a : b);
-    final hasInsight = maxVolume > 0 && weakest.value < weakThreshold * maxVolume;
+    final hasInsight =
+        maxVolume > 0 && weakest.value < weakThreshold * maxVolume;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,7 +108,7 @@ class RadarChartWidget extends StatelessWidget {
               child: Text(
                 hasInsight ? 'NEEDS FOCUS' : 'BALANCED',
                 style: AppTypography.labelSmall.copyWith(
-                  fontFamily: 'JetBrains Mono',
+                  fontFamily: AppTypography.fontMono,
                   fontSize: 11.0,
                   fontWeight: FontWeight.w700,
                   color: hasInsight ? AppColors.warning : AppColors.success,
@@ -124,7 +133,9 @@ class RadarChartWidget extends StatelessWidget {
             _VolumeBadge(
               label: 'PULL',
               volumeKg: data.pullVolume,
-              color: weakest.label == 'PULL' ? AppColors.danger : AppColors.chartPull,
+              color: weakest.label == 'PULL'
+                  ? AppColors.danger
+                  : AppColors.chartPull,
               isAlert: weakest.label == 'PULL',
             ),
             const SizedBox(width: 8),
@@ -185,7 +196,7 @@ class RadarChartWidget extends StatelessWidget {
                         Text(
                           'TRAINING RECOMMENDATION',
                           style: AppTypography.labelSmall.copyWith(
-                            fontFamily: 'JetBrains Mono',
+                            fontFamily: AppTypography.fontMono,
                             fontSize: 11.0,
                             fontWeight: FontWeight.w700,
                             color: AppColors.danger,
@@ -219,11 +230,11 @@ class RadarChartWidget extends StatelessWidget {
   }
 
   String _dayFor(String axis) => switch (axis) {
-        'PUSH' => 'chest & shoulders',
-        'PULL' => 'back & biceps',
-        'LEGS' => 'lower-body',
-        _ => 'balanced',
-      };
+    'PUSH' => 'chest & shoulders',
+    'PULL' => 'back & biceps',
+    'LEGS' => 'lower-body',
+    _ => 'balanced',
+  };
 
   void _showMuscleBalanceDialog(BuildContext context) {
     HapticFeedback.lightImpact();
@@ -265,7 +276,7 @@ class RadarChartWidget extends StatelessWidget {
             child: const Text(
               'UNDERSTOOD',
               style: TextStyle(
-                fontFamily: 'JetBrains Mono',
+                fontFamily: AppTypography.fontBody,
                 fontSize: 12.0,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF00E5FF),
@@ -303,10 +314,7 @@ class _VolumeBadge extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: color.withValues(alpha: 0.35),
-            width: 1,
-          ),
+          border: Border.all(color: color.withValues(alpha: 0.35), width: 1),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -331,7 +339,7 @@ class _VolumeBadge extends StatelessWidget {
                 Text(
                   label,
                   style: AppTypography.labelSmall.copyWith(
-                    fontFamily: 'JetBrains Mono',
+                    fontFamily: AppTypography.fontMono,
                     fontSize: 11.0,
                     color: AppColors.textSecondary,
                   ),
@@ -341,7 +349,7 @@ class _VolumeBadge extends StatelessWidget {
             Text(
               formattedKg,
               style: AppTypography.labelSmall.copyWith(
-                fontFamily: 'JetBrains Mono',
+                fontFamily: AppTypography.fontMono,
                 fontWeight: FontWeight.w700,
                 fontSize: 11.0,
                 color: color,

@@ -47,7 +47,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
   late final ScrollController _scrollController;
   DateTime? _inspectedDate;
 
-  static const Color _todayAccent = AppColors.pureWhite;
+  static const Color _todayAccent = AppColors.amber;
   static const Color _loggedAccent = AppColors.platinum;
   static const Color _emptyCellBg = AppColors.charcoal;
   static const Color _emptyCellBorder = AppColors.steel;
@@ -76,8 +76,18 @@ class _GymContributionChartState extends State<GymContributionChart> {
 
   String _monthAbbr(int month) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return months[month - 1];
   }
@@ -96,7 +106,9 @@ class _GymContributionChartState extends State<GymContributionChart> {
     // Build the grid columns (each column is a week from Sunday to Saturday)
     final weeks = List.generate(widget.weeksCount, (index) {
       final weekOffset = widget.weeksCount - 1 - index;
-      final weekStart = currentWeekStart.subtract(Duration(days: weekOffset * 7));
+      final weekStart = currentWeekStart.subtract(
+        Duration(days: weekOffset * 7),
+      );
       return List.generate(7, (dayIndex) {
         return weekStart.add(Duration(days: dayIndex));
       });
@@ -110,7 +122,9 @@ class _GymContributionChartState extends State<GymContributionChart> {
 
     final inspected = _inspectedDate ?? today;
     final isInspectedToday = _isSameDay(inspected, today);
-    final isInspectedLogged = widget.loggedWorkoutDates.any((d) => _isSameDay(d, inspected));
+    final isInspectedLogged = widget.loggedWorkoutDates.any(
+      (d) => _isSameDay(d, inspected),
+    );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -127,7 +141,8 @@ class _GymContributionChartState extends State<GymContributionChart> {
                 fontSize: 11.5,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1.2,
-                color: Color(0xFF94A3B8), // Apple HIG contrast compliant (> 5:1)
+                color:
+                    AppColors.textMuted, // Apple HIG contrast compliant (> 5:1)
               ),
             ),
             Container(
@@ -143,7 +158,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
               child: Text(
                 '$totalLoggedCount SESSIONS LOGGED',
                 style: const TextStyle(
-                  fontFamily: 'JetBrains Mono',
+                  fontFamily: AppTypography.fontMono,
                   fontSize: 11.0,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.5,
@@ -178,7 +193,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
                             fontFamily: AppTypography.fontBody,
                             fontSize: 11.0,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF94A3B8),
+                            color: AppColors.textMuted,
                             height: 1.0,
                           ),
                         ),
@@ -195,7 +210,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
                             fontFamily: AppTypography.fontBody,
                             fontSize: 11.0,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF94A3B8),
+                            color: AppColors.textMuted,
                             height: 1.0,
                           ),
                         ),
@@ -212,7 +227,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
                             fontFamily: AppTypography.fontBody,
                             fontSize: 11.0,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF94A3B8),
+                            color: AppColors.textMuted,
                             height: 1.0,
                           ),
                         ),
@@ -284,8 +299,8 @@ class _GymContributionChartState extends State<GymContributionChart> {
                       color: isInspectedToday
                           ? _todayAccent
                           : (isInspectedLogged
-                              ? _loggedAccent
-                              : AppColors.steel),
+                                ? _loggedAccent
+                                : AppColors.steel),
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -294,10 +309,10 @@ class _GymContributionChartState extends State<GymContributionChart> {
                       isInspectedToday
                           ? 'Today (${_monthAbbr(inspected.month)} ${inspected.day}) · Workout Scheduled'
                           : (isInspectedLogged
-                              ? '${_monthAbbr(inspected.month)} ${inspected.day} · Gym Session Completed'
-                              : '${_monthAbbr(inspected.month)} ${inspected.day} · Rest & Recovery Day'),
+                                ? '${_monthAbbr(inspected.month)} ${inspected.day} · Gym Session Completed'
+                                : '${_monthAbbr(inspected.month)} ${inspected.day} · Rest & Recovery Day'),
                       style: const TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontMono,
                         fontSize: 11.0,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFFE2E8F0),
@@ -343,7 +358,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
                   fontFamily: AppTypography.fontBody,
                   fontSize: 11.0,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF94A3B8),
+                  color: AppColors.textMuted,
                   height: 1.0,
                 ),
               ),
@@ -352,21 +367,22 @@ class _GymContributionChartState extends State<GymContributionChart> {
     );
   }
 
-  Widget _buildDayCell({
-    required DateTime date,
-    required DateTime today,
-  }) {
+  Widget _buildDayCell({required DateTime date, required DateTime today}) {
     final isToday = _isSameDay(date, today);
     final isFuture = date.isAfter(today);
     final isLogged = widget.loggedWorkoutDates.any((d) => _isSameDay(d, date));
-    final isSelected = _inspectedDate != null && _isSameDay(date, _inspectedDate!);
+    final isSelected =
+        _inspectedDate != null && _isSameDay(date, _inspectedDate!);
 
     Color bgColor;
     Border? border;
 
     if (isFuture) {
       bgColor = Colors.white.withValues(alpha: 0.04);
-      border = Border.all(color: Colors.white.withValues(alpha: 0.06), width: 1.0);
+      border = Border.all(
+        color: Colors.white.withValues(alpha: 0.06),
+        width: 1.0,
+      );
     } else if (isToday) {
       bgColor = _todayAccent;
       if (isSelected) {
@@ -380,7 +396,9 @@ class _GymContributionChartState extends State<GymContributionChart> {
     } else {
       bgColor = _emptyCellBg;
       border = Border.all(
-        color: isSelected ? Colors.white.withValues(alpha: 0.8) : _emptyCellBorder,
+        color: isSelected
+            ? Colors.white.withValues(alpha: 0.8)
+            : _emptyCellBorder,
         width: isSelected ? 1.5 : 1.0,
       );
     }
@@ -429,7 +447,7 @@ class _GymContributionChartState extends State<GymContributionChart> {
             fontFamily: AppTypography.fontBody,
             fontSize: 11.0,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF94A3B8),
+            color: AppColors.textMuted,
           ),
         ),
       ],

@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:leon/core/theme/app_typography.dart';
 
 import '../../../core/theme/app_colors.dart';
 
@@ -101,7 +102,7 @@ class BentoBarProgress extends StatelessWidget {
         Text(
           '$percentage%',
           style: const TextStyle(
-            fontFamily: 'JetBrains Mono',
+            fontFamily: AppTypography.fontMono,
             fontSize: 12.0,
             fontWeight: FontWeight.w700,
             color: AppColors.pureWhite,

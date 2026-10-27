@@ -49,11 +49,9 @@ void main() {
       );
 
       expect(find.text('Steps'), findsOneWidget);
+      // Card now shows '0' as the main value with a plain caption — no timeline markers
       expect(find.text('0'), findsOneWidget);
-      expect(find.text('00'), findsOneWidget);
-      expect(find.text('06'), findsOneWidget);
-      expect(find.text('12'), findsOneWidget);
-      expect(find.text('18'), findsOneWidget);
+      expect(find.text('Move to start tracking'), findsOneWidget);
     });
 
     testWidgets('StepsDetailSheet displays current calendar dates instead of mock 2026 data', (tester) async {
@@ -86,14 +84,10 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 600));
 
-      expect(find.text('Step tracker'), findsOneWidget);
-      expect(find.text('Day'), findsOneWidget);
-      expect(find.text('Week'), findsOneWidget);
-      expect(find.text('Month'), findsOneWidget);
-      expect(find.text('Goal'), findsOneWidget);
-      expect(find.text('Step count'), findsOneWidget);
-      expect(find.text('Distance'), findsOneWidget);
-      expect(find.text('Highest single-day record'), findsOneWidget);
+      expect(find.text('Steps'), findsOneWidget);
+      expect(find.text('Today'), findsOneWidget);
+      expect(find.text('7 days'), findsOneWidget);
+      expect(find.text('30 days'), findsOneWidget);
 
       // Verify no hardcoded '26/6/2026' or mock values
       expect(find.text('26/6/2026'), findsNothing);
@@ -137,7 +131,7 @@ void main() {
       }
     });
 
-    testWidgets('Day tab in StepsDetailSheet matches StepsBentoCard with 24-hour timeline markers', (tester) async {
+    testWidgets('Day tab in StepsDetailSheet shows period selector and step count', (tester) async {
       await tester.binding.setSurfaceSize(const Size(430, 932));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -172,14 +166,13 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 600));
 
-      // Day tab is active by default: should have 00, 06, 12, 18 markers matching Bento card
-      expect(find.text('00'), findsOneWidget);
-      expect(find.text('06'), findsOneWidget);
-      expect(find.text('12'), findsOneWidget);
-      expect(find.text('18'), findsOneWidget);
+      // Today tab is active by default with period selector
+      expect(find.text('Today'), findsOneWidget);
+      expect(find.text('7 days'), findsOneWidget);
+      expect(find.text('30 days'), findsOneWidget);
 
-      // Should display today's step count 2,801
-      expect(find.text('2,801'), findsOneWidget);
+      // Title is 'Steps'
+      expect(find.text('Steps'), findsOneWidget);
     });
   });
 }

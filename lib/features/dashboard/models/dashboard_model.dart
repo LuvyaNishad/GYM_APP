@@ -15,12 +15,9 @@ class DashboardModel {
     int? totalWorkoutsThisWeek,
     double? totalVolumeThisWeekKg,
     int? currentStreak,
-  }) =>
-      DashboardModel(
-        totalWorkoutsThisWeek:
-            totalWorkoutsThisWeek ?? this.totalWorkoutsThisWeek,
-        totalVolumeThisWeekKg:
-            totalVolumeThisWeekKg ?? this.totalVolumeThisWeekKg,
-        currentStreak: currentStreak ?? this.currentStreak,
-      );
+  }) => DashboardModel(
+    totalWorkoutsThisWeek: totalWorkoutsThisWeek ?? this.totalWorkoutsThisWeek,
+    totalVolumeThisWeekKg: totalVolumeThisWeekKg ?? this.totalVolumeThisWeekKg,
+    currentStreak: currentStreak ?? this.currentStreak,
+  );
 }

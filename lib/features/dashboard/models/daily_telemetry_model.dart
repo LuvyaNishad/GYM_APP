@@ -5,10 +5,12 @@
 library;
 
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../services/hive_service.dart';
+import '../providers/habit_log_provider.dart';
 
 /// Daily telemetry data points for the dashboard bento grid.
 
@@ -125,6 +127,13 @@ class DailyTelemetryNotifier extends Notifier<DailyTelemetry> {
   DailyTelemetry build() {
     final hive = ref.watch(hiveServiceProvider);
     final now = DateTime.now();
+    final habits = ref.watch(habitLogProvider);
+    final today = habits.day(now);
+    final rollover = Timer(
+      DateTime(now.year, now.month, now.day + 1).difference(now),
+      ref.invalidateSelf,
+    );
+    ref.onDispose(rollover.cancel);
     final todayStr =
         '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
     final savedDate = hive.getSetting<String>(AppConstants.settingStepDate);
@@ -142,9 +151,13 @@ class DailyTelemetryNotifier extends Notifier<DailyTelemetry> {
     }
 
     int recordSteps =
-        hive.getSetting<int>(AppConstants.settingStepRecordSteps, fallback: 0) ??
-            0;
-    String recordDate = hive.getSetting<String>(
+        hive.getSetting<int>(
+          AppConstants.settingStepRecordSteps,
+          fallback: 0,
+        ) ??
+        0;
+    String recordDate =
+        hive.getSetting<String>(
           AppConstants.settingStepRecordDate,
           fallback: '--',
         ) ??
@@ -152,10 +165,14 @@ class DailyTelemetryNotifier extends Notifier<DailyTelemetry> {
 
     if (savedDate == todayStr) {
       todaySteps =
-          hive.getSetting<int>(AppConstants.settingStepTodayCount, fallback: 0) ??
-              0;
-      final hourlyRaw =
-          hive.getSetting<String>(AppConstants.settingStepHourlyDistribution);
+          hive.getSetting<int>(
+            AppConstants.settingStepTodayCount,
+            fallback: 0,
+          ) ??
+          0;
+      final hourlyRaw = hive.getSetting<String>(
+        AppConstants.settingStepHourlyDistribution,
+      );
       if (hourlyRaw != null && hourlyRaw.isNotEmpty) {
         try {
           final decoded = jsonDecode(hourlyRaw) as List<dynamic>;
@@ -168,8 +185,11 @@ class DailyTelemetryNotifier extends Notifier<DailyTelemetry> {
     } else if (savedDate != null) {
       // Midnight rollover if previous day's steps were not archived yet
       final prevSteps =
-          hive.getSetting<int>(AppConstants.settingStepTodayCount, fallback: 0) ??
-              0;
+          hive.getSetting<int>(
+            AppConstants.settingStepTodayCount,
+            fallback: 0,
+          ) ??
+          0;
       if (prevSteps > 0) {
         history[savedDate] = prevSteps;
         if (prevSteps > recordSteps) {
@@ -184,12 +204,16 @@ class DailyTelemetryNotifier extends Notifier<DailyTelemetry> {
       }
     }
 
-    final distanceKm =
-        double.parse((todaySteps * 0.000708).toStringAsFixed(2));
-    final recordKm =
-        double.parse((recordSteps * 0.000708).toStringAsFixed(2));
+    final distanceKm = double.parse((todaySteps * 0.000708).toStringAsFixed(2));
+    final recordKm = double.parse((recordSteps * 0.000708).toStringAsFixed(2));
 
     return DailyTelemetry(
+      waterMl: today.waterMl,
+      waterGoalMl: habits.waterGoalMl,
+      sleepHours: today.sleepHours,
+      sleepGoalHours: habits.sleepGoalHours,
+      calories: today.calories,
+      stepsGoal: habits.stepsGoal,
       steps: todaySteps,
       distanceKm: distanceKm,
       hourlySteps: hourlySteps,
@@ -224,29 +248,25 @@ class DailyTelemetryNotifier extends Notifier<DailyTelemetry> {
     state = state.copyWith(steps: steps, distanceKm: distanceKm);
   }
 
-  void logWater(int additionalMl) {
-    state = state.copyWith(waterMl: state.waterMl + additionalMl);
-  }
+  Future<void> logWater(int additionalMl) => additionalMl < 0
+      ? ref.read(habitLogProvider.notifier).undoWater()
+      : ref.read(habitLogProvider.notifier).addWater(additionalMl);
 
-  void logCalories(int additionalCalories) {
-    state = state.copyWith(calories: state.calories + additionalCalories);
-  }
+  Future<void> logCalories(int additionalCalories) =>
+      ref.read(habitLogProvider.notifier).addCalories(additionalCalories);
 
-  void updateSleep(double hours) {
-    state = state.copyWith(sleepHours: hours);
-  }
+  Future<void> updateSleep(double hours) => ref
+      .read(habitLogProvider.notifier)
+      .saveSleep(date: DateTime.now(), hours: hours);
 
-  void updateSleepGoal(double goalHours) {
-    state = state.copyWith(sleepGoalHours: goalHours);
-  }
+  Future<void> updateSleepGoal(double goalHours) =>
+      ref.read(habitLogProvider.notifier).setGoals(sleepHours: goalHours);
 
-  void updateStepsGoal(int goalSteps) {
-    state = state.copyWith(stepsGoal: goalSteps);
-  }
+  Future<void> updateStepsGoal(int goalSteps) =>
+      ref.read(habitLogProvider.notifier).setGoals(steps: goalSteps);
 }
 
 final dailyTelemetryProvider =
     NotifierProvider<DailyTelemetryNotifier, DailyTelemetry>(
-  DailyTelemetryNotifier.new,
-);
-
+      DailyTelemetryNotifier.new,
+    );

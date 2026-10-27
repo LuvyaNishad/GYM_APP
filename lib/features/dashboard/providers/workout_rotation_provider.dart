@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/providers/local_date_provider.dart';
 import '../../../models/workout_model.dart';
 import '../../history/providers/history_provider.dart';
 import '../../workout_builder/models/split_model.dart';
@@ -97,6 +98,8 @@ class WorkoutRotationState {
 
 class WorkoutRotationNotifier extends Notifier<WorkoutRotationState> {
   int? _manualSelectedIndex;
+  String? _lastSplitId;
+  String? _lastCompletionId;
 
   @override
   WorkoutRotationState build() {
@@ -106,6 +109,10 @@ class WorkoutRotationNotifier extends Notifier<WorkoutRotationState> {
     final historyWorkouts = ref.watch(historyWorkoutsProvider);
 
     final split = splitsState.activeSplit;
+    if (_lastSplitId != split.id) {
+      _manualSelectedIndex = null;
+      _lastSplitId = split.id;
+    }
     final workouts = split.workouts;
 
     if (workouts.isEmpty) {
@@ -133,77 +140,61 @@ class WorkoutRotationNotifier extends Notifier<WorkoutRotationState> {
     bool isToday = false;
     int matchedIndex = -1;
 
-    if (historyWorkouts.isNotEmpty) {
-      lastW = historyWorkouts.first;
-      lastDate = lastW.date;
-      final now = DateTime.now();
-      isToday = (lastDate.year == now.year &&
-          lastDate.month == now.month &&
-          lastDate.day == now.day);
-
-      // 1. Direct name / ID match against active split's workouts
-      final lastTitle = lastW.name.toLowerCase();
-      for (int i = 0; i < workouts.length; i++) {
-        final w = workouts[i];
-        final wName = w.name.toLowerCase();
-        final wId = w.id.toLowerCase();
-        if (lastTitle.contains(wId) ||
-            lastTitle.contains(wName) ||
-            (lastTitle.contains('push') && wName.contains('push')) ||
-            (lastTitle.contains('pull') && wName.contains('pull')) ||
-            (lastTitle.contains('leg') && wName.contains('leg')) ||
-            (lastTitle.contains('upper') && wName.contains('upper')) ||
-            (lastTitle.contains('lower') && wName.contains('lower'))) {
-          matchedIndex = i;
-          break;
-        }
+    final now = DateTime.now();
+    final today = ref.watch(localDateProvider);
+    final completed = historyWorkouts.where((w) => !w.date.isAfter(now)).toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+    isToday = completed.any((w) => DateUtils.isSameDay(w.date, today));
+    // Use exact day names. Similar A/B days and unrelated split histories must
+    // not advance one another through a guessed dominant muscle group.
+    for (final candidate in completed) {
+      final parts = candidate.name.toLowerCase().split(RegExp(r'\s*[●•]|\s*//\s*'));
+      final title = candidate.name.toLowerCase().trim();
+      final prefixMatches = parts.length == 1 ||
+          parts.first.trim() == split.shortName.toLowerCase().trim();
+      if (!prefixMatches) continue;
+      matchedIndex = workouts.indexWhere((w) =>
+          title == w.id.toLowerCase() ||
+          title == w.name.toLowerCase().trim() ||
+          parts.last.trim() == w.name.toLowerCase().trim());
+      if (matchedIndex >= 0) {
+        lastW = candidate;
+        lastDate = candidate.date;
+        break;
       }
+    }
 
-      // 2. If no direct title match, infer from dominant muscle group
-      if (matchedIndex == -1 && lastW.exercises.isNotEmpty) {
-        final muscleCounts = <String, int>{};
-        for (final ex in lastW.exercises) {
-          final m = ex.muscleGroup.toLowerCase();
-          muscleCounts[m] = (muscleCounts[m] ?? 0) + 1;
-        }
-        String topMuscle = '';
-        int maxCount = 0;
-        muscleCounts.forEach((k, v) {
-          if (v > maxCount) {
-            maxCount = v;
-            topMuscle = k;
-          }
-        });
-
-        for (int i = 0; i < workouts.length; i++) {
-          final w = workouts[i];
-          final targets =
-              w.targetMuscles.map((m) => m.toLowerCase()).toList();
-          if (targets.any((t) => t.contains(topMuscle) || topMuscle.contains(t))) {
-            matchedIndex = i;
-            break;
-          }
-        }
-      }
+    if (_lastCompletionId != lastW?.id) {
+      _manualSelectedIndex = null;
+      _lastCompletionId = lastW?.id;
     }
 
     int recommendedIndex = 0;
     String reason = '';
 
     if (matchedIndex != -1 && lastW != null) {
-      final nextIdx = (matchedIndex + 1) % workouts.length;
+      var nextIdx = (matchedIndex + 1) % workouts.length;
+      var restDaysElapsed = today.difference(DateUtils.dateOnly(lastDate!)).inDays - 1;
+      var skipped = 0;
+      while (workouts[nextIdx].isRestDay && restDaysElapsed > 0 && skipped < workouts.length) {
+        nextIdx = (nextIdx + 1) % workouts.length;
+        restDaysElapsed--;
+        skipped++;
+      }
       recommendedIndex = nextIdx;
       final lastDayName = workouts[matchedIndex].name;
       final nextDayName = workouts[nextIdx].name;
 
-      if (isToday) {
+      if (DateUtils.isSameDay(lastDate, today)) {
         reason = 'Completed $lastDayName today • Next up: $nextDayName';
       } else {
-        final daysAgo = DateTime.now().difference(lastDate!).inDays;
+        final daysAgo = today.difference(DateUtils.dateOnly(lastDate)).inDays;
         if (daysAgo <= 1) {
-          reason = 'Following $lastDayName yesterday • $nextDayName is next in rotation';
+          reason =
+              'Following $lastDayName yesterday • $nextDayName is next in rotation';
         } else {
-          reason = 'Following $lastDayName ($daysAgo days ago) • Pick up with $nextDayName';
+          reason =
+              'Following $lastDayName ($daysAgo days ago) • Pick up with $nextDayName';
         }
       }
     } else {
@@ -211,7 +202,8 @@ class WorkoutRotationNotifier extends Notifier<WorkoutRotationState> {
       reason = 'Starting rotation with ${workouts.first.name}';
     }
 
-    final effectiveIndex = (_manualSelectedIndex != null &&
+    final effectiveIndex =
+        (_manualSelectedIndex != null &&
             _manualSelectedIndex! >= 0 &&
             _manualSelectedIndex! < workouts.length)
         ? _manualSelectedIndex!
@@ -273,10 +265,13 @@ class WorkoutRotationNotifier extends Notifier<WorkoutRotationState> {
   /// Initiates the active workout session pre-populated with this day's planned exercises.
   void startWorkout(BuildContext context) {
     final day = state.selectedDay;
-    final activeExercises =
-        day.exercises.map((e) => e.toActiveExerciseState()).toList();
+    final activeExercises = day.exercises
+        .map((e) => e.toActiveExerciseState())
+        .toList();
 
-    ref.read(activeSessionProvider.notifier).startSession(
+    ref
+        .read(activeSessionProvider.notifier)
+        .startSession(
           splitName: '${state.split.shortName} ● ${day.name.toUpperCase()}',
           initialExercises: activeExercises,
         );
@@ -288,5 +283,5 @@ class WorkoutRotationNotifier extends Notifier<WorkoutRotationState> {
 /// Global provider for smart workout auto-rotation.
 final workoutRotationProvider =
     NotifierProvider<WorkoutRotationNotifier, WorkoutRotationState>(
-  WorkoutRotationNotifier.new,
-);
+      WorkoutRotationNotifier.new,
+    );

@@ -92,7 +92,7 @@ class ActiveWorkoutResumeBanner extends ConsumerWidget {
                           Text(
                             'WORKOUT IN PROGRESS • ${session.formattedElapsed}',
                             style: const TextStyle(
-                              fontFamily: 'JetBrains Mono',
+                              fontFamily: AppTypography.fontMono,
                               fontSize: 11.0,
                               fontWeight: FontWeight.w700,
                               color: AppColors.primary,
@@ -119,7 +119,10 @@ class ActiveWorkoutResumeBanner extends ConsumerWidget {
 
                 // Resume Pill Button
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(20),

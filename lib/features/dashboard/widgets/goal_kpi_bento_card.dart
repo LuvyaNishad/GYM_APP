@@ -47,12 +47,16 @@ class GoalKpiBentoCard extends ConsumerWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: goalConfig.accentColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: goalConfig.accentColor.withValues(alpha: 0.3),
+                            color: goalConfig.accentColor.withValues(
+                              alpha: 0.3,
+                            ),
                             width: 1,
                           ),
                         ),
@@ -92,7 +96,7 @@ class GoalKpiBentoCard extends ConsumerWidget {
                       children: [
                         Text(
                           'CHANGE',
-                          style: AppTypography.monoSmall.copyWith(
+                          style: AppTypography.bodySmall.copyWith(
                             color: AppColors.primary,
                             fontSize: 11.0,
                             fontWeight: FontWeight.w700,
@@ -122,8 +126,10 @@ class GoalKpiBentoCard extends ConsumerWidget {
               children: [
                 Expanded(
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.04),
                       borderRadius: BorderRadius.circular(8),
@@ -133,8 +139,11 @@ class GoalKpiBentoCard extends ConsumerWidget {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.repeat_rounded,
-                            size: 14, color: AppColors.primary),
+                        const Icon(
+                          Icons.repeat_rounded,
+                          size: 14,
+                          color: AppColors.primary,
+                        ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
@@ -155,8 +164,10 @@ class GoalKpiBentoCard extends ConsumerWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.04),
                       borderRadius: BorderRadius.circular(8),
@@ -166,8 +177,11 @@ class GoalKpiBentoCard extends ConsumerWidget {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.timer_outlined,
-                            size: 14, color: AppColors.secondary),
+                        const Icon(
+                          Icons.timer_outlined,
+                          size: 14,
+                          color: AppColors.secondary,
+                        ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
@@ -256,7 +270,7 @@ class GoalKpiBentoCard extends ConsumerWidget {
                     '102.5 KG',
                     style: AppTypography.headlineSmall.copyWith(
                       color: AppColors.textPrimary,
-                      fontFamily: 'JetBrainsMono',
+                      fontFamily: AppTypography.fontMono,
                       fontWeight: FontWeight.w800,
                       fontSize: 16.0,
                     ),
@@ -282,7 +296,7 @@ class GoalKpiBentoCard extends ConsumerWidget {
                     '140.0 KG',
                     style: AppTypography.headlineSmall.copyWith(
                       color: AppColors.textPrimary,
-                      fontFamily: 'JetBrainsMono',
+                      fontFamily: AppTypography.fontMono,
                       fontWeight: FontWeight.w800,
                       fontSize: 16.0,
                     ),

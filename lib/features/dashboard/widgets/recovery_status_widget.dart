@@ -42,9 +42,9 @@ class _RecoveryStatusWidgetState extends State<RecoveryStatusWidget>
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     );
-    final isTest = WidgetsBinding.instance.runtimeType
-        .toString()
-        .contains('TestWidgetsFlutterBinding');
+    final isTest = WidgetsBinding.instance.runtimeType.toString().contains(
+      'TestWidgetsFlutterBinding',
+    );
     if (!isTest) {
       _controller.repeat();
     }
@@ -58,10 +58,12 @@ class _RecoveryStatusWidgetState extends State<RecoveryStatusWidget>
 
   @override
   Widget build(BuildContext context) {
-    final Color statusColor =
-        widget.isReady ? AppColors.success : AppColors.danger;
-    final String statusLabel =
-        widget.isReady ? 'READY TO TRAIN' : 'REST REQUIRED';
+    final Color statusColor = widget.isReady
+        ? AppColors.success
+        : AppColors.danger;
+    final String statusLabel = widget.isReady
+        ? 'READY TO TRAIN'
+        : 'REST REQUIRED';
 
     return GlassCard(
       glowColor: statusColor,
@@ -92,7 +94,9 @@ class _RecoveryStatusWidgetState extends State<RecoveryStatusWidget>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: statusColor.withValues(alpha: (1.0 - t) * 0.45),
+                              color: statusColor.withValues(
+                                alpha: (1.0 - t) * 0.45,
+                              ),
                               width: 1.5,
                             ),
                           ),
@@ -121,7 +125,9 @@ class _RecoveryStatusWidgetState extends State<RecoveryStatusWidget>
                     );
                   },
                   child: Icon(
-                    widget.isReady ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                    widget.isReady
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
                     color: statusColor,
                     size: 22,
                   ),
@@ -156,7 +162,7 @@ class _RecoveryStatusWidgetState extends State<RecoveryStatusWidget>
                         Text(
                           '${widget.readinessScore}%',
                           style: AppTypography.titleLarge.copyWith(
-                            fontFamily: 'JetBrains Mono',
+                            fontFamily: AppTypography.fontMono,
                             color: statusColor,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.0,
@@ -292,7 +298,7 @@ class _RecoveryStatusWidgetState extends State<RecoveryStatusWidget>
             child: const Text(
               'UNDERSTOOD',
               style: TextStyle(
-                fontFamily: 'JetBrains Mono',
+                fontFamily: AppTypography.fontBody,
                 fontSize: 12.0,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF00E5FF),
@@ -333,7 +339,7 @@ class _TelemetryChip extends StatelessWidget {
         Text(
           value,
           style: AppTypography.labelSmall.copyWith(
-            fontFamily: 'JetBrains Mono',
+            fontFamily: AppTypography.fontMono,
             fontSize: 11.0,
             fontWeight: FontWeight.w700,
             color: color,
@@ -345,10 +351,7 @@ class _TelemetryChip extends StatelessWidget {
 }
 
 class _EcgLinePainter extends CustomPainter {
-  const _EcgLinePainter({
-    required this.color,
-    required this.progress,
-  });
+  const _EcgLinePainter({required this.color, required this.progress});
 
   final Color color;
   final double progress;

@@ -3,6 +3,7 @@ library;
 
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:leon/core/theme/app_typography.dart';
 
 import '../../../core/theme/app_colors.dart';
 
@@ -52,7 +53,7 @@ class BentoDonutProgress extends StatelessWidget {
           Text(
             '$percentage%',
             style: TextStyle(
-              fontFamily: 'JetBrains Mono',
+              fontFamily: AppTypography.fontMono,
               fontSize: (size * 0.21).clamp(11.0, 16.0),
               fontWeight: FontWeight.w800,
               color: AppColors.pureWhite,

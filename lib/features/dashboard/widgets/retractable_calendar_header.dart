@@ -1,37 +1,20 @@
-/// Retractable calendar header widget for the LEON dashboard.
-///
-/// Features a 3-phase interactive layout with a dedicated pull-tab notch
-/// affordance at the bottom edge:
-/// - Phase 0: Collapsed Phase (compact greeting + PFP avatar)
-/// - Phase 1: Weekly Calendar Phase (7-day week strip with amber today and green gym days)
-/// - Phase 2: Extended Opened View (GitHub-style horizontally scrollable activity heatmap)
-///
-/// Follows Apple HIG & Fluid Interface principles:
-/// - Typography floor: >= 11.0 pt on all labels, badges, and numerals
-/// - WCAG AA contrast threshold: >= 4.5:1 on all secondary texts
-/// - Direct 1:1 drag manipulation, interruptibility, and velocity-projected spring settling
-/// - Touch target bounds >= 44 pt on notch handle and weekday pills
-library;
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
-
-import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../shared/widgets/notched_header_painter.dart';
+import '../../../shared/widgets/liquid_glass_date_picker.dart';
 import '../../../shared/widgets/sync_status_indicator.dart';
-import 'gym_contribution_chart.dart';
 
-enum DayStatus {
-  workedOut,
-  missed,
-  rest,
-  future,
-}
+enum DayStatus { workedOut, missed, rest, future }
 
-/// Retractable calendar header for the dashboard with 3 distinct phases.
+/// Unified Tactical Week Header for the LEON Dashboard.
+///
+/// Features:
+/// - Clean corner-to-corner greeting & branding header.
+/// - Integrated Sync Status and Date Picker actions (account icon removed; accessible via bottom nav pill).
+/// - Permanent, high-contrast 7-day capsule strip with instant date selection.
+/// - Weekly consistency progress indicator (e.g. `THIS WEEK · 3 OF 4 DAYS`).
+/// - Amber highlight for active day selection (Apple HIG 2-accent system).
+/// - Apple HIG compliant typography (>= 11.0 pt floor) and high contrast ratios.
 class RetractableCalendarHeader extends StatefulWidget {
   const RetractableCalendarHeader({
     super.key,
@@ -40,603 +23,269 @@ class RetractableCalendarHeader extends StatefulWidget {
     this.initialExpanded = true,
     this.selectedDate,
     this.onDateSelected,
-    this.loggedWorkoutDates = const <DateTime>{},
+    this.loggedWorkoutDates = const {},
+    this.completedSessions,
+    this.targetSessions,
   });
 
-  /// User display name (e.g. 'Leon').
   final String userName;
-
-  /// Optional avatar URL for profile avatar.
   final String? avatarUrl;
-
-  /// Whether the calendar strip starts in the expanded weekly state (Phase 1).
   final bool initialExpanded;
-
-  /// Currently selected calendar date.
   final DateTime? selectedDate;
-
-  /// Callback when a calendar day is tapped.
   final ValueChanged<DateTime>? onDateSelected;
-
-  /// Dates where gym workout sessions have been logged/completed.
   final Set<DateTime> loggedWorkoutDates;
+  final int? completedSessions;
+  final int? targetSessions;
 
   @override
   State<RetractableCalendarHeader> createState() =>
       _RetractableCalendarHeaderState();
 }
 
-class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late DateTime _selectedDate;
-  late final List<DateTime> _weekDays;
-
-  // Noguchi Monochrome Minimal palette
-  static const Color _cardBg = AppColors.charcoal; // #27262A
-  static const Color _pillSlotBg = Color(0xFF1B1C22); // Sleek dark slot
-  static const double _tabHeight = 18.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedDate = widget.selectedDate ?? DateTime.now();
-
-    final now = DateTime.now();
-    // Sunday-based 7-day strip matching reference (S, M, T, W, T, F, S)
-    final startOfWeek = now.subtract(Duration(days: now.weekday % 7));
-    _weekDays = List.generate(
-      7,
-      (i) => startOfWeek.add(Duration(days: i)),
-    );
-
-    // 0.0 = Collapsed, 1.0 = Weekly, 2.0 = Extended (GitHub Graph)
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 320),
-      value: widget.initialExpanded ? 1.0 : 0.0,
-      lowerBound: 0.0,
-      upperBound: 2.0,
-    );
-  }
-
-  @override
-  void didUpdateWidget(RetractableCalendarHeader oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.selectedDate != null && widget.selectedDate != _selectedDate) {
-      _selectedDate = widget.selectedDate!;
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  /// Cycles between the 3 phases:
-  /// Collapsed (0) -> Weekly (1) -> Extended (2) -> Weekly (1)
-  void _cyclePhase() {
-    HapticFeedback.lightImpact();
-    double target;
-    if (_controller.value < 0.5) {
-      target = 1.0;
-    } else if (_controller.value < 1.5) {
-      target = 2.0;
-    } else {
-      target = 1.0;
-    }
-    _controller.animateTo(target, curve: Curves.easeOutCubic);
-  }
-
-  /// Toggles between Collapsed and Weekly from the greeting row
-  void _toggleExpanded() {
-    HapticFeedback.lightImpact();
-    double target;
-    if (_controller.value < 0.5) {
-      target = 1.0;
-    } else if (_controller.value < 1.5) {
-      target = 0.0;
-    } else {
-      target = 1.0;
-    }
-    _controller.animateTo(target, curve: Curves.easeOutCubic);
-  }
-
-  void _onDragStart(DragStartDetails details) {
-    _controller.stop(); // SKILL2.md §3: Interrupt instantly from live value
-  }
-
-  void _onDragUpdate(DragUpdateDetails details) {
-    // SKILL2.md §2: Direct 1:1 manipulation
-    final delta = details.primaryDelta ?? 0.0;
-    _controller.value = (_controller.value + (delta / 120.0)).clamp(0.0, 2.0);
-  }
-
-  void _onDragEnd(DragEndDetails details) {
-    // SKILL2.md §5 & §6: Velocity handoff & momentum projection
-    final v = details.primaryVelocity ?? 0.0;
-    double target;
-    if (v > 300) {
-      // Fling down
-      target = _controller.value < 1.0 ? 1.0 : 2.0;
-    } else if (v < -300) {
-      // Fling up
-      target = _controller.value > 1.0 ? 1.0 : 0.0;
-    } else {
-      // Snap to closest phase
-      if (_controller.value < 0.5) {
-        target = 0.0;
-      } else if (_controller.value < 1.5) {
-        target = 1.0;
-      } else {
-        target = 2.0;
-      }
-    }
-    HapticFeedback.lightImpact();
-    _controller.animateTo(target, curve: Curves.easeOutCubic);
-  }
-
-  String _monthName(int month) {
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return months[month - 1];
-  }
-
-  String _weekdayLetter(int weekday) {
-    switch (weekday) {
-      case DateTime.sunday:
-        return 'S';
-      case DateTime.monday:
-        return 'M';
-      case DateTime.tuesday:
-        return 'T';
-      case DateTime.wednesday:
-        return 'W';
-      case DateTime.thursday:
-        return 'T';
-      case DateTime.friday:
-        return 'F';
-      case DateTime.saturday:
-        return 'S';
-      default:
-        return '';
-    }
-  }
-
+class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final monthStr = '${_monthName(now.month)}, ${now.year}';
-    final topPadding = MediaQuery.paddingOf(context).top;
+    final selected = widget.selectedDate ?? DateTime.now();
+    final today = DateUtils.dateOnly(DateTime.now());
+    final isSelectedToday = DateUtils.isSameDay(selected, today);
 
-    return RepaintBoundary(
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onVerticalDragStart: _onDragStart,
-        onVerticalDragUpdate: _onDragUpdate,
-        onVerticalDragEnd: _onDragEnd,
-        child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, _) {
-          final t = _controller.value;
+    final monday = DateUtils.dateOnly(
+      selected,
+    ).subtract(Duration(days: selected.weekday - 1));
+    final local = MaterialLocalizations.of(context);
 
-          // Compute expandable height and crossfade opacities across 3 phases
-          double expandableHeight;
-          double weeklyOpacity;
-          double extendedOpacity;
+    // Compute weekly completed sessions if not explicitly supplied
+    int completed = widget.completedSessions ?? 0;
+    if (widget.completedSessions == null) {
+      for (int i = 0; i < 7; i++) {
+        final d = monday.add(Duration(days: i));
+        if (widget.loggedWorkoutDates.any(
+          (logged) => DateUtils.isSameDay(logged, d),
+        )) {
+          completed++;
+        }
+      }
+    }
+    final target = widget.targetSessions ?? 4;
 
-          if (t <= 1.0) {
-            expandableHeight = t * 94.0;
-            weeklyOpacity = t.clamp(0.0, 1.0);
-            extendedOpacity = 0.0;
-          } else {
-            final p = t - 1.0;
-            expandableHeight = 94.0 + (p * 156.0);
-            weeklyOpacity = (1.0 - p * 2.5).clamp(0.0, 1.0);
-            extendedOpacity = ((p - 0.2) / 0.8).clamp(0.0, 1.0);
-          }
-
-          // Subtitle and chevron orientation per phase
-          String phaseSubtitle;
-          double chevronAngle;
-          if (t < 0.5) {
-            phaseSubtitle = monthStr;
-            chevronAngle = -1.5708; // -90 deg
-          } else if (t < 1.5) {
-            phaseSubtitle = monthStr;
-            chevronAngle = (1.0 - t) * -1.5708;
-          } else {
-            phaseSubtitle = '$monthStr · History';
-            chevronAngle = 3.14159; // 180 deg (pointing up to collapse)
-          }
-
-          return CustomPaint(
-            painter: NotchedHeaderPainter(
-              backgroundColor: _cardBg,
-              borderColor: AppColors.steel.withValues(alpha: 0.6),
-              handleColor: AppColors.platinum.withValues(alpha: 0.5),
-              tabHeight: _tabHeight,
-            ),
-            child: Stack(
-              children: [
-                // ── Main Content Area ───────────────────────────────────────
-                Padding(
-                  padding: EdgeInsets.only(
-                    top: topPadding + 8,
-                    left: 20,
-                    right: 20,
-                    bottom: 12 + _tabHeight,
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.onyx,
+        border: Border(
+          bottom: BorderSide(
+            color: Color(0x1AFFFFFF),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Top Row: Branding, Greeting, Sync & Date Actions ───────────
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'AEON',
+                          style: AppTypography.monoSmall.copyWith(
+                            color: AppColors.platinum,
+                            letterSpacing: 2.5,
+                            fontSize: 11,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Hi, ${widget.userName}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.headlineLarge.copyWith(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // ── Top Greeting Row: Hello Name & PFP ─────────────────
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: InkWell(
-                              onTap: _toggleExpanded,
-                              borderRadius: BorderRadius.circular(10),
-                              splashColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text.rich(
-                                      TextSpan(
-                                        style: AppTypography.displayMedium.copyWith(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w400,
-                                          color: const Color(0xFFD8DDE8),
-                                          letterSpacing: -0.4,
-                                        ),
-                                        children: [
-                                          const TextSpan(text: 'Hello '),
-                                          TextSpan(
-                                            text: '${widget.userName}!',
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w800,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 3),
+                  const SyncStatusIndicator(),
+                  if (!isSelectedToday) ...[
+                    const SizedBox(width: 8),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () => widget.onDateSelected?.call(today),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.charcoal,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: AppColors.warning.withValues(alpha: 0.5),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Text(
+                          'TODAY',
+                          style: AppTypography.monoSmall.copyWith(
+                            color: AppColors.warning,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(width: 4),
+                  IconButton(
+                    tooltip: 'Choose date',
+                    padding: const EdgeInsets.all(8),
+                    constraints: const BoxConstraints(),
+                    onPressed: () async {
+                      final date = await showLiquidGlassDatePicker(
+                        context: context,
+                        initialDate: selected,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                        loggedWorkoutDates: widget.loggedWorkoutDates,
+                      );
+                      if (date != null) widget.onDateSelected?.call(date);
+                    },
+                    icon: const Icon(
+                      Icons.calendar_month_outlined,
+                      size: 20,
+                      color: AppColors.platinum,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
 
-                                    // Month/Year & Interactive Phase Chevron
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          phaseSubtitle,
-                                          style: const TextStyle(
-                                            fontFamily: AppTypography.fontBody,
-                                            fontSize: 12.0,
-                                            fontWeight: FontWeight.w500,
-                                            color: AppColors.textSecondary,
-                                            letterSpacing: 0.2,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Transform.rotate(
-                                          angle: chevronAngle,
-                                          child: const Icon(
-                                            Icons.keyboard_arrow_down_rounded,
-                                            size: 16,
-                                            color: AppColors.textSecondary,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
+              // ── Sub-row: Weekly Consistency Target & Formatted Date ────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'THIS WEEK · $completed OF $target DAYS',
+                    style: AppTypography.monoSmall.copyWith(
+                      color: AppColors.platinum,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  Text(
+                    local.formatMediumDate(selected),
+                    style: AppTypography.monoSmall.copyWith(
+                      color: isSelectedToday
+                          ? AppColors.primary
+                          : AppColors.warning,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // ── 7-Day Capsule Strip (Permanently Visible) ───────────────────
+              Row(
+                children: List.generate(7, (i) {
+                  final day = monday.add(Duration(days: i));
+                  final active = DateUtils.isSameDay(day, selected);
+                  final done = widget.loggedWorkoutDates.any(
+                    (d) => DateUtils.isSameDay(d, day),
+                  );
+                  final isDayToday = DateUtils.isSameDay(day, today);
+
+                  return Expanded(
+                    child: Semantics(
+                      label:
+                          '${local.formatFullDate(day)}${done ? ', workout logged' : ''}',
+                      selected: active,
+                      button: true,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => widget.onDateSelected?.call(day),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          decoration: BoxDecoration(
+                            color: active
+                                ? AppColors.warning
+                                : AppColors.charcoal,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: active
+                                  ? AppColors.warning
+                                  : isDayToday
+                                  ? AppColors.primary.withValues(alpha: 0.5)
+                                  : const Color(0x1AFFFFFF),
+                              width: 0.8,
                             ),
                           ),
-
-                          Row(
+                          child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const SyncStatusIndicator(),
-                              const SizedBox(width: 8),
-                              // Profile avatar with 44pt accessible touch target
-                              GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTap: () {
-                                  HapticFeedback.lightImpact();
-                                  context.push(AppConstants.routeProfile);
-                                },
-                                child: Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white.withValues(alpha: 0.15),
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  child: ClipOval(
-                                    child: widget.avatarUrl != null
-                                        ? Image.network(
-                                            widget.avatarUrl!,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) =>
-                                                _buildDefaultAvatar(),
-                                          )
-                                        : _buildDefaultAvatar(),
-                                  ),
+                              Text(
+                                const ['M', 'T', 'W', 'T', 'F', 'S', 'S'][i],
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: active
+                                      ? AppColors.onyx
+                                      : AppColors.platinum,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
-
-                      // ── Expandable Section (Phase 1 Weekly vs Phase 2 Graph) ─
-                      ClipRect(
-                        child: SizedBox(
-                          height: expandableHeight,
-                          child: Stack(
-                            children: [
-                              // Phase 1: 7-Day Weekly Calendar Strip
-                              if (weeklyOpacity > 0.0)
-                                Positioned(
-                                  top: 14,
-                                  left: 0,
-                                  right: 0,
-                                  child: Opacity(
-                                    opacity: weeklyOpacity,
-                                    child: _buildWeeklyStrip(now),
-                                  ),
+                              const SizedBox(height: 5),
+                              Text(
+                                '${day.day}',
+                                style: AppTypography.monoSmall.copyWith(
+                                  color: active
+                                      ? AppColors.onyx
+                                      : AppColors.pureWhite,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
                                 ),
-
-                              // Phase 2: Extended GitHub Contribution Graph
-                              if (extendedOpacity > 0.0)
-                                Positioned(
-                                  top: 14,
-                                  left: 0,
-                                  right: 0,
-                                  child: Opacity(
-                                    opacity: extendedOpacity,
-                                    child: GymContributionChart(
-                                      loggedWorkoutDates: widget.loggedWorkoutDates,
-                                      selectedDate: _selectedDate,
-                                      onDateSelected: (date) {
-                                        setState(() => _selectedDate = date);
-                                        widget.onDateSelected?.call(date);
-                                      },
-                                    ),
-                                  ),
-                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Icon(
+                                done
+                                    ? Icons.check_rounded
+                                    : (isDayToday && !done)
+                                    ? Icons.circle
+                                    : Icons.remove_rounded,
+                                size: (isDayToday && !done) ? 5 : 12,
+                                color: active
+                                    ? AppColors.onyx
+                                    : done
+                                    ? AppColors.primary
+                                    : (isDayToday
+                                        ? AppColors.primary
+                                        : AppColors.steel),
+                              ),
                             ],
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-
-                // ── Dedicated Notch Drag Handle Affordance ──────────────────
-                // Positioned right over the bottom center tab for intuitive slide & tap
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: _tabHeight + 20,
-                  child: Center(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: _cyclePhase,
-                      child: Container(
-                        width: 120,
-                        height: _tabHeight + 20,
-                        color: Colors.transparent,
-                      ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    ),
-  );
-}
-
-  DayStatus _getDayStatus(DateTime date, DateTime today) {
-    final d = DateTime(date.year, date.month, date.day);
-
-    final hasWorkout = widget.loggedWorkoutDates.any(
-      (w) => w.year == d.year && w.month == d.month && w.day == d.day,
-    );
-    if (hasWorkout) {
-      return DayStatus.workedOut;
-    }
-
-    if (d.isAfter(today)) {
-      return DayStatus.future;
-    }
-
-    return DayStatus.rest;
-  }
-
-  Widget _buildWeeklyStrip(DateTime now) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final totalWidth = constraints.maxWidth;
-        final pillWidth = ((totalWidth - 36) / 7).clamp(42.0, 48.0);
-
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            for (final date in _weekDays)
-              _buildDayPill(
-                date: date,
-                pillWidth: pillWidth,
-                isSelected: date.year == _selectedDate.year &&
-                    date.month == _selectedDate.month &&
-                    date.day == _selectedDate.day,
-                isToday: date.year == now.year &&
-                    date.month == now.month &&
-                    date.day == now.day,
-                status: _getDayStatus(date, now),
+                  );
+                }),
               ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildDefaultAvatar() {
-    return Container(
-      color: AppColors.steel,
-      child: const Center(
-        child: Icon(
-          Icons.person_rounded,
-          color: AppColors.pureWhite,
-          size: 22,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDayPill({
-    required DateTime date,
-    required double pillWidth,
-    required bool isSelected,
-    required bool isToday,
-    required DayStatus status,
-  }) {
-    final isWorkedOut = status == DayStatus.workedOut;
-
-    // Surface background
-    final Color bgColor;
-    if (isSelected) {
-      bgColor = const Color(0xFF1E2836);
-    } else if (isToday) {
-      bgColor = const Color(0xFF22242B);
-    } else {
-      bgColor = _pillSlotBg;
-    }
-
-    // Border
-    final Border border;
-    if (isSelected) {
-      border = Border.all(
-        color: AppColors.activeCyan,
-        width: 1.5,
-      );
-    } else if (isToday) {
-      border = Border.all(
-        color: Colors.white.withValues(alpha: 0.5),
-        width: 1.0,
-      );
-    } else {
-      border = Border.all(
-        color: AppColors.subtleBorder.withValues(alpha: 0.45),
-        width: 0.8,
-      );
-    }
-
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        HapticFeedback.lightImpact();
-        setState(() => _selectedDate = date);
-        widget.onDateSelected?.call(date);
-      },
-      child: Container(
-        width: pillWidth,
-        height: 76,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: bgColor,
-          border: border,
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 7),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Weekday letter (12 sp)
-            Text(
-              _weekdayLetter(date.weekday),
-              style: TextStyle(
-                fontFamily: AppTypography.fontDisplay,
-                fontSize: 12.0,
-                fontWeight: (isToday || isSelected)
-                    ? FontWeight.w700
-                    : FontWeight.w500,
-                color: isSelected
-                    ? AppColors.activeCyan
-                    : (isToday
-                        ? AppColors.pureWhite
-                        : AppColors.textSecondary),
-              ),
-            ),
-
-            // Date Number Badge
-            if (isToday)
-              Container(
-                width: 26,
-                height: 26,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.pureWhite,
-                ),
-                child: Center(
-                  child: Text(
-                    '${date.day}',
-                    style: const TextStyle(
-                      fontFamily: 'JetBrains Mono',
-                      fontSize: 13.0,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.onyx,
-                    ),
-                  ),
-                ),
-              )
-            else
-              Text(
-                '${date.day}',
-                style: TextStyle(
-                  fontFamily: 'JetBrains Mono',
-                  fontSize: 14.5,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: isSelected
-                      ? AppColors.pureWhite
-                      : (status == DayStatus.future
-                          ? AppColors.textMutedSlate
-                          : AppColors.pureWhite),
-                ),
-              ),
-
-            // Bottom Status Indicator Dot
-            if (isWorkedOut)
-              Container(
-                width: 5.5,
-                height: 5.5,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.emeraldGreen,
-                ),
-              )
-            else
-              const SizedBox(width: 5.5, height: 5.5),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
-

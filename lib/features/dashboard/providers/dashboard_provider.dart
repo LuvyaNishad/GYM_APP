@@ -3,6 +3,7 @@ import '../../../models/progress_model.dart';
 import '../../../services/analytics_service.dart';
 import '../../../state/app_providers.dart';
 import '../../history/providers/history_provider.dart';
+import '../../workout_builder/providers/splits_provider.dart';
 import '../models/weekly_consistency_model.dart';
 
 /// Drives the dashboard radar chart and summary stats.
@@ -31,8 +32,8 @@ class DashboardNotifier extends AsyncNotifier<RadarSnapshot?> {
 /// Provides [DashboardNotifier], scoped to the current user.
 final dashboardProvider =
     AsyncNotifierProvider<DashboardNotifier, RadarSnapshot?>(
-  DashboardNotifier.new,
-);
+      DashboardNotifier.new,
+    );
 
 /// Provider for dates on which a gym workout session was completed/logged.
 /// Directly derived from [historyWorkoutsProvider] ensuring 100% synchronization
@@ -62,7 +63,8 @@ final weeklyConsistencyProvider = Provider<WeeklyConsistencyModel>((ref) {
     final d = monday.add(Duration(days: i));
     final isDone = loggedDates.contains(d);
     if (isDone) completedThisWeek++;
-    final isToday = d.year == now.year && d.month == now.month && d.day == now.day;
+    final isToday =
+        d.year == now.year && d.month == now.month && d.day == now.day;
     days.add(
       WeekDayStatus(
         dayLabel: dayLabels[i],
@@ -73,7 +75,9 @@ final weeklyConsistencyProvider = Provider<WeeklyConsistencyModel>((ref) {
     );
   }
 
-  const plannedThisWeek = 4;
+  final plannedThisWeek = ref
+      .watch(splitsProvider.select((s) => s.activeSplit.daysPerWeek))
+      .clamp(1, 7);
   final complianceRate = (completedThisWeek / plannedThisWeek).clamp(0.0, 1.0);
 
   // Compute 4-week compliance history
@@ -93,7 +97,8 @@ final weeklyConsistencyProvider = Provider<WeeklyConsistencyModel>((ref) {
   if (completedThisWeek >= plannedThisWeek) {
     supportiveMessage = 'Weekly target achieved! Outstanding consistency.';
   } else if (completedThisWeek == 0) {
-    supportiveMessage = 'Fresh week ahead. Start when you feel ready — zero pressure.';
+    supportiveMessage =
+        'Fresh week ahead. Start when you feel ready — zero pressure.';
   } else {
     supportiveMessage = 'Life happens. You are on track — resume when ready.';
   }
@@ -107,4 +112,3 @@ final weeklyConsistencyProvider = Provider<WeeklyConsistencyModel>((ref) {
     supportiveMessage: supportiveMessage,
   );
 });
-

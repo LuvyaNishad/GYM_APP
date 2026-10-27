@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/app_colors.dart';
+import 'core/providers/local_date_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'features/workout_session/providers/active_session_provider.dart';
@@ -103,12 +104,14 @@ class _WorkoutLifecycleObserverState
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden ||
         state == AppLifecycleState.inactive) {
+      ref.read(activeSessionProvider.notifier).persistInBackground();
       // App was minimized to the background
       if (session.isActive) {
         // If rest timer is NOT running, show the active workout progress notification
         if (!restTimer.isRunning) {
-          final currentExercise =
-              session.exercises.isNotEmpty ? session.exercises.first : null;
+          final currentExercise = session.exercises.isNotEmpty
+              ? session.exercises.first
+              : null;
           final currentSet = currentExercise?.sets.firstWhere(
             (s) => !s.isCompleted,
             orElse: () => currentExercise.sets.last,
@@ -124,6 +127,8 @@ class _WorkoutLifecycleObserverState
         }
       }
     } else if (state == AppLifecycleState.resumed) {
+      // Refresh date-dependent screens after crossing midnight while suspended.
+      ref.invalidate(localDateProvider);
       // App brought back to foreground
       if (!restTimer.isRunning) {
         notifs.cancelActiveWorkoutNotification();
@@ -202,10 +207,9 @@ class BootstrapFailureApp extends StatelessWidget {
                 const SizedBox(height: 20),
                 Text(
                   '$error',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: AppColors.textMuted),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
                   textAlign: TextAlign.center,
                 ),
               ],
