@@ -92,114 +92,147 @@ class GlassNavPill extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final validActive = activeIndex.clamp(0, kNavPillTabs.length - 1);
+
     return SizedBox(
       height: height,
       child: GlassCard(
         borderRadius: borderRadius,
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
-        sigmaBlur: 10,
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        sigmaBlur: 14,
         blur: true,
-        borderWidth: 1.2,
-        borderColor: Colors.white.withValues(alpha: 0.85),
-        glowColor: AppColors.primary.withValues(alpha: 0.12),
+        borderWidth: 1.0,
+        borderColor: Colors.white.withValues(alpha: 0.24),
+        glowColor: const Color(0xFF40C4FF).withValues(alpha: 0.16),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withValues(alpha: 0.22), // Specular surface light sheen
-            const Color(0xFF1E2638).withValues(alpha: 0.32), // Translucent frosted acrylic body
-            const Color(0xFF121622).withValues(alpha: 0.44), // Grounded glass base
+            Colors.white.withValues(alpha: 0.16),
+            const Color(0xFF161A26).withValues(alpha: 0.42),
+            const Color(0xFF0F121B).withValues(alpha: 0.58),
           ],
-          stops: const [0.0, 0.30, 1.0],
+          stops: const [0.0, 0.35, 1.0],
         ),
-        child: Row(
+        child: Stack(
           children: [
-            for (var i = 0; i < kNavPillTabs.length; i++)
-              Expanded(
-                child: Semantics(
-                  selected: i == activeIndex,
-                  button: true,
-                  label: kNavPillTabs[i].label,
-                  excludeSemantics: true,
-                  child: InkWell(
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      ref.read(bottomNavIndexProvider.notifier).select(i);
-                      onTabSelected(i);
-                    },
-                    borderRadius: BorderRadius.circular(20),
-                    child: Center(
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 220),
-                        curve: Curves.easeOutCubic,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: i == activeIndex ? 10 : 2,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
-                          gradient: i == activeIndex
-                              ? LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    AppColors.primary.withValues(alpha: 0.22),
-                                    AppColors.primary.withValues(alpha: 0.08),
-                                  ],
-                                )
-                              : null,
-                          border: i == activeIndex
-                              ? Border.all(
-                                  color: AppColors.primary.withValues(alpha: 0.55),
-                                  width: 1.0,
-                                )
-                              : null,
-                          boxShadow: i == activeIndex
-                              ? [
-                                  BoxShadow(
-                                    color: AppColors.primary.withValues(alpha: 0.28),
-                                    blurRadius: 10,
-                                    spreadRadius: -1,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              i == activeIndex
-                                  ? kNavPillTabs[i].activeIcon
-                                  : kNavPillTabs[i].icon,
-                              size: 21,
-                              color: i == activeIndex
-                                  ? AppColors.primary
-                                  : AppColors.platinum,
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              kNavPillTabs[i].label,
-                              maxLines: 1,
-                              style: TextStyle(
-                                fontFamily: AppTypography.fontBody,
-                                fontSize: 11,
-                                fontWeight: i == activeIndex
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
-                                color: i == activeIndex
-                                    ? AppColors.primary
-                                    : AppColors.platinum,
-                              ),
-                            ),
-                          ],
-                        ),
+            // ── 1. Animated Sliding White-Blue Luminous Spotlight ───────────
+            AnimatedAlign(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment(
+                -1.0 + (validActive * 2.0 / (kNavPillTabs.length - 1)),
+                0.0,
+              ),
+              child: FractionallySizedBox(
+                widthFactor: 1.0 / kNavPillTabs.length,
+                heightFactor: 1.0,
+                child: Center(
+                  child: Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          Colors.white.withValues(alpha: 0.45),
+                          const Color(0xFF80D8FF).withValues(alpha: 0.35),
+                          const Color(0xFF2979FF).withValues(alpha: 0.18),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.30, 0.65, 1.0],
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF448AFF).withValues(alpha: 0.30),
+                          blurRadius: 26,
+                          spreadRadius: 4,
+                        ),
+                        BoxShadow(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          blurRadius: 12,
+                          spreadRadius: -2,
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
+            ),
+
+            // ── 2. Interactive Navigation Tabs (Clean, No Box Border) ───────
+            Row(
+              children: [
+                for (var i = 0; i < kNavPillTabs.length; i++)
+                  Expanded(
+                    child: Semantics(
+                      selected: i == validActive,
+                      button: true,
+                      label: kNavPillTabs[i].label,
+                      excludeSemantics: true,
+                      child: InkWell(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          ref.read(bottomNavIndexProvider.notifier).select(i);
+                          onTabSelected(i);
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                AnimatedScale(
+                                  scale: i == validActive ? 1.15 : 1.0,
+                                  duration: const Duration(milliseconds: 220),
+                                  curve: Curves.easeOutCubic,
+                                  child: Icon(
+                                    i == validActive
+                                        ? kNavPillTabs[i].activeIcon
+                                        : kNavPillTabs[i].icon,
+                                    size: 21,
+                                    color: i == validActive
+                                        ? Colors.white
+                                        : AppColors.platinum
+                                            .withValues(alpha: 0.65),
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  kNavPillTabs[i].label,
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                    fontFamily: AppTypography.fontBody,
+                                    fontSize: 11,
+                                    fontWeight: i == validActive
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                    color: i == validActive
+                                        ? Colors.white
+                                        : AppColors.platinum
+                                            .withValues(alpha: 0.65),
+                                    shadows: i == validActive
+                                        ? [
+                                            Shadow(
+                                              color: const Color(0xFF80D8FF)
+                                                  .withValues(alpha: 0.70),
+                                              blurRadius: 8,
+                                            ),
+                                          ]
+                                        : null,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ],
         ),
       ),
