@@ -63,8 +63,9 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
     String? plateBreakdown,
   }) {
     _ticker?.cancel();
-    final targetEndTime =
-        DateTime.now().add(Duration(seconds: durationSeconds));
+    final targetEndTime = DateTime.now().add(
+      Duration(seconds: durationSeconds),
+    );
 
     state = state.copyWith(
       totalDurationSeconds: durationSeconds,
@@ -198,12 +199,10 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
   /// Resumes countdown from remaining seconds using a new target end timestamp.
   void resume() {
     if (state.remainingSeconds > 0) {
-      final targetEndTime =
-          DateTime.now().add(Duration(seconds: state.remainingSeconds));
-      state = state.copyWith(
-        isRunning: true,
-        targetEndTime: targetEndTime,
+      final targetEndTime = DateTime.now().add(
+        Duration(seconds: state.remainingSeconds),
       );
+      state = state.copyWith(isRunning: true, targetEndTime: targetEndTime);
       _notifications.showRestTimerNotification(
         exerciseName: state.exerciseName ?? 'Exercise',
         setNumber: state.setNumber ?? 1,
@@ -288,5 +287,6 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
   }
 }
 
-final restTimerProvider =
-    NotifierProvider<RestTimerNotifier, RestTimerState>(RestTimerNotifier.new);
+final restTimerProvider = NotifierProvider<RestTimerNotifier, RestTimerState>(
+  RestTimerNotifier.new,
+);

@@ -4,13 +4,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/tempo_pacer_state.dart';
 import 'active_session_provider.dart';
 
+class TempoAutoLog extends Notifier<bool> {
+  @override
+  bool build() => false;
+  void setEnabled(bool enabled) => state = enabled;
+}
+
+final tempoAutoLogProvider = NotifierProvider<TempoAutoLog, bool>(
+  TempoAutoLog.new,
+);
+
 final tempoPacerProvider =
     NotifierProvider<TempoPacerNotifier, TempoPacerState>(
-  TempoPacerNotifier.new,
-);
+      TempoPacerNotifier.new,
+    );
 
 class TempoPacerNotifier extends Notifier<TempoPacerState> {
   Timer? _ticker;
+  Timer? _completionTimer;
+  String? _workoutId;
+  Object? _targetSet;
+  int _generation = 0;
+  int get generation => _generation;
   final Stopwatch _phaseStopwatch = Stopwatch();
   int _lastTickSecond = -1;
 
@@ -18,6 +33,7 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
   TempoPacerState build() {
     ref.onDispose(() {
       _ticker?.cancel();
+      _completionTimer?.cancel();
       _phaseStopwatch.stop();
     });
     return const TempoPacerState();
@@ -34,6 +50,17 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
     bool skipCountdown = false,
   }) {
     _ticker?.cancel();
+    _completionTimer?.cancel();
+    _generation++;
+    final session = ref.read(activeSessionProvider);
+    _workoutId = session.workoutId;
+    final exercise = session.exercises
+        .where((e) => e.exerciseId == exerciseId)
+        .firstOrNull;
+    _targetSet =
+        exercise != null && setIndex >= 0 && setIndex < exercise.sets.length
+        ? exercise.sets[setIndex]
+        : null;
     _phaseStopwatch.reset();
     _phaseStopwatch.start();
     _lastTickSecond = -1;
@@ -43,8 +70,8 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
 
     final startPhase = skipCountdown
         ? (TempoPacerState(exerciseName: exerciseName).isConcentricFirst
-            ? TempoPhase.concentric
-            : TempoPhase.eccentric)
+              ? TempoPhase.concentric
+              : TempoPhase.eccentric)
         : TempoPhase.countdown;
 
     state = TempoPacerState(
@@ -125,7 +152,8 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
     // Audio/Haptic metronome ticks during eccentric descent (1 tick per second)
     if (state.phase == TempoPhase.eccentric) {
       final currentSecond = (elapsedMs / 1000).floor();
-      if (currentSecond > _lastTickSecond && currentSecond < state.preset.eccentricSeconds) {
+      if (currentSecond > _lastTickSecond &&
+          currentSecond < state.preset.eccentricSeconds) {
         _lastTickSecond = currentSecond;
         _playMetronomeTick();
       }
@@ -177,15 +205,16 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
           elapsedBefore = state.preset.concentricSeconds.toDouble();
           break;
         case TempoPhase.eccentric:
-          elapsedBefore = (state.preset.concentricSeconds +
-                  state.preset.topHoldSeconds)
-              .toDouble();
+          elapsedBefore =
+              (state.preset.concentricSeconds + state.preset.topHoldSeconds)
+                  .toDouble();
           break;
         case TempoPhase.bottomHold:
-          elapsedBefore = (state.preset.concentricSeconds +
-                  state.preset.topHoldSeconds +
-                  state.preset.eccentricSeconds)
-              .toDouble();
+          elapsedBefore =
+              (state.preset.concentricSeconds +
+                      state.preset.topHoldSeconds +
+                      state.preset.eccentricSeconds)
+                  .toDouble();
           break;
         default:
           return 0.0;
@@ -199,15 +228,16 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
           elapsedBefore = state.preset.eccentricSeconds.toDouble();
           break;
         case TempoPhase.concentric:
-          elapsedBefore = (state.preset.eccentricSeconds +
-                  state.preset.bottomHoldSeconds)
-              .toDouble();
+          elapsedBefore =
+              (state.preset.eccentricSeconds + state.preset.bottomHoldSeconds)
+                  .toDouble();
           break;
         case TempoPhase.topHold:
-          elapsedBefore = (state.preset.eccentricSeconds +
-                  state.preset.bottomHoldSeconds +
-                  state.preset.concentricSeconds)
-              .toDouble();
+          elapsedBefore =
+              (state.preset.eccentricSeconds +
+                      state.preset.bottomHoldSeconds +
+                      state.preset.concentricSeconds)
+                  .toDouble();
           break;
         default:
           return 0.0;
@@ -228,22 +258,34 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
       switch (state.phase) {
         case TempoPhase.concentric:
           if (state.preset.topHoldSeconds > 0) {
-            state = state.copyWith(phase: TempoPhase.topHold, phaseProgress: 0.0);
+            state = state.copyWith(
+              phase: TempoPhase.topHold,
+              phaseProgress: 0.0,
+            );
             _playTurnaroundSnap();
           } else {
-            state = state.copyWith(phase: TempoPhase.eccentric, phaseProgress: 0.0);
+            state = state.copyWith(
+              phase: TempoPhase.eccentric,
+              phaseProgress: 0.0,
+            );
             _playDrivePulse();
           }
           break;
 
         case TempoPhase.topHold:
-          state = state.copyWith(phase: TempoPhase.eccentric, phaseProgress: 0.0);
+          state = state.copyWith(
+            phase: TempoPhase.eccentric,
+            phaseProgress: 0.0,
+          );
           _playDrivePulse();
           break;
 
         case TempoPhase.eccentric:
           if (state.preset.bottomHoldSeconds > 0) {
-            state = state.copyWith(phase: TempoPhase.bottomHold, phaseProgress: 0.0);
+            state = state.copyWith(
+              phase: TempoPhase.bottomHold,
+              phaseProgress: 0.0,
+            );
             _playTurnaroundSnap();
           } else {
             _completeCurrentRep();
@@ -263,16 +305,25 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
     switch (state.phase) {
       case TempoPhase.eccentric:
         if (state.preset.bottomHoldSeconds > 0) {
-          state = state.copyWith(phase: TempoPhase.bottomHold, phaseProgress: 0.0);
+          state = state.copyWith(
+            phase: TempoPhase.bottomHold,
+            phaseProgress: 0.0,
+          );
           _playTurnaroundSnap();
         } else {
-          state = state.copyWith(phase: TempoPhase.concentric, phaseProgress: 0.0);
+          state = state.copyWith(
+            phase: TempoPhase.concentric,
+            phaseProgress: 0.0,
+          );
           _playTurnaroundSnap();
         }
         break;
 
       case TempoPhase.bottomHold:
-        state = state.copyWith(phase: TempoPhase.concentric, phaseProgress: 0.0);
+        state = state.copyWith(
+          phase: TempoPhase.concentric,
+          phaseProgress: 0.0,
+        );
         _playDrivePulse();
         break;
 
@@ -325,31 +376,62 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
     _playCompletionFanfare();
 
     // Auto-transition to logging set and rest timer after 1.5 seconds
-    Timer(const Duration(milliseconds: 1500), () {
-      if (!state.isActive) return;
+    final completedGeneration = _generation;
+    _completionTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (!ref.mounted ||
+          completedGeneration != _generation ||
+          !state.isActive ||
+          state.phase != TempoPhase.completed ||
+          !ref.read(tempoAutoLogProvider)) {
+        return;
+      }
+      final exercise = ref
+          .read(activeSessionProvider)
+          .exercises
+          .where((e) => e.exerciseId == state.exerciseId)
+          .firstOrNull;
+      if (exercise?.isUnilateral == true) return;
       _autoLogAndLaunchRest();
     });
   }
 
-  void _autoLogAndLaunchRest() {
+  void _autoLogAndLaunchRest({int? rightReps}) {
     final exId = state.exerciseId;
     final setIdx = state.setIndex;
     final repsCompleted = state.currentRep;
+    final session = ref.read(activeSessionProvider);
+    final exercise = session.exercises
+        .where((e) => e.exerciseId == exId)
+        .firstOrNull;
+    if (!state.isActive ||
+        !session.isActive ||
+        session.workoutId != _workoutId ||
+        exercise == null ||
+        setIdx == null ||
+        setIdx < 0 ||
+        setIdx >= exercise.sets.length ||
+        !identical(exercise.sets[setIdx], _targetSet) ||
+        exercise.sets[setIdx].isCompleted) {
+      cancel();
+      return;
+    }
+    if (exercise.isUnilateral && rightReps == null) return;
 
-    if (exId != null && setIdx != null) {
+    if (exId != null) {
       // Update reps achieved if lifter changed reps during session
-      ref.read(activeSessionProvider.notifier).updateSetValues(
+      ref
+          .read(activeSessionProvider.notifier)
+          .updateSetValues(
             exerciseId: exId,
             setIndex: setIdx,
             reps: repsCompleted,
+            repsRight: exercise.isUnilateral ? rightReps : null,
           );
 
       // Automatically log the set as completed (which auto-starts the rest timer)
-      ref.read(activeSessionProvider.notifier).logSet(
-            exerciseId: exId,
-            setIndex: setIdx,
-            completed: true,
-          );
+      ref
+          .read(activeSessionProvider.notifier)
+          .logSet(exerciseId: exId, setIndex: setIdx, completed: true);
     }
 
     state = state.copyWith(isActive: false);
@@ -358,8 +440,36 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
   /// Finishes immediately, logs the reps completed so far, and launches the rest timer.
   void finishEarlyAndRest() {
     _ticker?.cancel();
+    _completionTimer?.cancel();
     _phaseStopwatch.stop();
     _autoLogAndLaunchRest();
+  }
+
+  void confirmRepsAndRest(int reps, {int? rightReps}) {
+    if (reps < 1 ||
+        reps > 100 ||
+        (rightReps != null && (rightReps < 1 || rightReps > 100))) {
+      return;
+    }
+    state = state.copyWith(currentRep: reps);
+    _ticker?.cancel();
+    _completionTimer?.cancel();
+    _phaseStopwatch.stop();
+    _autoLogAndLaunchRest(rightReps: rightReps);
+  }
+
+  bool get targetIsUnilateral =>
+      ref
+          .read(activeSessionProvider)
+          .exercises
+          .where((e) => e.exerciseId == state.exerciseId)
+          .firstOrNull
+          ?.isUnilateral ??
+      false;
+
+  void beginConfirmation() {
+    _completionTimer?.cancel();
+    if (!state.isPaused && state.phase != TempoPhase.completed) togglePause();
   }
 
   void togglePause() {
@@ -406,6 +516,8 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
 
   void cancel() {
     _ticker?.cancel();
+    _completionTimer?.cancel();
+    _generation++;
     _phaseStopwatch.stop();
     state = state.copyWith(isActive: false);
     try {

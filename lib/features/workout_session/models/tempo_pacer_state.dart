@@ -141,12 +141,12 @@ enum TempoPreset {
 
 /// The distinct biomechanical movement phases of a single repetition.
 enum TempoPhase {
-  countdown,   // 5s preparation countdown
-  eccentric,   // Lowering / lengthening under tension
-  bottomHold,  // Isometric hold / stretch at the bottom
-  concentric,  // Explosive drive / lifting up
-  topHold,     // Brief contraction / reset
-  completed,   // Target reps reached
+  countdown, // 5s preparation countdown
+  eccentric, // Lowering / lengthening under tension
+  bottomHold, // Isometric hold / stretch at the bottom
+  concentric, // Explosive drive / lifting up
+  topHold, // Brief contraction / reset
+  completed, // Target reps reached
 }
 
 /// Immutable state describing the active hands-free tempo session.
@@ -155,11 +155,11 @@ class TempoPacerState {
   final bool isActive;
   final bool isPaused;
   final int countdownRemaining; // 5..0
-  final int currentRep;          // 1..targetReps
-  final int targetReps;          // e.g. 8
+  final int currentRep; // 1..targetReps
+  final int targetReps; // e.g. 8
   final TempoPhase phase;
-  final double phaseProgress;    // 0.0 .. 1.0 within active phase
-  final double cycleProgress;    // 0.0 .. 1.0 across full single rep cycle
+  final double phaseProgress; // 0.0 .. 1.0 within active phase
+  final double cycleProgress; // 0.0 .. 1.0 across full single rep cycle
   final TempoPreset preset;
   final bool soundEnabled;
   final bool hapticsEnabled;
@@ -250,11 +250,12 @@ class TempoPacerState {
         final rem = (preset.concentricSeconds * (1.0 - phaseProgress)).ceil();
         return rem <= 0 ? 1 : rem;
       case TempoPhase.topHold:
-        final rem = ((preset.topHoldSeconds > 0
-                    ? preset.topHoldSeconds
-                    : preset.bottomHoldSeconds) *
-                (1.0 - phaseProgress))
-            .ceil();
+        final rem =
+            ((preset.topHoldSeconds > 0
+                        ? preset.topHoldSeconds
+                        : preset.bottomHoldSeconds) *
+                    (1.0 - phaseProgress))
+                .ceil();
         return rem <= 0 ? 1 : rem;
       case TempoPhase.completed:
         return 0;

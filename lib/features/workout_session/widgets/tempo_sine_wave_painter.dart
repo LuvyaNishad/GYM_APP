@@ -73,7 +73,11 @@ class _TempoSineWaveWidgetState extends State<TempoSineWaveWidget>
     super.dispose();
   }
 
-  int _getPhaseDurationMs(TempoPhase phase, TempoPreset preset, bool isConcentricFirst) {
+  int _getPhaseDurationMs(
+    TempoPhase phase,
+    TempoPreset preset,
+    bool isConcentricFirst,
+  ) {
     switch (phase) {
       case TempoPhase.countdown:
         return 5000;
@@ -105,13 +109,16 @@ class _TempoSineWaveWidgetState extends State<TempoSineWaveWidget>
           elapsedBefore = state.preset.concentricSeconds.toDouble();
           break;
         case TempoPhase.eccentric:
-          elapsedBefore = (state.preset.concentricSeconds + state.preset.topHoldSeconds).toDouble();
+          elapsedBefore =
+              (state.preset.concentricSeconds + state.preset.topHoldSeconds)
+                  .toDouble();
           break;
         case TempoPhase.bottomHold:
-          elapsedBefore = (state.preset.concentricSeconds +
-                  state.preset.topHoldSeconds +
-                  state.preset.eccentricSeconds)
-              .toDouble();
+          elapsedBefore =
+              (state.preset.concentricSeconds +
+                      state.preset.topHoldSeconds +
+                      state.preset.eccentricSeconds)
+                  .toDouble();
           break;
         default:
           return 0.0;
@@ -125,20 +132,27 @@ class _TempoSineWaveWidgetState extends State<TempoSineWaveWidget>
           elapsedBefore = state.preset.eccentricSeconds.toDouble();
           break;
         case TempoPhase.concentric:
-          elapsedBefore = (state.preset.eccentricSeconds + state.preset.bottomHoldSeconds).toDouble();
+          elapsedBefore =
+              (state.preset.eccentricSeconds + state.preset.bottomHoldSeconds)
+                  .toDouble();
           break;
         case TempoPhase.topHold:
-          elapsedBefore = (state.preset.eccentricSeconds +
-                  state.preset.bottomHoldSeconds +
-                  state.preset.concentricSeconds)
-              .toDouble();
+          elapsedBefore =
+              (state.preset.eccentricSeconds +
+                      state.preset.bottomHoldSeconds +
+                      state.preset.concentricSeconds)
+                  .toDouble();
           break;
         default:
           return 0.0;
       }
     }
 
-    final currentPhaseDuration = _getPhaseDurationMs(state.phase, state.preset, state.isConcentricFirst);
+    final currentPhaseDuration = _getPhaseDurationMs(
+      state.phase,
+      state.preset,
+      state.isConcentricFirst,
+    );
     final currentPhaseSec = currentPhaseDuration / 1000.0;
     final currentSec = elapsedBefore + (phaseProgress * currentPhaseSec);
     return (currentSec / totalSec).clamp(0.0, 1.0);
@@ -150,7 +164,11 @@ class _TempoSineWaveWidgetState extends State<TempoSineWaveWidget>
     if (state.phase == TempoPhase.completed) return 1.0;
     if (state.isPaused) return state.cycleProgress;
 
-    final phaseDurationMs = _getPhaseDurationMs(state.phase, state.preset, state.isConcentricFirst);
+    final phaseDurationMs = _getPhaseDurationMs(
+      state.phase,
+      state.preset,
+      state.isConcentricFirst,
+    );
     if (phaseDurationMs <= 0) return state.cycleProgress;
 
     final elapsedMs = _phaseStopwatch.elapsedMilliseconds;
@@ -164,7 +182,11 @@ class _TempoSineWaveWidgetState extends State<TempoSineWaveWidget>
     if (state.phase == TempoPhase.completed) return 1.0;
     if (state.isPaused) return state.phaseProgress;
 
-    final phaseDurationMs = _getPhaseDurationMs(state.phase, state.preset, state.isConcentricFirst);
+    final phaseDurationMs = _getPhaseDurationMs(
+      state.phase,
+      state.preset,
+      state.isConcentricFirst,
+    );
     if (phaseDurationMs <= 0) return state.phaseProgress;
 
     final elapsedMs = _phaseStopwatch.elapsedMilliseconds;
@@ -218,8 +240,7 @@ class _BiomechanicalWavePainter extends CustomPainter {
   });
 
   // Normalized phase fractions within one rep
-  double get _eccFraction =>
-      preset.eccentricSeconds / preset.totalCycleSeconds;
+  double get _eccFraction => preset.eccentricSeconds / preset.totalCycleSeconds;
   double get _bottomHoldFraction =>
       preset.bottomHoldSeconds / preset.totalCycleSeconds;
   double get _concentricFraction =>
@@ -245,7 +266,10 @@ class _BiomechanicalWavePainter extends CustomPainter {
         return 1.0;
       } else if (t <= eccEnd) {
         // Eccentric lowering: smooth descent from top (1.0) back to bottom (0.0)
-        final localT = ((t - topHoldEnd) / (eccEnd - topHoldEnd)).clamp(0.0, 1.0);
+        final localT = ((t - topHoldEnd) / (eccEnd - topHoldEnd)).clamp(
+          0.0,
+          1.0,
+        );
         return 0.5 + 0.5 * math.cos(localT * math.pi);
       } else {
         // Bottom hold / pause at stretch
@@ -335,13 +359,29 @@ class _BiomechanicalWavePainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     // Top-left caliper
-    canvas.drawLine(Offset(marginLeft, marginTop - 6), Offset(marginLeft, marginTop + 6), caliperPaint);
+    canvas.drawLine(
+      Offset(marginLeft, marginTop - 6),
+      Offset(marginLeft, marginTop + 6),
+      caliperPaint,
+    );
     // Top-right caliper
-    canvas.drawLine(Offset(marginRight, marginTop - 6), Offset(marginRight, marginTop + 6), caliperPaint);
+    canvas.drawLine(
+      Offset(marginRight, marginTop - 6),
+      Offset(marginRight, marginTop + 6),
+      caliperPaint,
+    );
     // Bottom-left caliper
-    canvas.drawLine(Offset(marginLeft, marginBottom - 6), Offset(marginLeft, marginBottom + 6), caliperPaint);
+    canvas.drawLine(
+      Offset(marginLeft, marginBottom - 6),
+      Offset(marginLeft, marginBottom + 6),
+      caliperPaint,
+    );
     // Bottom-right caliper
-    canvas.drawLine(Offset(marginRight, marginBottom - 6), Offset(marginRight, marginBottom + 6), caliperPaint);
+    canvas.drawLine(
+      Offset(marginRight, marginBottom - 6),
+      Offset(marginRight, marginBottom + 6),
+      caliperPaint,
+    );
 
     // Datum text badges
     _drawText(
@@ -374,23 +414,59 @@ class _BiomechanicalWavePainter extends CustomPainter {
       final firstX = marginLeft + (_concentricFraction * trackWidth);
       final secondX = firstX + (_topHoldFraction * trackWidth);
       final thirdX = secondX + (_eccFraction * trackWidth);
-      _drawDashedVerticalLine(canvas, firstX, marginTop, marginBottom, markerPaint);
+      _drawDashedVerticalLine(
+        canvas,
+        firstX,
+        marginTop,
+        marginBottom,
+        markerPaint,
+      );
       if (_topHoldFraction > 0.0) {
-        _drawDashedVerticalLine(canvas, secondX, marginTop, marginBottom, markerPaint);
+        _drawDashedVerticalLine(
+          canvas,
+          secondX,
+          marginTop,
+          marginBottom,
+          markerPaint,
+        );
       }
       if (_bottomHoldFraction > 0.0) {
-        _drawDashedVerticalLine(canvas, thirdX, marginTop, marginBottom, markerPaint);
+        _drawDashedVerticalLine(
+          canvas,
+          thirdX,
+          marginTop,
+          marginBottom,
+          markerPaint,
+        );
       }
     } else {
       final firstX = marginLeft + (_eccFraction * trackWidth);
       final secondX = firstX + (_bottomHoldFraction * trackWidth);
       final thirdX = secondX + (_concentricFraction * trackWidth);
-      _drawDashedVerticalLine(canvas, firstX, marginTop, marginBottom, markerPaint);
+      _drawDashedVerticalLine(
+        canvas,
+        firstX,
+        marginTop,
+        marginBottom,
+        markerPaint,
+      );
       if (_bottomHoldFraction > 0.0) {
-        _drawDashedVerticalLine(canvas, secondX, marginTop, marginBottom, markerPaint);
+        _drawDashedVerticalLine(
+          canvas,
+          secondX,
+          marginTop,
+          marginBottom,
+          markerPaint,
+        );
       }
       if (_topHoldFraction > 0.0) {
-        _drawDashedVerticalLine(canvas, thirdX, marginTop, marginBottom, markerPaint);
+        _drawDashedVerticalLine(
+          canvas,
+          thirdX,
+          marginTop,
+          marginBottom,
+          markerPaint,
+        );
       }
     }
 
@@ -503,7 +579,11 @@ class _BiomechanicalWavePainter extends CustomPainter {
     final guideLinePaint = Paint()
       ..color = activeColor.withValues(alpha: 0.45)
       ..strokeWidth = 1.2;
-    canvas.drawLine(Offset(orbX, marginTop), Offset(orbX, marginBottom), guideLinePaint);
+    canvas.drawLine(
+      Offset(orbX, marginTop),
+      Offset(orbX, marginBottom),
+      guideLinePaint,
+    );
 
     // Sonar Ripple Rings radiating outward from the orb
     for (int r = 1; r <= 2; r++) {

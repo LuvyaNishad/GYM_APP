@@ -7,11 +7,7 @@ import '../../../core/theme/app_typography.dart';
 /// Allows the user to log reps, weight, and RPE for each set.
 /// Full implementation pending; scaffold is in place.
 class SetLoggerWidget extends StatelessWidget {
-  const SetLoggerWidget({
-    super.key,
-    required this.setNumber,
-    this.onLogSet,
-  });
+  const SetLoggerWidget({super.key, required this.setNumber, this.onLogSet});
 
   final int setNumber;
   final VoidCallback? onLogSet;
@@ -27,10 +23,7 @@ class SetLoggerWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Text(
-            'SET $setNumber',
-            style: AppTypography.monoSmall,
-          ),
+          Text('SET $setNumber', style: AppTypography.monoSmall),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
@@ -41,8 +34,10 @@ class SetLoggerWidget extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.check_circle_outline,
-                color: AppColors.success),
+            icon: const Icon(
+              Icons.check_circle_outline,
+              color: AppColors.success,
+            ),
             onPressed: onLogSet,
             tooltip: 'Log set',
           ),

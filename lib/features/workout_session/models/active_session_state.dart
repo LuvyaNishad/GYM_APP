@@ -36,6 +36,7 @@ class ActiveSetState {
     required this.reps,
     this.rir = 2.0,
     this.rpe = 8.0,
+    this.effortLogged = false,
     this.isCompleted = false,
     bool isWarmup = false,
     ActiveSetType? setType,
@@ -50,13 +51,17 @@ class ActiveSetState {
     this.isRightCompleted = false,
     this.previousWeightKgRight,
     this.previousRepsRight,
-  }) : setType = setType ?? (isWarmup ? ActiveSetType.warmup : ActiveSetType.normal);
+  }) : setType =
+           setType ?? (isWarmup ? ActiveSetType.warmup : ActiveSetType.normal);
 
   final int setNumber;
   final double weightKg;
   final int reps;
   final double rir;
   final double rpe;
+
+  /// Picker defaults are suggestions until the lifter explicitly saves effort.
+  final bool effortLogged;
   final bool isCompleted;
   final ActiveSetType setType;
   final bool isPr;
@@ -103,6 +108,7 @@ class ActiveSetState {
     int? reps,
     double? rir,
     double? rpe,
+    bool? effortLogged,
     bool? isCompleted,
     bool? isWarmup,
     ActiveSetType? setType,
@@ -117,14 +123,15 @@ class ActiveSetState {
     bool? isRightCompleted,
     double? previousWeightKgRight,
     int? previousRepsRight,
+    bool clearRightSide = false,
   }) {
     ActiveSetType resolvedType = setType ?? this.setType;
     if (isWarmup != null) {
       resolvedType = isWarmup
           ? ActiveSetType.warmup
           : (resolvedType == ActiveSetType.warmup
-              ? ActiveSetType.normal
-              : resolvedType);
+                ? ActiveSetType.normal
+                : resolvedType);
     }
     return ActiveSetState(
       setNumber: setNumber ?? this.setNumber,
@@ -132,6 +139,7 @@ class ActiveSetState {
       reps: reps ?? this.reps,
       rir: rir ?? this.rir,
       rpe: rpe ?? this.rpe,
+      effortLogged: effortLogged ?? this.effortLogged,
       isCompleted: isCompleted ?? this.isCompleted,
       setType: resolvedType,
       isPr: isPr ?? this.isPr,
@@ -139,11 +147,14 @@ class ActiveSetState {
       previousReps: previousReps ?? this.previousReps,
       previousRir: previousRir ?? this.previousRir,
       previousRpe: previousRpe ?? this.previousRpe,
-      weightKgRight: weightKgRight ?? this.weightKgRight,
-      repsRight: repsRight ?? this.repsRight,
+      weightKgRight: clearRightSide
+          ? null
+          : weightKgRight ?? this.weightKgRight,
+      repsRight: clearRightSide ? null : repsRight ?? this.repsRight,
       isLeftCompleted: isLeftCompleted ?? this.isLeftCompleted,
       isRightCompleted: isRightCompleted ?? this.isRightCompleted,
-      previousWeightKgRight: previousWeightKgRight ?? this.previousWeightKgRight,
+      previousWeightKgRight:
+          previousWeightKgRight ?? this.previousWeightKgRight,
       previousRepsRight: previousRepsRight ?? this.previousRepsRight,
     );
   }
@@ -158,51 +169,66 @@ class ActiveSetState {
           reps == other.reps &&
           rir == other.rir &&
           rpe == other.rpe &&
+          effortLogged == other.effortLogged &&
           isCompleted == other.isCompleted &&
           setType == other.setType &&
           isPr == other.isPr &&
           weightKgRight == other.weightKgRight &&
           repsRight == other.repsRight &&
           isLeftCompleted == other.isLeftCompleted &&
-          isRightCompleted == other.isRightCompleted;
+          isRightCompleted == other.isRightCompleted &&
+          previousWeightKg == other.previousWeightKg &&
+          previousReps == other.previousReps &&
+          previousRir == other.previousRir &&
+          previousRpe == other.previousRpe &&
+          previousWeightKgRight == other.previousWeightKgRight &&
+          previousRepsRight == other.previousRepsRight;
 
   @override
   int get hashCode => Object.hash(
-        setNumber,
-        weightKg,
-        reps,
-        rir,
-        rpe,
-        isCompleted,
-        setType,
-        isPr,
-        weightKgRight,
-        repsRight,
-        isLeftCompleted,
-        isRightCompleted,
-      );
+    setNumber,
+    weightKg,
+    reps,
+    rir,
+    rpe,
+    effortLogged,
+    isCompleted,
+    setType,
+    isPr,
+    weightKgRight,
+    repsRight,
+    isLeftCompleted,
+    isRightCompleted,
+    previousWeightKg,
+    previousReps,
+    previousRir,
+    previousRpe,
+    previousWeightKgRight,
+    previousRepsRight,
+  );
 
   Map<String, dynamic> toJson() => {
-        'setNumber': setNumber,
-        'weightKg': weightKg,
-        'reps': reps,
-        'rir': rir,
-        'rpe': rpe,
-        'isCompleted': isCompleted,
-        'isWarmup': isWarmup,
-        'setType': setType.name,
-        'isPr': isPr,
-        'previousWeightKg': previousWeightKg,
-        'previousReps': previousReps,
-        'previousRir': previousRir,
-        'previousRpe': previousRpe,
-        'weightKgRight': weightKgRight,
-        'repsRight': repsRight,
-        'isLeftCompleted': isLeftCompleted,
-        'isRightCompleted': isRightCompleted,
-        'previousWeightKgRight': previousWeightKgRight,
-        'previousRepsRight': previousRepsRight,
-      };
+    'setNumber': setNumber,
+    'weightKg': weightKg,
+    'reps': reps,
+    'rir': rir,
+    'rpe': rpe,
+    'effortLogged': effortLogged,
+    'isCompleted': isCompleted,
+    'isWarmup': isWarmup,
+    'setType': setType.name,
+    'isPr': isPr,
+    'previousWeightKg': previousWeightKg,
+    'previousReps': previousReps,
+    'previousRir': previousRir,
+    'previousRpe': previousRpe,
+    'weightKgRight': weightKgRight,
+    'repsRight': repsRight,
+    'isLeftCompleted': isLeftCompleted,
+    'isRightCompleted': isRightCompleted,
+    'previousWeightKgRight': previousWeightKgRight,
+    'previousRepsRight': previousRepsRight,
+  };
 
   factory ActiveSetState.fromJson(Map<String, dynamic> json) {
     ActiveSetType parsedType = ActiveSetType.normal;
@@ -223,6 +249,8 @@ class ActiveSetState {
       reps: json['reps'] as int? ?? 0,
       rir: (json['rir'] as num?)?.toDouble() ?? 2.0,
       rpe: (json['rpe'] as num?)?.toDouble() ?? 8.0,
+      // Old drafts did not distinguish suggested effort from measured effort.
+      effortLogged: json['effortLogged'] as bool? ?? false,
       isCompleted: legacyCompleted,
       setType: parsedType,
       isPr: json['isPr'] as bool? ?? false,
@@ -234,7 +262,8 @@ class ActiveSetState {
       repsRight: json['repsRight'] as int?,
       isLeftCompleted: json['isLeftCompleted'] as bool? ?? legacyCompleted,
       isRightCompleted: json['isRightCompleted'] as bool? ?? legacyCompleted,
-      previousWeightKgRight: (json['previousWeightKgRight'] as num?)?.toDouble(),
+      previousWeightKgRight: (json['previousWeightKgRight'] as num?)
+          ?.toDouble(),
       previousRepsRight: json['previousRepsRight'] as int?,
     );
   }
@@ -265,8 +294,7 @@ class ActiveExerciseState {
   final int restDurationSeconds;
   final bool isUnilateral;
 
-  int get completedSetsCount =>
-      sets.where((s) => s.isCompleted).length;
+  int get completedSetsCount => sets.where((s) => s.isCompleted).length;
 
   int get totalSetsCount => sets.length;
 
@@ -302,7 +330,9 @@ class ActiveExerciseState {
       equipment: equipment ?? this.equipment,
       sets: sets ?? this.sets,
       notes: notes ?? this.notes,
-      supersetGroupId: clearSupersetGroup ? null : (supersetGroupId ?? this.supersetGroupId),
+      supersetGroupId: clearSupersetGroup
+          ? null
+          : (supersetGroupId ?? this.supersetGroupId),
       restDurationSeconds: restDurationSeconds ?? this.restDurationSeconds,
       isUnilateral: isUnilateral ?? this.isUnilateral,
     );
@@ -316,29 +346,37 @@ class ActiveExerciseState {
           exerciseId == other.exerciseId &&
           name == other.name &&
           muscleGroup == other.muscleGroup &&
+          equipment == other.equipment &&
+          notes == other.notes &&
+          supersetGroupId == other.supersetGroupId &&
+          restDurationSeconds == other.restDurationSeconds &&
           isUnilateral == other.isUnilateral &&
           listEquals(sets, other.sets);
 
   @override
   int get hashCode => Object.hash(
-        exerciseId,
-        name,
-        muscleGroup,
-        isUnilateral,
-        sets,
-      );
+    exerciseId,
+    name,
+    muscleGroup,
+    equipment,
+    notes,
+    supersetGroupId,
+    restDurationSeconds,
+    isUnilateral,
+    Object.hashAll(sets),
+  );
 
   Map<String, dynamic> toJson() => {
-        'exerciseId': exerciseId,
-        'name': name,
-        'muscleGroup': muscleGroup,
-        'equipment': equipment,
-        'sets': sets.map((s) => s.toJson()).toList(),
-        'notes': notes,
-        'supersetGroupId': supersetGroupId,
-        'restDurationSeconds': restDurationSeconds,
-        'isUnilateral': isUnilateral,
-      };
+    'exerciseId': exerciseId,
+    'name': name,
+    'muscleGroup': muscleGroup,
+    'equipment': equipment,
+    'sets': sets.map((s) => s.toJson()).toList(),
+    'notes': notes,
+    'supersetGroupId': supersetGroupId,
+    'restDurationSeconds': restDurationSeconds,
+    'isUnilateral': isUnilateral,
+  };
 
   factory ActiveExerciseState.fromJson(Map<String, dynamic> json) =>
       ActiveExerciseState(
@@ -346,9 +384,13 @@ class ActiveExerciseState {
         name: json['name'] as String? ?? '',
         muscleGroup: json['muscleGroup'] as String? ?? 'push',
         equipment: json['equipment'] as String? ?? 'barbell',
-        sets: (json['sets'] as List<dynamic>?)
-                ?.map((s) => ActiveSetState.fromJson(
-                    Map<String, dynamic>.from(s as Map)))
+        sets:
+            (json['sets'] as List<dynamic>?)
+                ?.map(
+                  (s) => ActiveSetState.fromJson(
+                    Map<String, dynamic>.from(s as Map),
+                  ),
+                )
                 .toList() ??
             const [],
         notes: json['notes'] as String?,
@@ -371,6 +413,7 @@ class ActiveSessionState {
     this.exercises = const [],
     this.expandedExerciseId,
     this.lastResumedAt,
+    this.persistenceError,
   });
 
   final String workoutId;
@@ -382,6 +425,7 @@ class ActiveSessionState {
   final List<ActiveExerciseState> exercises;
   final String? expandedExerciseId;
   final DateTime? lastResumedAt;
+  final String? persistenceError;
 
   int get completedSetCount =>
       exercises.fold(0, (acc, ex) => acc + ex.completedSetsCount);
@@ -417,6 +461,8 @@ class ActiveSessionState {
     bool clearExpandedExercise = false,
     DateTime? lastResumedAt,
     bool clearLastResumedAt = false,
+    String? persistenceError,
+    bool clearPersistenceError = false,
   }) {
     return ActiveSessionState(
       workoutId: workoutId ?? this.workoutId,
@@ -432,33 +478,41 @@ class ActiveSessionState {
       lastResumedAt: clearLastResumedAt
           ? null
           : (lastResumedAt ?? this.lastResumedAt),
+      persistenceError: clearPersistenceError
+          ? null
+          : persistenceError ?? this.persistenceError,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'workoutId': workoutId,
-        'splitName': splitName,
-        'startTime': startTime.toIso8601String(),
-        'elapsedSeconds': elapsedSeconds,
-        'isActive': isActive,
-        'isPaused': isPaused,
-        'exercises': exercises.map((e) => e.toJson()).toList(),
-        'expandedExerciseId': expandedExerciseId,
-        'lastResumedAt': lastResumedAt?.toIso8601String(),
-      };
+    'workoutId': workoutId,
+    'splitName': splitName,
+    'startTime': startTime.toIso8601String(),
+    'elapsedSeconds': elapsedSeconds,
+    'isActive': isActive,
+    'isPaused': isPaused,
+    'exercises': exercises.map((e) => e.toJson()).toList(),
+    'expandedExerciseId': expandedExerciseId,
+    'lastResumedAt': lastResumedAt?.toIso8601String(),
+  };
 
   factory ActiveSessionState.fromJson(Map<String, dynamic> json) =>
       ActiveSessionState(
         workoutId: json['workoutId'] as String? ?? '',
         splitName: json['splitName'] as String? ?? "TODAY'S WORKOUT",
-        startTime: DateTime.tryParse(json['startTime'] as String? ?? '') ??
+        startTime:
+            DateTime.tryParse(json['startTime'] as String? ?? '') ??
             DateTime.now(),
         elapsedSeconds: json['elapsedSeconds'] as int? ?? 0,
         isActive: json['isActive'] as bool? ?? false,
         isPaused: json['isPaused'] as bool? ?? false,
-        exercises: (json['exercises'] as List<dynamic>?)
-                ?.map((e) => ActiveExerciseState.fromJson(
-                    Map<String, dynamic>.from(e as Map)))
+        exercises:
+            (json['exercises'] as List<dynamic>?)
+                ?.map(
+                  (e) => ActiveExerciseState.fromJson(
+                    Map<String, dynamic>.from(e as Map),
+                  ),
+                )
                 .toList() ??
             const [],
         expandedExerciseId: json['expandedExerciseId'] as String?,

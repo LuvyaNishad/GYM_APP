@@ -30,40 +30,24 @@ class WorkoutService {
       AppConstants.hiveBoxWorkouts,
       WorkoutModel.fromJson,
     );
-    final scoped =
-        userId == null ? all : all.where((w) => w.userId == userId).toList();
+    final scoped = userId == null
+        ? all
+        : all.where((w) => w.userId == userId).toList();
     scoped.sort((a, b) => b.date.compareTo(a.date));
     return scoped;
   }
 
   /// Fetch a single workout by id, or null when absent.
   Future<WorkoutModel?> fetchWorkout(String workoutId) async => _hive.read(
-        AppConstants.hiveBoxWorkouts,
-        workoutId,
-        WorkoutModel.fromJson,
-      );
+    AppConstants.hiveBoxWorkouts,
+    workoutId,
+    WorkoutModel.fromJson,
+  );
 
   /// Save a new or updated workout, keyed by [WorkoutModel.id].
-  /// Enforces strictly 1 workout per calendar day: deletes any prior workout
-  /// on the same calendar day before saving the latest session.
+  /// Each session has its own identity, including sessions on the same day.
   Future<void> saveWorkout(WorkoutModel workout) async {
-    final all = _hive.readAll(
-      AppConstants.hiveBoxWorkouts,
-      WorkoutModel.fromJson,
-    );
-    for (final existing in all) {
-      if (existing.date.year == workout.date.year &&
-          existing.date.month == workout.date.month &&
-          existing.date.day == workout.date.day &&
-          existing.id != workout.id) {
-        await _hive.delete(AppConstants.hiveBoxWorkouts, existing.id);
-      }
-    }
-    await _hive.put(
-      AppConstants.hiveBoxWorkouts,
-      workout.id,
-      workout.toJson(),
-    );
+    await _hive.put(AppConstants.hiveBoxWorkouts, workout.id, workout.toJson());
   }
 
   /// Delete a workout by id. No-op when it doesn't exist.
@@ -81,6 +65,9 @@ class WorkoutService {
       for (final set in exercise.sets) {
         if (set.isWarmup) continue;
         volume += set.weightKg * set.reps;
+        if (set.weightKgRight != null) {
+          volume += set.weightKgRight! * (set.repsRight ?? set.reps);
+        }
       }
     }
     return volume;

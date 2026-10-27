@@ -17,7 +17,8 @@ class WorkoutNotificationService {
     _initPlugin();
   }
 
-  final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
   bool _isInitialized = false;
 
   /// Callback for interactive notification buttons (+30s, Skip Rest).
@@ -26,7 +27,9 @@ class WorkoutNotificationService {
   Future<void> _initPlugin() async {
     if (kIsWeb) return;
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const darwinSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -50,7 +53,9 @@ class WorkoutNotificationService {
       );
       _isInitialized = true;
     } catch (e) {
-      debugPrint('[WorkoutNotificationService] Error initializing notifications: $e');
+      debugPrint(
+        '[WorkoutNotificationService] Error initializing notifications: $e',
+      );
     }
   }
 
@@ -59,13 +64,18 @@ class WorkoutNotificationService {
     if (kIsWeb) return false;
 
     if (Platform.isAndroid) {
-      final androidImplementation =
-          _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-      final granted = await androidImplementation?.requestNotificationsPermission();
+      final androidImplementation = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+      final granted = await androidImplementation
+          ?.requestNotificationsPermission();
       return granted ?? false;
     } else if (Platform.isIOS) {
-      final iosImplementation =
-          _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+      final iosImplementation = _plugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >();
       final granted = await iosImplementation?.requestPermissions(
         alert: true,
         badge: true,
@@ -94,7 +104,8 @@ class WorkoutNotificationService {
     final androidDetails = AndroidNotificationDetails(
       'leon_workout_rest',
       'Active Rest Timer',
-      channelDescription: 'Persistent countdown and controls for rest intervals',
+      channelDescription:
+          'Persistent countdown and controls for rest intervals',
       importance: Importance.low,
       priority: Priority.low,
       onlyAlertOnce: true,
@@ -144,7 +155,9 @@ class WorkoutNotificationService {
         notificationDetails,
       );
     } catch (e) {
-      debugPrint('[WorkoutNotificationService] Error showing rest notification: $e');
+      debugPrint(
+        '[WorkoutNotificationService] Error showing rest notification: $e',
+      );
     }
   }
 
@@ -189,7 +202,9 @@ class WorkoutNotificationService {
         notificationDetails,
       );
     } catch (e) {
-      debugPrint('[WorkoutNotificationService] Error showing completion notification: $e');
+      debugPrint(
+        '[WorkoutNotificationService] Error showing completion notification: $e',
+      );
     }
   }
 
@@ -199,7 +214,9 @@ class WorkoutNotificationService {
     try {
       await _plugin.cancel(WorkoutNotificationIds.restTimer);
     } catch (e) {
-      debugPrint('[WorkoutNotificationService] Error canceling rest notification: $e');
+      debugPrint(
+        '[WorkoutNotificationService] Error canceling rest notification: $e',
+      );
     }
   }
 
@@ -221,7 +238,8 @@ class WorkoutNotificationService {
     final androidDetails = AndroidNotificationDetails(
       'leon_active_workout',
       'Active Workout Session',
-      channelDescription: 'Persistent status bar indicator while workout is in progress',
+      channelDescription:
+          'Persistent status bar indicator while workout is in progress',
       importance: Importance.low,
       priority: Priority.low,
       onlyAlertOnce: true,
@@ -261,7 +279,9 @@ class WorkoutNotificationService {
         notificationDetails,
       );
     } catch (e) {
-      debugPrint('[WorkoutNotificationService] Error showing active workout notification: $e');
+      debugPrint(
+        '[WorkoutNotificationService] Error showing active workout notification: $e',
+      );
     }
   }
 
@@ -271,7 +291,9 @@ class WorkoutNotificationService {
     try {
       await _plugin.cancel(WorkoutNotificationIds.activeWorkout);
     } catch (e) {
-      debugPrint('[WorkoutNotificationService] Error canceling active workout notification: $e');
+      debugPrint(
+        '[WorkoutNotificationService] Error canceling active workout notification: $e',
+      );
     }
   }
 
@@ -281,12 +303,16 @@ class WorkoutNotificationService {
     try {
       await _plugin.cancelAll();
     } catch (e) {
-      debugPrint('[WorkoutNotificationService] Error canceling all notifications: $e');
+      debugPrint(
+        '[WorkoutNotificationService] Error canceling all notifications: $e',
+      );
     }
   }
 }
 
-final workoutNotificationServiceProvider = Provider<WorkoutNotificationService>((ref) {
-  final service = WorkoutNotificationService();
-  return service;
-});
+final workoutNotificationServiceProvider = Provider<WorkoutNotificationService>(
+  (ref) {
+    final service = WorkoutNotificationService();
+    return service;
+  },
+);

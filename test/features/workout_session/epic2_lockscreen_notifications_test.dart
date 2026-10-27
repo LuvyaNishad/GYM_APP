@@ -102,143 +102,161 @@ void main() {
       fakeLiveActivity = _FakeLiveActivityService();
     });
 
-    test('Starting rest timer triggers persistent notification and Live Activity', () {
-      final container = ProviderContainer(
-        overrides: [
-          workoutNotificationServiceProvider.overrideWithValue(fakeNotifications),
-          liveActivityServiceProvider.overrideWithValue(fakeLiveActivity),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      'Starting rest timer triggers persistent notification and Live Activity',
+      () {
+        final container = ProviderContainer(
+          overrides: [
+            workoutNotificationServiceProvider.overrideWithValue(
+              fakeNotifications,
+            ),
+            liveActivityServiceProvider.overrideWithValue(fakeLiveActivity),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      final notifier = container.read(restTimerProvider.notifier);
+        final notifier = container.read(restTimerProvider.notifier);
 
-      // Start 90s rest timer for Incline Dumbbell Press Set 2
-      notifier.startTimer(
-        durationSeconds: 90,
-        exerciseName: 'Incline Dumbbell Press',
-        setNumber: 2,
-        totalSets: 4,
-        targetWeightKg: 32.0,
-        targetReps: 10,
-        plateBreakdown: 'Dumbbells',
-      );
+        // Start 90s rest timer for Incline Dumbbell Press Set 2
+        notifier.startTimer(
+          durationSeconds: 90,
+          exerciseName: 'Incline Dumbbell Press',
+          setNumber: 2,
+          totalSets: 4,
+          targetWeightKg: 32.0,
+          targetReps: 10,
+          plateBreakdown: 'Dumbbells',
+        );
 
-      final state = container.read(restTimerProvider);
-      expect(state.isRunning, isTrue);
-      expect(state.remainingSeconds, 90);
-      expect(state.exerciseName, 'Incline Dumbbell Press');
+        final state = container.read(restTimerProvider);
+        expect(state.isRunning, isTrue);
+        expect(state.remainingSeconds, 90);
+        expect(state.exerciseName, 'Incline Dumbbell Press');
 
-      // Notification service was invoked
-      expect(fakeNotifications.isRestNotificationActive, isTrue);
-      expect(fakeNotifications.lastExerciseName, 'Incline Dumbbell Press');
-      expect(fakeNotifications.lastSetNumber, 2);
-      expect(fakeNotifications.lastRemainingSeconds, 90);
+        // Notification service was invoked
+        expect(fakeNotifications.isRestNotificationActive, isTrue);
+        expect(fakeNotifications.lastExerciseName, 'Incline Dumbbell Press');
+        expect(fakeNotifications.lastSetNumber, 2);
+        expect(fakeNotifications.lastRemainingSeconds, 90);
 
-      // Live Activity was invoked
-      expect(fakeLiveActivity.isActivityRunning, isTrue);
-      expect(fakeLiveActivity.lastExercise, 'Incline Dumbbell Press');
-      expect(fakeLiveActivity.lastRemainingSeconds, 90);
+        // Live Activity was invoked
+        expect(fakeLiveActivity.isActivityRunning, isTrue);
+        expect(fakeLiveActivity.lastExercise, 'Incline Dumbbell Press');
+        expect(fakeLiveActivity.lastRemainingSeconds, 90);
 
-      notifier.skip();
-    });
+        notifier.skip();
+      },
+    );
 
-    test('Interactive notification action "+30s" increments timer duration and updates notification', () {
-      final container = ProviderContainer(
-        overrides: [
-          workoutNotificationServiceProvider.overrideWithValue(fakeNotifications),
-          liveActivityServiceProvider.overrideWithValue(fakeLiveActivity),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      'Interactive notification action "+30s" increments timer duration and updates notification',
+      () {
+        final container = ProviderContainer(
+          overrides: [
+            workoutNotificationServiceProvider.overrideWithValue(
+              fakeNotifications,
+            ),
+            liveActivityServiceProvider.overrideWithValue(fakeLiveActivity),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      final notifier = container.read(restTimerProvider.notifier);
+        final notifier = container.read(restTimerProvider.notifier);
 
-      notifier.startTimer(
-        durationSeconds: 60,
-        exerciseName: 'Barbell Bench Press',
-        setNumber: 3,
-      );
+        notifier.startTimer(
+          durationSeconds: 60,
+          exerciseName: 'Barbell Bench Press',
+          setNumber: 3,
+        );
 
-      expect(container.read(restTimerProvider).remainingSeconds, 60);
+        expect(container.read(restTimerProvider).remainingSeconds, 60);
 
-      // Simulate tapping "+30s" on the Android notification action button
-      fakeNotifications.onActionTapped?.call('add_30');
+        // Simulate tapping "+30s" on the Android notification action button
+        fakeNotifications.onActionTapped?.call('add_30');
 
-      expect(container.read(restTimerProvider).remainingSeconds, 90);
-      expect(fakeNotifications.lastRemainingSeconds, 90);
+        expect(container.read(restTimerProvider).remainingSeconds, 90);
+        expect(fakeNotifications.lastRemainingSeconds, 90);
 
-      notifier.skip();
-    });
+        notifier.skip();
+      },
+    );
 
-    test('Interactive notification action "Skip Rest" dismisses notification and terminates Live Activity', () {
-      final container = ProviderContainer(
-        overrides: [
-          workoutNotificationServiceProvider.overrideWithValue(fakeNotifications),
-          liveActivityServiceProvider.overrideWithValue(fakeLiveActivity),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      'Interactive notification action "Skip Rest" dismisses notification and terminates Live Activity',
+      () {
+        final container = ProviderContainer(
+          overrides: [
+            workoutNotificationServiceProvider.overrideWithValue(
+              fakeNotifications,
+            ),
+            liveActivityServiceProvider.overrideWithValue(fakeLiveActivity),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      final notifier = container.read(restTimerProvider.notifier);
+        final notifier = container.read(restTimerProvider.notifier);
 
-      notifier.startTimer(
-        durationSeconds: 60,
-        exerciseName: 'Barbell Squat',
-        setNumber: 1,
-      );
+        notifier.startTimer(
+          durationSeconds: 60,
+          exerciseName: 'Barbell Squat',
+          setNumber: 1,
+        );
 
-      expect(fakeNotifications.isRestNotificationActive, isTrue);
-      expect(fakeLiveActivity.isActivityRunning, isTrue);
+        expect(fakeNotifications.isRestNotificationActive, isTrue);
+        expect(fakeLiveActivity.isActivityRunning, isTrue);
 
-      // Simulate tapping "Skip Rest" on the notification action button
-      fakeNotifications.onActionTapped?.call('skip_rest');
+        // Simulate tapping "Skip Rest" on the notification action button
+        fakeNotifications.onActionTapped?.call('skip_rest');
 
-      expect(container.read(restTimerProvider).remainingSeconds, 0);
-      expect(container.read(restTimerProvider).isRunning, isFalse);
-      expect(fakeNotifications.isRestNotificationActive, isFalse);
-      expect(fakeLiveActivity.isActivityRunning, isFalse);
-    });
+        expect(container.read(restTimerProvider).remainingSeconds, 0);
+        expect(container.read(restTimerProvider).isRunning, isFalse);
+        expect(fakeNotifications.isRestNotificationActive, isFalse);
+        expect(fakeLiveActivity.isActivityRunning, isFalse);
+      },
+    );
 
-    test('MethodChannel bridge invocation for LiveActivityService handles calls gracefully', () async {
-      const channel = MethodChannel('leon/live_activity');
-      final log = <MethodCall>[];
+    test(
+      'MethodChannel bridge invocation for LiveActivityService handles calls gracefully',
+      () async {
+        const channel = MethodChannel('leon/live_activity');
+        final log = <MethodCall>[];
 
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        log.add(methodCall);
-        if (methodCall.method == 'areActivitiesEnabled') {
-          return true;
-        }
-        if (methodCall.method == 'startLiveActivity') {
-          return 'activity-12345';
-        }
-        return true;
-      });
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+              log.add(methodCall);
+              if (methodCall.method == 'areActivitiesEnabled') {
+                return true;
+              }
+              if (methodCall.method == 'startLiveActivity') {
+                return 'activity-12345';
+              }
+              return true;
+            });
 
-      final service = LiveActivityService();
+        final service = LiveActivityService();
 
-      await service.startLiveActivity(
-        workoutTitle: "TODAY'S WORKOUT",
-        exerciseName: 'Deadlift',
-        setNumber: 1,
-        totalSets: 3,
-        remainingSeconds: 120,
-        totalDurationSeconds: 120,
-      );
+        await service.startLiveActivity(
+          workoutTitle: "TODAY'S WORKOUT",
+          exerciseName: 'Deadlift',
+          setNumber: 1,
+          totalSets: 3,
+          remainingSeconds: 120,
+          totalDurationSeconds: 120,
+        );
 
-      await service.updateLiveActivity(
-        remainingSeconds: 110,
-        totalDurationSeconds: 120,
-        exerciseName: 'Deadlift',
-        setNumber: 1,
-        totalSets: 3,
-      );
+        await service.updateLiveActivity(
+          remainingSeconds: 110,
+          totalDurationSeconds: 120,
+          exerciseName: 'Deadlift',
+          setNumber: 1,
+          totalSets: 3,
+        );
 
-      await service.stopLiveActivity();
+        await service.stopLiveActivity();
 
-      // Ensure proper method calls were dispatched
-      expect(service.currentActivityId, isNull);
-    });
+        // Ensure proper method calls were dispatched
+        expect(service.currentActivityId, isNull);
+      },
+    );
   });
 }

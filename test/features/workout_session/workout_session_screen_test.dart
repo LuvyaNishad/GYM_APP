@@ -11,63 +11,62 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('WorkoutSessionScreen Widget', () {
-    testWidgets('renders active header, sequence list cards, and floating rest bar', (tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 2.0;
-      final container = ProviderContainer();
-      container.read(activeSessionProvider.notifier).startSession();
-      addTearDown(() {
-        container.read(activeSessionProvider.notifier).cancelSession();
-        container.dispose();
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+    testWidgets(
+      'renders active header, sequence list cards, and floating rest bar',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        final container = ProviderContainer();
+        container.read(activeSessionProvider.notifier).startSession();
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: const MaterialApp(
-            home: WorkoutSessionScreen(),
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: const MaterialApp(home: WorkoutSessionScreen()),
           ),
-        ),
-      );
+        );
 
-      // Execute post frame callback to start session
-      await tester.pump();
-      // Render state with started session
-      await tester.pump();
+        // Execute post frame callback to start session
+        await tester.pump();
+        // Render state with started session
+        await tester.pump();
 
-      // Verify Header
-      expect(find.byType(ActiveSessionHeader), findsOneWidget);
-      expect(find.textContaining('PUSH DAY'), findsOneWidget);
+        // Verify Header
+        expect(find.byType(ActiveSessionHeader), findsOneWidget);
+        expect(find.textContaining('PUSH DAY'), findsOneWidget);
 
-      // Verify Sequence Cards
-      expect(find.byType(ExerciseSequenceCard), findsWidgets);
-      expect(find.text('Barbell Bench Press'), findsOneWidget);
-      expect(find.text('Incline Dumbbell Press'), findsOneWidget);
+        // Verify Sequence Cards
+        expect(find.byType(ExerciseSequenceCard), findsWidgets);
+        expect(find.text('Barbell Bench Press'), findsOneWidget);
+        expect(find.text('Incline Dumbbell Press'), findsOneWidget);
 
-      // Verify Floating Rest Bar
-      expect(find.byType(FloatingRestTimerBar), findsOneWidget);
+        // Verify Floating Rest Bar
+        expect(find.byType(FloatingRestTimerBar), findsOneWidget);
 
-      // Tap on second exercise card to toggle accordion expansion
-      await tester.tap(find.text('Incline Dumbbell Press'));
-      await tester.pump();
+        // Tap on second exercise card to toggle accordion expansion
+        await tester.tap(find.text('Incline Dumbbell Press'));
+        await tester.pump();
 
-      // Header quick action button
-      expect(find.byTooltip('Add Exercise'), findsOneWidget);
+        // Header quick action button
+        expect(find.byTooltip('Workout options'), findsOneWidget);
 
-      // Verify that old clutter text is completely gone
-      expect(find.text('HYPERTROPHY'), findsNothing);
-      expect(find.text('TARGET RPE 8.5'), findsNothing);
-      expect(find.text('Hold ≡ to reorder'), findsNothing);
+        // Verify that old clutter text is completely gone
+        expect(find.text('HYPERTROPHY'), findsNothing);
+        expect(find.text('TARGET RPE 8.5'), findsNothing);
+        expect(find.text('Hold ≡ to reorder'), findsNothing);
 
-      // Bottom footer action button ADD EXERCISE should be present
-      expect(find.text('ADD EXERCISE'), findsOneWidget);
+        // Bottom footer action button ADD EXERCISE should be present
+        expect(find.text('ADD EXERCISE'), findsOneWidget);
 
-      // Cancel session ticker so no timers remain pending
-      container.read(activeSessionProvider.notifier).cancelSession();
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pump();
-    });
+        // Cancel session ticker so no timers remain pending
+        container.dispose();
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+      },
+    );
   });
 }

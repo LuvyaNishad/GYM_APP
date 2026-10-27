@@ -15,6 +15,12 @@ class _FakeHiveService extends HiveService {
   }
 
   @override
+  Future<void> putSettingChecked(String key, Object? value) =>
+      putSetting(key, value);
+  @override
+  Future<void> deleteSettingChecked(String key) => deleteSetting(key);
+
+  @override
   T? getSetting<T>(String key, {T? fallback}) {
     return (settings[key] as T?) ?? fallback;
   }
@@ -56,51 +62,54 @@ void main() {
       expect(set.volumeKg, 640.0);
     });
 
-    test('ActiveSessionState serialization roundtrip preserves all session, exercise, and set fields', () {
-      final now = DateTime.now();
-      final original = ActiveSessionState(
-        workoutId: 'test_123',
-        splitName: 'LEGS // QUAD FOCUS',
-        startTime: now,
-        elapsedSeconds: 540,
-        isActive: true,
-        isPaused: false,
-        expandedExerciseId: 'ex_1',
-        exercises: [
-          const ActiveExerciseState(
-            exerciseId: 'ex_1',
-            name: 'Barbell Back Squat',
-            muscleGroup: 'quads',
-            equipment: 'barbell',
-            restDurationSeconds: 180,
-            sets: [
-              ActiveSetState(
-                setNumber: 1,
-                weightKg: 100.0,
-                reps: 5,
-                rir: 2.0,
-                rpe: 8.0,
-                isCompleted: true,
-                previousWeightKg: 95.0,
-                previousReps: 5,
-              ),
-            ],
-          ),
-        ],
-      );
+    test(
+      'ActiveSessionState serialization roundtrip preserves all session, exercise, and set fields',
+      () {
+        final now = DateTime.now();
+        final original = ActiveSessionState(
+          workoutId: 'test_123',
+          splitName: 'LEGS // QUAD FOCUS',
+          startTime: now,
+          elapsedSeconds: 540,
+          isActive: true,
+          isPaused: false,
+          expandedExerciseId: 'ex_1',
+          exercises: [
+            const ActiveExerciseState(
+              exerciseId: 'ex_1',
+              name: 'Barbell Back Squat',
+              muscleGroup: 'quads',
+              equipment: 'barbell',
+              restDurationSeconds: 180,
+              sets: [
+                ActiveSetState(
+                  setNumber: 1,
+                  weightKg: 100.0,
+                  reps: 5,
+                  rir: 2.0,
+                  rpe: 8.0,
+                  isCompleted: true,
+                  previousWeightKg: 95.0,
+                  previousReps: 5,
+                ),
+              ],
+            ),
+          ],
+        );
 
-      final json = original.toJson();
-      final restored = ActiveSessionState.fromJson(json);
+        final json = original.toJson();
+        final restored = ActiveSessionState.fromJson(json);
 
-      expect(restored.workoutId, original.workoutId);
-      expect(restored.splitName, original.splitName);
-      expect(restored.elapsedSeconds, original.elapsedSeconds);
-      expect(restored.isActive, original.isActive);
-      expect(restored.exercises.length, 1);
-      expect(restored.exercises.first.name, 'Barbell Back Squat');
-      expect(restored.exercises.first.sets.first.weightKg, 100.0);
-      expect(restored.exercises.first.sets.first.isCompleted, isTrue);
-    });
+        expect(restored.workoutId, original.workoutId);
+        expect(restored.splitName, original.splitName);
+        expect(restored.elapsedSeconds, original.elapsedSeconds);
+        expect(restored.isActive, original.isActive);
+        expect(restored.exercises.length, 1);
+        expect(restored.exercises.first.name, 'Barbell Back Squat');
+        expect(restored.exercises.first.sets.first.weightKg, 100.0);
+        expect(restored.exercises.first.sets.first.isCompleted, isTrue);
+      },
+    );
   });
 
   group('RestTimerNotifier', () {
@@ -134,18 +143,21 @@ void main() {
       expect(state.remainingSeconds, 40);
     });
 
-    test('subtractTenSeconds decreases remaining time without going below zero', () {
-      final notifier = container.read(restTimerProvider.notifier);
-      notifier.startTimer(durationSeconds: 15);
-      notifier.subtractTenSeconds();
+    test(
+      'subtractTenSeconds decreases remaining time without going below zero',
+      () {
+        final notifier = container.read(restTimerProvider.notifier);
+        notifier.startTimer(durationSeconds: 15);
+        notifier.subtractTenSeconds();
 
-      var state = container.read(restTimerProvider);
-      expect(state.remainingSeconds, 5);
+        var state = container.read(restTimerProvider);
+        expect(state.remainingSeconds, 5);
 
-      notifier.subtractTenSeconds();
-      state = container.read(restTimerProvider);
-      expect(state.remainingSeconds, 0);
-    });
+        notifier.subtractTenSeconds();
+        state = container.read(restTimerProvider);
+        expect(state.remainingSeconds, 0);
+      },
+    );
 
     test('skip stops and resets timer', () {
       final notifier = container.read(restTimerProvider.notifier);
@@ -165,9 +177,7 @@ void main() {
     setUp(() {
       fakeHive = _FakeHiveService();
       container = ProviderContainer(
-        overrides: [
-          hiveServiceProvider.overrideWithValue(fakeHive),
-        ],
+        overrides: [hiveServiceProvider.overrideWithValue(fakeHive)],
       );
     });
 
@@ -187,28 +197,43 @@ void main() {
       expect(state.totalSetCount, greaterThan(0));
     });
 
-    test('logging a set marks it completed and triggers rest timer if autoStart is on', () {
-      final sessionNotifier = container.read(activeSessionProvider.notifier);
-      sessionNotifier.startSession();
+    test(
+      'logging a set marks it completed and triggers rest timer if autoStart is on',
+      () {
+        final sessionNotifier = container.read(activeSessionProvider.notifier);
+        sessionNotifier.startSession();
 
-      final exerciseId = container.read(activeSessionProvider).exercises.first.exerciseId;
-      sessionNotifier.logSet(exerciseId: exerciseId, setIndex: 0, completed: true);
+        final exerciseId = container
+            .read(activeSessionProvider)
+            .exercises
+            .first
+            .exerciseId;
+        sessionNotifier.logSet(
+          exerciseId: exerciseId,
+          setIndex: 0,
+          completed: true,
+        );
 
-      final state = container.read(activeSessionProvider);
-      expect(state.exercises.first.sets.first.isCompleted, isTrue);
-      expect(state.completedSetCount, 1);
+        final state = container.read(activeSessionProvider);
+        expect(state.exercises.first.sets.first.isCompleted, isTrue);
+        expect(state.completedSetCount, 1);
 
-      // Check that rest timer was automatically triggered
-      final restState = container.read(restTimerProvider);
-      expect(restState.isRunning, isTrue);
-      expect(restState.remainingSeconds, greaterThan(0));
-    });
+        // Check that rest timer was automatically triggered
+        final restState = container.read(restTimerProvider);
+        expect(restState.isRunning, isTrue);
+        expect(restState.remainingSeconds, greaterThan(0));
+      },
+    );
 
     test('updating weight and reps updates set and volume', () {
       final sessionNotifier = container.read(activeSessionProvider.notifier);
       sessionNotifier.startSession();
 
-      final exerciseId = container.read(activeSessionProvider).exercises.first.exerciseId;
+      final exerciseId = container
+          .read(activeSessionProvider)
+          .exercises
+          .first
+          .exerciseId;
       sessionNotifier.updateSetValues(
         exerciseId: exerciseId,
         setIndex: 0,
@@ -229,15 +254,25 @@ void main() {
       final sessionNotifier = container.read(activeSessionProvider.notifier);
       sessionNotifier.startSession();
 
-      final firstId = container.read(activeSessionProvider).exercises.first.exerciseId;
-      final secondId = container.read(activeSessionProvider).exercises[1].exerciseId;
+      final firstId = container
+          .read(activeSessionProvider)
+          .exercises
+          .first
+          .exerciseId;
+      final secondId = container
+          .read(activeSessionProvider)
+          .exercises[1]
+          .exerciseId;
 
       // First exercise is expanded by default upon starting
       expect(container.read(activeSessionProvider).expandedExerciseId, firstId);
 
       // Tapping second exercise expands second
       sessionNotifier.toggleExerciseExpand(secondId);
-      expect(container.read(activeSessionProvider).expandedExerciseId, secondId);
+      expect(
+        container.read(activeSessionProvider).expandedExerciseId,
+        secondId,
+      );
 
       // Tapping the same collapses it
       sessionNotifier.toggleExerciseExpand(secondId);
@@ -252,8 +287,14 @@ void main() {
       final sessionNotifier = container.read(activeSessionProvider.notifier);
       sessionNotifier.startSession();
 
-      final initialFirst = container.read(activeSessionProvider).exercises[0].exerciseId;
-      final initialSecond = container.read(activeSessionProvider).exercises[1].exerciseId;
+      final initialFirst = container
+          .read(activeSessionProvider)
+          .exercises[0]
+          .exerciseId;
+      final initialSecond = container
+          .read(activeSessionProvider)
+          .exercises[1]
+          .exerciseId;
 
       sessionNotifier.reorderExercises(0, 2);
 
@@ -262,64 +303,87 @@ void main() {
       expect(reorderedState.exercises[1].exerciseId, initialFirst);
     });
 
-    test('persists session to Hive on mutation and auto-restores on new container', () {
-      final sessionNotifier = container.read(activeSessionProvider.notifier);
-      sessionNotifier.startSession(splitName: 'Upper Body Blast');
+    test(
+      'persists session to Hive on mutation and auto-restores on new container',
+      () async {
+        final sessionNotifier = container.read(activeSessionProvider.notifier);
+        sessionNotifier.startSession(splitName: 'Upper Body Blast');
 
-      // Verify stored in fakeHive
-      expect(fakeHive.settings.containsKey(AppConstants.settingActiveSessionData), isTrue);
+        await sessionNotifier.flushPendingChanges();
+        // Verify stored in fakeHive
+        expect(
+          fakeHive.settings.containsKey(AppConstants.settingActiveSessionData),
+          isTrue,
+        );
 
-      // Create a brand new container reading from the same fakeHive
-      final secondContainer = ProviderContainer(
-        overrides: [
-          hiveServiceProvider.overrideWithValue(fakeHive),
-        ],
-      );
-      addTearDown(secondContainer.dispose);
+        // Create a brand new container reading from the same fakeHive
+        final secondContainer = ProviderContainer(
+          overrides: [hiveServiceProvider.overrideWithValue(fakeHive)],
+        );
+        addTearDown(secondContainer.dispose);
 
-      final restoredState = secondContainer.read(activeSessionProvider);
-      expect(restoredState.isActive, isTrue);
-      expect(restoredState.splitName, 'Upper Body Blast');
-      expect(restoredState.exercises, isNotEmpty);
+        final restoredState = secondContainer.read(activeSessionProvider);
+        expect(restoredState.isActive, isTrue);
+        expect(restoredState.splitName, 'Upper Body Blast');
+        expect(restoredState.exercises, isNotEmpty);
 
-      // Clean up ticker
-      secondContainer.read(activeSessionProvider.notifier).cancelSession();
-    });
+        // Clean up ticker
+        secondContainer.read(activeSessionProvider.notifier).cancelSession();
+      },
+    );
 
-    test('substituteExercise swaps exercise details while preserving logged completed sets', () {
+    test(
+      'substituteExercise swaps exercise details while preserving logged completed sets',
+      () {
+        final sessionNotifier = container.read(activeSessionProvider.notifier);
+        sessionNotifier.startSession();
+
+        final firstEx = container.read(activeSessionProvider).exercises.first;
+        // Complete first set
+        sessionNotifier.logSet(
+          exerciseId: firstEx.exerciseId,
+          setIndex: 0,
+          completed: true,
+        );
+
+        // Substitute with dumbbell variation
+        sessionNotifier.substituteExercise(
+          oldExerciseId: firstEx.exerciseId,
+          newExerciseId: 'db_press_alt',
+          newName: 'Dumbbell Incline Press',
+          newMuscleGroup: 'chest',
+          newEquipment: 'dumbbells',
+          newRestSeconds: 90,
+        );
+
+        final updatedState = container.read(activeSessionProvider);
+        final original = updatedState.exercises.first;
+        expect(original.name, firstEx.name);
+        expect(original.sets.single.isCompleted, isTrue);
+        final substituted = updatedState.exercises[1];
+        expect(substituted.name, 'Dumbbell Incline Press');
+        expect(substituted.equipment, 'dumbbells');
+        expect(substituted.restDurationSeconds, 90);
+        // Completed set remains intact!
+        expect(substituted.sets.length, firstEx.sets.length - 1);
+        expect(substituted.sets.every((s) => !s.isCompleted), isTrue);
+      },
+    );
+
+    test('discard clears persisted storage after pending writes', () async {
       final sessionNotifier = container.read(activeSessionProvider.notifier);
       sessionNotifier.startSession();
-
-      final firstEx = container.read(activeSessionProvider).exercises.first;
-      // Complete first set
-      sessionNotifier.logSet(exerciseId: firstEx.exerciseId, setIndex: 0, completed: true);
-
-      // Substitute with dumbbell variation
-      sessionNotifier.substituteExercise(
-        oldExerciseId: firstEx.exerciseId,
-        newExerciseId: 'db_press_alt',
-        newName: 'Dumbbell Incline Press',
-        newMuscleGroup: 'chest',
-        newEquipment: 'dumbbells',
-        newRestSeconds: 90,
+      await sessionNotifier.flushPendingChanges();
+      expect(
+        fakeHive.settings.containsKey(AppConstants.settingActiveSessionData),
+        isTrue,
       );
 
-      final updatedState = container.read(activeSessionProvider);
-      final substituted = updatedState.exercises.first;
-      expect(substituted.name, 'Dumbbell Incline Press');
-      expect(substituted.equipment, 'dumbbells');
-      expect(substituted.restDurationSeconds, 90);
-      // Completed set remains intact!
-      expect(substituted.sets.first.isCompleted, isTrue);
-    });
-
-    test('finishSession and cancelSession clear persisted storage', () {
-      final sessionNotifier = container.read(activeSessionProvider.notifier);
-      sessionNotifier.startSession();
-      expect(fakeHive.settings.containsKey(AppConstants.settingActiveSessionData), isTrue);
-
-      sessionNotifier.cancelSession();
-      expect(fakeHive.settings.containsKey(AppConstants.settingActiveSessionData), isFalse);
+      await sessionNotifier.discardSession();
+      expect(
+        fakeHive.settings.containsKey(AppConstants.settingActiveSessionData),
+        isFalse,
+      );
     });
   });
 }

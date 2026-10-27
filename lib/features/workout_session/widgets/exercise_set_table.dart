@@ -6,6 +6,7 @@ import '../../../core/theme/app_typography.dart';
 import '../models/active_session_state.dart';
 import '../providers/active_session_provider.dart';
 import 'tempo_pacer_overlay.dart';
+import 'effort_picker_modal.dart';
 
 /// Clean, high-contrast Set Table for an active workout exercise.
 ///
@@ -18,10 +19,7 @@ import 'tempo_pacer_overlay.dart';
 /// - Option A two-stage unilateral logging with 1-tap L->R sync
 /// - Clean bottom actions: + ADD SET and + WARMUP (Plate Calc & Tempo in 3-dot menu)
 class ExerciseSetTable extends ConsumerWidget {
-  const ExerciseSetTable({
-    super.key,
-    required this.exercise,
-  });
+  const ExerciseSetTable({super.key, required this.exercise});
 
   final ActiveExerciseState exercise;
 
@@ -37,11 +35,7 @@ class ExerciseSetTable extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: const BoxDecoration(
             color: AppColors.charcoal,
-            border: Border(
-              bottom: BorderSide(
-                color: AppColors.steel,
-              ),
-            ),
+            border: Border(bottom: BorderSide(color: AppColors.steel)),
           ),
           child: Row(
             children: [
@@ -63,7 +57,7 @@ class ExerciseSetTable extends ConsumerWidget {
                 child: Center(
                   child: Text(
                     'KG',
-                    style: AppTypography.monoSmall.copyWith(
+                    style: AppTypography.bodySmall.copyWith(
                       fontSize: 11.0,
                       fontWeight: FontWeight.w700,
                       color: AppColors.platinum,
@@ -78,7 +72,7 @@ class ExerciseSetTable extends ConsumerWidget {
                 child: Center(
                   child: Text(
                     'REPS',
-                    style: AppTypography.monoSmall.copyWith(
+                    style: AppTypography.bodySmall.copyWith(
                       fontSize: 11.0,
                       fontWeight: FontWeight.w700,
                       color: AppColors.platinum,
@@ -94,7 +88,7 @@ class ExerciseSetTable extends ConsumerWidget {
                   child: Text(
                     'LOG',
                     style: TextStyle(
-                      fontFamily: AppTypography.fontMono,
+                      fontFamily: AppTypography.fontBody,
                       fontSize: 11.0,
                       fontWeight: FontWeight.w700,
                       color: AppColors.platinum,
@@ -109,11 +103,18 @@ class ExerciseSetTable extends ConsumerWidget {
 
         // Set Rows
         for (int i = 0; i < exercise.sets.length; i++) ...[
-          if (i > 0)
-            const Divider(
-              height: 1,
-              color: AppColors.steel,
+          if (i == exercise.sets.indexWhere((s) => !s.isCompleted))
+            Container(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              padding: const EdgeInsets.fromLTRB(14, 8, 14, 4),
+              child: Text(
+                'NEXT SET',
+                style: AppTypography.monoSmall.copyWith(
+                  color: AppColors.primary,
+                ),
+              ),
             ),
+          if (i > 0) const Divider(height: 1, color: AppColors.steel),
           if (exercise.isUnilateral)
             _UnilateralSetRowWidget(
               key: ValueKey('${exercise.exerciseId}_uni_$i'),
@@ -121,7 +122,8 @@ class ExerciseSetTable extends ConsumerWidget {
               set: exercise.sets[i],
               setIndex: i,
               notifier: notifier,
-              onShowSetOptions: () => _showSetOptionsSheet(context, i, notifier),
+              onShowSetOptions: () =>
+                  _showSetOptionsSheet(context, i, notifier),
             )
           else
             _BilateralSetRowWidget(
@@ -130,11 +132,19 @@ class ExerciseSetTable extends ConsumerWidget {
               set: exercise.sets[i],
               setIndex: i,
               notifier: notifier,
-              onShowSetOptions: () => _showSetOptionsSheet(context, i, notifier),
+              onShowSetOptions: () =>
+                  _showSetOptionsSheet(context, i, notifier),
             ),
         ],
 
-        // Bottom Action Controls (Clean + ADD SET & + WARMUP)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
+          child: Text(
+            'Tap a set number for set type and optional effort (RIR / RPE).',
+            style: AppTypography.bodySmall,
+          ),
+        ),
+        // Bottom Action Controls
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           child: Row(
@@ -142,10 +152,14 @@ class ExerciseSetTable extends ConsumerWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => notifier.addSet(exercise.exerciseId),
-                  icon: const Icon(Icons.add, size: 18, color: AppColors.pureWhite),
+                  icon: const Icon(
+                    Icons.add,
+                    size: 18,
+                    color: AppColors.pureWhite,
+                  ),
                   label: Text(
                     'ADD SET',
-                    style: AppTypography.monoSmall.copyWith(
+                    style: AppTypography.bodySmall.copyWith(
                       fontSize: 12.0,
                       fontWeight: FontWeight.w700,
                       color: AppColors.pureWhite,
@@ -165,8 +179,16 @@ class ExerciseSetTable extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               OutlinedButton.icon(
-                onPressed: () => _showWarmupOptionsSheet(context, exercise.exerciseId, notifier),
-                icon: const Icon(Icons.fitness_center, size: 16, color: AppColors.platinum),
+                onPressed: () => _showWarmupOptionsSheet(
+                  context,
+                  exercise.exerciseId,
+                  notifier,
+                ),
+                icon: const Icon(
+                  Icons.fitness_center,
+                  size: 16,
+                  color: AppColors.platinum,
+                ),
                 label: Text(
                   '+ WARMUP',
                   style: AppTypography.monoSmall.copyWith(
@@ -181,7 +203,10 @@ class ExerciseSetTable extends ConsumerWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                   minimumSize: const Size(0, 46),
                 ),
               ),
@@ -227,15 +252,61 @@ class ExerciseSetTable extends ConsumerWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: AppColors.platinum, size: 20),
+                      icon: const Icon(
+                        Icons.close,
+                        color: AppColors.platinum,
+                        size: 20,
+                      ),
                       onPressed: () => Navigator.of(ctx).pop(),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.tune_rounded),
+                  title: Text(
+                    set.effortLogged ? 'Edit effort' : 'Log effort (optional)',
+                  ),
+                  subtitle: Text(
+                    set.effortLogged
+                        ? '${set.rir.toStringAsFixed(1)} RIR / ${set.rpe.toStringAsFixed(1)} RPE'
+                        : 'Not recorded',
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => EffortPickerModal(
+                        initialRir: set.rir,
+                        initialRpe: set.rpe,
+                        onSaved: (rir, rpe) => notifier.updateSetValues(
+                          exerciseId: exercise.exerciseId,
+                          setIndex: setIndex,
+                          rir: rir,
+                          rpe: rpe,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                if (set.effortLogged)
+                  TextButton(
+                    onPressed: () {
+                      notifier.updateSetValues(
+                        exerciseId: exercise.exerciseId,
+                        setIndex: setIndex,
+                        clearEffort: true,
+                      );
+                      Navigator.pop(ctx);
+                    },
+                    child: const Text('Clear effort'),
+                  ),
                 Text(
                   'SET TYPE CLASSIFICATION',
-                  style: AppTypography.monoSmall.copyWith(
+                  style: AppTypography.bodySmall.copyWith(
                     fontSize: 11.0,
                     fontWeight: FontWeight.w700,
                     color: AppColors.platinum,
@@ -332,10 +403,15 @@ class ExerciseSetTable extends ConsumerWidget {
                 ),
                 if (exercise.sets.length > 1)
                   ListTile(
-                    leading: const Icon(Icons.delete_outline, color: AppColors.danger),
+                    leading: const Icon(
+                      Icons.delete_outline,
+                      color: AppColors.danger,
+                    ),
                     title: Text(
                       'Delete Set ${set.setNumber}',
-                      style: AppTypography.bodyMedium.copyWith(color: AppColors.danger),
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.danger,
+                      ),
                     ),
                     onTap: () {
                       notifier.removeSet(exercise.exerciseId, setIndex);
@@ -416,7 +492,11 @@ class ExerciseSetTable extends ConsumerWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: AppColors.platinum, size: 20),
+                      icon: const Icon(
+                        Icons.close,
+                        color: AppColors.platinum,
+                        size: 20,
+                      ),
                       onPressed: () => Navigator.of(ctx).pop(),
                     ),
                   ],
@@ -443,14 +523,14 @@ class ExerciseSetTable extends ConsumerWidget {
                     ),
                   ),
                   title: Text(
-                    'Quick Warmup (50% Load)',
+                    'Quick Warmup (40% Load)',
                     style: AppTypography.bodyMedium.copyWith(
                       color: AppColors.pureWhite,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   subtitle: const Text(
-                    '1 set • 10 reps at half working weight',
+                    '1 set • 10 reps at 40% of working weight, adjusted for equipment',
                     style: TextStyle(
                       fontFamily: AppTypography.fontBody,
                       fontSize: 11.5,
@@ -563,7 +643,9 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
       });
     }
 
-    _weightController = TextEditingController(text: _formatWeight(initialWeight));
+    _weightController = TextEditingController(
+      text: _formatWeight(initialWeight),
+    );
     _repsController = TextEditingController(text: '$initialReps');
 
     _weightFocusNode.addListener(() {
@@ -651,9 +733,12 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
                     color: set.setType == ActiveSetType.failure
                         ? AppColors.pureWhite
                         : (set.setType == ActiveSetType.dropSet
-                            ? const Color(0xFF00E5FF)
-                            : (set.isWarmup ? AppColors.platinum : AppColors.steel)),
-                    width: set.setType == ActiveSetType.failure ||
+                              ? const Color(0xFF00E5FF)
+                              : (set.isWarmup
+                                    ? AppColors.platinum
+                                    : AppColors.steel)),
+                    width:
+                        set.setType == ActiveSetType.failure ||
                             set.setType == ActiveSetType.dropSet
                         ? 1.5
                         : 1.0,
@@ -664,18 +749,18 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
                   set.setType == ActiveSetType.warmup
                       ? 'W'
                       : (set.setType == ActiveSetType.dropSet
-                          ? 'D'
-                          : (set.setType == ActiveSetType.failure
-                              ? 'F'
-                              : '${set.setNumber}')),
+                            ? 'D'
+                            : (set.setType == ActiveSetType.failure
+                                  ? 'F'
+                                  : '${set.setNumber}')),
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 12.0,
                     fontWeight: FontWeight.w800,
                     color: set.setType == ActiveSetType.dropSet
                         ? const Color(0xFF00E5FF)
                         : (set.isWarmup
-                            ? AppColors.platinum
-                            : AppColors.pureWhite),
+                              ? AppColors.platinum
+                              : AppColors.pureWhite),
                   ),
                 ),
               ),
@@ -698,8 +783,8 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
                       color: _weightFocusNode.hasFocus
                           ? const Color(0xFF00E5FF)
                           : (isCompleted
-                              ? AppColors.pureWhite.withValues(alpha: 0.4)
-                              : AppColors.steel),
+                                ? AppColors.pureWhite.withValues(alpha: 0.4)
+                                : AppColors.steel),
                       width: _weightFocusNode.hasFocus ? 1.5 : 1.0,
                     ),
                   ),
@@ -707,7 +792,9 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
                   child: TextField(
                     controller: _weightController,
                     focusNode: _weightFocusNode,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
                     ],
@@ -725,7 +812,7 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
                       hintStyle: TextStyle(
                         fontFamily: AppTypography.fontMono,
                         fontSize: 15.0,
-                        color: AppColors.platinum.withValues(alpha: 0.4),
+                        color: AppColors.textMuted,
                       ),
                     ),
                     onTap: () {
@@ -762,7 +849,10 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
                   },
                   borderRadius: BorderRadius.circular(4),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 1,
+                    ),
                     child: Text(
                       'prev: $prevWeightText',
                       style: AppTypography.monoSmall.copyWith(
@@ -795,8 +885,8 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
                       color: _repsFocusNode.hasFocus
                           ? const Color(0xFF00E5FF)
                           : (isCompleted
-                              ? AppColors.pureWhite.withValues(alpha: 0.4)
-                              : AppColors.steel),
+                                ? AppColors.pureWhite.withValues(alpha: 0.4)
+                                : AppColors.steel),
                       width: _repsFocusNode.hasFocus ? 1.5 : 1.0,
                     ),
                   ),
@@ -805,9 +895,7 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
                     controller: _repsController,
                     focusNode: _repsFocusNode,
                     keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     textAlign: TextAlign.center,
                     style: AppTypography.monoSmall.copyWith(
                       fontSize: 15.0,
@@ -822,7 +910,7 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
                       hintStyle: TextStyle(
                         fontFamily: AppTypography.fontMono,
                         fontSize: 15.0,
-                        color: AppColors.platinum.withValues(alpha: 0.4),
+                        color: AppColors.textMuted,
                       ),
                     ),
                     onTap: () {
@@ -858,7 +946,10 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
                   },
                   borderRadius: BorderRadius.circular(4),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 1,
+                    ),
                     child: Text(
                       'prev: $prevRepsText',
                       style: AppTypography.monoSmall.copyWith(
@@ -896,7 +987,7 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
                   duration: const Duration(milliseconds: 180),
                   curve: Curves.easeOutBack,
                   child: Icon(
-                    isCompleted ? Icons.check_circle : Icons.check_circle_outline,
+                    isCompleted ? Icons.check_circle : Icons.circle_outlined,
                     color: isCompleted ? AppColors.primary : AppColors.platinum,
                     size: 26,
                   ),
@@ -931,7 +1022,8 @@ class _UnilateralSetRowWidget extends StatefulWidget {
   final VoidCallback onShowSetOptions;
 
   @override
-  State<_UnilateralSetRowWidget> createState() => _UnilateralSetRowWidgetState();
+  State<_UnilateralSetRowWidget> createState() =>
+      _UnilateralSetRowWidgetState();
 }
 
 class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
@@ -962,7 +1054,9 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
 
     final rightW = (widget.set.weightKgRight ?? widget.set.weightKg) > 0
         ? (widget.set.weightKgRight ?? widget.set.weightKg)
-        : (widget.set.previousWeightKgRight ?? widget.set.previousWeightKg ?? leftW);
+        : (widget.set.previousWeightKgRight ??
+              widget.set.previousWeightKg ??
+              leftW);
     final rightR = (widget.set.repsRight ?? widget.set.reps) > 0
         ? (widget.set.repsRight ?? widget.set.reps)
         : (widget.set.previousRepsRight ?? widget.set.previousReps ?? leftR);
@@ -1068,10 +1162,13 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
     final set = widget.set;
     final isFullyCompleted = set.isLeftCompleted && set.isRightCompleted;
 
-    final prevLeftW = set.previousWeightKg != null ? _formatWeight(set.previousWeightKg!) : '—';
+    final prevLeftW = set.previousWeightKg != null
+        ? _formatWeight(set.previousWeightKg!)
+        : '—';
     final prevLeftR = set.previousReps != null ? '${set.previousReps}' : '—';
 
-    final prevRightW = (set.previousWeightKgRight ?? set.previousWeightKg) != null
+    final prevRightW =
+        (set.previousWeightKgRight ?? set.previousWeightKg) != null
         ? _formatWeight((set.previousWeightKgRight ?? set.previousWeightKg)!)
         : '—';
     final prevRightR = (set.previousRepsRight ?? set.previousReps) != null
@@ -1101,9 +1198,12 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                     color: set.setType == ActiveSetType.failure
                         ? AppColors.pureWhite
                         : (set.setType == ActiveSetType.dropSet
-                            ? const Color(0xFF00E5FF)
-                            : (set.isWarmup ? AppColors.platinum : AppColors.steel)),
-                    width: set.setType == ActiveSetType.failure ||
+                              ? const Color(0xFF00E5FF)
+                              : (set.isWarmup
+                                    ? AppColors.platinum
+                                    : AppColors.steel)),
+                    width:
+                        set.setType == ActiveSetType.failure ||
                             set.setType == ActiveSetType.dropSet
                         ? 1.5
                         : 1.0,
@@ -1114,18 +1214,18 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                   set.setType == ActiveSetType.warmup
                       ? 'W'
                       : (set.setType == ActiveSetType.dropSet
-                          ? 'D'
-                          : (set.setType == ActiveSetType.failure
-                              ? 'F'
-                              : '${set.setNumber}')),
+                            ? 'D'
+                            : (set.setType == ActiveSetType.failure
+                                  ? 'F'
+                                  : '${set.setNumber}')),
                   style: AppTypography.monoSmall.copyWith(
                     fontSize: 12.0,
                     fontWeight: FontWeight.w800,
                     color: set.setType == ActiveSetType.dropSet
                         ? const Color(0xFF00E5FF)
                         : (set.isWarmup
-                            ? AppColors.platinum
-                            : AppColors.pureWhite),
+                              ? AppColors.platinum
+                              : AppColors.pureWhite),
                   ),
                 ),
               ),
@@ -1159,7 +1259,7 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                       ),
                       child: Text(
                         'L',
-                        style: AppTypography.monoSmall.copyWith(
+                        style: AppTypography.bodySmall.copyWith(
                           fontSize: 12.0,
                           fontWeight: FontWeight.w800,
                           color: set.isLeftCompleted
@@ -1185,8 +1285,10 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                                 color: _leftWeightFocus.hasFocus
                                     ? const Color(0xFF00E5FF)
                                     : (set.isLeftCompleted
-                                        ? const Color(0xFF00E5FF).withValues(alpha: 0.4)
-                                        : AppColors.steel),
+                                          ? const Color(
+                                              0xFF00E5FF,
+                                            ).withValues(alpha: 0.4)
+                                          : AppColors.steel),
                                 width: _leftWeightFocus.hasFocus ? 1.5 : 1.0,
                               ),
                             ),
@@ -1194,9 +1296,14 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                             child: TextField(
                               controller: _leftWeightController,
                               focusNode: _leftWeightFocus,
-                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
                               inputFormatters: [
-                                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d*\.?\d*'),
+                                ),
                               ],
                               textAlign: TextAlign.center,
                               style: AppTypography.monoSmall.copyWith(
@@ -1207,13 +1314,16 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 isDense: true,
-                                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 hintText: '0',
                               ),
                               onTap: () {
                                 _leftWeightController.selection = TextSelection(
                                   baseOffset: 0,
-                                  extentOffset: _leftWeightController.text.length,
+                                  extentOffset:
+                                      _leftWeightController.text.length,
                                 );
                               },
                               onChanged: (text) {
@@ -1259,8 +1369,10 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                                 color: _leftRepsFocus.hasFocus
                                     ? const Color(0xFF00E5FF)
                                     : (set.isLeftCompleted
-                                        ? const Color(0xFF00E5FF).withValues(alpha: 0.4)
-                                        : AppColors.steel),
+                                          ? const Color(
+                                              0xFF00E5FF,
+                                            ).withValues(alpha: 0.4)
+                                          : AppColors.steel),
                                 width: _leftRepsFocus.hasFocus ? 1.5 : 1.0,
                               ),
                             ),
@@ -1281,7 +1393,9 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 isDense: true,
-                                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 hintText: '0',
                               ),
                               onTap: () {
@@ -1341,7 +1455,7 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                             child: Icon(
                               set.isLeftCompleted
                                   ? Icons.check_circle
-                                  : Icons.check_circle_outline,
+                                  : Icons.circle_outlined,
                               color: set.isLeftCompleted
                                   ? const Color(0xFF00E5FF)
                                   : AppColors.platinum,
@@ -1349,7 +1463,10 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                             ),
                           ),
                           padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                          constraints: const BoxConstraints(
+                            minWidth: 44,
+                            minHeight: 44,
+                          ),
                           tooltip: 'Log Left side',
                         ),
                       ),
@@ -1387,7 +1504,7 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                           children: [
                             Text(
                               'R',
-                              style: AppTypography.monoSmall.copyWith(
+                              style: AppTypography.bodySmall.copyWith(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w800,
                                 color: set.isRightCompleted
@@ -1421,8 +1538,10 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                                 color: _rightWeightFocus.hasFocus
                                     ? const Color(0xFF00E5FF)
                                     : (set.isRightCompleted
-                                        ? const Color(0xFF00E5FF).withValues(alpha: 0.4)
-                                        : AppColors.steel),
+                                          ? const Color(
+                                              0xFF00E5FF,
+                                            ).withValues(alpha: 0.4)
+                                          : AppColors.steel),
                                 width: _rightWeightFocus.hasFocus ? 1.5 : 1.0,
                               ),
                             ),
@@ -1430,9 +1549,14 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                             child: TextField(
                               controller: _rightWeightController,
                               focusNode: _rightWeightFocus,
-                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
                               inputFormatters: [
-                                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d*\.?\d*'),
+                                ),
                               ],
                               textAlign: TextAlign.center,
                               style: AppTypography.monoSmall.copyWith(
@@ -1443,14 +1567,18 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 isDense: true,
-                                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 hintText: '0',
                               ),
                               onTap: () {
-                                _rightWeightController.selection = TextSelection(
-                                  baseOffset: 0,
-                                  extentOffset: _rightWeightController.text.length,
-                                );
+                                _rightWeightController.selection =
+                                    TextSelection(
+                                      baseOffset: 0,
+                                      extentOffset:
+                                          _rightWeightController.text.length,
+                                    );
                               },
                               onChanged: (text) {
                                 final p = double.tryParse(text);
@@ -1495,8 +1623,10 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                                 color: _rightRepsFocus.hasFocus
                                     ? const Color(0xFF00E5FF)
                                     : (set.isRightCompleted
-                                        ? const Color(0xFF00E5FF).withValues(alpha: 0.4)
-                                        : AppColors.steel),
+                                          ? const Color(
+                                              0xFF00E5FF,
+                                            ).withValues(alpha: 0.4)
+                                          : AppColors.steel),
                                 width: _rightRepsFocus.hasFocus ? 1.5 : 1.0,
                               ),
                             ),
@@ -1517,13 +1647,16 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 isDense: true,
-                                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 hintText: '0',
                               ),
                               onTap: () {
                                 _rightRepsController.selection = TextSelection(
                                   baseOffset: 0,
-                                  extentOffset: _rightRepsController.text.length,
+                                  extentOffset:
+                                      _rightRepsController.text.length,
                                 );
                               },
                               onChanged: (text) {
@@ -1577,7 +1710,7 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                             child: Icon(
                               set.isRightCompleted
                                   ? Icons.check_circle
-                                  : Icons.check_circle_outline,
+                                  : Icons.circle_outlined,
                               color: set.isRightCompleted
                                   ? const Color(0xFF00E5FF)
                                   : AppColors.platinum,
@@ -1585,7 +1718,10 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                             ),
                           ),
                           padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                          constraints: const BoxConstraints(
+                            minWidth: 44,
+                            minHeight: 44,
+                          ),
                           tooltip: 'Log Right side',
                         ),
                       ),
@@ -1641,7 +1777,11 @@ void showRestDurationPicker(
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.platinum, size: 20),
+                    icon: const Icon(
+                      Icons.close,
+                      color: AppColors.platinum,
+                      size: 20,
+                    ),
                     onPressed: () => Navigator.of(ctx).pop(),
                   ),
                 ],
@@ -1660,19 +1800,27 @@ void showRestDurationPicker(
 
                   return InkWell(
                     onTap: () {
-                      notifier.updateExerciseRestDuration(exercise.exerciseId, seconds);
+                      notifier.updateExerciseRestDuration(
+                        exercise.exerciseId,
+                        seconds,
+                      );
                       Navigator.of(ctx).pop();
                     },
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AppColors.pureWhite.withValues(alpha: 0.15)
                             : AppColors.charcoal,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: isSelected ? AppColors.pureWhite : AppColors.steel,
+                          color: isSelected
+                              ? AppColors.pureWhite
+                              : AppColors.steel,
                           width: isSelected ? 1.5 : 1.0,
                         ),
                       ),
@@ -1680,8 +1828,12 @@ void showRestDurationPicker(
                         timeLabel,
                         style: AppTypography.monoSmall.copyWith(
                           fontSize: 12.0,
-                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                          color: isSelected ? AppColors.pureWhite : AppColors.platinum,
+                          fontWeight: isSelected
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: isSelected
+                              ? AppColors.pureWhite
+                              : AppColors.platinum,
                         ),
                       ),
                     ),

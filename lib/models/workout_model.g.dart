@@ -65,6 +65,8 @@ Map<String, dynamic> _$WorkoutExerciseToJson(_WorkoutExercise instance) =>
 _WorkoutSet _$WorkoutSetFromJson(Map<String, dynamic> json) => _WorkoutSet(
   reps: (json['reps'] as num).toInt(),
   weightKg: (json['weight_kg'] as num).toDouble(),
+  weightKgRight: (json['weight_kg_right'] as num?)?.toDouble(),
+  repsRight: (json['reps_right'] as num?)?.toInt(),
   rpe: (json['rpe'] as num?)?.toDouble() ?? 0.0,
   isWarmup: json['is_warmup'] as bool? ?? false,
   isPr: json['is_pr'] as bool? ?? false,
@@ -74,6 +76,8 @@ Map<String, dynamic> _$WorkoutSetToJson(_WorkoutSet instance) =>
     <String, dynamic>{
       'reps': instance.reps,
       'weight_kg': instance.weightKg,
+      'weight_kg_right': instance.weightKgRight,
+      'reps_right': instance.repsRight,
       'rpe': instance.rpe,
       'is_warmup': instance.isWarmup,
       'is_pr': instance.isPr,

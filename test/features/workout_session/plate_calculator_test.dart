@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:leon/features/workout_session/widgets/effort_picker_modal.dart';
 import 'package:leon/features/workout_session/widgets/plate_calculator_modal.dart';
@@ -7,26 +8,38 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Plate Calculator Logic', () {
-    test('calculates correct plates per side for 100 kg on standard 20 kg bar (Olympic 25kg set)', () {
-      final breakdown = calculatePlatesPerSide(totalWeightKg: 100.0, barWeightKg: 20.0);
-      // 40 kg per side -> 1x25kg + 1x15kg
-      expect(breakdown[25.0], 1);
-      expect(breakdown[15.0], 1);
-    });
+    test(
+      'calculates correct plates per side for 100 kg on standard 20 kg bar (Olympic 25kg set)',
+      () {
+        final breakdown = calculatePlatesPerSide(
+          totalWeightKg: 100.0,
+          barWeightKg: 20.0,
+        );
+        // 40 kg per side -> 1x25kg + 1x15kg
+        expect(breakdown[25.0], 1);
+        expect(breakdown[15.0], 1);
+      },
+    );
 
-    test('calculates correct plates per side for 100 kg with 20 kg max plates', () {
-      final breakdown = calculatePlatesPerSide(
-        totalWeightKg: 100.0,
-        barWeightKg: 20.0,
-        availablePlates: [20.0, 15.0, 10.0, 5.0, 2.5, 1.25],
-      );
-      // 40 kg per side -> 2x20kg
-      expect(breakdown[20.0], 2);
-      expect(breakdown[10.0] ?? 0, 0);
-    });
+    test(
+      'calculates correct plates per side for 100 kg with 20 kg max plates',
+      () {
+        final breakdown = calculatePlatesPerSide(
+          totalWeightKg: 100.0,
+          barWeightKg: 20.0,
+          availablePlates: [20.0, 15.0, 10.0, 5.0, 2.5, 1.25],
+        );
+        // 40 kg per side -> 2x20kg
+        expect(breakdown[20.0], 2);
+        expect(breakdown[10.0] ?? 0, 0);
+      },
+    );
 
     test('calculates correct plates per side for 82.5 kg', () {
-      final breakdown = calculatePlatesPerSide(totalWeightKg: 82.5, barWeightKg: 20.0);
+      final breakdown = calculatePlatesPerSide(
+        totalWeightKg: 82.5,
+        barWeightKg: 20.0,
+      );
       // 31.25 kg per side -> 1x25kg + 1x5kg + 1x1.25kg
       expect(breakdown[25.0], 1);
       expect(breakdown[5.0], 1);
@@ -34,13 +47,18 @@ void main() {
     });
 
     test('handles target weight equal to or below bar weight', () {
-      final breakdown = calculatePlatesPerSide(totalWeightKg: 20.0, barWeightKg: 20.0);
+      final breakdown = calculatePlatesPerSide(
+        totalWeightKg: 20.0,
+        barWeightKg: 20.0,
+      );
       expect(breakdown.isEmpty, isTrue);
     });
   });
 
   group('EffortPickerModal Widget', () {
-    testWidgets('renders RIR and RPE options and updates upon tap', (tester) async {
+    testWidgets('renders RIR and RPE options and updates upon tap', (
+      tester,
+    ) async {
       double selectedRir = 2.0;
       double selectedRpe = 8.0;
 
@@ -76,20 +94,22 @@ void main() {
   });
 
   group('PlateCalculatorModal Widget', () {
-    testWidgets('renders barbell diagram and plate calculation', (tester) async {
+    testWidgets('renders barbell diagram and plate calculation', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: PlateCalculatorModal(
-              initialTotalWeightKg: 100.0,
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: PlateCalculatorModal(initialTotalWeightKg: 100.0),
             ),
           ),
         ),
       );
 
-      expect(find.textContaining('PLATE CALCULATOR'), findsOneWidget);
-      expect(find.textContaining('APPLY 100 KG'), findsOneWidget);
-      expect(find.textContaining('40 KG EACH SIDE'), findsOneWidget);
+      expect(find.text('Plate calculator'), findsOneWidget);
+      expect(find.text('DONE'), findsOneWidget);
+      expect(find.textContaining('40.00 kg PER SIDE'), findsOneWidget);
     });
   });
 }

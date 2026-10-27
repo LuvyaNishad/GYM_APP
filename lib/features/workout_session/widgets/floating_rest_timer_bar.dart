@@ -1,354 +1,259 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../shared/widgets/glass_card.dart';
 import '../providers/rest_timer_provider.dart';
+import '../providers/active_session_provider.dart';
 
-/// Floating docked Rest Timer bar.
-///
-/// Features:
-/// - Real-time countdown (MM:SS) with circular progress ring
-/// - Low-time amber warning (≤ 15s)
-/// - Rapid `[-10s]`, `[+10s]`, and `[SKIP]` chips
-/// - Pause / Resume controls
-/// - Glassmorphism finish with Apple HIG compliant touch targets
 class FloatingRestTimerBar extends ConsumerWidget {
   const FloatingRestTimerBar({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final restState = ref.watch(restTimerProvider);
+    final rest = ref.watch(restTimerProvider);
     final notifier = ref.read(restTimerProvider.notifier);
+    final next = ref.watch(
+      activeSessionProvider.select((s) {
+        for (final e in s.exercises) {
+          final index = e.sets.indexWhere((set) => !set.isCompleted);
+          if (index >= 0) return '${e.name} · Set ${index + 1}';
+        }
+        return s.exercises.isEmpty ? '' : 'All sets logged';
+      }),
+    );
 
-    final isLowTime = restState.remainingSeconds <= 15 && restState.remainingSeconds > 0;
-    const accentColor = AppColors.pureWhite;
+    if (next.isEmpty) return const SizedBox.shrink();
 
-    if (!restState.isRunning && restState.remainingSeconds == 0) {
-      // Inactive / Idle Rest Bar: compact affordance to trigger rest manually
-      return SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: AppColors.charcoal.withValues(alpha: 0.95),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: AppColors.steel,
-                  ),
-                ),
-                child: Row(
+    final active = rest.remainingSeconds > 0;
+    final isLowTime = rest.remainingSeconds <= 15;
+    final accentColor = isLowTime ? AppColors.warning : AppColors.primary;
+
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+        child: GlassCard(
+          borderRadius: 24,
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+          blur: true,
+          glowColor: active ? accentColor.withValues(alpha: 0.18) : null,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (active)
+                Row(
                   children: [
-                    const Icon(
-                      Icons.timer_outlined,
-                      size: 20,
-                      color: AppColors.platinum,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Rest Timer · Ready',
-                        style: AppTypography.bodySmall.copyWith(
-                          fontSize: 12.0,
-                          color: AppColors.platinum,
-                          fontWeight: FontWeight.w500,
-                        ),
+                    // Digital Timer
+                    Text(
+                      '${(rest.remainingSeconds ~/ 60).toString().padLeft(2, '0')}:${(rest.remainingSeconds % 60).toString().padLeft(2, '0')}',
+                      style: AppTypography.monoMedium.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: accentColor,
                       ),
                     ),
-                    // Auto-start toggle chip
+                    const Spacer(),
+                    // -10s chip
+                    _GlassActionButton(
+                      tooltip: 'Subtract 10 seconds',
+                      icon: Icons.remove_rounded,
+                      onPressed: () => notifier.addSeconds(-10),
+                    ),
+                    const SizedBox(width: 6),
+                    // +10s chip
+                    _GlassActionButton(
+                      tooltip: 'Add 10 seconds',
+                      icon: Icons.add_rounded,
+                      onPressed: () => notifier.addSeconds(10),
+                    ),
+                    const SizedBox(width: 6),
+                    // Play / Pause chip
+                    _GlassActionButton(
+                      tooltip: rest.isRunning ? 'Pause rest' : 'Resume rest',
+                      icon: rest.isRunning
+                          ? Icons.pause_rounded
+                          : Icons.play_arrow_rounded,
+                      onPressed: rest.isRunning
+                          ? notifier.pause
+                          : notifier.resume,
+                    ),
+                    const SizedBox(width: 8),
+                    // Skip button
                     InkWell(
-                      onTap: notifier.toggleAutoStart,
-                      borderRadius: BorderRadius.circular(6),
+                      onTap: notifier.skip,
+                      borderRadius: BorderRadius.circular(14),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
-                          color: restState.autoStart
-                              ? AppColors.pureWhite.withValues(alpha: 0.12)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(6),
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: restState.autoStart ? AppColors.pureWhite : AppColors.steel,
+                            color: Colors.white.withValues(alpha: 0.18),
+                            width: 1.0,
                           ),
                         ),
                         child: Text(
-                          restState.autoStart ? 'AUTO' : 'MANUAL',
-                          style: AppTypography.monoSmall.copyWith(
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.w700,
-                            color: restState.autoStart ? AppColors.pureWhite : AppColors.platinum,
+                          'Skip',
+                          style: AppTypography.bodySmall.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.platinum,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    // Quick start 60s
-                    _buildQuickStartChip(
-                      label: '01:00',
-                      onTap: () => notifier.startTimer(durationSeconds: 60),
+                  ],
+                )
+              else
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Rest timer',
+                        style: AppTypography.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    // Acrylic Auto Pill
+                    InkWell(
+                      onTap: notifier.toggleAutoStart,
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: rest.autoStart
+                              ? AppColors.primary.withValues(alpha: 0.20)
+                              : Colors.white.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: rest.autoStart
+                                ? AppColors.primary.withValues(alpha: 0.50)
+                                : Colors.white.withValues(alpha: 0.14),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (rest.autoStart) ...[
+                              const Icon(
+                                Icons.check_rounded,
+                                size: 13,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(width: 4),
+                            ],
+                            Text(
+                              'Auto',
+                              style: TextStyle(
+                                fontFamily: AppTypography.fontBody,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: rest.autoStart
+                                    ? AppColors.primary
+                                    : AppColors.platinum,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 8),
-                    // Quick start 90s
-                    _buildQuickStartChip(
-                      label: '01:30',
+                    // Acrylic Start 90s Pill
+                    InkWell(
                       onTap: () => notifier.startTimer(durationSeconds: 90),
-                    ),
-                    const SizedBox(width: 8),
-                    // Quick start 120s
-                    _buildQuickStartChip(
-                      label: '02:00',
-                      onTap: () => notifier.startTimer(durationSeconds: 120),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              AppColors.primary.withValues(alpha: 0.24),
+                              AppColors.primary.withValues(alpha: 0.10),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppColors.primary.withValues(alpha: 0.45),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: const Text(
+                          'Start 90s',
+                          style: TextStyle(
+                            fontFamily: AppTypography.fontBody,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    // Active Countdown Rest Bar
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.onyx.withValues(alpha: 0.95),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: AppColors.steel,
-                  width: 1.5,
+              const SizedBox(height: 4),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Next: $next',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodySmall.copyWith(
+                    fontSize: 11,
+                    color: AppColors.platinum.withValues(alpha: 0.75),
+                  ),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.pureWhite.withValues(alpha: 0.08),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      // Circular Countdown Ring
-                      SizedBox(
-                        width: 38,
-                        height: 38,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            CircularProgressIndicator(
-                              value: restState.progressRatio,
-                              strokeWidth: 3.5,
-                              backgroundColor: AppColors.steel,
-                              valueColor: const AlwaysStoppedAnimation<Color>(accentColor),
-                            ),
-                            Icon(
-                              restState.isRunning
-                                  ? Icons.hourglass_top_rounded
-                                  : Icons.pause_rounded,
-                              size: 16,
-                              color: accentColor,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
-                      // Countdown text & context description
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Wrap(
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              spacing: 8,
-                              runSpacing: 2,
-                              children: [
-                                Text(
-                                  restState.formattedTime,
-                                  style: AppTypography.monoMedium.copyWith(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w800,
-                                    color: accentColor,
-                                    letterSpacing: 1.2,
-                                  ),
-                                ),
-                                if (isLowTime)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.steel,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      'GET READY',
-                                      style: AppTypography.monoSmall.copyWith(
-                                        fontSize: 11.0,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.pureWhite,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              restState.exerciseName != null
-                                  ? 'Resting: ${restState.exerciseName}'
-                                  : 'Inter-set recovery',
-                              style: AppTypography.labelSmall.copyWith(
-                                fontSize: 11.0,
-                                color: AppColors.platinum,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
+class _GlassActionButton extends StatelessWidget {
+  const _GlassActionButton({
+    required this.tooltip,
+    required this.icon,
+    required this.onPressed,
+  });
 
-                      // Rapid -10s chip
-                      _buildTimerActionChip(
-                        label: '-10s',
-                        onTap: notifier.subtractTenSeconds,
-                      ),
-                      const SizedBox(width: 6),
+  final String tooltip;
+  final IconData icon;
+  final VoidCallback onPressed;
 
-                      // Rapid +10s chip
-                      _buildTimerActionChip(
-                        label: '+10s',
-                        onTap: notifier.addTenSeconds,
-                      ),
-                      const SizedBox(width: 6),
-
-                      // Pause / Resume button
-                      IconButton(
-                        icon: Icon(
-                          restState.isRunning ? Icons.pause : Icons.play_arrow,
-                          color: accentColor,
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          if (restState.isRunning) {
-                            notifier.pause();
-                          } else {
-                            notifier.resume();
-                          }
-                        },
-                        tooltip: restState.isRunning ? 'Pause rest' : 'Resume rest',
-                        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                        padding: EdgeInsets.zero,
-                      ),
-                      const SizedBox(width: 4),
-
-                      // Skip chip
-                      InkWell(
-                        onTap: notifier.skip,
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.charcoal,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: AppColors.steel,
-                            ),
-                          ),
-                          child: Text(
-                            'SKIP',
-                            style: AppTypography.labelSmall.copyWith(
-                              fontSize: 11.0,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.0,
-                              color: AppColors.pureWhite,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.16),
+              width: 1.0,
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickStartChip({
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: AppColors.charcoal,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: AppColors.steel,
-          ),
-        ),
-        child: Text(
-          label,
-          style: AppTypography.monoSmall.copyWith(
-            fontSize: 11.0,
-            fontWeight: FontWeight.w600,
-            color: AppColors.pureWhite,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTimerActionChip({
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        constraints: const BoxConstraints(minWidth: 44, minHeight: 36),
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: AppColors.charcoal,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: AppColors.steel,
-          ),
-        ),
-        child: Text(
-          label,
-          style: AppTypography.monoSmall.copyWith(
-            fontSize: 11.0,
-            fontWeight: FontWeight.w700,
-            color: AppColors.pureWhite,
-          ),
+          child: Icon(icon, size: 16, color: AppColors.platinum),
         ),
       ),
     );

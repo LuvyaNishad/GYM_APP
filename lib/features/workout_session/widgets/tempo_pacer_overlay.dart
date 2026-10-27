@@ -4,6 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/tempo_pacer_state.dart';
 import '../providers/tempo_pacer_provider.dart';
+import '../providers/active_session_provider.dart';
 import 'tempo_sine_wave_painter.dart';
 
 /// Fullscreen, distraction-free OLED tempo pacer overlay designed for
@@ -76,9 +77,7 @@ class TempoPacerOverlay extends ConsumerWidget {
         body: Stack(
           children: [
             // ── 1. The Dynamic Pulsating Outer Tactical HUD Lines ───────────
-            Positioned.fill(
-              child: _TacticalPerimeterPulse(state: state),
-            ),
+            Positioned.fill(child: _TacticalPerimeterPulse(state: state)),
 
             // ── 2. Main Content ──────────────────────────────────────────────
             Positioned.fill(
@@ -87,6 +86,34 @@ class TempoPacerOverlay extends ConsumerWidget {
                 children: [
                   // Top Navigation & Split Status
                   _buildTopBar(context, state, notifier),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final auto = ref.watch(tempoAutoLogProvider);
+                      final unilateral = ref.watch(
+                        activeSessionProvider.select(
+                          (s) => s.exercises.any(
+                            (e) =>
+                                e.exerciseId == state.exerciseId &&
+                                e.isUnilateral,
+                          ),
+                        ),
+                      );
+                      return SwitchListTile(
+                        title: const Text('Auto-log at target'),
+                        subtitle: Text(
+                          unilateral
+                              ? 'Confirm reps for both sides manually.'
+                              : 'Off: review your actual reps before saving.',
+                        ),
+                        value: auto && !unilateral,
+                        onChanged: unilateral
+                            ? null
+                            : ref
+                                  .read(tempoAutoLogProvider.notifier)
+                                  .setEnabled,
+                      );
+                    },
+                  ),
 
                   const Spacer(flex: 1),
 
@@ -275,7 +302,7 @@ class TempoPacerOverlay extends ConsumerWidget {
                 Text(
                   'HANDS-FREE PREPARATION',
                   style: TextStyle(
-                    fontFamily: AppTypography.fontMono,
+                    fontFamily: AppTypography.fontBody,
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
                     color: AppColors.pureWhite,
@@ -349,7 +376,11 @@ class TempoPacerOverlay extends ConsumerWidget {
                 skipCountdown: true,
               );
             },
-            icon: const Icon(Icons.play_arrow, color: Color(0xFF00E5FF), size: 18),
+            icon: const Icon(
+              Icons.play_arrow,
+              color: Color(0xFF00E5FF),
+              size: 18,
+            ),
             label: const Text(
               'SKIP PREP • START NOW',
               style: TextStyle(
@@ -405,10 +436,7 @@ class TempoPacerOverlay extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // ── The Biomechanical Wave Track (Seamless HUD Instrument) ────────
-          TempoSineWaveWidget(
-            state: state,
-            height: 230,
-          ),
+          TempoSineWaveWidget(state: state, height: 230),
         ],
       ),
     );
@@ -444,7 +472,7 @@ class TempoPacerOverlay extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           const Text(
-            'SET COMPLETED!',
+            'TEMPO FINISHED',
             style: TextStyle(
               fontFamily: AppTypography.fontDisplay,
               fontSize: 26,
@@ -455,7 +483,7 @@ class TempoPacerOverlay extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '${state.currentRep} reps finished on exact tempo.',
+            '${state.currentRep} timed reps. Confirm your actual reps below.',
             style: const TextStyle(
               fontFamily: AppTypography.fontBody,
               fontSize: 14,
@@ -464,9 +492,9 @@ class TempoPacerOverlay extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           const Text(
-            'Starting rest timer automatically...',
+            'Your set is logged only after confirmation or opted-in auto-log.',
             style: TextStyle(
-              fontFamily: AppTypography.fontMono,
+              fontFamily: AppTypography.fontBody,
               fontSize: 12.5,
               color: Color(0xFF00E5FF),
               fontWeight: FontWeight.w700,
@@ -507,7 +535,7 @@ class TempoPacerOverlay extends ConsumerWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                'Auto-completes at ${state.targetReps} reps • Launches rest timer',
+                'Target: ${state.targetReps} timed reps',
                 style: const TextStyle(
                   fontFamily: AppTypography.fontMono,
                   fontSize: 11.5,
@@ -602,10 +630,14 @@ class TempoPacerOverlay extends ConsumerWidget {
               Expanded(
                 flex: 5,
                 child: OutlinedButton.icon(
-                  onPressed: notifier.finishEarlyAndRest,
-                  icon: const Icon(Icons.check, size: 16, color: AppColors.pureWhite),
+                  onPressed: () => _confirmReps(context, state, notifier),
+                  icon: const Icon(
+                    Icons.check,
+                    size: 16,
+                    color: AppColors.pureWhite,
+                  ),
                   label: Text(
-                    'LOG ${state.currentRep} & REST',
+                    'CONFIRM REPS',
                     style: const TextStyle(
                       fontFamily: AppTypography.fontMono,
                       fontSize: 11.5,
@@ -629,6 +661,85 @@ class TempoPacerOverlay extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmReps(
+    BuildContext context,
+    TempoPacerState state,
+    TempoPacerNotifier notifier,
+  ) async {
+    final wasRunning = !state.isPaused && state.phase != TempoPhase.completed;
+    final generation = notifier.generation;
+    final unilateral = notifier.targetIsUnilateral;
+    notifier.beginConfirmation();
+    var left =
+        '${state.phase == TempoPhase.completed ? state.currentRep : (state.currentRep - 1).clamp(0, 100)}';
+    var right = left;
+    final form = GlobalKey<FormState>();
+    String? validate(String? value) {
+      final n = int.tryParse(value ?? '');
+      return n == null || n < 1 || n > 100
+          ? 'Enter 1–100 completed reps.'
+          : null;
+    }
+
+    final result = await showDialog<(int, int?)>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirm completed reps'),
+        content: SingleChildScrollView(
+          child: Form(
+            key: form,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  initialValue: left,
+                  autofocus: true,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: unilateral ? 'Left reps' : 'Actual reps',
+                  ),
+                  onChanged: (value) => left = value,
+                  validator: validate,
+                ),
+                if (unilateral)
+                  TextFormField(
+                    initialValue: right,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Right reps'),
+                    onChanged: (value) => right = value,
+                    validator: validate,
+                  ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (form.currentState!.validate()) {
+                Navigator.pop(ctx, (
+                  int.parse(left),
+                  unilateral ? int.parse(right) : null,
+                ));
+              }
+            },
+            child: const Text('LOG SET & REST'),
+          ),
+        ],
+      ),
+    );
+    if (!context.mounted || notifier.generation != generation) return;
+    if (result != null) {
+      notifier.confirmRepsAndRest(result.$1, rightReps: result.$2);
+    } else if (wasRunning) {
+      notifier.togglePause();
+    }
   }
 
   // ── Preset Picker Modal ───────────────────────────────────────────────────
@@ -671,7 +782,11 @@ class TempoPacerOverlay extends ConsumerWidget {
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(ctx),
-                        icon: const Icon(Icons.close, color: AppColors.platinum, size: 20),
+                        icon: const Icon(
+                          Icons.close,
+                          color: AppColors.platinum,
+                          size: 20,
+                        ),
                       ),
                     ],
                   ),
@@ -681,73 +796,78 @@ class TempoPacerOverlay extends ConsumerWidget {
                       shrinkWrap: true,
                       physics: const BouncingScrollPhysics(),
                       children: TempoPreset.values.map((preset) {
-                  final isSelected = state.preset == preset;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: InkWell(
-                      onTap: () {
-                        notifier.setPreset(preset);
-                        Navigator.pop(ctx);
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? const Color(0xFF00E5FF).withValues(alpha: 0.12)
-                              : AppColors.charcoal,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isSelected
-                                ? const Color(0xFF00E5FF)
-                                : AppColors.steel,
-                            width: isSelected ? 1.5 : 1.0,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                        final isSelected = state.preset == preset;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: InkWell(
+                            onTap: () {
+                              notifier.setPreset(preset);
+                              Navigator.pop(ctx);
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(
+                                        0xFF00E5FF,
+                                      ).withValues(alpha: 0.12)
+                                    : AppColors.charcoal,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? const Color(0xFF00E5FF)
+                                      : AppColors.steel,
+                                  width: isSelected ? 1.5 : 1.0,
+                                ),
+                              ),
+                              child: Row(
                                 children: [
-                                  Text(
-                                    preset.name,
-                                    style: TextStyle(
-                                      fontFamily: AppTypography.fontBody,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: isSelected
-                                          ? AppColors.pureWhite
-                                          : AppColors.platinum,
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          preset.name,
+                                          style: TextStyle(
+                                            fontFamily: AppTypography.fontBody,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: isSelected
+                                                ? AppColors.pureWhite
+                                                : AppColors.platinum,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          preset.description,
+                                          style: TextStyle(
+                                            fontFamily: AppTypography.fontMono,
+                                            fontSize: 11.5,
+                                            color: isSelected
+                                                ? const Color(0xFF00E5FF)
+                                                : AppColors.textMuted,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    preset.description,
-                                    style: TextStyle(
-                                      fontFamily: AppTypography.fontMono,
-                                      fontSize: 11.5,
-                                      color: isSelected
-                                          ? const Color(0xFF00E5FF)
-                                          : AppColors.textMuted,
+                                  if (isSelected)
+                                    const Icon(
+                                      Icons.check_circle_rounded,
+                                      color: Color(0xFF00E5FF),
+                                      size: 20,
                                     ),
-                                  ),
                                 ],
                               ),
                             ),
-                            if (isSelected)
-                              const Icon(
-                                Icons.check_circle_rounded,
-                                color: Color(0xFF00E5FF),
-                                size: 20,
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ),
                 ],
@@ -770,7 +890,8 @@ class _TacticalPerimeterPulse extends StatefulWidget {
   const _TacticalPerimeterPulse({required this.state});
 
   @override
-  State<_TacticalPerimeterPulse> createState() => _TacticalPerimeterPulseState();
+  State<_TacticalPerimeterPulse> createState() =>
+      _TacticalPerimeterPulseState();
 }
 
 class _TacticalPerimeterPulseState extends State<_TacticalPerimeterPulse>
@@ -889,12 +1010,19 @@ class _PerimeterPulsePainter extends CustomPainter {
       case TempoPhase.eccentric:
         baseColor = cyanToWhite;
         final depthMultiplier = 0.20 + (phaseProgress * 0.35);
-        baseOpacity = (depthMultiplier + (pulseValue * 0.20)) * (1.0 + repProgress * 0.25);
-        maxBorderWidth = (3.5 + (phaseProgress * 3.5) + (pulseValue * 2.0)) * repScale;
+        baseOpacity =
+            (depthMultiplier + (pulseValue * 0.20)) *
+            (1.0 + repProgress * 0.25);
+        maxBorderWidth =
+            (3.5 + (phaseProgress * 3.5) + (pulseValue * 2.0)) * repScale;
         break;
 
       case TempoPhase.bottomHold:
-        baseColor = Color.lerp(const Color(0xFFFFB300), AppColors.pureWhite, repProgress * 0.35)!;
+        baseColor = Color.lerp(
+          const Color(0xFFFFB300),
+          AppColors.pureWhite,
+          repProgress * 0.35,
+        )!;
         baseOpacity = 0.40 + (pulseValue * 0.35);
         maxBorderWidth = (5.0 + (pulseValue * 3.0)) * repScale;
         break;
@@ -928,7 +1056,9 @@ class _PerimeterPulsePainter extends CustomPainter {
 
     // Outer bloom glow — expands dynamically with reps
     final bloomPaint = Paint()
-      ..color = baseColor.withValues(alpha: (baseOpacity * 0.35).clamp(0.0, 1.0))
+      ..color = baseColor.withValues(
+        alpha: (baseOpacity * 0.35).clamp(0.0, 1.0),
+      )
       ..strokeWidth = maxBorderWidth * 3.5
       ..style = PaintingStyle.stroke
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, 18.0 * repScale);
@@ -936,7 +1066,9 @@ class _PerimeterPulsePainter extends CustomPainter {
 
     // Mid glow pass
     final glowPaint = Paint()
-      ..color = baseColor.withValues(alpha: (baseOpacity * 0.65).clamp(0.0, 1.0))
+      ..color = baseColor.withValues(
+        alpha: (baseOpacity * 0.65).clamp(0.0, 1.0),
+      )
       ..strokeWidth = maxBorderWidth * 2.0
       ..style = PaintingStyle.stroke
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, 6.0 * repScale);
@@ -989,7 +1121,9 @@ class _TempoPacerModalLauncherState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(tempoPacerProvider.notifier).startSession(
+      ref
+          .read(tempoPacerProvider.notifier)
+          .startSession(
             exerciseName: widget.exerciseName,
             exerciseId: widget.exerciseId,
             setIndex: widget.setIndex,

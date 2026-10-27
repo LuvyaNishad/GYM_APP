@@ -33,9 +33,7 @@ void main() {
     setUp(() {
       fakeHive = _FakeHiveService();
       container = ProviderContainer(
-        overrides: [
-          hiveServiceProvider.overrideWithValue(fakeHive),
-        ],
+        overrides: [hiveServiceProvider.overrideWithValue(fakeHive)],
       );
     });
 
@@ -45,49 +43,61 @@ void main() {
       container.dispose();
     });
 
-    test('RestTimer targetEndTime ensures accurate countdown across background minimization', () {
-      final notifier = container.read(restTimerProvider.notifier);
-      notifier.startTimer(durationSeconds: 90, exerciseName: 'Barbell Bench Press');
+    test(
+      'RestTimer targetEndTime ensures accurate countdown across background minimization',
+      () {
+        final notifier = container.read(restTimerProvider.notifier);
+        notifier.startTimer(
+          durationSeconds: 90,
+          exerciseName: 'Barbell Bench Press',
+        );
 
-      final initialState = container.read(restTimerProvider);
-      expect(initialState.isRunning, isTrue);
-      expect(initialState.remainingSeconds, 90);
-      expect(initialState.targetEndTime, isNotNull);
+        final initialState = container.read(restTimerProvider);
+        expect(initialState.isRunning, isTrue);
+        expect(initialState.remainingSeconds, 90);
+        expect(initialState.targetEndTime, isNotNull);
 
-      // Simulate app was minimized and backgrounded:
-      // Call resyncWithWallClock directly
-      notifier.resyncWithWallClock();
-      final syncedState = container.read(restTimerProvider);
-      expect(syncedState.isRunning, isTrue);
-      expect(syncedState.remainingSeconds, inInclusiveRange(88, 90));
-    });
+        // Simulate app was minimized and backgrounded:
+        // Call resyncWithWallClock directly
+        notifier.resyncWithWallClock();
+        final syncedState = container.read(restTimerProvider);
+        expect(syncedState.isRunning, isTrue);
+        expect(syncedState.remainingSeconds, inInclusiveRange(88, 90));
+      },
+    );
 
-    test('RestTimer automatically completes when targetEndTime has passed while minimized', () {
-      final notifier = container.read(restTimerProvider.notifier);
-      // Start with 1 second remaining
-      notifier.startTimer(durationSeconds: 1, exerciseName: 'Incline Press');
+    test(
+      'RestTimer automatically completes when targetEndTime has passed while minimized',
+      () {
+        final notifier = container.read(restTimerProvider.notifier);
+        // Start with 1 second remaining
+        notifier.startTimer(durationSeconds: 1, exerciseName: 'Incline Press');
 
-      // Add a negative duration so targetEndTime is now in the past
-      notifier.addSeconds(-10);
+        // Add a negative duration so targetEndTime is now in the past
+        notifier.addSeconds(-10);
 
-      final state = container.read(restTimerProvider);
-      expect(state.isRunning, isFalse);
-      expect(state.remainingSeconds, 0);
-    });
+        final state = container.read(restTimerProvider);
+        expect(state.isRunning, isFalse);
+        expect(state.remainingSeconds, 0);
+      },
+    );
 
-    test('ActiveSession elapsedSeconds synchronizes accurately with wall-clock time on resume', () {
-      final notifier = container.read(activeSessionProvider.notifier);
-      notifier.startSession(splitName: 'Leg Day // Squats');
+    test(
+      'ActiveSession elapsedSeconds synchronizes accurately with wall-clock time on resume',
+      () {
+        final notifier = container.read(activeSessionProvider.notifier);
+        notifier.startSession(splitName: 'Leg Day // Squats');
 
-      final initialState = container.read(activeSessionProvider);
-      expect(initialState.isActive, isTrue);
-      expect(initialState.elapsedSeconds, 0);
-      expect(initialState.lastResumedAt, isNotNull);
+        final initialState = container.read(activeSessionProvider);
+        expect(initialState.isActive, isTrue);
+        expect(initialState.elapsedSeconds, 0);
+        expect(initialState.lastResumedAt, isNotNull);
 
-      // Trigger resyncWithWallClock
-      notifier.resyncWithWallClock();
-      final syncedState = container.read(activeSessionProvider);
-      expect(syncedState.elapsedSeconds, inInclusiveRange(0, 1));
-    });
+        // Trigger resyncWithWallClock
+        notifier.resyncWithWallClock();
+        final syncedState = container.read(activeSessionProvider);
+        expect(syncedState.elapsedSeconds, inInclusiveRange(0, 1));
+      },
+    );
   });
 }

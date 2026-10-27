@@ -57,11 +57,7 @@ class HiveService {
   // ── Documents ───────────────────────────────────────────────────────────────
 
   /// Write a single model, replacing any record with the same [key].
-  Future<void> put(
-    String boxName,
-    String key,
-    Map<String, dynamic> json,
-  ) =>
+  Future<void> put(String boxName, String key, Map<String, dynamic> json) =>
       _documents(boxName).put(key, jsonEncode(json));
 
   /// Write many models at once, keyed by [keyOf].
@@ -70,10 +66,9 @@ class HiveService {
     Iterable<T> models, {
     required String Function(T model) keyOf,
     required Map<String, dynamic> Function(T model) toJson,
-  }) =>
-      _documents(boxName).putAll(<String, String>{
-        for (final model in models) keyOf(model): jsonEncode(toJson(model)),
-      });
+  }) => _documents(boxName).putAll(<String, String>{
+    for (final model in models) keyOf(model): jsonEncode(toJson(model)),
+  });
 
   /// Read one model, or null when absent.
   ///
@@ -125,6 +120,12 @@ class HiveService {
   Future<int> clearBox(String boxName) => _documents(boxName).clear();
 
   // ── Settings ────────────────────────────────────────────────────────────────
+
+  /// Persist user-entered data without hiding write failures from its UI.
+  Future<void> putSettingChecked(String key, Object? value) =>
+      _settings.put(key, value);
+
+  Future<void> deleteSettingChecked(String key) => _settings.delete(key);
 
   /// Store a primitive setting. Keys live on [AppConstants].
   Future<void> putSetting(String key, Object? value) async {

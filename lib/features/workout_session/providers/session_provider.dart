@@ -17,5 +17,6 @@ class SessionNotifier extends Notifier<bool> {
   void end() => state = false;
 }
 
-final sessionProvider =
-    NotifierProvider<SessionNotifier, bool>(SessionNotifier.new);
+final sessionProvider = NotifierProvider<SessionNotifier, bool>(
+  SessionNotifier.new,
+);

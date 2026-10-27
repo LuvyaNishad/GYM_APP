@@ -8,53 +8,66 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('WorkoutSummaryDialog Widget', () {
-    testWidgets('renders duration, volume, sets, and triggers onConfirmedSave', (tester) async {
-      bool saved = false;
+    testWidgets(
+      'renders duration, volume, sets, and triggers onConfirmedSave',
+      (tester) async {
+        bool saved = false;
 
-      final session = ActiveSessionState(
-        workoutId: 'test_wkt',
-        splitName: 'PUSH DAY // WORKOUT A',
-        startTime: DateTime.now(),
-        elapsedSeconds: 2540, // 42m 20s
-        isActive: true,
-        exercises: [
-          const ActiveExerciseState(
-            exerciseId: 'ex1',
-            name: 'Barbell Bench Press',
-            muscleGroup: 'Chest',
-            sets: [
-              ActiveSetState(setNumber: 1, weightKg: 80, reps: 8, isCompleted: true),
-              ActiveSetState(setNumber: 2, weightKg: 80, reps: 8, isCompleted: true),
-            ],
-          ),
-        ],
-      );
+        final session = ActiveSessionState(
+          workoutId: 'test_wkt',
+          splitName: 'PUSH DAY // WORKOUT A',
+          startTime: DateTime.now(),
+          elapsedSeconds: 2540, // 42m 20s
+          isActive: true,
+          exercises: [
+            const ActiveExerciseState(
+              exerciseId: 'ex1',
+              name: 'Barbell Bench Press',
+              muscleGroup: 'Chest',
+              sets: [
+                ActiveSetState(
+                  setNumber: 1,
+                  weightKg: 80,
+                  reps: 8,
+                  isCompleted: true,
+                ),
+                ActiveSetState(
+                  setNumber: 2,
+                  weightKg: 80,
+                  reps: 8,
+                  isCompleted: true,
+                ),
+              ],
+            ),
+          ],
+        );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: WorkoutSummaryDialog(
-                session: session,
-                onConfirmedSave: () {
-                  saved = true;
-                },
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              home: Scaffold(
+                body: WorkoutSummaryDialog(
+                  session: session,
+                  onConfirmedSave: () {
+                    saved = true;
+                  },
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.textContaining('WORKOUT RECAP'), findsOneWidget);
-      expect(find.textContaining('PUSH DAY // WORKOUT A'), findsOneWidget);
-      expect(find.textContaining('1,280 KG'), findsOneWidget);
-      expect(find.textContaining('2 / 2 SETS'), findsOneWidget);
+        expect(find.textContaining('WORKOUT RECAP'), findsOneWidget);
+        expect(find.textContaining('PUSH DAY // WORKOUT A'), findsOneWidget);
+        expect(find.textContaining('1280 kg'), findsOneWidget);
+        expect(find.textContaining('2/2 sets'), findsOneWidget);
 
-      // Tap Save
-      await tester.tap(find.text('SAVE WORKOUT'));
-      await tester.pump();
+        // Tap Save
+        await tester.tap(find.text('SAVE WORKOUT'));
+        await tester.pump();
 
-      expect(saved, isTrue);
-    });
+        expect(saved, isTrue);
+      },
+    );
   });
 }

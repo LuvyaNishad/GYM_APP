@@ -4,26 +4,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../models/workout_model.dart';
 import '../../../services/hive_service.dart';
+import '../../../services/workout_service.dart';
+import '../../history/providers/history_provider.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import '../models/active_session_state.dart';
+import '../models/warmup_plan.dart';
+import 'plate_preferences_provider.dart';
 import 'rest_timer_provider.dart';
 
 /// Provider managing the active workout session in progress.
 class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   Timer? _elapsedTicker;
+  Timer? _saveDebounce;
+  Future<void> _pendingWrite = Future<void>.value();
+  Future<void>? _saving;
 
   @override
   ActiveSessionState build() {
     ref.keepAlive();
     ref.onDispose(() {
       _elapsedTicker?.cancel();
+      _saveDebounce?.cancel();
     });
 
     // Auto-resume previously interrupted / in-progress workout session
     try {
-      final savedData = ref.read(hiveServiceProvider).getSetting<Map>(
-            AppConstants.settingActiveSessionData,
-          );
+      final savedData = ref
+          .read(hiveServiceProvider)
+          .getSetting<Map>(AppConstants.settingActiveSessionData);
       if (savedData != null) {
         final restored = ActiveSessionState.fromJson(
           Map<String, dynamic>.from(savedData),
@@ -33,8 +41,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
             final now = DateTime.now();
             int currentElapsed = restored.elapsedSeconds;
             if (restored.lastResumedAt != null) {
-              currentElapsed +=
-                  now.difference(restored.lastResumedAt!).inSeconds;
+              currentElapsed += now
+                  .difference(restored.lastResumedAt!)
+                  .inSeconds;
             }
             final updated = restored.copyWith(
               elapsedSeconds: currentElapsed,
@@ -52,24 +61,58 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   }
 
   void _persistActiveSession() {
-    try {
-      if (state.isActive) {
-        ref.read(hiveServiceProvider).putSetting(
-              AppConstants.settingActiveSessionData,
-              state.toJson(),
-            );
-      } else {
-        _clearActiveSession();
-      }
-    } catch (_) {}
+    _saveDebounce?.cancel();
+    _saveDebounce = Timer(const Duration(milliseconds: 350), () {
+      persistInBackground();
+    });
   }
 
-  void _clearActiveSession() {
-    try {
-      ref.read(hiveServiceProvider).deleteSetting(
-            AppConstants.settingActiveSessionData,
-          );
-    } catch (_) {}
+  Future<void> flushPendingChanges() {
+    _saveDebounce?.cancel();
+    final snapshot = state;
+    final hive = ref.read(hiveServiceProvider);
+    _pendingWrite = _pendingWrite
+        .catchError((Object _) {})
+        .then((_) async {
+          if (snapshot.isActive) {
+            await hive.putSettingChecked(
+              AppConstants.settingActiveSessionData,
+              snapshot.toJson(),
+            );
+          } else {
+            await hive.deleteSettingChecked(
+              AppConstants.settingActiveSessionData,
+            );
+          }
+          if (ref.mounted) state = state.copyWith(clearPersistenceError: true);
+        })
+        .catchError((Object error, StackTrace stack) {
+          if (ref.mounted) {
+            state = state.copyWith(
+              persistenceError:
+                  'Your latest changes could not be saved on this device. Retry before closing the app.',
+            );
+          }
+          Error.throwWithStackTrace(error, stack);
+        });
+    return _pendingWrite;
+  }
+
+  /// Lifecycle/timer callers surface errors in the session without unhandled futures.
+  void persistInBackground() {
+    unawaited(flushPendingChanges().catchError((Object _) {}));
+  }
+
+  Future<void> _clearActiveSession() {
+    _saveDebounce?.cancel();
+    final hive = ref.read(hiveServiceProvider);
+    _pendingWrite = _pendingWrite
+        .catchError((Object _) {})
+        .then(
+          (_) =>
+              hive.deleteSettingChecked(AppConstants.settingActiveSessionData),
+        );
+    return _pendingWrite;
   }
 
   /// Starts a new active workout session with planned exercises.
@@ -77,10 +120,14 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     String splitName = 'PUSH DAY ● WORKOUT A',
     List<ActiveExerciseState>? initialExercises,
   }) {
+    // All launch points resume an existing workout instead of overwriting it.
+    if (state.isActive) return;
     _elapsedTicker?.cancel();
 
     final goalConfig = ref.read(trainingGoalConfigProvider);
-    final exercises = initialExercises ?? _buildDefaultPushWorkout(goalConfig);
+    final exercises = _withHistory(
+      initialExercises ?? _buildDefaultPushWorkout(goalConfig),
+    );
     final now = DateTime.now();
 
     state = ActiveSessionState(
@@ -92,11 +139,63 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       isActive: true,
       isPaused: false,
       exercises: exercises,
-      expandedExerciseId: exercises.isNotEmpty ? exercises.first.exerciseId : null,
+      expandedExerciseId: exercises.isNotEmpty
+          ? exercises.first.exerciseId
+          : null,
     );
 
     _startElapsedTicker();
-    _persistActiveSession();
+    persistInBackground();
+  }
+
+  List<ActiveExerciseState> _withHistory(List<ActiveExerciseState> exercises) {
+    final history = ref.read(historyWorkoutsProvider);
+    return exercises.map((exercise) {
+      WorkoutExercise? previous;
+      for (final workout in history) {
+        for (final candidate in workout.exercises) {
+          if (candidate.exerciseId == exercise.exerciseId ||
+              candidate.exerciseName.toLowerCase() ==
+                  exercise.name.toLowerCase()) {
+            previous = candidate;
+            break;
+          }
+        }
+        if (previous != null) break;
+      }
+      final priorSets =
+          previous?.sets.where((s) => !s.isWarmup).toList() ?? <WorkoutSet>[];
+      var workingIndex = 0;
+      return exercise.copyWith(
+        sets: List.generate(exercise.sets.length, (index) {
+          final set = exercise.sets[index];
+          final prior = !set.isWarmup && workingIndex < priorSets.length
+              ? priorSets[workingIndex]
+              : null;
+          if (!set.isWarmup) workingIndex++;
+          final hasEffort = prior != null && prior.rpe >= 6 && prior.rpe <= 10;
+          return ActiveSetState.fromJson({
+            ...set.toJson(),
+            'previousWeightKg': prior?.weightKg,
+            'previousReps': prior?.reps,
+            'previousRpe': hasEffort ? prior.rpe : null,
+            'previousRir': hasEffort ? rirFromRpe(prior.rpe) : null,
+            'previousWeightKgRight': exercise.isUnilateral
+                ? prior?.weightKgRight
+                : null,
+            'previousRepsRight': exercise.isUnilateral
+                ? prior?.repsRight
+                : null,
+            if (prior != null) 'weightKg': prior.weightKg,
+            if (prior != null) 'reps': prior.reps,
+            if (exercise.isUnilateral && prior?.weightKgRight != null)
+              'weightKgRight': prior!.weightKgRight,
+            if (exercise.isUnilateral && prior?.repsRight != null)
+              'repsRight': prior!.repsRight,
+          });
+        }),
+      );
+    }).toList();
   }
 
   /// Starts an empty active workout session with no initial exercises.
@@ -150,10 +249,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       );
       _elapsedTicker?.cancel();
     } else {
-      state = state.copyWith(
-        isPaused: false,
-        lastResumedAt: now,
-      );
+      state = state.copyWith(isPaused: false, lastResumedAt: now);
       _startElapsedTicker();
     }
     _persistActiveSession();
@@ -176,7 +272,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     required int setIndex,
     bool? completed,
   }) {
-    final exIndex = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
+    final exIndex = state.exercises.indexWhere(
+      (e) => e.exerciseId == exerciseId,
+    );
     if (exIndex == -1) return;
 
     final exercise = state.exercises[exIndex];
@@ -203,7 +301,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
     if (targetCompleted && exercise.supersetGroupId != null) {
       final partner = updatedExercises.firstWhere(
-        (e) => e.supersetGroupId == exercise.supersetGroupId && e.exerciseId != exercise.exerciseId,
+        (e) =>
+            e.supersetGroupId == exercise.supersetGroupId &&
+            e.exerciseId != exercise.exerciseId,
         orElse: () => exercise,
       );
 
@@ -213,7 +313,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
           // Switch active view directly to superset partner
           nextExpandedId = partner.exerciseId;
           // Intermediate transition rest between superset pairings (default 60s or half duration)
-          restDurationToUse = (exercise.restDurationSeconds / 2).clamp(45.0, 90.0).toInt();
+          restDurationToUse = (exercise.restDurationSeconds / 2)
+              .clamp(45.0, 90.0)
+              .toInt();
         }
       }
     }
@@ -238,7 +340,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       final restState = ref.read(restTimerProvider);
       if (restState.autoStart && !allFinished) {
         final duration = restDurationToUse > 0 ? restDurationToUse : 90;
-        ref.read(restTimerProvider.notifier).startTimer(
+        ref
+            .read(restTimerProvider.notifier)
+            .startTimer(
               durationSeconds: duration,
               exerciseName: exercise.name,
               setNumber: currentSet.setNumber,
@@ -261,14 +365,17 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     required bool isLeft,
     bool? completed,
   }) {
-    final exIndex = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
+    final exIndex = state.exercises.indexWhere(
+      (e) => e.exerciseId == exerciseId,
+    );
     if (exIndex == -1) return;
 
     final exercise = state.exercises[exIndex];
     if (setIndex < 0 || setIndex >= exercise.sets.length) return;
 
     final currentSet = exercise.sets[setIndex];
-    final targetCompleted = completed ??
+    final targetCompleted =
+        completed ??
         (isLeft ? !currentSet.isLeftCompleted : !currentSet.isRightCompleted);
 
     final newLeft = isLeft ? targetCompleted : currentSet.isLeftCompleted;
@@ -304,7 +411,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         final duration = exercise.restDurationSeconds > 0
             ? exercise.restDurationSeconds
             : 90;
-        ref.read(restTimerProvider.notifier).startTimer(
+        ref
+            .read(restTimerProvider.notifier)
+            .startTimer(
               durationSeconds: duration,
               exerciseName: exercise.name,
               setNumber: currentSet.setNumber,
@@ -328,6 +437,12 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     if (index == -1) return;
 
     final exercise = state.exercises[index];
+    // Changing sides after logging would reinterpret already performed work.
+    if (exercise.sets.any(
+      (s) => s.isCompleted || s.isLeftCompleted || s.isRightCompleted,
+    )) {
+      return;
+    }
     final newIsUnilateral = !exercise.isUnilateral;
 
     final updatedSets = exercise.sets.map((s) {
@@ -340,7 +455,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         );
       } else {
         return s.copyWith(
-          isCompleted: s.isCompleted || (s.isLeftCompleted && s.isRightCompleted),
+          clearRightSide: true,
+          isCompleted:
+              s.isCompleted || (s.isLeftCompleted && s.isRightCompleted),
         );
       }
     }).toList();
@@ -368,12 +485,15 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     int? reps,
     double? rir,
     double? rpe,
+    bool clearEffort = false,
     bool? isWarmup,
     ActiveSetType? setType,
     double? weightKgRight,
     int? repsRight,
   }) {
-    final exIndex = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
+    final exIndex = state.exercises.indexWhere(
+      (e) => e.exerciseId == exerciseId,
+    );
     if (exIndex == -1) return;
 
     final exercise = state.exercises[exIndex];
@@ -398,6 +518,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       repsRight: repsRight ?? currentSet.repsRight,
       rir: updatedRir,
       rpe: updatedRpe,
+      effortLogged: clearEffort
+          ? false
+          : (rir != null || rpe != null || currentSet.effortLogged),
       isWarmup: isWarmup,
       setType: setType,
     );
@@ -414,7 +537,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
   /// Adds a new set to an exercise copying the previous set's load.
   void addSet(String exerciseId) {
-    final exIndex = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
+    final exIndex = state.exercises.indexWhere(
+      (e) => e.exerciseId == exerciseId,
+    );
     if (exIndex == -1) return;
 
     final exercise = state.exercises[exIndex];
@@ -429,8 +554,12 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       rpe: lastSet?.rpe ?? 8.0,
       previousWeightKg: lastSet?.previousWeightKg,
       previousReps: lastSet?.previousReps,
-      weightKgRight: lastSet?.weightKgRight ?? (exercise.isUnilateral ? (lastSet?.weightKg ?? 20.0) : null),
-      repsRight: lastSet?.repsRight ?? (exercise.isUnilateral ? (lastSet?.reps ?? 10) : null),
+      weightKgRight:
+          lastSet?.weightKgRight ??
+          (exercise.isUnilateral ? (lastSet?.weightKg ?? 20.0) : null),
+      repsRight:
+          lastSet?.repsRight ??
+          (exercise.isUnilateral ? (lastSet?.reps ?? 10) : null),
       previousWeightKgRight: lastSet?.previousWeightKgRight,
       previousRepsRight: lastSet?.previousRepsRight,
     );
@@ -445,13 +574,16 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
   /// Removes a set from an exercise.
   void removeSet(String exerciseId, int setIndex) {
-    final exIndex = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
+    final exIndex = state.exercises.indexWhere(
+      (e) => e.exerciseId == exerciseId,
+    );
     if (exIndex == -1) return;
 
     final exercise = state.exercises[exIndex];
     if (exercise.sets.length <= 1) return; // Keep at least one set
 
-    final updatedSets = List<ActiveSetState>.from(exercise.sets)..removeAt(setIndex);
+    final updatedSets = List<ActiveSetState>.from(exercise.sets)
+      ..removeAt(setIndex);
     // Renumber remaining sets
     final renumberedSets = [
       for (int i = 0; i < updatedSets.length; i++)
@@ -467,32 +599,32 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
   /// Generates 3 progressive ramp-up warmup sets before working sets.
   void addWarmupSets(String exerciseId) {
-    final exIndex = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
+    final exIndex = state.exercises.indexWhere(
+      (e) => e.exerciseId == exerciseId,
+    );
     if (exIndex == -1) return;
 
     final exercise = state.exercises[exIndex];
-    final firstSet = exercise.sets.isNotEmpty ? exercise.sets.first : null;
-    final baseWeight = firstSet?.weightKg ?? 60.0;
-
+    final firstSet = exercise.sets.where((s) => !s.isWarmup).firstOrNull;
+    final baseWeight = firstSet?.weightKg ?? 0;
+    final minimum = exercise.equipment == 'barbell'
+        ? ref.read(platePreferencesProvider).barKg
+        : 0.0;
+    final plan = buildWarmupPlan(
+      baseWeight,
+      minimumWeight: minimum,
+      increment: exercise.equipment == 'barbell' ? 2.5 : 1,
+    );
     final warmups = [
-      ActiveSetState(
-        setNumber: 1,
-        weightKg: (baseWeight * 0.40).clamp(20.0, 999.0),
-        reps: 10,
-        isWarmup: true,
-      ),
-      ActiveSetState(
-        setNumber: 2,
-        weightKg: (baseWeight * 0.60).clamp(20.0, 999.0),
-        reps: 6,
-        isWarmup: true,
-      ),
-      ActiveSetState(
-        setNumber: 3,
-        weightKg: (baseWeight * 0.80).clamp(20.0, 999.0),
-        reps: 3,
-        isWarmup: true,
-      ),
+      for (var i = 0; i < plan.length; i++)
+        ActiveSetState(
+          setNumber: i + 1,
+          weightKg: plan[i].weightKg,
+          reps: plan[i].reps,
+          isWarmup: true,
+          weightKgRight: exercise.isUnilateral ? plan[i].weightKg : null,
+          repsRight: exercise.isUnilateral ? plan[i].reps : null,
+        ),
     ];
 
     // Renumber existing working sets
@@ -509,22 +641,29 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     _persistActiveSession();
   }
 
-  /// Inserts a single quick warmup set calculated at 50% of the first working set.
+  /// Inserts the first tier of the same ramp used by the full warmup plan.
   void addSingleWarmupSet(String exerciseId) {
-    final exIndex = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
+    final exIndex = state.exercises.indexWhere(
+      (e) => e.exerciseId == exerciseId,
+    );
     if (exIndex == -1) return;
 
     final exercise = state.exercises[exIndex];
-    final firstSet = exercise.sets.isNotEmpty ? exercise.sets.first : null;
-    final baseWeight = firstSet?.weightKg ?? 40.0;
-    final warmupWeight = (baseWeight * 0.50).clamp(10.0, 999.0);
+    final firstSet = exercise.sets.where((s) => !s.isWarmup).firstOrNull;
+    final plan = buildWarmupPlan(
+      firstSet?.weightKg ?? 0,
+      minimumWeight: exercise.equipment == 'barbell'
+          ? ref.read(platePreferencesProvider).barKg
+          : 0,
+      increment: exercise.equipment == 'barbell' ? 2.5 : 1,
+    );
 
     final warmupSet = ActiveSetState(
       setNumber: 1,
-      weightKg: warmupWeight,
-      reps: 10,
-      rir: 4.0,
-      rpe: 6.0,
+      weightKg: plan.first.weightKg,
+      reps: plan.first.reps,
+      weightKgRight: exercise.isUnilateral ? plan.first.weightKg : null,
+      repsRight: exercise.isUnilateral ? plan.first.reps : null,
       setType: ActiveSetType.warmup,
     );
 
@@ -544,7 +683,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
   /// Updates the rest countdown interval for a specific exercise in the active workout.
   void updateExerciseRestDuration(String exerciseId, int seconds) {
-    final exIndex = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
+    final exIndex = state.exercises.indexWhere(
+      (e) => e.exerciseId == exerciseId,
+    );
     if (exIndex == -1) return;
 
     final updatedExercises = List<ActiveExerciseState>.from(state.exercises);
@@ -558,6 +699,13 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
   /// Adds a new exercise to the sequence.
   void addExercise(ActiveExerciseState exercise) {
+    exercise = _withHistory([exercise]).first;
+    if (state.exercises.any((e) => e.exerciseId == exercise.exerciseId)) {
+      exercise = exercise.copyWith(
+        exerciseId:
+            '${exercise.exerciseId}_${DateTime.now().microsecondsSinceEpoch}',
+      );
+    }
     final updatedExercises = [...state.exercises, exercise];
     state = state.copyWith(
       exercises: updatedExercises,
@@ -568,12 +716,15 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
   /// Removes an exercise from the workout sequence.
   void removeExercise(String exerciseId) {
-    final updatedExercises =
-        state.exercises.where((e) => e.exerciseId != exerciseId).toList();
+    final updatedExercises = state.exercises
+        .where((e) => e.exerciseId != exerciseId)
+        .toList();
     state = state.copyWith(
       exercises: updatedExercises,
       expandedExerciseId: state.expandedExerciseId == exerciseId
-          ? (updatedExercises.isNotEmpty ? updatedExercises.first.exerciseId : null)
+          ? (updatedExercises.isNotEmpty
+                ? updatedExercises.first.exerciseId
+                : null)
           : state.expandedExerciseId,
     );
     _persistActiveSession();
@@ -599,11 +750,52 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
   /// Replaces an exercise at a given position.
   void replaceExercise(String oldExerciseId, ActiveExerciseState newExercise) {
-    final index = state.exercises.indexWhere((e) => e.exerciseId == oldExerciseId);
+    final index = state.exercises.indexWhere(
+      (e) => e.exerciseId == oldExerciseId,
+    );
     if (index == -1) return;
-
+    final original = state.exercises[index];
+    // Keep partially logged unilateral sets with their original exercise so the
+    // other side can still be completed. Transfer only untouched sets.
+    bool hasWork(ActiveSetState set) =>
+        set.isCompleted || set.isLeftCompleted || set.isRightCompleted;
+    final logged = original.sets.where(hasWork).toList();
+    final remaining = original.sets.where((s) => !hasWork(s)).toList();
+    if (remaining.isEmpty) return;
+    final template =
+        newExercise.sets.firstOrNull ??
+        const ActiveSetState(setNumber: 1, weightKg: 0, reps: 10);
+    newExercise = newExercise.copyWith(
+      sets: [
+        for (var i = 0; i < remaining.length; i++)
+          template.copyWith(
+            setNumber: i + 1,
+            isCompleted: false,
+            isLeftCompleted: false,
+            isRightCompleted: false,
+            isWarmup: remaining[i].isWarmup,
+            effortLogged: false,
+          ),
+      ],
+    );
+    newExercise = _withHistory([newExercise]).first;
+    if (state.exercises.any(
+      (e) =>
+          e.exerciseId == newExercise.exerciseId &&
+          (e.exerciseId != oldExerciseId || logged.isNotEmpty),
+    )) {
+      newExercise = newExercise.copyWith(
+        exerciseId:
+            '${newExercise.exerciseId}_${DateTime.now().microsecondsSinceEpoch}',
+      );
+    }
     final updated = List<ActiveExerciseState>.from(state.exercises);
-    updated[index] = newExercise;
+    if (logged.isNotEmpty) {
+      updated[index] = original.copyWith(sets: logged);
+      updated.insert(index + 1, newExercise);
+    } else {
+      updated[index] = newExercise;
+    }
 
     state = state.copyWith(
       exercises: updated,
@@ -615,20 +807,32 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   /// Pairs two exercises together into an antagonistic or agonist superset group.
   void createSuperset(String exerciseIdA, String exerciseIdB) {
     if (exerciseIdA == exerciseIdB) return;
-    final indexA = state.exercises.indexWhere((e) => e.exerciseId == exerciseIdA);
-    final indexB = state.exercises.indexWhere((e) => e.exerciseId == exerciseIdB);
+    final indexA = state.exercises.indexWhere(
+      (e) => e.exerciseId == exerciseIdA,
+    );
+    final indexB = state.exercises.indexWhere(
+      (e) => e.exerciseId == exerciseIdB,
+    );
     if (indexA == -1 || indexB == -1) return;
 
     final groupId = 'ss_${DateTime.now().microsecondsSinceEpoch}';
     final updatedList = List<ActiveExerciseState>.from(state.exercises);
 
     // Update superset groupId
-    updatedList[indexA] = updatedList[indexA].copyWith(supersetGroupId: groupId);
-    updatedList[indexB] = updatedList[indexB].copyWith(supersetGroupId: groupId);
+    updatedList[indexA] = updatedList[indexA].copyWith(
+      supersetGroupId: groupId,
+    );
+    updatedList[indexB] = updatedList[indexB].copyWith(
+      supersetGroupId: groupId,
+    );
 
     // Position them adjacent to each other in sequence
-    final exB = updatedList.removeAt(updatedList.indexWhere((e) => e.exerciseId == exerciseIdB));
-    final newIndexA = updatedList.indexWhere((e) => e.exerciseId == exerciseIdA);
+    final exB = updatedList.removeAt(
+      updatedList.indexWhere((e) => e.exerciseId == exerciseIdB),
+    );
+    final newIndexA = updatedList.indexWhere(
+      (e) => e.exerciseId == exerciseIdA,
+    );
     updatedList.insert(newIndexA + 1, exB);
 
     state = state.copyWith(exercises: updatedList);
@@ -637,7 +841,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
   /// Removes an exercise from its superset group.
   void unlinkSuperset(String exerciseId) {
-    final exIndex = state.exercises.indexWhere((e) => e.exerciseId == exerciseId);
+    final exIndex = state.exercises.indexWhere(
+      (e) => e.exerciseId == exerciseId,
+    );
     if (exIndex == -1) return;
 
     final exercise = state.exercises[exIndex];
@@ -648,7 +854,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     updated[exIndex] = exercise.copyWith(clearSupersetGroup: true);
 
     // If only one exercise remains with this groupId, unlink it too
-    final remainingWithGroup = updated.where((e) => e.supersetGroupId == groupId).toList();
+    final remainingWithGroup = updated
+        .where((e) => e.supersetGroupId == groupId)
+        .toList();
     if (remainingWithGroup.length <= 1) {
       for (int i = 0; i < updated.length; i++) {
         if (updated[i].supersetGroupId == groupId) {
@@ -670,35 +878,29 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     String newEquipment = 'barbell',
     int? newRestSeconds,
   }) {
-    final index = state.exercises.indexWhere((e) => e.exerciseId == oldExerciseId);
+    final index = state.exercises.indexWhere(
+      (e) => e.exerciseId == oldExerciseId,
+    );
     if (index == -1) return;
 
     final existing = state.exercises[index];
-    final updated = existing.copyWith(
+    final updated = ActiveExerciseState(
       exerciseId: newExerciseId,
       name: newName,
       muscleGroup: newMuscleGroup,
       equipment: newEquipment,
       restDurationSeconds: newRestSeconds ?? existing.restDurationSeconds,
+      sets: List.generate(
+        existing.sets.where((s) => !s.isCompleted).length.clamp(1, 20),
+        (i) => ActiveSetState(setNumber: i + 1, weightKg: 0, reps: 10),
+      ),
     );
-
-    final updatedExercises = List<ActiveExerciseState>.from(state.exercises);
-    updatedExercises[index] = updated;
-
-    state = state.copyWith(
-      exercises: updatedExercises,
-      expandedExerciseId: newExerciseId,
-    );
-    _persistActiveSession();
+    replaceExercise(oldExerciseId, updated);
   }
 
-  /// Finishes the active workout session, returns the compiled WorkoutModel, and halts timer.
-  WorkoutModel finishSession({String userId = 'guest_user'}) {
-    _elapsedTicker?.cancel();
-    ref.read(restTimerProvider.notifier).skip();
-    _clearActiveSession();
-
-    final workoutModel = WorkoutModel(
+  /// Builds a completed-only snapshot without destroying the recoverable draft.
+  WorkoutModel snapshotWorkout({String userId = 'guest_user'}) {
+    return WorkoutModel(
       id: state.workoutId,
       userId: userId,
       name: state.splitName,
@@ -706,35 +908,85 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       durationSeconds: state.elapsedSeconds,
       totalVolumeKg: state.totalVolumeKg,
       exercises: [
-        for (final ex in state.exercises)
+        for (final ex in state.exercises.where(
+          (e) => e.sets.any((s) => s.isCompleted),
+        ))
           WorkoutExercise(
             exerciseId: ex.exerciseId,
             exerciseName: ex.name,
             muscleGroup: ex.muscleGroup,
             supersetGroupId: ex.supersetGroupId,
             sets: [
-              for (final s in ex.sets)
+              for (final s in ex.sets.where((s) => s.isCompleted))
                 WorkoutSet(
                   reps: s.reps,
                   weightKg: s.weightKg,
-                  rpe: s.rpe,
+                  rpe: s.effortLogged ? s.rpe : 0,
                   isWarmup: s.isWarmup,
                   isPr: s.isPr,
+                  weightKgRight: ex.isUnilateral
+                      ? s.weightKgRight ?? s.weightKg
+                      : null,
+                  repsRight: ex.isUnilateral ? s.repsRight ?? s.reps : null,
                 ),
             ],
           ),
       ],
     );
+  }
 
-    state = state.copyWith(isActive: false);
-    return workoutModel;
+  Future<void> saveSession({String userId = 'guest_user', DateTime? date}) {
+    return _saving ??= _saveSession(
+      userId: userId,
+      date: date,
+    ).whenComplete(() => _saving = null);
+  }
+
+  Future<void> _saveSession({
+    String userId = 'guest_user',
+    DateTime? date,
+  }) async {
+    resyncWithWallClock();
+    final snapshot = snapshotWorkout(userId: userId);
+    if (snapshot.exercises.isEmpty) {
+      throw StateError('Log at least one set before saving.');
+    }
+    await flushPendingChanges();
+    await ref
+        .read(workoutServiceProvider)
+        .saveWorkout(date == null ? snapshot : snapshot.copyWith(date: date));
+    await discardSession();
+    ref.invalidate(historyWorkoutsProvider);
+  }
+
+  /// Legacy synchronous finish used by callers that explicitly manage storage.
+  WorkoutModel finishSession({String userId = 'guest_user'}) {
+    final workout = snapshotWorkout(userId: userId);
+    cancelSession();
+    return workout;
   }
 
   /// Cancels and resets the active workout session, halting all tickers.
   void cancelSession() {
+    unawaited(discardSession().catchError((Object _) {}));
+  }
+
+  /// Clear durable storage before dropping the in-memory recovery copy.
+  Future<void> discardSession() async {
+    try {
+      await _clearActiveSession();
+    } catch (_) {
+      if (ref.mounted) {
+        state = state.copyWith(
+          persistenceError:
+              'Could not clear the saved draft. Your workout is still available. Please retry.',
+        );
+      }
+      rethrow;
+    }
+    if (!ref.mounted) return;
     _elapsedTicker?.cancel();
     ref.read(restTimerProvider.notifier).skip();
-    _clearActiveSession();
     state = ActiveSessionState(startTime: DateTime.now());
   }
 
@@ -754,20 +1006,20 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     final int compoundReps = goalType == TrainingGoalType.strength
         ? 5
         : (goalType == TrainingGoalType.loseFat
-            ? 12
-            : (goalType == TrainingGoalType.athletic ? 8 : 8));
+              ? 12
+              : (goalType == TrainingGoalType.athletic ? 8 : 8));
 
     final int secondaryReps = goalType == TrainingGoalType.strength
         ? 6
         : (goalType == TrainingGoalType.loseFat
-            ? 12
-            : (goalType == TrainingGoalType.athletic ? 8 : 10));
+              ? 12
+              : (goalType == TrainingGoalType.athletic ? 8 : 10));
 
     final int accessoryReps = goalType == TrainingGoalType.strength
         ? 8
         : (goalType == TrainingGoalType.loseFat
-            ? 15
-            : (goalType == TrainingGoalType.athletic ? 10 : 12));
+              ? 15
+              : (goalType == TrainingGoalType.athletic ? 10 : 12));
 
     return [
       ActiveExerciseState(
@@ -969,5 +1221,5 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
 final activeSessionProvider =
     NotifierProvider<ActiveSessionNotifier, ActiveSessionState>(
-  ActiveSessionNotifier.new,
-);
+      ActiveSessionNotifier.new,
+    );

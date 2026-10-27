@@ -4,213 +4,143 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../providers/active_session_provider.dart';
 
-/// Top sticky header for the Active Workout Session screen.
-///
-/// Displays:
-/// - Split Name / Day Title
-/// - Live Elapsed Stopwatch
-/// - Completed Sets ratio and Progress bar
-/// - Cancel & Finish Workout CTA buttons
 class ActiveSessionHeader extends ConsumerWidget {
   const ActiveSessionHeader({
     super.key,
     required this.onFinishPressed,
     required this.onCancelPressed,
+    this.onMinimizePressed,
     this.onAddExercisePressed,
   });
-
   final VoidCallback onFinishPressed;
   final VoidCallback onCancelPressed;
+  final VoidCallback? onMinimizePressed;
   final VoidCallback? onAddExercisePressed;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sessionState = ref.watch(activeSessionProvider);
-
-    final completedSets = sessionState.completedSetCount;
-    final totalSets = sessionState.totalSetCount;
-    final progress = sessionState.completionRatio;
-    final percent = (progress * 100).toInt();
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-      decoration: const BoxDecoration(
-        color: AppColors.onyx,
-        border: Border(
-          bottom: BorderSide(
-            color: AppColors.steel,
-            width: 1,
+    final name = ref.watch(activeSessionProvider.select((s) => s.splitName));
+    final counts = ref.watch(
+      activeSessionProvider.select(
+        (s) => (s.completedSetCount, s.totalSetCount, s.totalVolumeKg),
+      ),
+    );
+    return ColoredBox(
+      color: AppColors.onyx,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 6, 8, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed:
+                        onMinimizePressed ??
+                        () => Navigator.of(context).maybePop(),
+                    tooltip: 'Minimize workout',
+                    icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                  ),
+                  Expanded(
+                    child: Text(
+                      name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.headlineSmall.copyWith(
+                        fontSize: 16,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: counts.$1 > 0 ? onFinishPressed : null,
+                    child: const Text('Finish'),
+                  ),
+                  PopupMenuButton<String>(
+                    tooltip: 'Workout options',
+                    onSelected: (value) {
+                      if (value == 'discard') onCancelPressed();
+                      if (value == 'add') onAddExercisePressed?.call();
+                    },
+                    itemBuilder: (_) => [
+                      if (onAddExercisePressed != null)
+                        const PopupMenuItem(
+                          value: 'add',
+                          child: Text('Add exercises'),
+                        ),
+                      const PopupMenuItem(
+                        value: 'discard',
+                        child: Text('Discard workout'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Row(
+                  children: [
+                    const _SessionClock(),
+                    const Spacer(),
+                    if (counts.$2 > 0)
+                      Flexible(
+                        child: Text(
+                          '${counts.$1}/${counts.$2} sets · ${counts.$3.toStringAsFixed(0)} kg',
+                          textAlign: TextAlign.end,
+                          style: AppTypography.monoSmall.copyWith(
+                            color: AppColors.platinum,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              if (counts.$2 > 0)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                  child: LinearProgressIndicator(
+                    value: counts.$1 / counts.$2,
+                    minHeight: 3,
+                    backgroundColor: AppColors.charcoal,
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+            ],
           ),
         ),
       ),
-      child: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Top Row: Cancel / Back, Split Title, Finish Action
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.platinum, size: 22),
-                  onPressed: onCancelPressed,
-                  tooltip: 'Cancel workout',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        sessionState.splitName,
-                        style: AppTypography.headlineMedium.copyWith(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.6,
-                          color: Colors.white,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.timer_outlined,
-                            size: 13,
-                            color: sessionState.isPaused
-                                ? AppColors.warning
-                                : AppColors.primary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            sessionState.formattedElapsed,
-                            style: AppTypography.monoMedium.copyWith(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: sessionState.isPaused
-                                  ? AppColors.warning
-                                  : AppColors.primary,
-                            ),
-                          ),
-                          if (sessionState.isPaused) ...[
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 1,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.warning.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                'PAUSED',
-                                style: AppTypography.monoSmall.copyWith(
-                                  fontSize: 11.0,
-                                  color: AppColors.warning,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                if (onAddExercisePressed != null) ...[
-                  IconButton(
-                    icon: const Icon(Icons.add_rounded, color: AppColors.pureWhite, size: 22),
-                    onPressed: onAddExercisePressed,
-                    tooltip: 'Add Exercise',
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-                  ),
-                  const SizedBox(width: 4),
-                ],
-                // Finish Workout CTA
-                FilledButton(
-                  onPressed: onFinishPressed,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.onPrimary,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    minimumSize: const Size(68, 40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'FINISH',
-                    style: AppTypography.labelSmall.copyWith(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.0,
-                      color: AppColors.onPrimary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
+    );
+  }
+}
 
-            // Metrics Bar: Sets completed progress & Volume moved
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '$completedSets / $totalSets SETS COMPLETED ($percent%)',
-                            style: AppTypography.monoSmall.copyWith(
-                              fontSize: 11.0,
-                              color: AppColors.platinum,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                          Text(
-                            'VOLUME: ${sessionState.totalVolumeKg.toInt()} KG',
-                            style: AppTypography.monoSmall.copyWith(
-                              fontSize: 11.0,
-                              color: AppColors.platinum,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      // Progress bar track
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 4,
-                          backgroundColor: AppColors.charcoal,
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            AppColors.primary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
+class _SessionClock extends ConsumerWidget {
+  const _SessionClock();
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final clock = ref.watch(
+      activeSessionProvider.select((s) => (s.formattedElapsed, s.isPaused)),
+    );
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          onPressed: ref.read(activeSessionProvider.notifier).togglePause,
+          tooltip: clock.$2 ? 'Resume timer' : 'Pause timer',
+          icon: Icon(
+            clock.$2 ? Icons.play_arrow_rounded : Icons.pause_rounded,
+            color: clock.$2 ? AppColors.warning : AppColors.primary,
+          ),
         ),
-      ),
+        Text(
+          clock.$2 ? '${clock.$1} · Paused' : clock.$1,
+          style: AppTypography.monoMedium.copyWith(
+            fontSize: 14,
+            color: clock.$2 ? AppColors.warning : AppColors.platinum,
+          ),
+        ),
+      ],
     );
   }
 }

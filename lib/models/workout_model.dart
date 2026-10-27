@@ -68,6 +68,8 @@ abstract class WorkoutSet with _$WorkoutSet {
   const factory WorkoutSet({
     required int reps,
     required double weightKg,
+    double? weightKgRight,
+    int? repsRight,
     @Default(0.0) double rpe,
     @Default(false) bool isWarmup,
     @Default(false) bool isPr,

@@ -41,18 +41,19 @@ class LiveActivityService {
     if (kIsWeb || !Platform.isIOS) return;
 
     try {
-      final activityId = await _channel.invokeMethod<String>('startLiveActivity', {
-        'workoutTitle': workoutTitle,
-        'exerciseName': exerciseName,
-        'setNumber': setNumber,
-        'totalSets': totalSets,
-        'remainingSeconds': remainingSeconds,
-        'totalDurationSeconds': totalDurationSeconds,
-        'targetWeightKg': targetWeightKg,
-        'targetReps': targetReps,
-        'plateBreakdown': plateBreakdown,
-        'isResting': isResting,
-      });
+      final activityId = await _channel
+          .invokeMethod<String>('startLiveActivity', {
+            'workoutTitle': workoutTitle,
+            'exerciseName': exerciseName,
+            'setNumber': setNumber,
+            'totalSets': totalSets,
+            'remainingSeconds': remainingSeconds,
+            'totalDurationSeconds': totalDurationSeconds,
+            'targetWeightKg': targetWeightKg,
+            'targetReps': targetReps,
+            'plateBreakdown': plateBreakdown,
+            'isResting': isResting,
+          });
       _currentActivityId = activityId;
     } on PlatformException catch (e) {
       debugPrint('[LiveActivityService] Failed to start Live Activity: $e');

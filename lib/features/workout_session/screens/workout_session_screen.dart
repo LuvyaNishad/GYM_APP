@@ -7,9 +7,7 @@ import '../widgets/active_session_header.dart';
 import '../widgets/exercise_picker_modal.dart';
 import '../widgets/exercise_sequence_card.dart';
 import '../widgets/floating_rest_timer_bar.dart';
-import '../../../services/workout_service.dart';
 import '../../dashboard/providers/workout_rotation_provider.dart';
-import '../../history/providers/history_provider.dart';
 import '../widgets/workout_summary_dialog.dart';
 
 /// Active Workout Session screen — "Active Mode."
@@ -20,11 +18,34 @@ import '../widgets/workout_summary_dialog.dart';
 /// - Reorderable exercise sequence cards with inline accordion set logging
 /// - Action bar for rapidly adding or replacing exercises
 /// - Docked floating glass rest countdown timer bar with ±10s controls
+class _DraftSaveStatus extends ConsumerWidget {
+  const _DraftSaveStatus();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final error = ref.watch(
+      activeSessionProvider.select((s) => s.persistenceError),
+    );
+    if (error == null) return const SizedBox.shrink();
+    return MaterialBanner(
+      content: Text(error),
+      actions: [
+        TextButton(
+          onPressed: () =>
+              ref.read(activeSessionProvider.notifier).persistInBackground(),
+          child: const Text('Retry'),
+        ),
+      ],
+    );
+  }
+}
+
 class WorkoutSessionScreen extends ConsumerStatefulWidget {
   const WorkoutSessionScreen({super.key});
 
   @override
-  ConsumerState<WorkoutSessionScreen> createState() => _WorkoutSessionScreenState();
+  ConsumerState<WorkoutSessionScreen> createState() =>
+      _WorkoutSessionScreenState();
 }
 
 class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
@@ -32,17 +53,24 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final session = ref.read(activeSessionProvider);
       if (!session.isActive) {
         final rotation = ref.read(workoutRotationProvider);
         final day = rotation.selectedDay;
-        final exercises =
-            day.exercises.map((e) => e.toActiveExerciseState()).toList();
-        ref.read(activeSessionProvider.notifier).startSession(
+        final exercises = day.exercises
+            .map((e) => e.toActiveExerciseState())
+            .toList();
+        ref
+            .read(activeSessionProvider.notifier)
+            .startSession(
               splitName:
                   '${rotation.split.shortName} ● ${day.name.toUpperCase()}',
               initialExercises: exercises,
             );
+      }
+      if (ref.read(activeSessionProvider).exercises.isEmpty) {
+        _openAddExerciseModal();
       }
     });
   }
@@ -58,7 +86,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
         ),
         title: Text(
           'Cancel Workout?',
-          style: AppTypography.headlineSmall.copyWith(color: AppColors.pureWhite),
+          style: AppTypography.headlineSmall.copyWith(
+            color: AppColors.pureWhite,
+          ),
         ),
         content: Text(
           'All sets logged in this workout session will be discarded.',
@@ -76,19 +106,23 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
             ),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(ctx).pop(true);
-              ref.read(activeSessionProvider.notifier).finishSession();
-              if (mounted) Navigator.of(context).maybePop();
+              try {
+                await ref.read(activeSessionProvider.notifier).discardSession();
+                if (mounted) Navigator.of(context).maybePop();
+              } catch (_) {
+                // The session's persistence banner provides retry feedback.
+              }
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.danger,
-              foregroundColor: AppColors.pureWhite,
+              foregroundColor: AppColors.onyx,
             ),
             child: Text(
               'DISCARD',
               style: AppTypography.labelSmall.copyWith(
-                color: AppColors.pureWhite,
+                color: AppColors.onyx,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -98,23 +132,21 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     );
   }
 
-  void _handleFinishWorkout() {
+  Future<void> _handleFinishWorkout() async {
     final session = ref.read(activeSessionProvider);
-    showModalBottomSheet(
+    final saved = await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
       builder: (ctx) => WorkoutSummaryDialog(
         session: session,
-        onConfirmedSave: () {
-          final workout =
-              ref.read(activeSessionProvider.notifier).finishSession();
-          ref.read(workoutServiceProvider).saveWorkout(workout);
-          ref.invalidate(historyWorkoutsProvider);
-          if (mounted) Navigator.of(context).maybePop();
-        },
+        onConfirmedSave: () =>
+            ref.read(activeSessionProvider.notifier).saveSession(),
       ),
     );
+    if (saved == true && mounted) Navigator.of(context).maybePop();
   }
 
   void _openAddExerciseModal() {
@@ -124,6 +156,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) => ExercisePickerModal(
+        multiSelect: true,
         onExerciseSelected: (newEx) {
           notifier.addExercise(newEx);
         },
@@ -133,10 +166,12 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final exercises =
-        ref.watch(activeSessionProvider.select((s) => s.exercises));
-    final expandedExerciseId =
-        ref.watch(activeSessionProvider.select((s) => s.expandedExerciseId));
+    final exercises = ref.watch(
+      activeSessionProvider.select((s) => s.exercises),
+    );
+    final expandedExerciseId = ref.watch(
+      activeSessionProvider.select((s) => s.expandedExerciseId),
+    );
     final notifier = ref.read(activeSessionProvider.notifier);
 
     return Scaffold(
@@ -150,8 +185,10 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
               ActiveSessionHeader(
                 onFinishPressed: _handleFinishWorkout,
                 onCancelPressed: _handleCancelWorkout,
+                onMinimizePressed: () => Navigator.of(context).maybePop(),
                 onAddExercisePressed: _openAddExerciseModal,
               ),
+              const _DraftSaveStatus(),
 
               // Reorderable Exercise Sequence List — immediately visible with zero vertical buffer
               Expanded(
@@ -170,10 +207,14 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                             const SizedBox(height: 16),
                             FilledButton.icon(
                               onPressed: _openAddExerciseModal,
-                              icon: const Icon(Icons.add_rounded, size: 16, color: AppColors.onPrimary),
+                              icon: const Icon(
+                                Icons.add_rounded,
+                                size: 16,
+                                color: AppColors.onPrimary,
+                              ),
                               label: Text(
                                 'ADD EXERCISE',
-                                style: AppTypography.monoSmall.copyWith(
+                                style: AppTypography.bodySmall.copyWith(
                                   fontSize: 12.0,
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.onPrimary,
@@ -183,14 +224,20 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                               style: FilledButton.styleFrom(
                                 backgroundColor: AppColors.primary,
                                 foregroundColor: AppColors.onPrimary,
-                                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 10,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       )
                     : ReorderableListView.builder(
-                        padding: const EdgeInsets.only(top: 8, bottom: 100),
+                        padding: EdgeInsets.only(
+                          top: 8,
+                          bottom: 180 + MediaQuery.paddingOf(context).bottom,
+                        ),
                         physics: const BouncingScrollPhysics(),
                         itemCount: exercises.length,
                         // ignore: deprecated_member_use
@@ -199,10 +246,14 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                           padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
                           child: OutlinedButton.icon(
                             onPressed: _openAddExerciseModal,
-                            icon: const Icon(Icons.add_rounded, size: 18, color: AppColors.pureWhite),
+                            icon: const Icon(
+                              Icons.add_rounded,
+                              size: 18,
+                              color: AppColors.pureWhite,
+                            ),
                             label: Text(
                               'ADD EXERCISE',
-                              style: AppTypography.monoSmall.copyWith(
+                              style: AppTypography.bodySmall.copyWith(
                                 fontSize: 12.0,
                                 fontWeight: FontWeight.w800,
                                 color: AppColors.pureWhite,
@@ -210,8 +261,13 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                               ),
                             ),
                             style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: AppColors.steel, width: 1.2),
-                              backgroundColor: AppColors.charcoal.withValues(alpha: 0.6),
+                              side: const BorderSide(
+                                color: AppColors.steel,
+                                width: 1.2,
+                              ),
+                              backgroundColor: AppColors.charcoal.withValues(
+                                alpha: 0.6,
+                              ),
                               foregroundColor: AppColors.pureWhite,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
@@ -225,7 +281,8 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                           final isExpanded =
                               expandedExerciseId == exercise.exerciseId;
                           final isSuperset = exercise.supersetGroupId != null;
-                          final hasPrevSuperset = isSuperset &&
+                          final hasPrevSuperset =
+                              isSuperset &&
                               index > 0 &&
                               exercises[index - 1].supersetGroupId ==
                                   exercise.supersetGroupId;
@@ -237,7 +294,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                             isExpanded: isExpanded,
                             isLinkedWithPrevious: hasPrevSuperset,
                             onToggleExpand: () {
-                              notifier.toggleExerciseExpand(exercise.exerciseId);
+                              notifier.toggleExerciseExpand(
+                                exercise.exerciseId,
+                              );
                             },
                           );
                         },
