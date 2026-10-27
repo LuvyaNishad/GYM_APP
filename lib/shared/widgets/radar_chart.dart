@@ -126,12 +126,21 @@ class _RadarChartPainter extends CustomPainter {
     final radius = math.min(size.width, size.height) / 2 * 0.72;
 
     // Staggered timeline, all inside the single 0→1 controller value.
-    final ringsT = const Interval(0.0, 0.35, curve: Curves.easeOut)
-        .transform(progress);
-    final axesT = const Interval(0.25, 0.6, curve: Curves.easeOut)
-        .transform(progress);
-    final polyT = const Interval(0.55, 1.0, curve: Curves.easeOutCubic)
-        .transform(progress);
+    final ringsT = const Interval(
+      0.0,
+      0.35,
+      curve: Curves.easeOut,
+    ).transform(progress);
+    final axesT = const Interval(
+      0.25,
+      0.6,
+      curve: Curves.easeOut,
+    ).transform(progress);
+    final polyT = const Interval(
+      0.55,
+      1.0,
+      curve: Curves.easeOutCubic,
+    ).transform(progress);
 
     final observedMax = axes.fold<double>(0, (m, a) => math.max(m, a.value));
     final scale = maxOr(observedMax);
@@ -260,10 +269,7 @@ class _RadarChartPainter extends CustomPainter {
       )..layout();
 
       final anchor = _vertex(center, radius + 20, i, n);
-      tp.paint(
-        canvas,
-        anchor - Offset(tp.width / 2, tp.height / 2),
-      );
+      tp.paint(canvas, anchor - Offset(tp.width / 2, tp.height / 2));
     }
   }
 

@@ -45,7 +45,8 @@ class LiquidGlassContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveGlowColor = glowColor ?? AppColors.primary.withValues(alpha: 0.12);
+    final effectiveGlowColor =
+        glowColor ?? AppColors.primary.withValues(alpha: 0.12);
     final radius = BorderRadius.circular(borderRadius);
 
     Widget content = Container(
@@ -286,9 +287,13 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton> {
           type: MaterialType.transparency,
           child: InkWell(
             borderRadius: BorderRadius.circular(radiusVal),
-            onTapDown: enabled ? (_) => setState(() => _isPressed = true) : null,
+            onTapDown: enabled
+                ? (_) => setState(() => _isPressed = true)
+                : null,
             onTapUp: enabled ? (_) => setState(() => _isPressed = false) : null,
-            onTapCancel: enabled ? () => setState(() => _isPressed = false) : null,
+            onTapCancel: enabled
+                ? () => setState(() => _isPressed = false)
+                : null,
             onTap: enabled
                 ? () {
                     HapticFeedback.lightImpact();

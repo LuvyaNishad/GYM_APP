@@ -52,6 +52,7 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   late int _currentIndex;
+  final Set<int> _visited = {};
   double _horizontalDragDelta = 0.0;
 
   /// The 5 persistent tab screens in display order.
@@ -70,6 +71,7 @@ class _AppShellState extends State<AppShell> {
     _currentIndex = (initialIndex >= 0 && initialIndex < kNavPillTabs.length)
         ? initialIndex
         : 0;
+    _visited.add(_currentIndex);
   }
 
   @override
@@ -82,6 +84,7 @@ class _AppShellState extends State<AppShell> {
           targetIndex != _currentIndex) {
         setState(() {
           _currentIndex = targetIndex;
+          _visited.add(targetIndex);
         });
       }
     }
@@ -91,6 +94,7 @@ class _AppShellState extends State<AppShell> {
     if (index == _currentIndex) return;
     setState(() {
       _currentIndex = index;
+      _visited.add(index);
     });
     final targetRoute = kNavPillTabs[index].route;
     if (widget.location != targetRoute) {
@@ -124,12 +128,15 @@ class _AppShellState extends State<AppShell> {
                       const double kDistanceThreshold = 50.0;
                       const double kVelocityThreshold = 250.0;
 
-                      final isSwipeNext = velocity < -kVelocityThreshold ||
+                      final isSwipeNext =
+                          velocity < -kVelocityThreshold ||
                           _horizontalDragDelta < -kDistanceThreshold;
-                      final isSwipePrev = velocity > kVelocityThreshold ||
+                      final isSwipePrev =
+                          velocity > kVelocityThreshold ||
                           _horizontalDragDelta > kDistanceThreshold;
 
-                      if (isSwipeNext && _currentIndex < _tabScreens.length - 1) {
+                      if (isSwipeNext &&
+                          _currentIndex < _tabScreens.length - 1) {
                         HapticFeedback.lightImpact();
                         _onTabSelected(_currentIndex + 1);
                       } else if (isSwipePrev && _currentIndex > 0) {
@@ -149,7 +156,9 @@ class _AppShellState extends State<AppShell> {
                             enabled: i == currentIndex,
                             child: KeyedSubtree(
                               key: PageStorageKey<String>('tab_$i'),
-                              child: _tabScreens[i],
+                              child: _visited.contains(i)
+                                  ? _tabScreens[i]
+                                  : const SizedBox.shrink(),
                             ),
                           ),
                       ],
@@ -166,12 +175,7 @@ class _AppShellState extends State<AppShell> {
             child: SafeArea(
               top: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  24,
-                  0,
-                  24,
-                  AppShell._margin,
-                ),
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, AppShell._margin),
                 child: GlassNavPill(
                   activeIndex: currentIndex,
                   onTabSelected: _onTabSelected,

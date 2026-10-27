@@ -30,12 +30,28 @@ class NotchedHeaderPainter extends CustomPainter {
     final cx = w / 2;
     final halfTab = tabWidth / 2;
 
+    final rect = Offset.zero & size;
     final fillPaint = Paint()
-      ..color = backgroundColor
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          backgroundColor.withValues(alpha: 0.96),
+          const Color(0xF210141E),
+        ],
+      ).createShader(rect)
       ..style = PaintingStyle.fill;
 
     final strokePaint = Paint()
-      ..color = borderColor
+      ..shader = const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0x66FFFFFF),
+          Color(0x2200E5FF),
+          Color(0x55FFFFFF),
+        ],
+      ).createShader(rect)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
@@ -52,25 +68,23 @@ class NotchedHeaderPainter extends CustomPainter {
 
     // Right shoulder fillet into center notch tab
     path.lineTo(cx + halfTab + filletRadius, h);
-    path.quadraticBezierTo(
-      cx + halfTab, h,
-      cx + halfTab, h + filletRadius,
-    );
+    path.quadraticBezierTo(cx + halfTab, h, cx + halfTab, h + filletRadius);
     path.lineTo(cx + halfTab, h + tabHeight - tabCornerRadius);
     path.quadraticBezierTo(
-      cx + halfTab, h + tabHeight,
-      cx + halfTab - tabCornerRadius, h + tabHeight,
+      cx + halfTab,
+      h + tabHeight,
+      cx + halfTab - tabCornerRadius,
+      h + tabHeight,
     );
     path.lineTo(cx - halfTab + tabCornerRadius, h + tabHeight);
     path.quadraticBezierTo(
-      cx - halfTab, h + tabHeight,
-      cx - halfTab, h + tabHeight - tabCornerRadius,
+      cx - halfTab,
+      h + tabHeight,
+      cx - halfTab,
+      h + tabHeight - tabCornerRadius,
     );
     path.lineTo(cx - halfTab, h + filletRadius);
-    path.quadraticBezierTo(
-      cx - halfTab, h,
-      cx - halfTab - filletRadius, h,
-    );
+    path.quadraticBezierTo(cx - halfTab, h, cx - halfTab - filletRadius, h);
 
     // Bottom edge to bottom-left corner
     path.lineTo(bottomRadius, h);
@@ -85,23 +99,31 @@ class NotchedHeaderPainter extends CustomPainter {
     borderPath.quadraticBezierTo(0, h, bottomRadius, h);
     borderPath.lineTo(cx - halfTab - filletRadius, h);
     borderPath.quadraticBezierTo(
-      cx - halfTab, h,
-      cx - halfTab, h + filletRadius,
+      cx - halfTab,
+      h,
+      cx - halfTab,
+      h + filletRadius,
     );
     borderPath.lineTo(cx - halfTab, h + tabHeight - tabCornerRadius);
     borderPath.quadraticBezierTo(
-      cx - halfTab, h + tabHeight,
-      cx - halfTab + tabCornerRadius, h + tabHeight,
+      cx - halfTab,
+      h + tabHeight,
+      cx - halfTab + tabCornerRadius,
+      h + tabHeight,
     );
     borderPath.lineTo(cx + halfTab - tabCornerRadius, h + tabHeight);
     borderPath.quadraticBezierTo(
-      cx + halfTab, h + tabHeight,
-      cx + halfTab, h + tabHeight - tabCornerRadius,
+      cx + halfTab,
+      h + tabHeight,
+      cx + halfTab,
+      h + tabHeight - tabCornerRadius,
     );
     borderPath.lineTo(cx + halfTab, h + filletRadius);
     borderPath.quadraticBezierTo(
-      cx + halfTab, h,
-      cx + halfTab + filletRadius, h,
+      cx + halfTab,
+      h,
+      cx + halfTab + filletRadius,
+      h,
     );
     borderPath.lineTo(w - bottomRadius, h);
     borderPath.quadraticBezierTo(w, h, w, h - bottomRadius);
