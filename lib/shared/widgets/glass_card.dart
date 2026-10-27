@@ -1,171 +1,34 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 
-/// A premium glassmorphism card widget — the foundational surface of LEON's
-/// Liquid Glass Tactical system.
-///
-/// Features:
-/// - 24px hardware-accelerated frosted backdrop blur
-/// - Multi-tone specular border gradient with top-left catch-light
-/// - Cylindrical lens surface glare (convex curvature reflection)
-/// - Subtle elevation drop shadow for separation from OLED black
-/// - Optional glow accent for interactive or highlighted status
-class GlassCard extends StatelessWidget {
-  const GlassCard({
-    super.key,
-    required this.child,
-    this.padding = const EdgeInsets.all(20),
-    this.borderRadius = 22,
-    this.sigmaBlur = 24.0,
-    this.backgroundColor,
-    this.borderColor,
-    this.border = true,
-    this.borderWidth = 1.0,
-    this.glowColor,
-    this.onTap,
-  });
-
-  final Widget child;
-  final EdgeInsets padding;
-  final double borderRadius;
-  final double sigmaBlur;
-  final Color? backgroundColor;
-  final Color? borderColor;
-  final bool border;
-  final double borderWidth;
-  final Color? glowColor;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(borderRadius);
-
-    Widget card = Container(
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        boxShadow: [
-          // Soft ambient drop shadow for elevation
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.45),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
-          if (glowColor != null)
-            BoxShadow(
-              color: glowColor!.withValues(alpha: 0.16),
-              blurRadius: 24,
-              spreadRadius: -2,
-            ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: radius,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: sigmaBlur, sigmaY: sigmaBlur),
-          child: CustomPaint(
-            foregroundPainter: border
-                ? _GlassCardBorderPainter(
-                    radius: borderRadius,
-                    strokeWidth: borderWidth,
-                    borderColor: borderColor,
-                  )
-                : null,
-            child: Container(
-              padding: padding,
-              decoration: BoxDecoration(
-                borderRadius: radius,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    backgroundColor ?? const Color(0x1E222C3D),
-                    const Color(0x14121622),
-                    const Color(0x1E0A0D14),
-                    Colors.white.withValues(alpha: 0.05),
-                  ],
-                  stops: const [0.0, 0.4, 0.8, 1.0],
-                ),
-              ),
-              child: child,
-            ),
-          ),
-        ),
-      ),
-    );
-
-    if (onTap != null) {
-      return Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            onTap!();
-          },
-          borderRadius: radius,
-          splashColor: AppColors.primary.withValues(alpha: 0.15),
-          highlightColor: AppColors.primary.withValues(alpha: 0.08),
-          child: card,
-        ),
-      );
-    }
-
-    return card;
-  }
-}
-
-class _GlassCardBorderPainter extends CustomPainter {
-  const _GlassCardBorderPainter({
+/// Lightweight specular light-catch painter that produces a beveled acrylic /
+/// cut-glass outline streak along the top and left perimeter with 0 FPS overhead.
+class AcrylicStreakPainter extends CustomPainter {
+  const AcrylicStreakPainter({
     required this.radius,
-    required this.strokeWidth,
-    this.borderColor,
+    this.strokeWidth = 1.0,
+    this.specularColor,
+    this.ambientColor,
+    this.innerSheen = true,
   });
 
   final double radius;
   final double strokeWidth;
-  final Color? borderColor;
+  final Color? specularColor;
+  final Color? ambientColor;
+  final bool innerSheen;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
-
     final rect = Offset.zero & size;
     final rrect = RRect.fromRectAndRadius(rect, Radius.circular(radius));
 
-    // Specular top-down lens reflection
-    final sheenPath = Path()
-      ..moveTo(0, radius)
-      ..quadraticBezierTo(0, 0, radius, 0)
-      ..lineTo(size.width - radius, 0)
-      ..quadraticBezierTo(size.width, 0, size.width, radius)
-      ..lineTo(size.width, size.height * 0.35)
-      ..quadraticBezierTo(
-        size.width * 0.5,
-        size.height * 0.45,
-        0,
-        size.height * 0.35,
-      )
-      ..close();
+    final spec = specularColor ?? Colors.white.withValues(alpha: 0.55);
+    final amb = ambientColor ?? AppColors.subtleBorder.withValues(alpha: 0.25);
 
-    final sheenPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Colors.white.withValues(alpha: 0.07),
-          Colors.white.withValues(alpha: 0.02),
-          Colors.white.withValues(alpha: 0.0),
-        ],
-        stops: const [0.0, 0.6, 1.0],
-      ).createShader(rect);
-
-    canvas.save();
-    canvas.clipRRect(rrect);
-    canvas.drawPath(sheenPath, sheenPaint);
-    canvas.restore();
-
-    // Multi-tone edge border
+    // 1. Primary outer beveled rim with directional light-catch
     final borderPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
@@ -173,21 +36,159 @@ class _GlassCardBorderPainter extends CustomPainter {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          borderColor ?? Colors.white.withValues(alpha: 0.42),
-          Colors.white.withValues(alpha: 0.15),
-          Colors.white.withValues(alpha: 0.06),
-          borderColor ?? Colors.white.withValues(alpha: 0.28),
+          spec,
+          spec.withValues(alpha: (spec.a * 0.55).clamp(0.0, 1.0)),
+          amb.withValues(alpha: (amb.a * 0.30).clamp(0.0, 1.0)),
+          amb,
         ],
-        stops: const [0.0, 0.3, 0.7, 1.0],
+        stops: const [0.0, 0.28, 0.72, 1.0],
       ).createShader(rect);
 
     canvas.drawRRect(rrect.deflate(strokeWidth / 2), borderPaint);
+
+    // 2. Inner specular prism streak (liquid glass bevel highlight)
+    if (innerSheen && strokeWidth > 0) {
+      final innerRRect = rrect.deflate(strokeWidth + 0.8);
+      final innerPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white.withValues(alpha: 0.32),
+            Colors.white.withValues(alpha: 0.08),
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.35, 0.75],
+        ).createShader(rect);
+
+      canvas.drawRRect(innerRRect, innerPaint);
+    }
   }
 
   @override
-  bool shouldRepaint(covariant _GlassCardBorderPainter oldDelegate) {
-    return oldDelegate.radius != radius ||
-        oldDelegate.strokeWidth != strokeWidth ||
-        oldDelegate.borderColor != borderColor;
+  bool shouldRepaint(covariant AcrylicStreakPainter oldDelegate) =>
+      oldDelegate.radius != radius ||
+      oldDelegate.strokeWidth != strokeWidth ||
+      oldDelegate.specularColor != specularColor ||
+      oldDelegate.ambientColor != ambientColor ||
+      oldDelegate.innerSheen != innerSheen;
+}
+
+/// Frosted glass surface with an acrylic specular outline streak.
+/// Lightweight and hardware-accelerated for fluid 60-120 FPS performance.
+/// Set [blur: true] only on floating overlay surfaces (nav pill, rest timer bar, modals)
+/// where content passes underneath. Static cards on solid backgrounds leave [blur: false]
+/// to completely bypass heavy GPU offscreen framebuffer copies while keeping the cut-glass
+/// streak and acrylic gradient.
+class GlassCard extends StatelessWidget {
+  const GlassCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(20),
+    this.borderRadius = 20,
+    this.sigmaBlur = 10,
+    this.blur = false,
+    this.backgroundColor,
+    this.gradient,
+    this.borderColor,
+    this.border = true,
+    this.borderWidth = 1,
+    this.glowColor,
+    this.boxShadow,
+    this.onTap,
+  });
+
+  final Widget child;
+  final EdgeInsets padding;
+  final double borderRadius;
+  final double sigmaBlur;
+  final bool blur;
+  final Color? backgroundColor;
+  final Gradient? gradient;
+  final Color? borderColor;
+  final bool border;
+  final double borderWidth;
+  final Color? glowColor;
+  final List<BoxShadow>? boxShadow;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(borderRadius);
+
+    final content = CustomPaint(
+      foregroundPainter: border
+          ? AcrylicStreakPainter(
+              radius: borderRadius,
+              strokeWidth: borderWidth,
+              specularColor: borderColor != null
+                  ? borderColor!.withValues(alpha: 0.75)
+                  : Colors.white.withValues(alpha: 0.40),
+              ambientColor: borderColor != null
+                  ? borderColor!.withValues(alpha: 0.25)
+                  : AppColors.subtleBorder.withValues(alpha: 0.35),
+            )
+          : null,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: radius,
+          child: Container(
+            padding: padding,
+            decoration: BoxDecoration(
+              borderRadius: radius,
+              gradient: gradient ??
+                  LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      backgroundColor?.withValues(
+                            alpha: (backgroundColor!.a * 1.15).clamp(0.0, 1.0),
+                          ) ??
+                          AppColors.cardBackground.withValues(alpha: 0.78),
+                      backgroundColor?.withValues(
+                            alpha: (backgroundColor!.a * 0.85).clamp(0.0, 1.0),
+                          ) ??
+                          AppColors.cardBackground.withValues(alpha: 0.68),
+                    ],
+                  ),
+            ),
+            child: child,
+          ),
+        ),
+      ),
+    );
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        boxShadow: boxShadow ?? [
+          // Soft ambient drop shadow for depth
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.32),
+            blurRadius: 18,
+            offset: const Offset(0, 5),
+          ),
+          if (glowColor != null)
+            BoxShadow(
+              color: glowColor!,
+              blurRadius: 22,
+              spreadRadius: -1,
+            ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: blur && sigmaBlur > 0
+            ? BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: sigmaBlur, sigmaY: sigmaBlur),
+                child: content,
+              )
+            : content,
+      ),
+    );
   }
 }

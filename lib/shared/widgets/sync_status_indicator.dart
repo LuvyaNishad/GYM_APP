@@ -21,8 +21,9 @@ class SyncStatusIndicator extends StatelessWidget {
 
   void _showSyncInfoDialog(BuildContext context) {
     HapticFeedback.lightImpact();
-    final statusColor =
-        isOnline ? const Color(0xFF00E676) : AppColors.pureWhite;
+    final statusColor = isOnline
+        ? const Color(0xFF00E676)
+        : AppColors.pureWhite;
 
     showDialog<void>(
       context: context,
@@ -80,7 +81,7 @@ class SyncStatusIndicator extends StatelessWidget {
                           ? 'SAVED LOCALLY & SYNCED'
                           : 'SAVED LOCALLY (OFFLINE)',
                       style: TextStyle(
-                        fontFamily: 'JetBrains Mono',
+                        fontFamily: AppTypography.fontMono,
                         fontSize: 11.5,
                         fontWeight: FontWeight.w800,
                         color: statusColor,
@@ -109,7 +110,7 @@ class SyncStatusIndicator extends StatelessWidget {
             child: const Text(
               'UNDERSTOOD',
               style: TextStyle(
-                fontFamily: 'JetBrains Mono',
+                fontFamily: AppTypography.fontBody,
                 fontSize: 12.0,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF00E5FF),
@@ -123,16 +124,18 @@ class SyncStatusIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor =
-        isOnline ? const Color(0xFF00E676) : AppColors.pureWhite;
+    final statusColor = isOnline
+        ? const Color(0xFF00E676)
+        : AppColors.pureWhite;
     final statusBg = isOnline
         ? const Color(0xFF00E676).withValues(alpha: 0.12)
         : Colors.white.withValues(alpha: 0.08);
     final statusBorder = isOnline
         ? const Color(0xFF00E676).withValues(alpha: 0.40)
         : Colors.white.withValues(alpha: 0.25);
-    final statusIcon =
-        isOnline ? Icons.cloud_done_rounded : Icons.cloud_off_rounded;
+    final statusIcon = isOnline
+        ? Icons.cloud_done_rounded
+        : Icons.cloud_off_rounded;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -142,29 +145,24 @@ class SyncStatusIndicator extends StatelessWidget {
         child: Center(
           child: showLabel
               ? Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: statusBg,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: statusBorder,
-                      width: 0.8,
-                    ),
+                    border: Border.all(color: statusBorder, width: 0.8),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        statusIcon,
-                        size: 13,
-                        color: statusColor,
-                      ),
+                      Icon(statusIcon, size: 13, color: statusColor),
                       const SizedBox(width: 5),
                       Text(
                         isOnline ? 'SAVED' : 'OFFLINE',
                         style: TextStyle(
-                          fontFamily: 'JetBrains Mono',
+                          fontFamily: AppTypography.fontMono,
                           fontSize: 11.0,
                           fontWeight: FontWeight.w700,
                           color: statusColor,
@@ -179,17 +177,10 @@ class SyncStatusIndicator extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: statusBg,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: statusBorder,
-                      width: 1.0,
-                    ),
+                    border: Border.all(color: statusBorder, width: 1.0),
                   ),
                   child: Center(
-                    child: Icon(
-                      statusIcon,
-                      size: 16,
-                      color: statusColor,
-                    ),
+                    child: Icon(statusIcon, size: 16, color: statusColor),
                   ),
                 ),
         ),

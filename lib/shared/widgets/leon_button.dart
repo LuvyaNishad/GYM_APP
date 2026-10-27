@@ -43,9 +43,10 @@ class LeonButton extends StatelessWidget {
     final Color fgColor = isOutlined
         ? AppColors.textPrimary
         : AppColors.background;
-    final Color iconColor = isOutlined
-        ? accent
-        : AppColors.background;
+    final Color contentColor = enabled ? fgColor : AppColors.textMuted;
+    final Color iconColor = enabled
+        ? (isOutlined ? accent : AppColors.background)
+        : AppColors.textMuted;
 
     return SizedBox(
       width: width,
@@ -54,10 +55,7 @@ class LeonButton extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: radius,
           border: isOutlined
-              ? Border.all(
-                  color: accent.withValues(alpha: 0.40),
-                  width: 1.5,
-                )
+              ? Border.all(color: accent.withValues(alpha: 0.40), width: 1.5)
               : null,
           boxShadow: enabled && !isOutlined
               ? [
@@ -79,8 +77,8 @@ class LeonButton extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: bgColor,
             foregroundColor: fgColor,
-            disabledBackgroundColor: bgColor.withValues(alpha: 0.30),
-            disabledForegroundColor: fgColor.withValues(alpha: 0.30),
+            disabledBackgroundColor: AppColors.surfaceVariant,
+            disabledForegroundColor: AppColors.textMuted,
             elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             shape: RoundedRectangleBorder(borderRadius: radius),
@@ -91,16 +89,18 @@ class LeonButton extends StatelessWidget {
                   height: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: fgColor,
+                    color: contentColor,
                   ),
                 )
-              : (icon != null ? Icon(icon, size: 18, color: iconColor) : const SizedBox.shrink()),
+              : (icon != null
+                    ? Icon(icon, size: 18, color: iconColor)
+                    : const SizedBox.shrink()),
           label: Text(
             label.toUpperCase(),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTypography.titleLarge.copyWith(
-              color: fgColor,
+            style: AppTypography.button.copyWith(
+              color: contentColor,
               letterSpacing: 1.5,
               fontSize: 13,
             ),

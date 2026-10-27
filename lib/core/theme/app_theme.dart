@@ -12,26 +12,66 @@ final class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
+      fontFamily: AppTypography.fontBody,
       scaffoldBackgroundColor: AppColors.background,
       colorScheme: const ColorScheme.dark(
         surface: AppColors.background,
         surfaceContainerHighest: AppColors.surface,
         primary: AppColors.primary,
         secondary: AppColors.secondary,
+        onSecondary: AppColors.onPrimary,
         error: AppColors.danger,
+        onError: AppColors.onPrimary,
         onPrimary: AppColors.onPrimary,
         onSurface: AppColors.textPrimary,
+        onSurfaceVariant: AppColors.textSecondary,
       ),
 
       // ── Typography ────────────────────────────────────────────────────────
       textTheme: const TextTheme(
         displayLarge: AppTypography.displayLarge,
         displayMedium: AppTypography.displayMedium,
+        displaySmall: AppTypography.displayMedium,
         headlineLarge: AppTypography.headlineLarge,
         headlineMedium: AppTypography.headlineMedium,
+        headlineSmall: AppTypography.headlineSmall,
         titleLarge: AppTypography.titleLarge,
+        titleMedium: AppTypography.button,
+        titleSmall: AppTypography.bodyMedium,
+        bodyLarge: AppTypography.bodyLarge,
         bodyMedium: AppTypography.bodyMedium,
+        bodySmall: AppTypography.bodySmall,
+        labelLarge: AppTypography.button,
+        labelMedium: AppTypography.bodySmall,
         labelSmall: AppTypography.labelSmall,
+      ),
+
+      disabledColor: AppColors.textMuted,
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          disabledForegroundColor: AppColors.textMuted,
+          disabledBackgroundColor: AppColors.surfaceVariant,
+          textStyle: AppTypography.button,
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          disabledForegroundColor: AppColors.textMuted,
+          disabledBackgroundColor: AppColors.surfaceVariant,
+          textStyle: AppTypography.button,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          disabledForegroundColor: AppColors.textMuted,
+          textStyle: AppTypography.button,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          disabledForegroundColor: AppColors.textMuted,
+          textStyle: AppTypography.button,
+        ),
       ),
 
       // ── AppBar ────────────────────────────────────────────────────────────
