@@ -19,7 +19,7 @@
 [![Storage](https://img.shields.io/badge/Storage-Hive_CE_(Local--First)-F8981D?style=flat-square)](https://pub.dev/packages/hive_ce)
 [![Exercises](https://img.shields.io/badge/Exercises-220+_Curated-00E676?style=flat-square)](#5-exercise-library--custom-movements-libfeaturesexercise_library)
 [![Analysis](https://img.shields.io/badge/Analysis-0_Issues-00E5FF?style=flat-square)](https://dart.dev/tools/analysis)
-[![Tests](https://img.shields.io/badge/Tests-135+_Passing-00E5FF?style=flat-square)](#-tech-stack--architecture)
+[![Tests](https://img.shields.io/badge/Tests-197_Passing-00E5FF?style=flat-square)](#-tech-stack--architecture)
 [![Design](https://img.shields.io/badge/Design-Apple_HIG_AA/AAA-FFFFFF?style=flat-square&labelColor=0F131B)](./lib/core/theme)
 
 </div>
@@ -124,7 +124,7 @@ flowchart TD
 * **"Repeat Workout" 1-Tap Launcher:** Instantly restart any past workout session with previous exercises, set counts, and working weights preloaded into the active session with smart conflict handling.
 * **Workout Summary Sharing (`SHARE`):** 1-tap generator that creates a clean, formatted plain-text workout summary (exercises, sets, reps, loads, PR highlights, and total tonnage) directly to the system clipboard with tactile feedback.
 * **Collapsible Notched Calendar:** Pinned header with an ergonomic grab handle. Collapses to a 1-week strip or expands to a 6-row monthly calendar.
-* **Strict 1-Workout-Per-Day Rule:** Enforces accurate calendar alignment with color-coded status:
+* **Multiple Same-Day Sessions:** Preserves every completed workout while keeping calendar filtering accurate:
   * 🟢 **Solid Emerald Green (`#00E676`):** Completed workout days.
   * ⚪ **Solid Pure White (`#FFFFFF`):** Today.
   * 🔴 **Soft Red (`#FF5252`):** Missed scheduled workouts.
@@ -254,9 +254,9 @@ lib/
 
 ## 🗺️ Product Roadmap & Upcoming Milestones
 
-Refer to [TODO.md](./TODO.md) for the active production backlog:
+Refer to [MASTER_COMPLETION_PLAN.md](./MASTER_COMPLETION_PLAN.md) for the active production backlog:
 - [ ] **Cloud Sync & Multi-Device Backup:** Supabase / Firebase authentication & cloud synchronization
-- [ ] **Lock Screen Live Activity:** Android Foreground Service notification & iOS Dynamic Island widget
+- [ ] **Platform Notification Closeout:** Physical-device hardening for the existing Android persistent notification and iOS Live Activity/Dynamic Island implementations
 - [ ] **Rest Timer Audio Sound Pack:** Audio assets with headphone ducking
 - [ ] **Nutrition & Macro Tracking:** Barcode food scanner (OpenFoodFacts) & macro targets
 - [ ] **Smartwatch Companion App:** Wear OS & Apple Watch wrist set logging
