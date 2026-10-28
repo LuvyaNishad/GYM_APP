@@ -170,15 +170,15 @@ void main() {
         await tester.pump(const Duration(milliseconds: 700));
 
         expect(find.text('WORKOUTS'), findsOneWidget);
-        expect(find.text('YOUR PLAN'), findsOneWidget);
+        expect(find.text('ACTIVE PLAN'), findsOneWidget);
         expect(find.text('Push Pull Legs (PPL)'), findsWidgets);
         expect(find.text('Push Day A'), findsWidgets);
         await tester.scrollUntilVisible(
-          find.text('START FREESTYLE WORKOUT'),
+          find.text('Start freestyle workout'),
           400,
         );
         expect(find.text('Routine library'), findsOneWidget);
-        expect(find.text('START FREESTYLE WORKOUT'), findsOneWidget);
+        expect(find.text('Start freestyle workout'), findsOneWidget);
         expect(tester.takeException(), isNull);
       },
     );

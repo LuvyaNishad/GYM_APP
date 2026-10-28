@@ -7,6 +7,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../dashboard/widgets/daily_workout_bento_card.dart';
+import '../../dashboard/providers/workout_rotation_provider.dart';
 import '../../dashboard/widgets/workout_detail_sheet.dart';
 import '../providers/splits_provider.dart';
 import '../widgets/active_split_detail_sheet.dart';
@@ -19,6 +20,9 @@ class WorkoutBuilderScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(splitsProvider);
     final split = state.activeSplit;
+    final nextDay = ref.watch(
+      workoutRotationProvider.select((s) => s.selectedDay),
+    );
     final notifier = ref.read(splitsProvider.notifier);
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -39,7 +43,7 @@ class WorkoutBuilderScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: Text(
-                  'YOUR PLAN',
+                  'ACTIVE PLAN',
                   style: AppTypography.monoSmall.copyWith(letterSpacing: 1.5),
                 ),
               ),
@@ -60,54 +64,64 @@ class WorkoutBuilderScreen extends ConsumerWidget {
           ),
           GlassCard(
             border: false,
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(split.name, style: AppTypography.headlineSmall),
-                const SizedBox(height: 6),
-                Text(
+            blur: true,
+            padding: EdgeInsets.zero,
+            child: ExpansionTile(
+              key: PageStorageKey('active_plan_${split.id}'),
+              tilePadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              shape: const Border(),
+              collapsedShape: const Border(),
+              iconColor: AppColors.primary,
+              collapsedIconColor: AppColors.textSecondary,
+              title: Text(split.name, style: AppTypography.headlineSmall),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
                   '${split.daysPerWeek} days per week · ${split.totalWeeklySets} sets per rotation',
                   style: AppTypography.bodySmall,
                 ),
-                const SizedBox(height: 12),
+              ),
+              children: [
                 for (final day in split.workouts)
                   ListTile(
+                    key: ValueKey(day.id),
                     contentPadding: EdgeInsets.zero,
+                    selected: day.id == nextDay.id,
                     title: Text(
                       day.name,
                       style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.pureWhite,
+                        color: day.id == nextDay.id
+                            ? AppColors.primary
+                            : AppColors.pureWhite,
                       ),
                     ),
                     subtitle: Text(
-                      day.isRestDay
-                          ? 'Recovery day'
-                          : '${day.exercises.length} exercises · ${day.totalSets} sets',
+                      '${day.id == nextDay.id ? 'Next · ' : ''}${day.isRestDay ? 'Recovery day' : '${day.exercises.length} exercises · ${day.totalSets} sets'}',
+                      style: AppTypography.bodySmall,
                     ),
                     trailing: const Icon(Icons.chevron_right_rounded),
                     onTap: () =>
                         showWorkoutDetailSheet(context, initialDay: day),
                   ),
                 const Divider(),
-                Row(
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  spacing: 8,
                   children: [
-                    Expanded(
-                      child: TextButton.icon(
-                        onPressed: () => showCreateRoutineSheet(
-                          context,
-                          initialSplit: split,
-                        ),
-                        icon: const Icon(Icons.edit_outlined, size: 18),
-                        label: const Text('Edit plan'),
-                      ),
+                    TextButton.icon(
+                      onPressed: () =>
+                          showCreateRoutineSheet(context, initialSplit: split),
+                      icon: const Icon(Icons.edit_outlined, size: 18),
+                      label: const Text('Edit plan'),
                     ),
-                    Expanded(
-                      child: TextButton.icon(
-                        onPressed: () => showActiveSplitDetailSheet(context),
-                        icon: const Icon(Icons.bar_chart_rounded, size: 18),
-                        label: const Text('Muscle balance'),
-                      ),
+                    TextButton.icon(
+                      onPressed: () => showActiveSplitDetailSheet(context),
+                      icon: const Icon(Icons.bar_chart_rounded, size: 18),
+                      label: const Text('Muscle balance'),
                     ),
                   ],
                 ),
@@ -117,6 +131,7 @@ class WorkoutBuilderScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           GlassCard(
             border: false,
+            blur: true,
             padding: const EdgeInsets.all(4),
             child: ListTile(
               leading: const Icon(Icons.folder_open_outlined),
@@ -127,12 +142,13 @@ class WorkoutBuilderScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 20),
-          OutlinedButton.icon(
+          TextButton.icon(
             onPressed: () => notifier.startEmptyWorkout(context),
             icon: const Icon(Icons.add_rounded),
-            label: const Text('START FREESTYLE WORKOUT'),
-            style: OutlinedButton.styleFrom(
+            label: const Text('Start freestyle workout'),
+            style: TextButton.styleFrom(
               minimumSize: const Size.fromHeight(52),
+              foregroundColor: AppColors.textSecondary,
             ),
           ),
         ],

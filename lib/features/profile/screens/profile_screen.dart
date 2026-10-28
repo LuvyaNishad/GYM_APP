@@ -1,14 +1,3 @@
-/// LEON Account & User Profile Screen.
-///
-/// Features:
-/// 1. Identity & Profile (Avatar, Name, Email, Member Since)
-/// 2. Biometrics & Goal Delta (Height, Weight, Target, BMI, Calorie maintenance)
-/// 3. Training & Routine Preferences (Split, Experience tier, Rest timer, Barbell tare)
-/// 4. Athletic Reports & Data Export (1-Page Monthly PDF Report, JSON/CSV Export)
-/// 5. App Preferences & Inclusivity (Units toggle, Menstrual cycle recovery, Audio/Haptics)
-/// 6. Account Actions & Reset
-library;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +7,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/app_shell.dart';
+import '../../../shared/widgets/glass_card.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import '../../onboarding/widgets/goal_selector_sheet.dart';
 import '../models/account_profile_model.dart';
@@ -27,15 +17,12 @@ import '../widgets/edit_profile_dialog.dart';
 import '../widgets/export_data_dialog.dart';
 import '../widgets/report_preview_dialog.dart';
 
-/// Main Account Screen for managing user identity, physical biometrics,
-/// training split preferences, and PDF reports.
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(accountProfileProvider);
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -43,77 +30,22 @@ class ProfileScreen extends ConsumerWidget {
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            // ── Top Header ─────────────────────────────────────────────────
-            SliverToBoxAdapter(
+            const SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                padding: EdgeInsets.fromLTRB(20, 20, 20, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'ACCOUNT',
-                            style: TextStyle(
-                              fontFamily: AppTypography.fontDisplay,
-                              fontSize: 22.0,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.pureWhite,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          SizedBox(height: 3),
-                          Text(
-                            'Personal Profile & Settings',
-                            style: TextStyle(
-                              fontFamily: AppTypography.fontBody,
-                              fontSize: 12.0,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.bolt_rounded,
-                              size: 14, color: AppColors.primary),
-                          SizedBox(width: 4),
-                          Text(
-                            'ACTIVE LIFTER',
-                            style: TextStyle(
-                              fontFamily: AppTypography.fontBody,
-                              fontSize: 11.0,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.primary,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
-                      ),
+                    Text('ACCOUNT', style: AppTypography.screenTitle),
+                    SizedBox(height: 4),
+                    Text(
+                      'Personal Profile & Settings',
+                      style: AppTypography.bodySmall,
                     ),
                   ],
                 ),
               ),
             ),
-
-            // ── Main Content Cards ─────────────────────────────────────────
             SliverPadding(
               padding: EdgeInsets.fromLTRB(
                 16,
@@ -123,27 +55,16 @@ class ProfileScreen extends ConsumerWidget {
               ),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  // 1. User Identity Card
                   _IdentityCard(profile: profile),
-                  const SizedBox(height: 14),
-
-                  // 2. Biometrics & Goal Progress Card
+                  const SizedBox(height: 16),
                   _BiometricsCard(profile: profile),
-                  const SizedBox(height: 14),
-
-                  // 3. Training & Routine Preferences Card
+                  const SizedBox(height: 16),
                   _TrainingPreferencesCard(profile: profile),
-                  const SizedBox(height: 14),
-
-                  // 4. Reports & Data Export Card
+                  const SizedBox(height: 16),
                   _ReportsAndExportCard(profile: profile),
-                  const SizedBox(height: 14),
-
-                  // 5. App Settings & Inclusivity Card
+                  const SizedBox(height: 16),
                   _AppSettingsCard(profile: profile),
-                  const SizedBox(height: 14),
-
-                  // 6. Account Actions Card
+                  const SizedBox(height: 16),
                   _AccountActionsCard(),
                 ]),
               ),
@@ -155,142 +76,52 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 1. User Identity Card
-// ─────────────────────────────────────────────────────────────────────────────
 class _IdentityCard extends StatelessWidget {
   const _IdentityCard({required this.profile});
-
   final AccountProfile profile;
 
   @override
   Widget build(BuildContext context) {
     final initials = profile.displayName.isNotEmpty
-        ? profile.displayName.substring(0, 1).toUpperCase()
+        ? profile.displayName.characters.first.toUpperCase()
         : 'L';
-
+    final joined = MaterialLocalizations.of(
+      context,
+    ).formatMonthYear(profile.memberSince);
     return _GlassSectionContainer(
-      child: Column(
+      child: Row(
         children: [
-          Row(
-            children: [
-              // Avatar with Electric Cyan halo
-              Container(
-                width: 58,
-                height: 58,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.charcoal,
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.8),
-                    width: 2.0,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  initials,
-                  style: const TextStyle(
-                    fontFamily: AppTypography.fontDisplay,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.pureWhite,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-
-              // Name, Email, Member date
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      profile.displayName,
-                      style: const TextStyle(
-                        fontFamily: AppTypography.fontDisplay,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.pureWhite,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      profile.email,
-                      style: const TextStyle(
-                        fontFamily: AppTypography.fontBody,
-                        fontSize: 12.0,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Member since ${_formatMonthYear(profile.memberSince)}',
-                      style: const TextStyle(
-                        fontFamily: AppTypography.fontMono,
-                        fontSize: 11.0,
-                        color: AppColors.platinum,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Edit Button
-              InkWell(
-                onTap: () => showEditProfileSheet(context, profile),
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.steel.withValues(alpha: 0.6),
-                    ),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.edit_outlined,
-                          size: 14, color: AppColors.pureWhite),
-                      SizedBox(width: 5),
-                      Text(
-                        'Edit',
-                        style: TextStyle(
-                          fontFamily: AppTypography.fontBody,
-                          fontSize: 12.0,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.pureWhite,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: AppColors.surfaceSecondary,
+            child: Text(initials, style: AppTypography.headlineMedium),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(profile.displayName, style: AppTypography.headlineSmall),
+                const SizedBox(height: 4),
+                Text(profile.email, style: AppTypography.bodySmall),
+                const SizedBox(height: 4),
+                Text('Member since $joined', style: AppTypography.bodySmall),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Edit profile',
+            onPressed: () => showEditProfileSheet(context, profile),
+            icon: const Icon(Icons.edit_outlined, size: 20),
           ),
         ],
       ),
     );
   }
-
-  String _formatMonthYear(DateTime dt) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    return '${months[dt.month - 1]} ${dt.year}';
-  }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 2. Biometrics & Goal Progress Card
-// ─────────────────────────────────────────────────────────────────────────────
 class _BiometricsCard extends StatelessWidget {
   const _BiometricsCard({required this.profile});
-
   final AccountProfile profile;
 
   @override
@@ -300,202 +131,85 @@ class _BiometricsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const _SectionHeader(
-                title: 'BIOMETRICS & GOALS',
-                icon: Icons.monitor_weight_outlined,
-              ),
-              InkWell(
-                onTap: () => showEditBiometricsSheet(context, profile),
-                borderRadius: BorderRadius.circular(8),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  child: Text(
-                    'Update',
-                    style: TextStyle(
-                      fontFamily: AppTypography.fontBody,
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
-                    ),
-                  ),
+              const Expanded(
+                child: _SectionHeader(
+                  title: 'BIOMETRICS & GOALS',
+                  icon: Icons.monitor_weight_outlined,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // 3-Column Metrics Grid
-          Row(
-            children: [
-              _MetricBlock(
-                label: 'HEIGHT',
-                value: profile.formattedHeight,
-              ),
-              const SizedBox(width: 8),
-              _MetricBlock(
-                label: 'CURRENT',
-                value: profile.formatWeight(profile.currentWeightKg),
-              ),
-              const SizedBox(width: 8),
-              _MetricBlock(
-                label: 'GOAL',
-                value: profile.formatWeight(profile.targetWeightKg),
+              TextButton(
+                onPressed: () => showEditBiometricsSheet(context, profile),
+                child: const Text('Update'),
               ),
             ],
           ),
           const SizedBox(height: 12),
-
-          // BMI & Maintenance Row
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final columns =
+                  constraints.maxWidth /
+                          MediaQuery.textScalerOf(context).scale(1) <
+                      300
+                  ? 2
+                  : 3;
+              final width =
+                  (constraints.maxWidth - (columns - 1) * 16) / columns;
+              return Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: [
+                  for (final metric in [
+                    ('HEIGHT', profile.formattedHeight),
+                    ('CURRENT', profile.formatWeight(profile.currentWeightKg)),
+                    ('GOAL', profile.formatWeight(profile.targetWeightKg)),
+                  ])
+                    SizedBox(
+                      width: width,
+                      child: _MetricBlock(label: metric.$1, value: metric.$2),
+                    ),
+                ],
+              );
+            },
+          ),
+          const Divider(height: 28),
+          _ValueRow(
+            label: 'BMI · ${profile.bmiCategory}',
+            value: profile.bmi.toStringAsFixed(1),
+          ),
+          const SizedBox(height: 12),
+          _ValueRow(
+            label: 'Est. maintenance',
+            value: '${profile.maintenanceCaloriesEstimate} kcal/day',
+          ),
+          const SizedBox(height: 20),
           Row(
             children: [
-              // BMI Chip
               Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.charcoal,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.steel.withValues(alpha: 0.5),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'BMI SCORE',
-                              style: TextStyle(
-                                fontFamily: AppTypography.fontDisplay,
-                                fontSize: 11.0,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${profile.bmi.toStringAsFixed(1)} · ${profile.bmiCategory}',
-                              style: const TextStyle(
-                                fontFamily: AppTypography.fontMono,
-                                fontSize: 12.0,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.pureWhite,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                child: Text(
+                  profile.weightDeltaKg == 0
+                      ? 'At your goal weight'
+                      : '${profile.isCutting ? 'Lose' : 'Gain'} ${profile.formatWeight(profile.weightDeltaKg)} to reach your goal',
+                  style: AppTypography.bodySmall,
                 ),
               ),
-              const SizedBox(width: 8),
-
-              // Maintenance Calories
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.charcoal,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.steel.withValues(alpha: 0.5),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'EST. MAINTENANCE',
-                        style: TextStyle(
-                          fontFamily: AppTypography.fontDisplay,
-                          fontSize: 11.0,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${profile.maintenanceCaloriesEstimate} kcal/day',
-                        style: const TextStyle(
-                          fontFamily: AppTypography.fontMono,
-                          fontSize: 12.0,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.pureWhite,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              const SizedBox(width: 12),
+              Text(
+                '${(profile.goalProgress * 100).toInt()}%',
+                style: AppTypography.dataLabel,
               ),
             ],
           ),
-          const SizedBox(height: 14),
-
-          // Goal Delta Progress Bar
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    profile.isCutting
-                        ? 'Cutting: ${profile.weightDeltaKg.toStringAsFixed(1)} kg remaining to goal'
-                        : 'Building: ${profile.weightDeltaKg.toStringAsFixed(1)} kg to goal',
-                    style: const TextStyle(
-                      fontFamily: AppTypography.fontBody,
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.pureWhite,
-                    ),
-                  ),
-                  Text(
-                    '${(profile.goalProgress * 100).toInt()}%',
-                    style: const TextStyle(
-                      fontFamily: AppTypography.fontMono,
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(3),
-                child: Container(
-                  height: 6,
-                  width: double.infinity,
-                  color: Colors.white.withValues(alpha: 0.12),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: FractionallySizedBox(
-                      widthFactor: profile.goalProgress.clamp(0.0, 1.0),
-                      child: Container(
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: profile.goalProgress.clamp(0.0, 1.0),
+              minHeight: 4,
+              color: AppColors.platinum,
+              backgroundColor: AppColors.steel,
+              semanticsLabel: 'Weight goal progress',
+            ),
           ),
         ],
       ),
@@ -503,18 +217,14 @@ class _BiometricsCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 3. Training Preferences Card
-// ─────────────────────────────────────────────────────────────────────────────
 class _TrainingPreferencesCard extends ConsumerWidget {
   const _TrainingPreferencesCard({required this.profile});
-
   final AccountProfile profile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final goalConfig = ref.watch(trainingGoalConfigProvider);
-
+    final notifier = ref.read(accountProfileProvider.notifier);
     return _GlassSectionContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -523,185 +233,76 @@ class _TrainingPreferencesCard extends ConsumerWidget {
             title: 'TRAINING PREFERENCES',
             icon: Icons.fitness_center_rounded,
           ),
-          const SizedBox(height: 12),
-
-          // Primary Training Goal Row
+          const SizedBox(height: 16),
           _PreferenceTile(
             title: 'Primary Goal',
             subtitle: '${goalConfig.displayName} · ${goalConfig.subtitle}',
-            trailing: InkWell(
-              onTap: () => showGoalSelectorSheet(context, ref),
-              borderRadius: BorderRadius.circular(6),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: goalConfig.accentColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: goalConfig.accentColor.withValues(alpha: 0.35),
-                  ),
-                ),
-                child: Text(
-                  'CHANGE',
-                  style: TextStyle(
-                    fontFamily: AppTypography.fontDisplay,
-                    fontSize: 11.0,
-                    fontWeight: FontWeight.w700,
-                    color: goalConfig.accentColor,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
+            trailing: TextButton(
+              onPressed: () => showGoalSelectorSheet(context, ref),
+              child: const Text('Change'),
             ),
           ),
-          const Divider(color: AppColors.steel, height: 18),
-
-          // Preferred Split Row
+          const Divider(height: 24),
           _PreferenceTile(
             title: 'Training Split',
             subtitle: profile.preferredSplit,
-            trailing: InkWell(
-              onTap: () => showEditProfileSheet(context, profile),
-              child: const Text(
-                'Change',
-                style: TextStyle(
-                  fontFamily: AppTypography.fontBody,
-                  fontSize: 12.0,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                ),
-              ),
+            trailing: TextButton(
+              onPressed: () => showEditProfileSheet(context, profile),
+              child: const Text('Change'),
             ),
           ),
-          const Divider(color: AppColors.steel, height: 18),
-
-          // Experience Tier
-          _PreferenceTile(
-            title: 'Experience Tier',
-            subtitle: profile.experienceLevel,
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                profile.experienceLevel.toUpperCase(),
-                style: const TextStyle(
-                  fontFamily: AppTypography.fontMono,
-                  fontSize: 11.0,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.platinum,
-                ),
-              ),
-            ),
+          const Divider(height: 24),
+          _ValueRow(
+            label: 'Experience',
+            value: profile.experienceLevel,
+            numeric: false,
           ),
-          const Divider(color: AppColors.steel, height: 18),
-
-          // Default Rest Timer Selector
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          const Divider(height: 24),
+          const Text('Default Rest Timer', style: AppTypography.bodyLarge),
+          const SizedBox(height: 4),
+          const Text(
+            'Auto-countdown between sets',
+            style: AppTypography.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
             children: [
-              const Text(
-                'Default Rest Timer',
-                style: TextStyle(
-                  fontFamily: AppTypography.fontDisplay,
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.pureWhite,
+              for (final seconds in [60, 90, 120, 180])
+                ChoiceChip(
+                  label: Text('${seconds}s'),
+                  selected: profile.defaultRestSeconds == seconds,
+                  onSelected: (_) {
+                    notifier.updatePreferences(defaultRestSeconds: seconds);
+                    HapticFeedback.lightImpact();
+                  },
+                  side: BorderSide.none,
+                  selectedColor: AppColors.primary.withValues(alpha: 0.16),
+                  checkmarkColor: AppColors.primary,
+                  labelStyle: AppTypography.dataLabel.copyWith(
+                    color: profile.defaultRestSeconds == seconds
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
+                  ),
+                  materialTapTargetSize: MaterialTapTargetSize.padded,
                 ),
-              ),
-              const SizedBox(height: 2),
-              const Text(
-                'Auto-countdown between sets',
-                style: TextStyle(
-                  fontFamily: AppTypography.fontBody,
-                  fontSize: 11.5,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [60, 90, 120, 180].map((sec) {
-                  final isSel = profile.defaultRestSeconds == sec;
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3),
-                      child: InkWell(
-                        onTap: () {
-                          ref
-                              .read(accountProfileProvider.notifier)
-                              .updatePreferences(defaultRestSeconds: sec);
-                          HapticFeedback.lightImpact();
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 7),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: isSel
-                                ? AppColors.primary.withValues(alpha: 0.2)
-                                : AppColors.charcoal,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isSel
-                                  ? AppColors.primary
-                                  : AppColors.steel.withValues(alpha: 0.5),
-                            ),
-                          ),
-                          child: Text(
-                            '${sec}s',
-                            style: TextStyle(
-                              fontFamily: AppTypography.fontMono,
-                              fontSize: 11.5,
-                              fontWeight:
-                                  isSel ? FontWeight.w800 : FontWeight.w500,
-                              color: isSel
-                                  ? AppColors.primary
-                                  : AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
             ],
           ),
-          const Divider(color: AppColors.steel, height: 18),
-
-          // Barbell Tare weight
+          const Divider(height: 24),
           _PreferenceTile(
-            title: 'Olympic Barbell Tare',
-            subtitle: 'Base bar weight for plate calculations',
-            trailing: InkWell(
-              onTap: () {
-                final nextTare = profile.barbellTareKg == 20.0 ? 15.0 : 20.0;
-                ref
-                    .read(accountProfileProvider.notifier)
-                    .updatePreferences(barbellTareKg: nextTare);
+            title: 'Barbell weight',
+            subtitle: 'Base weight for plate calculations',
+            trailing: TextButton(
+              onPressed: () {
+                notifier.updatePreferences(
+                  barbellTareKg: profile.barbellTareKg == 20.0 ? 15.0 : 20.0,
+                );
                 HapticFeedback.lightImpact();
               },
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.charcoal,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColors.steel.withValues(alpha: 0.6),
-                  ),
-                ),
-                child: Text(
-                  '${profile.barbellTareKg.toStringAsFixed(0)} kg',
-                  style: const TextStyle(
-                    fontFamily: AppTypography.fontMono,
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.pureWhite,
-                  ),
+              child: Text(
+                profile.formatWeight(profile.barbellTareKg),
+                style: AppTypography.dataLabel.copyWith(
+                  color: AppColors.primary,
                 ),
               ),
             ),
@@ -712,157 +313,38 @@ class _TrainingPreferencesCard extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 4. Reports & Data Export Card ("PDF etc.")
-// ─────────────────────────────────────────────────────────────────────────────
 class _ReportsAndExportCard extends StatelessWidget {
   const _ReportsAndExportCard({required this.profile});
-
   final AccountProfile profile;
 
   @override
   Widget build(BuildContext context) {
     return _GlassSectionContainer(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const _SectionHeader(
             title: 'REPORTS & DATA EXPORT',
             icon: Icons.analytics_outlined,
           ),
           const SizedBox(height: 12),
-
-          // Generate 1-Page PDF Report Button
-          InkWell(
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.picture_as_pdf_outlined),
+            title: const Text('Export Monthly PDF Report'),
+            subtitle: const Text(
+              'Workout volume, personal records and muscle balance',
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => showReportPreviewSheet(context, profile),
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.charcoal,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.4),
-                  width: 1.0,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.picture_as_pdf_rounded,
-                      color: AppColors.primary,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Export Monthly PDF Report',
-                          style: TextStyle(
-                            fontFamily: AppTypography.fontDisplay,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.pureWhite,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          '1-page athletic report with volume, PRs & radar',
-                          style: TextStyle(
-                            fontFamily: AppTypography.fontBody,
-                            fontSize: 11.5,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppColors.platinum,
-                    size: 20,
-                  ),
-                ],
-              ),
-            ),
           ),
-          const SizedBox(height: 10),
-
-          // Export Raw Data Button
-          InkWell(
+          const Divider(height: 16),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.file_download_outlined),
+            title: const Text('Backup Workout Data'),
+            subtitle: const Text('Export your history as JSON or CSV'),
+            trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => showExportDataSheet(context, profile),
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.charcoal,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: AppColors.steel.withValues(alpha: 0.6),
-                  width: 1.0,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.file_download_outlined,
-                      color: AppColors.pureWhite,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Backup Workout Data',
-                          style: TextStyle(
-                            fontFamily: AppTypography.fontDisplay,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.pureWhite,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          'Export personal history as JSON or CSV',
-                          style: TextStyle(
-                            fontFamily: AppTypography.fontBody,
-                            fontSize: 11.5,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppColors.platinum,
-                    size: 20,
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),
@@ -870,197 +352,59 @@ class _ReportsAndExportCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 5. App Settings & Inclusivity Card
-// ─────────────────────────────────────────────────────────────────────────────
 class _AppSettingsCard extends ConsumerWidget {
   const _AppSettingsCard({required this.profile});
-
   final AccountProfile profile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(accountProfileProvider.notifier);
     return _GlassSectionContainer(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _SectionHeader(
-            title: 'APP SETTINGS & INCLUSIVITY',
-            icon: Icons.tune_rounded,
-          ),
-          const SizedBox(height: 12),
-
-          // Units Toggle (Metric vs Imperial)
+          const _SectionHeader(title: 'APP SETTINGS', icon: Icons.tune_rounded),
+          const SizedBox(height: 16),
           _PreferenceTile(
             title: 'Units of Measurement',
             subtitle: profile.weightUnit == 'kg'
                 ? 'Metric (kg, cm, ml)'
                 : 'Imperial (lbs, ft, oz)',
-            trailing: InkWell(
-              onTap: () {
-                final next = profile.weightUnit == 'kg' ? 'lbs' : 'kg';
-                ref
-                    .read(accountProfileProvider.notifier)
-                    .updateBiometrics(weightUnit: next);
+            trailing: TextButton(
+              onPressed: () {
+                notifier.updateBiometrics(
+                  weightUnit: profile.weightUnit == 'kg' ? 'lbs' : 'kg',
+                );
                 HapticFeedback.lightImpact();
               },
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: AppColors.charcoal,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColors.steel.withValues(alpha: 0.6),
-                  ),
-                ),
-                child: Text(
-                  profile.weightUnit.toUpperCase(),
-                  style: const TextStyle(
-                    fontFamily: AppTypography.fontMono,
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.pureWhite,
-                  ),
-                ),
-              ),
+              child: Text(profile.weightUnit.toUpperCase()),
             ),
           ),
-          const Divider(color: AppColors.steel, height: 18),
-
-          // Menstrual Cycle Recovery Tracking
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Cycle-Aware Training',
-                      style: TextStyle(
-                        fontFamily: AppTypography.fontDisplay,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.pureWhite,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Adjust routine intensity across hormone phases',
-                      style: TextStyle(
-                        fontFamily: AppTypography.fontBody,
-                        fontSize: 11.5,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Switch(
-                value: profile.cycleTrackingEnabled,
-                activeThumbColor: AppColors.primary,
-                activeTrackColor: AppColors.primaryDim.withValues(alpha: 0.4),
-                inactiveThumbColor: AppColors.steel,
-                inactiveTrackColor: AppColors.charcoal,
-                onChanged: (val) {
-                  ref
-                      .read(accountProfileProvider.notifier)
-                      .toggleCycleTracking(val);
-                },
-              ),
-            ],
+          const Divider(height: 24),
+          _PreferenceTile(
+            title: 'Cycle-Aware Training',
+            subtitle: 'Adjust training across hormone phases',
+            trailing: Switch(
+              value: profile.cycleTrackingEnabled,
+              onChanged: notifier.toggleCycleTracking,
+            ),
           ),
-          const Divider(color: AppColors.steel, height: 18),
-
-          // Audio Cues
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Audio Cues & Rest Beeps',
-                      style: TextStyle(
-                        fontFamily: AppTypography.fontDisplay,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.pureWhite,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Audio chime upon rest timer countdown completion',
-                      style: TextStyle(
-                        fontFamily: AppTypography.fontBody,
-                        fontSize: 11.5,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Switch(
-                value: profile.audioCuesEnabled,
-                activeThumbColor: AppColors.primary,
-                activeTrackColor: AppColors.primaryDim.withValues(alpha: 0.4),
-                inactiveThumbColor: AppColors.steel,
-                inactiveTrackColor: AppColors.charcoal,
-                onChanged: (val) {
-                  ref
-                      .read(accountProfileProvider.notifier)
-                      .toggleAudioCues(val);
-                },
-              ),
-            ],
+          const Divider(height: 24),
+          _PreferenceTile(
+            title: 'Audio Cues & Rest Beeps',
+            subtitle: 'Play a chime when your rest timer ends',
+            trailing: Switch(
+              value: profile.audioCuesEnabled,
+              onChanged: notifier.toggleAudioCues,
+            ),
           ),
-          const Divider(color: AppColors.steel, height: 18),
-
-          // Haptic Feedback
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Haptic Vibrations',
-                      style: TextStyle(
-                        fontFamily: AppTypography.fontDisplay,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.pureWhite,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Tactile pulse when sets and exercises are checked',
-                      style: TextStyle(
-                        fontFamily: AppTypography.fontBody,
-                        fontSize: 11.5,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Switch(
-                value: profile.hapticFeedbackEnabled,
-                activeThumbColor: AppColors.primary,
-                activeTrackColor: AppColors.primaryDim.withValues(alpha: 0.4),
-                inactiveThumbColor: AppColors.steel,
-                inactiveTrackColor: AppColors.charcoal,
-                onChanged: (val) {
-                  ref
-                      .read(accountProfileProvider.notifier)
-                      .toggleHapticFeedback(val);
-                },
-              ),
-            ],
+          const Divider(height: 24),
+          _PreferenceTile(
+            title: 'Haptic Vibrations',
+            subtitle: 'Vibrate when sets and exercises are checked',
+            trailing: Switch(
+              value: profile.hapticFeedbackEnabled,
+              onChanged: notifier.toggleHapticFeedback,
+            ),
           ),
         ],
       ),
@@ -1068,9 +412,6 @@ class _AppSettingsCard extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 6. Account Actions Card
-// ─────────────────────────────────────────────────────────────────────────────
 class _AccountActionsCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1105,8 +446,11 @@ class _AccountActionsCard extends ConsumerWidget {
               padding: EdgeInsets.symmetric(vertical: 8),
               child: Row(
                 children: [
-                  Icon(Icons.school_outlined,
-                      color: AppColors.primary, size: 20),
+                  Icon(
+                    Icons.school_outlined,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
                   SizedBox(width: 12),
                   Text(
                     'Replay Onboarding Survey',
@@ -1158,8 +502,11 @@ class _AccountActionsCard extends ConsumerWidget {
               padding: EdgeInsets.symmetric(vertical: 8),
               child: Row(
                 children: [
-                  Icon(Icons.restart_alt_rounded,
-                      color: AppColors.textSecondary, size: 20),
+                  Icon(
+                    Icons.restart_alt_rounded,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
                   SizedBox(width: 12),
                   Text(
                     'Reset Profile Defaults',
@@ -1206,8 +553,11 @@ class _AccountActionsCard extends ConsumerWidget {
               padding: EdgeInsets.symmetric(vertical: 8),
               child: Row(
                 children: [
-                  Icon(Icons.cleaning_services_rounded,
-                      color: AppColors.textSecondary, size: 20),
+                  Icon(
+                    Icons.cleaning_services_rounded,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
                   SizedBox(width: 12),
                   Text(
                     'Clear Cache',
@@ -1246,8 +596,7 @@ class _AccountActionsCard extends ConsumerWidget {
               padding: EdgeInsets.symmetric(vertical: 8),
               child: Row(
                 children: [
-                  Icon(Icons.logout_rounded,
-                      color: AppColors.danger, size: 20),
+                  Icon(Icons.logout_rounded, color: AppColors.danger, size: 20),
                   SizedBox(width: 12),
                   Text(
                     'Sign Out / Switch Account',
@@ -1298,8 +647,10 @@ class _AccountActionsCard extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel',
-                style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -1310,8 +661,10 @@ class _AccountActionsCard extends ConsumerWidget {
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.background,
             ),
-            child: const Text('Confirm',
-                style: TextStyle(fontWeight: FontWeight.w700)),
+            child: const Text(
+              'Confirm',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),
@@ -1320,24 +673,17 @@ class _AccountActionsCard extends ConsumerWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Reusable Section Building Blocks
-// ─────────────────────────────────────────────────────────────────────────────
+
 class _GlassSectionContainer extends StatelessWidget {
   const _GlassSectionContainer({required this.child});
-
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.charcoal,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: AppColors.steel.withValues(alpha: 0.5),
-          width: 1.0,
-        ),
-      ),
+    return GlassCard(
+      blur: true,
+      border: false,
+      boxShadow: const [],
       padding: const EdgeInsets.all(16),
       child: child,
     );
@@ -1346,7 +692,6 @@ class _GlassSectionContainer extends StatelessWidget {
 
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({required this.title, required this.icon});
-
   final String title;
   final IconData icon;
 
@@ -1354,16 +699,12 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppColors.primary),
+        Icon(icon, size: 18, color: AppColors.textSecondary),
         const SizedBox(width: 8),
-        Text(
-          title,
-          style: const TextStyle(
-            fontFamily: AppTypography.fontDisplay,
-            fontSize: 12.0,
-            fontWeight: FontWeight.w800,
-            color: AppColors.platinum,
-            letterSpacing: 1.0,
+        Expanded(
+          child: Text(
+            title,
+            style: AppTypography.headlineSmall.copyWith(fontSize: 12),
           ),
         ),
       ],
@@ -1373,49 +714,56 @@ class _SectionHeader extends StatelessWidget {
 
 class _MetricBlock extends StatelessWidget {
   const _MetricBlock({required this.label, required this.value});
-
   final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        decoration: BoxDecoration(
-          color: AppColors.charcoal,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: AppColors.steel.withValues(alpha: 0.5),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppTypography.labelSmall),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: AppTypography.monoSmall.copyWith(
+            fontSize: 15,
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontFamily: AppTypography.fontDisplay,
-                fontSize: 11.0,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textSecondary,
-                letterSpacing: 0.8,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: const TextStyle(
-                fontFamily: AppTypography.fontMono,
-                fontSize: 14.5,
-                fontWeight: FontWeight.w800,
-                color: AppColors.pureWhite,
-                letterSpacing: -0.2,
-              ),
-            ),
-          ],
+      ],
+    );
+  }
+}
+
+class _ValueRow extends StatelessWidget {
+  const _ValueRow({
+    required this.label,
+    required this.value,
+    this.numeric = true,
+  });
+  final String label;
+  final String value;
+  final bool numeric;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: Text(label, style: AppTypography.bodySmall)),
+        const SizedBox(width: 16),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style:
+                (numeric ? AppTypography.dataLabel : AppTypography.bodyMedium)
+                    .copyWith(color: AppColors.textPrimary),
+          ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -1426,7 +774,6 @@ class _PreferenceTile extends StatelessWidget {
     required this.subtitle,
     required this.trailing,
   });
-
   final String title;
   final String subtitle;
   final Widget trailing;
@@ -1434,33 +781,18 @@ class _PreferenceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontFamily: AppTypography.fontDisplay,
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.pureWhite,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  fontFamily: AppTypography.fontBody,
-                  fontSize: 11.5,
-                  color: AppColors.textSecondary,
-                ),
-              ),
+              Text(title, style: AppTypography.bodyLarge),
+              const SizedBox(height: 4),
+              Text(subtitle, style: AppTypography.bodySmall),
             ],
           ),
         ),
+        const SizedBox(width: 12),
         trailing,
       ],
     );
