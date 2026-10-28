@@ -73,7 +73,7 @@ void main() {
   }
 
   group('ExerciseLibraryCard Tests', () {
-    testWidgets('renders exercise name, tags, and handles quick add', (tester) async {
+    testWidgets('renders compact metadata and keeps details and add separate', (tester) async {
       bool tapped = false;
       bool quickAddTapped = false;
 
@@ -90,18 +90,17 @@ void main() {
       );
 
       expect(find.text('Barbell Bench Press'), findsOneWidget);
-      expect(find.text('CHEST'), findsOneWidget);
-      expect(find.text('COMPOUND'), findsOneWidget);
-      expect(find.text('BARBELL'), findsOneWidget);
-      expect(find.text('Target: Pectoralis Major'), findsOneWidget);
+      expect(find.text('Chest · barbell'), findsOneWidget);
 
       // Tap card
       await tester.tap(find.text('Barbell Bench Press'));
       expect(tapped, isTrue);
+      tapped = false;
 
       // Tap quick add + button
       await tester.tap(find.byIcon(Icons.add_rounded));
       expect(quickAddTapped, isTrue);
+      expect(tapped, isFalse);
     });
   });
 

@@ -153,19 +153,23 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                       color: AppColors.platinum,
                       size: 20,
                     ),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(
-                              Icons.clear_rounded,
-                              color: AppColors.platinum,
-                              size: 18,
-                            ),
-                            onPressed: () {
-                              _searchController.clear();
-                              notifier.setSearchQuery('');
-                            },
-                          )
-                        : null,
+                    suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _searchController,
+                      builder: (context, value, _) => value.text.isNotEmpty
+                          ? IconButton(
+                              tooltip: 'Clear search',
+                              icon: const Icon(
+                                Icons.clear_rounded,
+                                color: AppColors.platinum,
+                                size: 18,
+                              ),
+                              onPressed: () {
+                                _searchController.clear();
+                                notifier.setSearchQuery('');
+                              },
+                            )
+                          : const SizedBox.shrink(),
+                    ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 14,
@@ -187,37 +191,24 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '${state.filteredExercises.length} EXERCISES FOUND',
-                    style: AppTypography.monoSmall.copyWith(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.8,
-                      color: AppColors.platinum,
+                  Expanded(
+                    child: Text(
+                      '${state.filteredExercises.length} EXERCISES FOUND',
+                      style: AppTypography.monoSmall.copyWith(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                        color: AppColors.platinum,
+                      ),
                     ),
                   ),
                   if (state.filter.hasActiveFilters)
-                    InkWell(
-                      onTap: () {
+                    TextButton(
+                      onPressed: () {
                         _searchController.clear();
                         notifier.clearAll();
                       },
-                      borderRadius: BorderRadius.circular(4),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 2,
-                        ),
-                        child: Text(
-                          'CLEAR ALL',
-                          style: AppTypography.bodySmall.copyWith(
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.8,
-                            color: AppColors.pureWhite,
-                          ),
-                        ),
-                      ),
+                      child: const Text('Clear filters'),
                     ),
                 ],
               ),
@@ -234,6 +225,9 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                   : state.filteredExercises.isEmpty
                   ? _buildEmptyState(notifier)
                   : ListView.builder(
+                      key: const PageStorageKey('exercise_library_list'),
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
                       physics: const BouncingScrollPhysics(),
                       padding: EdgeInsets.fromLTRB(
                         0,
@@ -245,6 +239,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                       itemBuilder: (context, index) {
                         final exercise = state.filteredExercises[index];
                         return ExerciseLibraryCard(
+                          key: ValueKey(exercise.id),
                           exercise: exercise,
                           onTap: () => _openDetailSheet(exercise),
                           onQuickAdd: () => _openAddToRoutine(exercise),
@@ -259,9 +254,14 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
   }
 
   Widget _buildEmptyState(ExerciseLibraryNotifier notifier) {
-    return Center(
+    return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.fromLTRB(
+          32,
+          32,
+          32,
+          AppShell.bottomPadding(context),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -303,7 +303,7 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                 notifier.clearAll();
               },
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.pureWhite,
+                backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.onyx,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
