@@ -1,12 +1,14 @@
-/// Sessions Tab View for LEON History:
-/// Minimal, uncluttered chronological workout log feed with split filter & calendar date sync.
-library;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../shared/widgets/glass_card.dart';
+import '../../dashboard/providers/workout_rotation_provider.dart';
+import '../../workout_builder/providers/splits_provider.dart';
+import '../../workout_session/providers/active_session_provider.dart';
 import '../providers/history_provider.dart';
 import 'workout_history_card.dart';
 
@@ -18,299 +20,162 @@ class SessionsTabView extends ConsumerStatefulWidget {
 }
 
 class _SessionsTabViewState extends ConsumerState<SessionsTabView> {
-  String _selectedFilter = 'ALL';
+  String _selectedFilter = 'All';
 
-  String _formatDate(DateTime d) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${months[d.month - 1]} ${d.day}, ${d.year}';
+  void _clearFilters() {
+    setState(() => _selectedFilter = 'All');
+    ref.read(selectedCalendarDateProvider.notifier).clear();
+  }
+
+  void _startWorkout() {
+    if (ref.read(activeSessionProvider).isActive) {
+      context.push(AppConstants.routeWorkoutSession);
+      return;
+    }
+    final day = ref.read(workoutRotationProvider).selectedDay;
+    final splits = ref.read(splitsProvider.notifier);
+    if (day.isRestDay) {
+      splits.startEmptyWorkout(context);
+    } else {
+      splits.startWorkoutFromDay(context, day);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final workouts = ref.watch(historyWorkoutsProvider);
     final selectedDate = ref.watch(selectedCalendarDateProvider);
-
-    final filteredWorkouts = workouts.where((w) {
-      if (selectedDate != null) {
-        final matchesDate = w.date.year == selectedDate.year &&
-            w.date.month == selectedDate.month &&
-            w.date.day == selectedDate.day;
-        if (!matchesDate) return false;
+    final hasActiveSession = ref.watch(
+      activeSessionProvider.select((session) => session.isActive),
+    );
+    final dateLabel = selectedDate == null
+        ? null
+        : MaterialLocalizations.of(context).formatMediumDate(selectedDate);
+    final filteredWorkouts = workouts.where((workout) {
+      if (selectedDate != null &&
+          !DateUtils.isSameDay(workout.date, selectedDate)) {
+        return false;
       }
-
-      if (_selectedFilter == 'ALL') return true;
-      if (_selectedFilter == 'PUSH') return w.name.toUpperCase().contains('PUSH');
-      if (_selectedFilter == 'PULL') return w.name.toUpperCase().contains('PULL');
-      if (_selectedFilter == 'LEGS') return w.name.toUpperCase().contains('LEG');
-      return true;
+      return _selectedFilter == 'All' ||
+          workout.name.toLowerCase().contains(
+            _selectedFilter == 'Legs' ? 'leg' : _selectedFilter.toLowerCase(),
+          );
     }).toList();
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── Selected Date Filter Active Notice (if any) ─────────────────────
-        if (selectedDate != null) ...[
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
-                width: 1.0,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.calendar_today_rounded,
-                      size: 14,
-                      color: Color(0xFF00E5FF),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'FILTER: ${_formatDate(selectedDate).toUpperCase()}',
-                      style: const TextStyle(
-                        fontFamily: AppTypography.fontMono,
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF00E5FF),
-                      ),
-                    ),
-                  ],
-                ),
-                GestureDetector(
-                  onTap: () {
-                    ref.read(selectedCalendarDateProvider.notifier).clear();
-                  },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: AppColors.steel.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Text(
-                      'CLEAR',
-                      style: TextStyle(
-                        fontFamily: AppTypography.fontBody,
-                        fontSize: 11.0,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.pureWhite,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-
-        // ── Split Filter Pills ─────────────────────────────────────────────
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          child: Row(
+        if (selectedDate != null)
+          Row(
             children: [
-              for (final filter in ['ALL', 'PUSH', 'PULL', 'LEGS']) ...[
-                GestureDetector(
-                  onTap: () => setState(() => _selectedFilter = filter),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _selectedFilter == filter
-                          ? AppColors.pureWhite
-                          : AppColors.charcoal,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: _selectedFilter == filter
-                            ? AppColors.pureWhite
-                            : AppColors.steel.withValues(alpha: 0.5),
-                        width: 1.0,
-                      ),
-                    ),
-                    child: Text(
-                      filter,
-                      style: TextStyle(
-                        fontFamily: AppTypography.fontMono,
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: _selectedFilter == filter
-                            ? AppColors.onyx
-                            : AppColors.textSecondary,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-              ],
+              const Icon(
+                Icons.calendar_today_outlined,
+                size: 16,
+                color: AppColors.warning,
+              ),
+              const SizedBox(width: 8),
+              Expanded(child: Text(dateLabel!, style: AppTypography.dataLabel)),
+              TextButton(
+                onPressed: () =>
+                    ref.read(selectedCalendarDateProvider.notifier).clear(),
+                child: const Text('Clear date'),
+              ),
             ],
           ),
-        ),
-
-        const SizedBox(height: 14),
-
-        // ── Chronological Workout Log Cards ────────────────────────────────
+        if (workouts.isNotEmpty) ...[
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (final filter in ['All', 'Push', 'Pull', 'Legs'])
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(filter),
+                      selected: _selectedFilter == filter,
+                      onSelected: (_) =>
+                          setState(() => _selectedFilter = filter),
+                      selectedColor: AppColors.primary.withValues(alpha: 0.16),
+                      checkmarkColor: AppColors.primary,
+                      side: BorderSide.none,
+                      labelStyle: AppTypography.bodySmall.copyWith(
+                        color: _selectedFilter == filter
+                            ? AppColors.primary
+                            : AppColors.textSecondary,
+                      ),
+                      materialTapTargetSize: MaterialTapTargetSize.padded,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         if (filteredWorkouts.isEmpty)
-          _buildEmptyState(
-            selectedDate: selectedDate,
-            selectedFilter: _selectedFilter,
-            onClearFilter: () {
-              ref.read(selectedCalendarDateProvider.notifier).clear();
-            },
+          GlassCard(
+            border: false,
+            blur: true,
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Icon(
+                    Icons.fitness_center_rounded,
+                    size: 28,
+                    color: AppColors.platinum,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  workouts.isEmpty
+                      ? 'Your training starts here'
+                      : 'No matching workouts',
+                  style: AppTypography.headlineMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  workouts.isEmpty
+                      ? 'Complete your first workout to see your sessions, strength progress and muscle balance here.'
+                      : selectedDate != null
+                      ? 'No ${_selectedFilter == 'All' ? '' : '${_selectedFilter.toLowerCase()} '}workouts logged on $dateLabel.'
+                      : 'No ${_selectedFilter.toLowerCase()} workouts in your history yet.',
+                  style: AppTypography.bodyMedium,
+                ),
+                const SizedBox(height: 20),
+                if (workouts.isEmpty) ...[
+                  FilledButton.icon(
+                    onPressed: _startWorkout,
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: Text(
+                      hasActiveSession ? 'Resume workout' : 'Start workout',
+                    ),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.onPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  TextButton(
+                    onPressed: () =>
+                        context.go(AppConstants.routeWorkoutBuilder),
+                    child: const Text('Browse training splits'),
+                  ),
+                ] else
+                  TextButton.icon(
+                    onPressed: _clearFilters,
+                    icon: const Icon(Icons.filter_alt_off_outlined, size: 18),
+                    label: const Text('Show all workouts'),
+                  ),
+              ],
+            ),
           )
         else
           for (final workout in filteredWorkouts)
-            WorkoutHistoryCard(workout: workout),
+            WorkoutHistoryCard(key: ValueKey(workout.id), workout: workout),
       ],
-    );
-  }
-
-  Widget _buildEmptyState({
-    required DateTime? selectedDate,
-    required String selectedFilter,
-    required VoidCallback onClearFilter,
-  }) {
-    if (selectedDate == null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 40),
-          child: Column(
-            children: [
-              Icon(
-                Icons.fitness_center_rounded,
-                size: 34,
-                color: AppColors.textSecondary.withValues(alpha: 0.35),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'No workouts found for $selectedFilter.',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    final isRest = selectedDate.weekday == DateTime.sunday ||
-        selectedDate.weekday == DateTime.wednesday;
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final sel =
-        DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
-    final isFuture = sel.isAfter(today);
-
-    final title = isFuture
-        ? 'UPCOMING DATE'
-        : isRest
-            ? 'SCHEDULED REST DAY'
-            : 'MISSED SESSION';
-    final subtitle = isFuture
-        ? 'No workouts scheduled yet for ${_formatDate(selectedDate)}'
-        : isRest
-            ? 'Rest & muscle recovery day. No workouts logged.'
-            : 'No workout was logged on ${_formatDate(selectedDate)}.';
-    final icon = isFuture
-        ? Icons.calendar_today_rounded
-        : isRest
-            ? Icons.pause_circle_outline_rounded
-            : Icons.event_busy_rounded;
-    final accentColor = isFuture
-        ? AppColors.textSecondary
-        : isRest
-            ? AppColors.textSecondary
-            : AppColors.warning;
-
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      decoration: BoxDecoration(
-        color: AppColors.charcoal,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: accentColor.withValues(alpha: 0.35),
-          width: 1.0,
-        ),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            size: 32,
-            color: accentColor,
-          ),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            style: TextStyle(
-              fontFamily: AppTypography.fontMono,
-              fontSize: 12.0,
-              fontWeight: FontWeight.w800,
-              color: accentColor,
-              letterSpacing: 1.0,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontFamily: AppTypography.fontBody,
-              fontSize: 12.0,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 16),
-          GestureDetector(
-            onTap: onClearFilter,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF00E5FF).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
-                  width: 1.0,
-                ),
-              ),
-              child: const Text(
-                'SHOW ALL WORKOUTS',
-                style: TextStyle(
-                  fontFamily: AppTypography.fontBody,
-                  fontSize: 11.0,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF00E5FF),
-                  letterSpacing: 0.8,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

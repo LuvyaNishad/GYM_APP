@@ -29,7 +29,8 @@ class HistoryScreen extends ConsumerWidget {
     final intVol = volume.toInt();
     if (intVol >= 1000) {
       final k = (intVol / 1000).toStringAsFixed(1);
-      return '$k' 'K KG';
+      return '$k'
+          'K KG';
     }
     return '$intVol KG';
   }
@@ -58,75 +59,84 @@ class HistoryScreen extends ConsumerWidget {
 
           // ── 2. Content Area Below Calendar ────────────────────────────────
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(16, 14, 16, AppShell.bottomPadding(context, extra: 24)),
+            padding: EdgeInsets.fromLTRB(
+              16,
+              14,
+              16,
+              AppShell.bottomPadding(context, extra: 24),
+            ),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ── Lifetime Tonnage & Level Progress Bar (Below Calendar) ──
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.charcoal,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: AppColors.steel.withValues(alpha: 0.4),
-                        width: 1.0,
+                  if (summary.completedWorkoutsCount > 0) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
                       ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                const Text('🏋️ ',
-                                    style: TextStyle(fontSize: 12)),
-                                Text(
-                                  '${_formatTonnage(summary.totalTonnageKg)} LIFTED',
-                                  style: const TextStyle(
-                                    fontFamily: AppTypography.fontMono,
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.pureWhite,
-                                    letterSpacing: 0.5,
+                      decoration: BoxDecoration(
+                        color: AppColors.charcoal,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: AppColors.steel.withValues(alpha: 0.4),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text(
+                                    '🏋️ ',
+                                    style: TextStyle(fontSize: 12),
                                   ),
+                                  Text(
+                                    '${_formatTonnage(summary.totalTonnageKg)} LIFTED',
+                                    style: const TextStyle(
+                                      fontFamily: AppTypography.fontMono,
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.pureWhite,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                'NEXT: ${_formatTonnage(summary.nextLevelTonnageTarget)}',
+                                style: const TextStyle(
+                                  fontFamily: AppTypography.fontMono,
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textSecondary,
                                 ),
-                              ],
-                            ),
-                            Text(
-                              'NEXT: ${_formatTonnage(summary.nextLevelTonnageTarget)}',
-                              style: const TextStyle(
-                                fontFamily: AppTypography.fontMono,
-                                fontSize: 11.0,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textSecondary,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: summary.levelProgress,
+                              minHeight: 4,
+                              backgroundColor: AppColors.onyx,
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                AppColors.platinum,
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: summary.levelProgress,
-                            minHeight: 4,
-                            backgroundColor: AppColors.onyx,
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                              Color(0xFF00E676),
-                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 14),
+                    const SizedBox(height: 14),
+                  ],
 
                   // ── 3-Segment Controller ─────────────────────────────────
                   HistorySegmentBar(
