@@ -25,10 +25,20 @@ import '../../features/workout_builder/screens/workout_builder_screen.dart';
 import 'glass_nav_pill.dart';
 
 class AppShell extends StatefulWidget {
-  const AppShell({required this.location, this.child, super.key});
+  const AppShell({required this.location, this.child, super.key})
+    : navigationShell = null;
+
+  const AppShell.navigation({required this.navigationShell, super.key})
+    : location = null,
+      child = null;
 
   /// Current router location, used to decide which tab reads as active.
-  final String location;
+  final String? location;
+
+  /// Production navigation uses GoRouter's stateful indexed-stack shell so
+  /// branch state, route history, ticker muting, and preloading are managed in
+  /// one place instead of duplicated inside this widget.
+  final StatefulNavigationShell? navigationShell;
 
   /// Optional fallback child screen from GoRouter.
   final Widget? child;
@@ -38,6 +48,7 @@ class AppShell extends StatefulWidget {
   static const double reservedBottomSpace = GlassNavPill.height + _margin * 2;
 
   static const double _margin = 16;
+  static const double mainContentMaxWidth = 720;
 
   /// Returns the total clearance padding required for scrollables to clear
   /// the floating [GlassNavPill] plus device system safe-area insets (e.g. gesture bar, 3-button bar).
@@ -67,7 +78,9 @@ class _AppShellState extends State<AppShell> {
   @override
   void initState() {
     super.initState();
-    final initialIndex = navPillIndexFor(widget.location);
+    final initialIndex =
+        widget.navigationShell?.currentIndex ??
+        navPillIndexFor(widget.location!);
     _currentIndex = (initialIndex >= 0 && initialIndex < kNavPillTabs.length)
         ? initialIndex
         : 0;
@@ -77,8 +90,9 @@ class _AppShellState extends State<AppShell> {
   @override
   void didUpdateWidget(AppShell oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.location != oldWidget.location) {
-      final targetIndex = navPillIndexFor(widget.location);
+    if (widget.navigationShell == null &&
+        widget.location != oldWidget.location) {
+      final targetIndex = navPillIndexFor(widget.location!);
       if (targetIndex >= 0 &&
           targetIndex < kNavPillTabs.length &&
           targetIndex != _currentIndex) {
@@ -91,7 +105,15 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _onTabSelected(int index) {
-    if (index == _currentIndex) return;
+    final activeIndex = widget.navigationShell?.currentIndex ?? _currentIndex;
+    if (index == activeIndex) return;
+
+    final navigationShell = widget.navigationShell;
+    if (navigationShell != null) {
+      navigationShell.goBranch(index);
+      return;
+    }
+
     setState(() {
       _currentIndex = index;
       _visited.add(index);
@@ -104,9 +126,15 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    final activeIndex = navPillIndexFor(widget.location);
+    final navigationShell = widget.navigationShell;
+    final activeIndex =
+        navigationShell?.currentIndex ?? navPillIndexFor(widget.location!);
     final isKnownTab = activeIndex >= 0 && activeIndex < kNavPillTabs.length;
-    final currentIndex = isKnownTab ? _currentIndex : activeIndex;
+    final currentIndex =
+        navigationShell?.currentIndex ??
+        (isKnownTab ? _currentIndex : activeIndex);
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+    final navHorizontalPadding = largeText ? 12.0 : 24.0;
 
     return ColoredBox(
       color: AppColors.background,
@@ -114,57 +142,70 @@ class _AppShellState extends State<AppShell> {
         children: [
           // 1. Instant, zero-peeking persistent tab branches with fast swipe gesture
           Positioned.fill(
-            child: isKnownTab
-                ? GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onHorizontalDragStart: (_) {
-                      _horizontalDragDelta = 0.0;
-                    },
-                    onHorizontalDragUpdate: (details) {
-                      _horizontalDragDelta += details.delta.dx;
-                    },
-                    onHorizontalDragEnd: (details) {
-                      final velocity = details.primaryVelocity ?? 0.0;
-                      const double kDistanceThreshold = 50.0;
-                      const double kVelocityThreshold = 250.0;
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: AppShell.mainContentMaxWidth,
+                ),
+                child: SizedBox.expand(
+                  key: const ValueKey('app-shell-main-content'),
+                  child: isKnownTab
+                      ? GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onHorizontalDragStart: (_) {
+                            _horizontalDragDelta = 0.0;
+                          },
+                          onHorizontalDragUpdate: (details) {
+                            _horizontalDragDelta += details.delta.dx;
+                          },
+                          onHorizontalDragEnd: (details) {
+                            final velocity = details.primaryVelocity ?? 0.0;
+                            const double kDistanceThreshold = 50.0;
+                            const double kVelocityThreshold = 250.0;
 
-                      final isSwipeNext =
-                          velocity < -kVelocityThreshold ||
-                          _horizontalDragDelta < -kDistanceThreshold;
-                      final isSwipePrev =
-                          velocity > kVelocityThreshold ||
-                          _horizontalDragDelta > kDistanceThreshold;
+                            final isSwipeNext =
+                                velocity < -kVelocityThreshold ||
+                                _horizontalDragDelta < -kDistanceThreshold;
+                            final isSwipePrev =
+                                velocity > kVelocityThreshold ||
+                                _horizontalDragDelta > kDistanceThreshold;
 
-                      if (isSwipeNext &&
-                          _currentIndex < _tabScreens.length - 1) {
-                        HapticFeedback.lightImpact();
-                        _onTabSelected(_currentIndex + 1);
-                      } else if (isSwipePrev && _currentIndex > 0) {
-                        HapticFeedback.lightImpact();
-                        _onTabSelected(_currentIndex - 1);
-                      }
-                      _horizontalDragDelta = 0.0;
-                    },
-                    onHorizontalDragCancel: () {
-                      _horizontalDragDelta = 0.0;
-                    },
-                    child: IndexedStack(
-                      index: currentIndex,
-                      children: [
-                        for (int i = 0; i < _tabScreens.length; i++)
-                          TickerMode(
-                            enabled: i == currentIndex,
-                            child: KeyedSubtree(
-                              key: PageStorageKey<String>('tab_$i'),
-                              child: _visited.contains(i)
-                                  ? _tabScreens[i]
-                                  : const SizedBox.shrink(),
-                            ),
-                          ),
-                      ],
-                    ),
-                  )
-                : (widget.child ?? const SizedBox.shrink()),
+                            if (isSwipeNext &&
+                                currentIndex < kNavPillTabs.length - 1) {
+                              HapticFeedback.lightImpact();
+                              _onTabSelected(currentIndex + 1);
+                            } else if (isSwipePrev && currentIndex > 0) {
+                              HapticFeedback.lightImpact();
+                              _onTabSelected(currentIndex - 1);
+                            }
+                            _horizontalDragDelta = 0.0;
+                          },
+                          onHorizontalDragCancel: () {
+                            _horizontalDragDelta = 0.0;
+                          },
+                          child:
+                              navigationShell ??
+                              IndexedStack(
+                                index: currentIndex,
+                                children: [
+                                  for (int i = 0; i < _tabScreens.length; i++)
+                                    TickerMode(
+                                      enabled: i == currentIndex,
+                                      child: KeyedSubtree(
+                                        key: PageStorageKey<String>('tab_$i'),
+                                        child: _visited.contains(i)
+                                            ? _tabScreens[i]
+                                            : const SizedBox.shrink(),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                        )
+                      : (widget.child ?? const SizedBox.shrink()),
+                ),
+              ),
+            ),
           ),
 
           // 2. Floating glass navigation pill with tubelight indicator
@@ -174,11 +215,29 @@ class _AppShellState extends State<AppShell> {
             bottom: 0,
             child: SafeArea(
               top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, AppShell._margin),
-                child: GlassNavPill(
-                  activeIndex: currentIndex,
-                  onTabSelected: _onTabSelected,
+              child: Center(
+                widthFactor: 1,
+                heightFactor: 1,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: AppShell.mainContentMaxWidth,
+                  ),
+                  child: SizedBox(
+                    key: const ValueKey('app-shell-nav-content'),
+                    width: double.infinity,
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        navHorizontalPadding,
+                        0,
+                        navHorizontalPadding,
+                        AppShell._margin,
+                      ),
+                      child: GlassNavPill(
+                        activeIndex: currentIndex,
+                        onTabSelected: _onTabSelected,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

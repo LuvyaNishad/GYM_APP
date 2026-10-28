@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -47,48 +48,72 @@ final class AppRouter {
   }) {
     return GoRouter(
       initialLocation: initialLocation,
-      debugLogDiagnostics: true,
+      debugLogDiagnostics: kDebugMode,
       routes: [
         // ── Main tabs ───────────────────────────────────────────────────────
         // Wrapped in the shell so the floating nav pill persists across tab
         // switches instead of being rebuilt per screen.
-        ShellRoute(
-          builder: (
-            BuildContext context,
-            GoRouterState state,
-            Widget child,
-          ) =>
-              AppShell(location: state.uri.path, child: child),
-          routes: [
-            GoRoute(
-              path: AppConstants.routeDashboard,
-              name: 'dashboard',
-              builder: (BuildContext context, GoRouterState state) =>
-                  const DashboardScreen(),
+        StatefulShellRoute.indexedStack(
+          builder:
+              (
+                BuildContext context,
+                GoRouterState state,
+                StatefulNavigationShell navigationShell,
+              ) => AppShell.navigation(navigationShell: navigationShell),
+          branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppConstants.routeDashboard,
+                  name: 'dashboard',
+                  builder: (BuildContext context, GoRouterState state) =>
+                      const DashboardScreen(),
+                ),
+              ],
             ),
-            GoRoute(
-              path: AppConstants.routeWorkoutBuilder,
-              name: 'workout-builder',
-              builder: (BuildContext context, GoRouterState state) =>
-                  const WorkoutBuilderScreen(),
+            StatefulShellBranch(
+              preload: true,
+              routes: [
+                GoRoute(
+                  path: AppConstants.routeWorkoutBuilder,
+                  name: 'workout-builder',
+                  builder: (BuildContext context, GoRouterState state) =>
+                      const WorkoutBuilderScreen(),
+                ),
+              ],
             ),
-            GoRoute(
-              path: AppConstants.routeExerciseLibrary,
-              name: 'exercise-library',
-              builder: (BuildContext context, GoRouterState state) =>
-                  const ExerciseLibraryScreen(),
+            StatefulShellBranch(
+              preload: true,
+              routes: [
+                GoRoute(
+                  path: AppConstants.routeExerciseLibrary,
+                  name: 'exercise-library',
+                  builder: (BuildContext context, GoRouterState state) =>
+                      const ExerciseLibraryScreen(),
+                ),
+              ],
             ),
-            GoRoute(
-              path: AppConstants.routeAnalytics,
-              name: 'analytics',
-              builder: (BuildContext context, GoRouterState state) =>
-                  const HistoryScreen(),
+            StatefulShellBranch(
+              preload: true,
+              routes: [
+                GoRoute(
+                  path: AppConstants.routeAnalytics,
+                  name: 'analytics',
+                  builder: (BuildContext context, GoRouterState state) =>
+                      const HistoryScreen(),
+                ),
+              ],
             ),
-            GoRoute(
-              path: AppConstants.routeProfile,
-              name: 'profile',
-              builder: (BuildContext context, GoRouterState state) =>
-                  const ProfileScreen(),
+            StatefulShellBranch(
+              preload: true,
+              routes: [
+                GoRoute(
+                  path: AppConstants.routeProfile,
+                  name: 'profile',
+                  builder: (BuildContext context, GoRouterState state) =>
+                      const ProfileScreen(),
+                ),
+              ],
             ),
           ],
         ),

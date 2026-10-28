@@ -99,8 +99,9 @@ class GlassNavPill extends ConsumerWidget {
       child: GlassCard(
         borderRadius: borderRadius,
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        sigmaBlur: 14,
+        sigmaBlur: 10,
         blur: true,
+        repaintBoundary: true,
         borderWidth: 1.0,
         borderColor: Colors.white.withValues(alpha: 0.24),
         glowColor: const Color(0xFF40C4FF).withValues(alpha: 0.16),
@@ -117,43 +118,47 @@ class GlassNavPill extends ConsumerWidget {
         child: Stack(
           children: [
             // ── 1. Animated Sliding White-Blue Luminous Spotlight ───────────
-            AnimatedAlign(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
-              alignment: Alignment(
-                -1.0 + (validActive * 2.0 / (kNavPillTabs.length - 1)),
-                0.0,
-              ),
-              child: FractionallySizedBox(
-                widthFactor: 1.0 / kNavPillTabs.length,
-                heightFactor: 1.0,
-                child: Center(
-                  child: Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          Colors.white.withValues(alpha: 0.45),
-                          const Color(0xFF80D8FF).withValues(alpha: 0.35),
-                          const Color(0xFF2979FF).withValues(alpha: 0.18),
-                          Colors.transparent,
+            RepaintBoundary(
+              child: AnimatedAlign(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutCubic,
+                alignment: Alignment(
+                  -1.0 + (validActive * 2.0 / (kNavPillTabs.length - 1)),
+                  0.0,
+                ),
+                child: FractionallySizedBox(
+                  widthFactor: 1.0 / kNavPillTabs.length,
+                  heightFactor: 1.0,
+                  child: Center(
+                    child: Container(
+                      width: 54,
+                      height: 54,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            Colors.white.withValues(alpha: 0.40),
+                            const Color(0xFF80D8FF).withValues(alpha: 0.30),
+                            const Color(0xFF2979FF).withValues(alpha: 0.14),
+                            Colors.transparent,
+                          ],
+                          stops: const [0.0, 0.30, 0.65, 1.0],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(
+                              0xFF448AFF,
+                            ).withValues(alpha: 0.24),
+                            blurRadius: 14,
+                            spreadRadius: 1,
+                          ),
+                          BoxShadow(
+                            color: Colors.white.withValues(alpha: 0.20),
+                            blurRadius: 8,
+                            spreadRadius: -2,
+                          ),
                         ],
-                        stops: const [0.0, 0.30, 0.65, 1.0],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF448AFF).withValues(alpha: 0.30),
-                          blurRadius: 26,
-                          spreadRadius: 4,
-                        ),
-                        BoxShadow(
-                          color: Colors.white.withValues(alpha: 0.25),
-                          blurRadius: 12,
-                          spreadRadius: -2,
-                        ),
-                      ],
                     ),
                   ),
                 ),
@@ -186,7 +191,7 @@ class GlassNavPill extends ConsumerWidget {
                               children: [
                                 AnimatedScale(
                                   scale: i == validActive ? 1.15 : 1.0,
-                                  duration: const Duration(milliseconds: 220),
+                                  duration: const Duration(milliseconds: 160),
                                   curve: Curves.easeOutCubic,
                                   child: Icon(
                                     i == validActive
@@ -195,33 +200,43 @@ class GlassNavPill extends ConsumerWidget {
                                     size: 21,
                                     color: i == validActive
                                         ? Colors.white
-                                        : AppColors.platinum
-                                            .withValues(alpha: 0.65),
+                                        : AppColors.platinum.withValues(
+                                            alpha: 0.65,
+                                          ),
                                   ),
                                 ),
                                 const SizedBox(height: 3),
-                                Text(
-                                  kNavPillTabs[i].label,
-                                  maxLines: 1,
-                                  style: TextStyle(
-                                    fontFamily: AppTypography.fontBody,
-                                    fontSize: 11,
-                                    fontWeight: i == validActive
-                                        ? FontWeight.w700
-                                        : FontWeight.w500,
-                                    color: i == validActive
-                                        ? Colors.white
-                                        : AppColors.platinum
-                                            .withValues(alpha: 0.65),
-                                    shadows: i == validActive
-                                        ? [
-                                            Shadow(
-                                              color: const Color(0xFF80D8FF)
-                                                  .withValues(alpha: 0.70),
-                                              blurRadius: 8,
-                                            ),
-                                          ]
-                                        : null,
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 18,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      kNavPillTabs[i].label,
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontFamily: AppTypography.fontBody,
+                                        fontSize: 11,
+                                        fontWeight: i == validActive
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                        color: i == validActive
+                                            ? Colors.white
+                                            : AppColors.platinum.withValues(
+                                                alpha: 0.65,
+                                              ),
+                                        shadows: i == validActive
+                                            ? [
+                                                Shadow(
+                                                  color: const Color(
+                                                    0xFF80D8FF,
+                                                  ).withValues(alpha: 0.70),
+                                                  blurRadius: 8,
+                                                ),
+                                              ]
+                                            : null,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],

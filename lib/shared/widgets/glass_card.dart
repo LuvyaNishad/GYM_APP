@@ -77,11 +77,10 @@ class AcrylicStreakPainter extends CustomPainter {
 }
 
 /// Frosted glass surface with an acrylic specular outline streak.
-/// Lightweight and hardware-accelerated for fluid 60-120 FPS performance.
-/// Set [blur: true] only on floating overlay surfaces (nav pill, rest timer bar, modals)
-/// where content passes underneath. Static cards on solid backgrounds leave [blur: false]
-/// to completely bypass heavy GPU offscreen framebuffer copies while keeping the cut-glass
-/// streak and acrylic gradient.
+///
+/// Cards in scrolling collections should set [sharedBackdrop] and live under a
+/// [BackdropGroup]. Flutter can then reuse one blur input for every visible
+/// card instead of issuing one expensive off-screen blur pass per item.
 class GlassCard extends StatelessWidget {
   const GlassCard({
     super.key,
@@ -90,6 +89,8 @@ class GlassCard extends StatelessWidget {
     this.borderRadius = 20,
     this.sigmaBlur = 10,
     this.blur = false,
+    this.sharedBackdrop = false,
+    this.repaintBoundary = false,
     this.backgroundColor,
     this.gradient,
     this.borderColor,
@@ -105,6 +106,8 @@ class GlassCard extends StatelessWidget {
   final double borderRadius;
   final double sigmaBlur;
   final bool blur;
+  final bool sharedBackdrop;
+  final bool repaintBoundary;
   final Color? backgroundColor;
   final Gradient? gradient;
   final Color? borderColor;
@@ -140,7 +143,8 @@ class GlassCard extends StatelessWidget {
             padding: padding,
             decoration: BoxDecoration(
               borderRadius: radius,
-              gradient: gradient ??
+              gradient:
+                  gradient ??
                   LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -162,33 +166,44 @@ class GlassCard extends StatelessWidget {
       ),
     );
 
-    return Container(
+    final card = Container(
       decoration: BoxDecoration(
         borderRadius: radius,
-        boxShadow: boxShadow ?? [
-          // Soft ambient drop shadow for depth
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.32),
-            blurRadius: 18,
-            offset: const Offset(0, 5),
-          ),
-          if (glowColor != null)
-            BoxShadow(
-              color: glowColor!,
-              blurRadius: 22,
-              spreadRadius: -1,
-            ),
-        ],
+        boxShadow:
+            boxShadow ??
+            [
+              // Soft ambient drop shadow for depth
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.32),
+                blurRadius: 18,
+                offset: const Offset(0, 5),
+              ),
+              if (glowColor != null)
+                BoxShadow(color: glowColor!, blurRadius: 22, spreadRadius: -1),
+            ],
       ),
       child: ClipRRect(
         borderRadius: radius,
         child: blur && sigmaBlur > 0
-            ? BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: sigmaBlur, sigmaY: sigmaBlur),
-                child: content,
-              )
+            ? sharedBackdrop
+                  ? BackdropFilter.grouped(
+                      filter: ImageFilter.blur(
+                        sigmaX: sigmaBlur,
+                        sigmaY: sigmaBlur,
+                      ),
+                      child: content,
+                    )
+                  : BackdropFilter(
+                      filter: ImageFilter.blur(
+                        sigmaX: sigmaBlur,
+                        sigmaY: sigmaBlur,
+                      ),
+                      child: content,
+                    )
             : content,
       ),
     );
+
+    return repaintBoundary ? RepaintBoundary(child: card) : card;
   }
 }
