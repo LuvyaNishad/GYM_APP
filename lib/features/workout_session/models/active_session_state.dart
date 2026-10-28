@@ -400,6 +400,18 @@ class ActiveExerciseState {
       );
 }
 
+/// A real unfinished set, shared by rest and background workout notifications.
+@immutable
+class WorkoutSetTarget {
+  const WorkoutSetTarget({required this.exercise, required this.set});
+
+  final ActiveExerciseState exercise;
+  final ActiveSetState set;
+
+  String get setLabel =>
+      set.isWarmup ? 'Warm-up ${set.setNumber}' : 'Set ${set.setNumber}';
+}
+
 /// Full state of an in-progress workout session.
 @immutable
 class ActiveSessionState {
@@ -426,6 +438,21 @@ class ActiveSessionState {
   final String? expandedExerciseId;
   final DateTime? lastResumedAt;
   final String? persistenceError;
+
+  /// Continue the selected exercise, then scan forward and wrap for skipped sets.
+  WorkoutSetTarget? nextPendingSet({String? preferredExerciseId}) {
+    if (!isActive || exercises.isEmpty) return null;
+    final preferredIndex = exercises.indexWhere(
+      (exercise) => exercise.exerciseId == preferredExerciseId,
+    );
+    final start = preferredIndex < 0 ? 0 : preferredIndex;
+    for (var offset = 0; offset < exercises.length; offset++) {
+      final exercise = exercises[(start + offset) % exercises.length];
+      final set = exercise.sets.where((set) => !set.isCompleted).firstOrNull;
+      if (set != null) return WorkoutSetTarget(exercise: exercise, set: set);
+    }
+    return null;
+  }
 
   int get completedSetCount =>
       exercises.fold(0, (acc, ex) => acc + ex.completedSetsCount);
@@ -532,6 +559,10 @@ class RestTimerState {
     this.autoStart = true,
     this.exerciseName,
     this.setNumber,
+    this.totalSets = 0,
+    this.isWarmup = false,
+    this.exerciseId,
+    this.sourceExerciseId,
     this.targetEndTime,
   });
 
@@ -541,6 +572,10 @@ class RestTimerState {
   final bool autoStart;
   final String? exerciseName;
   final int? setNumber;
+  final int totalSets;
+  final bool isWarmup;
+  final String? exerciseId;
+  final String? sourceExerciseId;
   final DateTime? targetEndTime;
 
   bool get isFinished => remainingSeconds == 0 && isRunning;
@@ -563,6 +598,10 @@ class RestTimerState {
     bool? autoStart,
     String? exerciseName,
     int? setNumber,
+    int? totalSets,
+    bool? isWarmup,
+    String? exerciseId,
+    String? sourceExerciseId,
     DateTime? targetEndTime,
     bool clearTargetEndTime = false,
   }) {
@@ -573,6 +612,10 @@ class RestTimerState {
       autoStart: autoStart ?? this.autoStart,
       exerciseName: exerciseName ?? this.exerciseName,
       setNumber: setNumber ?? this.setNumber,
+      totalSets: totalSets ?? this.totalSets,
+      isWarmup: isWarmup ?? this.isWarmup,
+      exerciseId: exerciseId ?? this.exerciseId,
+      sourceExerciseId: sourceExerciseId ?? this.sourceExerciseId,
       targetEndTime: clearTargetEndTime
           ? null
           : (targetEndTime ?? this.targetEndTime),

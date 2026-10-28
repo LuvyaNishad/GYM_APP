@@ -9,6 +9,7 @@ import '../../history/providers/history_provider.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import '../models/active_session_state.dart';
 import '../models/warmup_plan.dart';
+import '../services/notification_service.dart';
 import 'plate_preferences_provider.dart';
 import 'rest_timer_provider.dart';
 
@@ -282,6 +283,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
     final currentSet = exercise.sets[setIndex];
     final targetCompleted = completed ?? !currentSet.isCompleted;
+    if (targetCompleted == currentSet.isCompleted) return;
 
     final updatedSet = currentSet.copyWith(
       isCompleted: targetCompleted,
@@ -297,6 +299,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
     // Check for superset partner transition
     String? nextExpandedId = state.expandedExerciseId;
+    String nextExerciseId = exerciseId;
     int restDurationToUse = exercise.restDurationSeconds;
 
     if (targetCompleted && exercise.supersetGroupId != null) {
@@ -312,6 +315,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         if (partnerHasIncomplete) {
           // Switch active view directly to superset partner
           nextExpandedId = partner.exerciseId;
+          nextExerciseId = partner.exerciseId;
           // Intermediate transition rest between superset pairings (default 60s or half duration)
           restDurationToUse = (exercise.restDurationSeconds / 2)
               .clamp(45.0, 90.0)
@@ -331,29 +335,35 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         HapticFeedback.lightImpact();
       } catch (_) {}
 
-      // Check if all exercises and sets in the entire workout are completed
-      final allFinished = updatedExercises.every(
-        (e) => e.sets.isNotEmpty && e.sets.every((s) => s.isCompleted),
-      );
-
-      // Auto-trigger rest timer if configured and workout is not completely finished
-      final restState = ref.read(restTimerProvider);
-      if (restState.autoStart && !allFinished) {
-        final duration = restDurationToUse > 0 ? restDurationToUse : 90;
-        ref
-            .read(restTimerProvider.notifier)
-            .startTimer(
-              durationSeconds: duration,
-              exerciseName: exercise.name,
-              setNumber: currentSet.setNumber,
-            );
-      }
+      _startRestAfterSet(exercise, nextExerciseId, restDurationToUse);
     } else {
       // If user unchecks a set, dismiss the active countdown if it was triggered for this exercise
       final restState = ref.read(restTimerProvider);
-      if (restState.isRunning && restState.exerciseName == exercise.name) {
+      if (restState.sourceExerciseId == exerciseId) {
         ref.read(restTimerProvider.notifier).skip();
       }
+    }
+  }
+
+  void _startRestAfterSet(
+    ActiveExerciseState completedExercise,
+    String preferredExerciseId,
+    int restDurationSeconds,
+  ) {
+    final next = state.nextPendingSet(preferredExerciseId: preferredExerciseId);
+    final rest = ref.read(restTimerProvider.notifier);
+    // Also dismiss an earlier countdown if the user logs ahead of the timer.
+    rest.skip();
+    if (next == null) {
+      ref.read(workoutNotificationServiceProvider).cancelAll();
+      return;
+    }
+    if (ref.read(restTimerProvider).autoStart) {
+      rest.startTimer(
+        durationSeconds: restDurationSeconds > 0 ? restDurationSeconds : 90,
+        nextSet: next,
+        sourceExerciseId: completedExercise.exerciseId,
+      );
     }
   }
 
@@ -402,30 +412,33 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         HapticFeedback.mediumImpact();
       } catch (_) {}
 
-      final allFinished = updatedExercises.every(
-        (e) => e.sets.isNotEmpty && e.sets.every((s) => s.isCompleted),
-      );
-
-      final restState = ref.read(restTimerProvider);
-      if (restState.autoStart && !allFinished) {
-        final duration = exercise.restDurationSeconds > 0
-            ? exercise.restDurationSeconds
-            : 90;
-        ref
-            .read(restTimerProvider.notifier)
-            .startTimer(
-              durationSeconds: duration,
-              exerciseName: exercise.name,
-              setNumber: currentSet.setNumber,
-            );
+      final partner = exercise.supersetGroupId == null
+          ? null
+          : updatedExercises
+                .where(
+                  (candidate) =>
+                      candidate.exerciseId != exerciseId &&
+                      candidate.supersetGroupId == exercise.supersetGroupId &&
+                      candidate.sets.any((set) => !set.isCompleted),
+                )
+                .firstOrNull;
+      if (partner != null) {
+        state = state.copyWith(expandedExerciseId: partner.exerciseId);
       }
+      _startRestAfterSet(
+        exercise,
+        partner?.exerciseId ?? exerciseId,
+        partner == null
+            ? exercise.restDurationSeconds
+            : (exercise.restDurationSeconds / 2).clamp(45.0, 90.0).toInt(),
+      );
     } else if (targetCompleted && !bothCompleted) {
       try {
         HapticFeedback.lightImpact();
       } catch (_) {}
     } else if (!bothCompleted && currentSet.isCompleted) {
       final restState = ref.read(restTimerProvider);
-      if (restState.isRunning && restState.exerciseName == exercise.name) {
+      if (restState.sourceExerciseId == exerciseId) {
         ref.read(restTimerProvider.notifier).skip();
       }
     }
@@ -987,6 +1000,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     if (!ref.mounted) return;
     _elapsedTicker?.cancel();
     ref.read(restTimerProvider.notifier).skip();
+    ref.read(workoutNotificationServiceProvider).cancelAll();
     state = ActiveSessionState(startTime: DateTime.now());
   }
 

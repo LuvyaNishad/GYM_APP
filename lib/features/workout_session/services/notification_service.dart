@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -14,12 +15,53 @@ abstract class WorkoutNotificationIds {
 /// Service managing Android Persistent Foreground Notifications and background alerts.
 class WorkoutNotificationService {
   WorkoutNotificationService() {
-    _initPlugin();
+    _initialization = _initPlugin();
   }
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
   bool _isInitialized = false;
+  late final Future<void> _initialization;
+  Future<void> _pending = Future<void>.value();
+  bool _isAppInBackground = false;
+  int _visibilityRevision = 0;
+
+  bool get isAppInBackground => _isAppInBackground;
+
+  /// Inactive includes the notification shade and permission dialogs, so it
+  /// must not be treated as minimizing the app.
+  void updateAppLifecycleState(AppLifecycleState state) {
+    final background =
+        state == AppLifecycleState.hidden || state == AppLifecycleState.paused;
+    if (background != _isAppInBackground) _visibilityRevision++;
+    _isAppInBackground = background;
+    if (!background) cancelAll();
+  }
+
+  Future<void> _enqueueNotification(Future<void> Function() action) {
+    if (!_isAppInBackground) return Future<void>.value();
+    final revision = _visibilityRevision;
+    return _enqueue(() async {
+      // A queued update must not reappear after the user returns to the app.
+      if (!_isAppInBackground || revision != _visibilityRevision) return;
+      await action();
+    });
+  }
+
+  // Keep show/cancel calls ordered, including calls made during initialization.
+  Future<void> _enqueue(Future<void> Function() action) {
+    return _pending = _pending
+        .then((_) async {
+          await _initialization;
+          if (!_isInitialized || kIsWeb) return;
+          await action();
+        })
+        .catchError((Object error) {
+          debugPrint(
+            '[WorkoutNotificationService] Notification failed: $error',
+          );
+        });
+  }
 
   /// Callback for interactive notification buttons (+30s, Skip Rest).
   void Function(String actionId)? onActionTapped;
@@ -62,6 +104,7 @@ class WorkoutNotificationService {
   /// Request permissions on Android 13+ and iOS.
   Future<bool> requestPermissions() async {
     if (kIsWeb) return false;
+    await _initialization;
 
     if (Platform.isAndroid) {
       final androidImplementation = _plugin
@@ -88,12 +131,13 @@ class WorkoutNotificationService {
 
   /// Shows or updates the ongoing persistent rest countdown notification.
   Future<void> showRestTimerNotification({
-    required String exerciseName,
-    required int setNumber,
+    required String? exerciseName,
+    required int? setNumber,
+    bool isWarmup = false,
     required int remainingSeconds,
     required int totalDurationSeconds,
     DateTime? targetEndTime,
-  }) async {
+  }) => _enqueueNotification(() async {
     if (!_isInitialized || kIsWeb) return;
 
     final minutes = remainingSeconds ~/ 60;
@@ -150,8 +194,10 @@ class WorkoutNotificationService {
     try {
       await _plugin.show(
         WorkoutNotificationIds.restTimer,
-        'REST TIMER ● $formattedTime',
-        'Next: $exerciseName (Set $setNumber)',
+        targetEndTime == null ? 'REST TIMER ● $formattedTime' : 'REST TIMER',
+        exerciseName != null && setNumber != null
+            ? 'Next: $exerciseName (${isWarmup ? 'Warm-up' : 'Set'} $setNumber)'
+            : 'Rest between sets',
         notificationDetails,
       );
     } catch (e) {
@@ -159,17 +205,20 @@ class WorkoutNotificationService {
         '[WorkoutNotificationService] Error showing rest notification: $e',
       );
     }
-  }
+  });
 
   /// Fires a high-priority vibration and sound alert when a rest interval finishes.
   Future<void> showRestCompletedNotification({
-    required String exerciseName,
-    required int nextSetNumber,
-  }) async {
+    required String? exerciseName,
+    required int? nextSetNumber,
+    bool isWarmup = false,
+  }) => _enqueueNotification(() async {
     if (!_isInitialized || kIsWeb) return;
 
     // First dismiss ongoing rest progress bar
-    await cancelRestNotification();
+    final revision = _visibilityRevision;
+    await _plugin.cancel(WorkoutNotificationIds.restTimer);
+    if (!_isAppInBackground || revision != _visibilityRevision) return;
 
     final androidDetails = AndroidNotificationDetails(
       'leon_rest_alerts',
@@ -198,7 +247,9 @@ class WorkoutNotificationService {
       await _plugin.show(
         WorkoutNotificationIds.restCompletedAlert,
         'REST COMPLETE ⚡',
-        'Time for Set $nextSetNumber of $exerciseName',
+        exerciseName != null && nextSetNumber != null
+            ? 'Time for ${isWarmup ? 'Warm-up' : 'Set'} $nextSetNumber of $exerciseName'
+            : 'Your rest interval is complete',
         notificationDetails,
       );
     } catch (e) {
@@ -206,10 +257,13 @@ class WorkoutNotificationService {
         '[WorkoutNotificationService] Error showing completion notification: $e',
       );
     }
-  }
+  });
+
+  Future<void> cancelRestCompletedNotification() =>
+      _enqueue(() => _plugin.cancel(WorkoutNotificationIds.restCompletedAlert));
 
   /// Cancels the persistent rest notification.
-  Future<void> cancelRestNotification() async {
+  Future<void> cancelRestNotification() => _enqueue(() async {
     if (!_isInitialized || kIsWeb) return;
     try {
       await _plugin.cancel(WorkoutNotificationIds.restTimer);
@@ -218,7 +272,7 @@ class WorkoutNotificationService {
         '[WorkoutNotificationService] Error canceling rest notification: $e',
       );
     }
-  }
+  });
 
   /// Shows or updates the persistent notification when the app is minimized with an active workout.
   Future<void> showActiveWorkoutNotification({
@@ -226,9 +280,10 @@ class WorkoutNotificationService {
     required String currentExerciseName,
     required int currentSet,
     required int totalSets,
+    bool isWarmup = false,
     double? weightKg,
     int? reps,
-  }) async {
+  }) => _enqueueNotification(() async {
     if (!_isInitialized || kIsWeb) return;
 
     final weightRepsText = (weightKg != null && reps != null)
@@ -275,7 +330,7 @@ class WorkoutNotificationService {
       await _plugin.show(
         WorkoutNotificationIds.activeWorkout,
         'WORKOUT IN PROGRESS: ${cleanSplitName.toUpperCase()}',
-        '$currentExerciseName (Set $currentSet/$totalSets)$weightRepsText',
+        '$currentExerciseName (${isWarmup ? 'Warm-up' : 'Set'} $currentSet/$totalSets)$weightRepsText',
         notificationDetails,
       );
     } catch (e) {
@@ -283,10 +338,10 @@ class WorkoutNotificationService {
         '[WorkoutNotificationService] Error showing active workout notification: $e',
       );
     }
-  }
+  });
 
   /// Cancels the active workout notification.
-  Future<void> cancelActiveWorkoutNotification() async {
+  Future<void> cancelActiveWorkoutNotification() => _enqueue(() async {
     if (!_isInitialized || kIsWeb) return;
     try {
       await _plugin.cancel(WorkoutNotificationIds.activeWorkout);
@@ -295,19 +350,24 @@ class WorkoutNotificationService {
         '[WorkoutNotificationService] Error canceling active workout notification: $e',
       );
     }
-  }
+  });
 
   /// Cancels all LEON workout notifications.
-  Future<void> cancelAll() async {
+  Future<void> cancelAll() => _enqueue(() async {
     if (!_isInitialized || kIsWeb) return;
     try {
+      // Ongoing notifications (FLAG_ONGOING_EVENT) are ignored by Android's bulk cancelAll()
+      // on many OEM builds (ColorOS/Realme/OnePlus/Samsung). Explicitly cancel each ID.
+      await _plugin.cancel(WorkoutNotificationIds.activeWorkout);
+      await _plugin.cancel(WorkoutNotificationIds.restTimer);
+      await _plugin.cancel(WorkoutNotificationIds.restCompletedAlert);
       await _plugin.cancelAll();
     } catch (e) {
       debugPrint(
         '[WorkoutNotificationService] Error canceling all notifications: $e',
       );
     }
-  }
+  });
 }
 
 final workoutNotificationServiceProvider = Provider<WorkoutNotificationService>(

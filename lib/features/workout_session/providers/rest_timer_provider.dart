@@ -13,6 +13,10 @@ import 'active_session_provider.dart';
 class RestTimerNotifier extends Notifier<RestTimerState> {
   Timer? _ticker;
   AppLifecycleListener? _lifecycleListener;
+  String? _workoutId;
+  double _targetWeightKg = 0;
+  int _targetReps = 0;
+  String _plateBreakdown = '';
 
   WorkoutNotificationService get _notifications =>
       ref.read(workoutNotificationServiceProvider);
@@ -21,6 +25,7 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
 
   @override
   RestTimerState build() {
+    ref.keepAlive();
     _lifecycleListener = AppLifecycleListener(
       onResume: () {
         resyncWithWallClock();
@@ -52,7 +57,7 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
     return (diffMs + 999) ~/ 1000;
   }
 
-  /// Starts or resets the rest countdown with the given duration using wall-clock target timestamp.
+  /// Starts rest for the upcoming set, never the set that was just completed.
   void startTimer({
     required int durationSeconds,
     String? exerciseName,
@@ -61,45 +66,108 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
     double? targetWeightKg,
     int? targetReps,
     String? plateBreakdown,
+    WorkoutSetTarget? nextSet,
+    String? sourceExerciseId,
   }) {
     _ticker?.cancel();
+    if (durationSeconds <= 0) {
+      skip();
+      return;
+    }
+    final session = ref.read(activeSessionProvider);
+    _workoutId = session.isActive ? session.workoutId : null;
+    final next =
+        nextSet ??
+        session.nextPendingSet(preferredExerciseId: session.expandedExerciseId);
+    if (session.isActive && next == null) {
+      skip();
+      return;
+    }
+    _targetWeightKg = next?.set.weightKg ?? targetWeightKg ?? 0;
+    _targetReps = next?.set.reps ?? targetReps ?? 0;
+    _plateBreakdown = plateBreakdown ?? '';
     final targetEndTime = DateTime.now().add(
       Duration(seconds: durationSeconds),
     );
 
-    state = state.copyWith(
+    state = RestTimerState(
+      autoStart: state.autoStart,
       totalDurationSeconds: durationSeconds,
       remainingSeconds: durationSeconds,
       isRunning: true,
-      exerciseName: exerciseName,
-      setNumber: setNumber,
+      exerciseName: next?.exercise.name ?? exerciseName,
+      setNumber: next?.set.setNumber ?? setNumber,
+      totalSets: next?.exercise.sets.length ?? totalSets ?? setNumber ?? 0,
+      isWarmup: next?.set.isWarmup ?? false,
+      exerciseId: next?.exercise.exerciseId,
+      sourceExerciseId: sourceExerciseId,
       targetEndTime: targetEndTime,
     );
 
     // Launch Android Foreground Persistent Notification with targetEndTime
-    _notifications.showRestTimerNotification(
-      exerciseName: exerciseName ?? 'Exercise',
-      setNumber: setNumber ?? 1,
-      remainingSeconds: durationSeconds,
-      totalDurationSeconds: durationSeconds,
-      targetEndTime: targetEndTime,
-    );
+    _notifications.cancelRestCompletedNotification();
+    _notifications.cancelActiveWorkoutNotification();
+    _showCountdown();
 
-    // Launch iOS Live Activity & Dynamic Island
+    _startLiveActivity();
+    _startTicker();
+  }
+
+  void _startLiveActivity() {
+    if (state.setNumber == null) return;
     _liveActivity.startLiveActivity(
       workoutTitle: "TODAY'S WORKOUT",
-      exerciseName: exerciseName ?? 'Exercise',
-      setNumber: setNumber ?? 1,
-      totalSets: totalSets ?? 4,
-      remainingSeconds: durationSeconds,
-      totalDurationSeconds: durationSeconds,
-      targetWeightKg: targetWeightKg ?? 0.0,
-      targetReps: targetReps ?? 0,
-      plateBreakdown: plateBreakdown ?? '',
+      exerciseName: state.exerciseName ?? 'Exercise',
+      setNumber: state.setNumber!,
+      totalSets: state.totalSets,
+      remainingSeconds: state.remainingSeconds,
+      totalDurationSeconds: state.totalDurationSeconds,
+      targetWeightKg: _targetWeightKg,
+      targetReps: _targetReps,
+      plateBreakdown: _plateBreakdown,
       isResting: true,
     );
+  }
 
-    _startTicker();
+  void _showCountdown() {
+    _notifications.showRestTimerNotification(
+      exerciseName: state.exerciseName,
+      setNumber: state.setNumber,
+      isWarmup: state.isWarmup,
+      remainingSeconds: state.remainingSeconds,
+      totalDurationSeconds: state.totalDurationSeconds,
+      targetEndTime: state.targetEndTime,
+    );
+  }
+
+  // Revalidate after edits/removals and before delivering a completion alert.
+  bool _refreshTarget() {
+    if (_workoutId == null) return true;
+    final session = ref.read(activeSessionProvider);
+    final next = session.nextPendingSet(preferredExerciseId: state.exerciseId);
+    if (session.workoutId != _workoutId || next == null) {
+      skip();
+      return false;
+    }
+    final changed =
+        state.exerciseId != next.exercise.exerciseId ||
+        state.exerciseName != next.exercise.name ||
+        state.setNumber != next.set.setNumber ||
+        state.isWarmup != next.set.isWarmup ||
+        state.totalSets != next.exercise.sets.length;
+    if (changed) {
+      state = state.copyWith(
+        exerciseId: next.exercise.exerciseId,
+        exerciseName: next.exercise.name,
+        setNumber: next.set.setNumber,
+        totalSets: next.exercise.sets.length,
+        isWarmup: next.set.isWarmup,
+      );
+    }
+    _targetWeightKg = next.set.weightKg;
+    _targetReps = next.set.reps;
+    if (changed && state.isRunning) _showCountdown();
+    return true;
   }
 
   void _startTicker() {
@@ -108,7 +176,7 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
   }
 
   void _tick() {
-    if (!state.isRunning) return;
+    if (!state.isRunning || !_refreshTarget()) return;
 
     if (state.targetEndTime == null) {
       if (state.remainingSeconds > 1) {
@@ -125,14 +193,19 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
       state = state.copyWith(remainingSeconds: remaining);
 
       // Periodically update Live Activity
-      _liveActivity.updateLiveActivity(
-        remainingSeconds: remaining,
-        totalDurationSeconds: state.totalDurationSeconds,
-        exerciseName: state.exerciseName ?? 'Exercise',
-        setNumber: state.setNumber ?? 1,
-        totalSets: 4,
-        isResting: true,
-      );
+      if (state.setNumber != null) {
+        _liveActivity.updateLiveActivity(
+          remainingSeconds: remaining,
+          totalDurationSeconds: state.totalDurationSeconds,
+          exerciseName: state.exerciseName ?? 'Exercise',
+          setNumber: state.setNumber ?? 1,
+          totalSets: state.totalSets,
+          targetWeightKg: _targetWeightKg,
+          targetReps: _targetReps,
+          plateBreakdown: _plateBreakdown,
+          isResting: true,
+        );
+      }
     } else {
       _completeRest();
     }
@@ -140,6 +213,7 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
 
   /// Internal handler when countdown hits or passes zero.
   void _completeRest() {
+    if (!state.isRunning || !_refreshTarget()) return;
     _ticker?.cancel();
     state = state.copyWith(
       remainingSeconds: 0,
@@ -149,8 +223,9 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
 
     _notifications.cancelRestNotification();
     _notifications.showRestCompletedNotification(
-      exerciseName: state.exerciseName ?? 'Exercise',
-      nextSetNumber: (state.setNumber ?? 1) + 1,
+      exerciseName: state.exerciseName,
+      nextSetNumber: state.setNumber,
+      isWarmup: state.isWarmup,
     );
 
     _liveActivity.stopLiveActivity();
@@ -164,19 +239,14 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
   /// Synchronizes remaining seconds with the actual real-world wall clock.
   /// Called immediately when the application resumes from background.
   void resyncWithWallClock() {
+    if (!_refreshTarget()) return;
     if (state.isRunning && state.targetEndTime != null) {
       final remaining = _computeRemainingSeconds(state.targetEndTime!);
       if (remaining <= 0) {
         _completeRest();
       } else {
         state = state.copyWith(remainingSeconds: remaining);
-        _notifications.showRestTimerNotification(
-          exerciseName: state.exerciseName ?? 'Exercise',
-          setNumber: state.setNumber ?? 1,
-          remainingSeconds: remaining,
-          totalDurationSeconds: state.totalDurationSeconds,
-          targetEndTime: state.targetEndTime,
-        );
+        _showCountdown();
       }
     }
   }
@@ -194,28 +264,29 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
       clearTargetEndTime: true,
     );
     _notifications.cancelRestNotification();
+    _liveActivity.stopLiveActivity();
   }
 
   /// Resumes countdown from remaining seconds using a new target end timestamp.
   void resume() {
+    if (!_refreshTarget()) return;
     if (state.remainingSeconds > 0) {
       final targetEndTime = DateTime.now().add(
         Duration(seconds: state.remainingSeconds),
       );
       state = state.copyWith(isRunning: true, targetEndTime: targetEndTime);
-      _notifications.showRestTimerNotification(
-        exerciseName: state.exerciseName ?? 'Exercise',
-        setNumber: state.setNumber ?? 1,
-        remainingSeconds: state.remainingSeconds,
-        totalDurationSeconds: state.totalDurationSeconds,
-        targetEndTime: targetEndTime,
-      );
+      _showCountdown();
+      _startLiveActivity();
       _startTicker();
     }
   }
 
   /// Adds or subtracts seconds to the current rest interval with wall-clock adjustment.
   void addSeconds(int seconds) {
+    if ((!state.isRunning && state.remainingSeconds == 0) ||
+        !_refreshTarget()) {
+      return;
+    }
     if (state.isRunning && state.targetEndTime != null) {
       final newTarget = state.targetEndTime!.add(Duration(seconds: seconds));
       final remaining = _computeRemainingSeconds(newTarget);
@@ -231,13 +302,7 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
         remainingSeconds: remaining,
         totalDurationSeconds: newTotal,
       );
-      _notifications.showRestTimerNotification(
-        exerciseName: state.exerciseName ?? 'Exercise',
-        setNumber: state.setNumber ?? 1,
-        remainingSeconds: remaining,
-        totalDurationSeconds: newTotal,
-        targetEndTime: newTarget,
-      );
+      _showCountdown();
     } else {
       final newSeconds = (state.remainingSeconds + seconds).clamp(0, 9999);
       final newTotal = state.totalDurationSeconds < newSeconds
@@ -278,6 +343,7 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
       clearTargetEndTime: true,
     );
     _notifications.cancelRestNotification();
+    _notifications.cancelRestCompletedNotification();
     _liveActivity.stopLiveActivity();
   }
 

@@ -15,9 +15,13 @@ class FloatingRestTimerBar extends ConsumerWidget {
     final notifier = ref.read(restTimerProvider.notifier);
     final next = ref.watch(
       activeSessionProvider.select((s) {
-        for (final e in s.exercises) {
-          final index = e.sets.indexWhere((set) => !set.isCompleted);
-          if (index >= 0) return '${e.name} · Set ${index + 1}';
+        final target = s.nextPendingSet(
+          preferredExerciseId: rest.remainingSeconds > 0
+              ? rest.exerciseId
+              : s.expandedExerciseId,
+        );
+        if (target != null) {
+          return '${target.exercise.name} · ${target.setLabel}';
         }
         return s.exercises.isEmpty ? '' : 'All sets logged';
       }),

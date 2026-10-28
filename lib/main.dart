@@ -84,7 +84,12 @@ class _WorkoutLifecycleObserverState
     WidgetsBinding.instance.addObserver(this);
     // Request notification permissions for Android 13+ and iOS on startup
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(workoutNotificationServiceProvider).requestPermissions();
+      if (!mounted) return;
+      final notifications = ref.read(workoutNotificationServiceProvider);
+      notifications.updateAppLifecycleState(
+        WidgetsBinding.instance.lifecycleState ?? AppLifecycleState.resumed,
+      );
+      notifications.requestPermissions();
     });
   }
 
@@ -97,42 +102,45 @@ class _WorkoutLifecycleObserverState
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    final session = ref.read(activeSessionProvider);
-    final restTimer = ref.read(restTimerProvider);
     final notifs = ref.read(workoutNotificationServiceProvider);
+    notifs.updateAppLifecycleState(state);
 
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.hidden ||
-        state == AppLifecycleState.inactive) {
+    if (notifs.isAppInBackground) {
+      final session = ref.read(activeSessionProvider);
+      final restTimer = ref.read(restTimerProvider);
       ref.read(activeSessionProvider.notifier).persistInBackground();
       // App was minimized to the background
       if (session.isActive) {
         // If rest timer is NOT running, show the active workout progress notification
         if (!restTimer.isRunning) {
-          final currentExercise = session.exercises.isNotEmpty
-              ? session.exercises.first
-              : null;
-          final currentSet = currentExercise?.sets.firstWhere(
-            (s) => !s.isCompleted,
-            orElse: () => currentExercise.sets.last,
+          final next = session.nextPendingSet(
+            preferredExerciseId: session.expandedExerciseId,
           );
+          if (next == null) {
+            notifs.cancelAll();
+            return;
+          }
           notifs.showActiveWorkoutNotification(
             splitName: session.splitName.replaceAll('//', '●'),
-            currentExerciseName: currentExercise?.name ?? 'Exercise',
-            currentSet: currentSet?.setNumber ?? 1,
-            totalSets: currentExercise?.sets.length ?? 4,
-            weightKg: currentSet?.weightKg,
-            reps: currentSet?.reps,
+            currentExerciseName: next.exercise.name,
+            currentSet: next.set.setNumber,
+            totalSets: next.exercise.sets.length,
+            isWarmup: next.set.isWarmup,
+            weightKg: next.set.weightKg,
+            reps: next.set.reps,
           );
+        } else {
+          notifs.cancelActiveWorkoutNotification();
+          // Rest started in the foreground has no notification yet. Publish
+          // its current wall-clock countdown as soon as the app is hidden.
+          ref.read(restTimerProvider.notifier).resyncWithWallClock();
         }
+      } else {
+        notifs.cancelAll();
       }
     } else if (state == AppLifecycleState.resumed) {
       // Refresh date-dependent screens after crossing midnight while suspended.
       ref.invalidate(localDateProvider);
-      // App brought back to foreground
-      if (!restTimer.isRunning) {
-        notifs.cancelActiveWorkoutNotification();
-      }
     }
   }
 
