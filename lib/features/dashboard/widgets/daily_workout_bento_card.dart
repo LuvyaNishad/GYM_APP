@@ -92,8 +92,9 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
 
     return GlassCard(
       padding: const EdgeInsets.all(16),
-      border: false,
-      blur: true,
+      border: true,
+      blur: false,
+      glowColor: showActive ? AppColors.primary.withValues(alpha: 0.15) : null,
       onTap: details,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
