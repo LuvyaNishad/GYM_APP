@@ -12,6 +12,7 @@ import 'package:leon/features/dashboard/widgets/sleep_bento_card.dart';
 import 'package:leon/features/dashboard/widgets/steps_bento_card.dart';
 import 'package:leon/features/dashboard/widgets/water_bento_card.dart';
 import 'package:leon/features/dashboard/providers/workout_rotation_provider.dart';
+import 'package:leon/shared/widgets/glass_card.dart';
 
 void main() {
   group('Dashboard Bento Grid & Retractable Header', () {
@@ -82,9 +83,62 @@ void main() {
                   (c.decoration as BoxDecoration).color == AppColors.warning,
             );
         expect(selectedBadges, hasLength(1));
+        // Verify tick icon is removed per user specification
+        expect(find.byIcon(Icons.check_rounded), findsNothing);
+
+        // Verify gym day indicator uses green fill for logged session
         if (today.weekday > 1) {
-          expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+          final greenBadges = tester
+              .widgetList<Container>(find.byType(Container))
+              .where(
+                (c) =>
+                    c.decoration is BoxDecoration &&
+                    (c.decoration as BoxDecoration).color == AppColors.gymGreen,
+              );
+          expect(greenBadges, isNotEmpty);
         }
+      },
+    );
+
+    testWidgets(
+      'RetractableCalendarHeader marks completed days green, missed days red, and omits ticks',
+      (WidgetTester tester) async {
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+        final mondayThisWeek = today.subtract(
+          Duration(days: today.weekday - 1),
+        );
+        final loggedDates = {mondayThisWeek};
+
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.dark,
+            home: Scaffold(
+              body: RetractableCalendarHeader(
+                userName: 'Leon',
+                initialExpanded: true,
+                selectedDate: today,
+                loggedWorkoutDates: loggedDates,
+              ),
+            ),
+          ),
+        );
+
+        // Verify tick checkmarks are completely removed
+        expect(find.byIcon(Icons.check_rounded), findsNothing);
+
+        // Find day capsules
+        final decorations = tester
+            .widgetList<Container>(find.byType(Container))
+            .where((c) => c.decoration is BoxDecoration)
+            .map((c) => c.decoration as BoxDecoration)
+            .toList();
+
+        // Expect green capsule for hit gym day
+        expect(decorations.any((d) => d.color == AppColors.gymGreen), isTrue);
+
+        // Expect amber / warning for selected day
+        expect(decorations.any((d) => d.color == AppColors.warning), isTrue);
       },
     );
 
@@ -286,6 +340,39 @@ void main() {
         expect(find.text('Barbell Bench Press'), findsOneWidget);
         expect(find.textContaining('3 sets ×'), findsWidgets);
         await tester.pumpWidget(const SizedBox.shrink());
+        container.dispose();
+      },
+    );
+
+    testWidgets(
+      'DailyWorkoutBentoCard renders with specular acrylic streak glint',
+      (WidgetTester tester) async {
+        final container = ProviderContainer();
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              theme: AppTheme.dark,
+              home: const Scaffold(body: DailyWorkoutBentoCard()),
+            ),
+          ),
+        );
+
+        final glassCard = tester.widget<GlassCard>(
+          find.byType(GlassCard).first,
+        );
+        expect(glassCard.border, isTrue);
+
+        final customPaints = tester.widgetList<CustomPaint>(
+          find.byType(CustomPaint),
+        );
+        expect(
+          customPaints.any(
+            (cp) => cp.foregroundPainter is AcrylicStreakPainter,
+          ),
+          isTrue,
+        );
+
         container.dispose();
       },
     );
