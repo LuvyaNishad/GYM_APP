@@ -39,6 +39,8 @@ abstract final class AppColors {
   static const Color success = pureWhite;
   static const Color warning = Color(0xFFFFB300);
   static const Color amber = warning;
+  static const Color gymGreen = Color(0xFF22C55E);
+  static const Color gymRed = Color(0xFFDC2626);
 
   static const Color textPrimary = pureWhite;
   static const Color textSecondary = Color(0xFFCBD5E1);

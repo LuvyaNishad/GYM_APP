@@ -211,11 +211,57 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                     (d) => DateUtils.isSameDay(d, day),
                   );
                   final isDayToday = DateUtils.isSameDay(day, today);
+                  final isPast = day.isBefore(today);
+                  final isMissed = isPast && !done;
+
+                  // Color discipline:
+                  // - Green: Day workout was completed (gym hit)
+                  // - Red: Past day with no workout (gym missed)
+                  // - Yellow (Amber): Selected day if not already green/red
+                  // - Charcoal: Unselected future or uncompleted today
+                  final Color capsuleColor = done
+                      ? AppColors.gymGreen
+                      : isMissed
+                      ? AppColors.gymRed
+                      : active
+                      ? AppColors.warning
+                      : AppColors.charcoal;
+
+                  final Color headerTextColor = (done || (active && !isMissed))
+                      ? AppColors.onyx.withValues(alpha: 0.85)
+                      : isMissed
+                      ? AppColors.pureWhite.withValues(alpha: 0.90)
+                      : AppColors.platinum;
+
+                  final Color numberTextColor = (done || (active && !isMissed))
+                      ? AppColors.onyx
+                      : isMissed
+                      ? AppColors.pureWhite
+                      : AppColors.pureWhite;
+
+                  final Border border = active
+                      ? Border.all(color: AppColors.warning, width: 2.0)
+                      : Border.all(
+                          color: isDayToday
+                              ? AppColors.primary.withValues(alpha: 0.6)
+                              : const Color(0x1AFFFFFF),
+                          width: isDayToday ? 1.0 : 0.8,
+                        );
+
+                  final List<BoxShadow>? shadows = active
+                      ? [
+                          BoxShadow(
+                            color: AppColors.warning.withValues(alpha: 0.45),
+                            blurRadius: 6,
+                            offset: const Offset(0, 1),
+                          ),
+                        ]
+                      : null;
 
                   return Expanded(
                     child: Semantics(
                       label:
-                          '${local.formatFullDate(day)}${done ? ', workout logged' : ''}',
+                          '${local.formatFullDate(day)}${done ? ', workout completed' : (isMissed ? ', workout missed' : '')}',
                       selected: active,
                       button: true,
                       child: InkWell(
@@ -223,20 +269,12 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                         onTap: () => widget.onDateSelected?.call(day),
                         child: Container(
                           margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.symmetric(vertical: 9),
                           decoration: BoxDecoration(
-                            color: active
-                                ? AppColors.warning
-                                : AppColors.charcoal,
+                            color: capsuleColor,
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: active
-                                  ? AppColors.warning
-                                  : isDayToday
-                                  ? AppColors.primary.withValues(alpha: 0.5)
-                                  : const Color(0x1AFFFFFF),
-                              width: 0.8,
-                            ),
+                            border: border,
+                            boxShadow: shadows,
                           ),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -244,9 +282,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                               Text(
                                 const ['M', 'T', 'W', 'T', 'F', 'S', 'S'][i],
                                 style: AppTypography.bodySmall.copyWith(
-                                  color: active
-                                      ? AppColors.onyx
-                                      : AppColors.platinum,
+                                  color: headerTextColor,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -255,28 +291,10 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                               Text(
                                 '${day.day}',
                                 style: AppTypography.monoSmall.copyWith(
-                                  color: active
-                                      ? AppColors.onyx
-                                      : AppColors.pureWhite,
-                                  fontSize: 12,
+                                  color: numberTextColor,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.w700,
                                 ),
-                              ),
-                              const SizedBox(height: 5),
-                              Icon(
-                                done
-                                    ? Icons.check_rounded
-                                    : (isDayToday && !done)
-                                    ? Icons.circle
-                                    : Icons.remove_rounded,
-                                size: (isDayToday && !done) ? 5 : 12,
-                                color: active
-                                    ? AppColors.onyx
-                                    : done
-                                    ? AppColors.primary
-                                    : (isDayToday
-                                          ? AppColors.primary
-                                          : AppColors.steel),
                               ),
                             ],
                           ),
