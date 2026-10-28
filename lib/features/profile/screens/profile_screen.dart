@@ -27,49 +27,51 @@ class ProfileScreen extends ConsumerWidget {
       backgroundColor: AppColors.background,
       body: SafeArea(
         bottom: false,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(20, 20, 20, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('ACCOUNT', style: AppTypography.screenTitle),
-                    SizedBox(height: 4),
-                    Text(
-                      'Personal Profile & Settings',
-                      style: AppTypography.bodySmall,
-                    ),
-                  ],
+        child: BackdropGroup(
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20, 20, 20, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('ACCOUNT', style: AppTypography.screenTitle),
+                      SizedBox(height: 4),
+                      Text(
+                        'Personal Profile & Settings',
+                        style: AppTypography.bodySmall,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(
-                16,
-                0,
-                16,
-                AppShell.bottomPadding(context, extra: 32),
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  0,
+                  16,
+                  AppShell.bottomPadding(context, extra: 32),
+                ),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _IdentityCard(profile: profile),
+                    const SizedBox(height: 16),
+                    _BiometricsCard(profile: profile),
+                    const SizedBox(height: 16),
+                    _TrainingPreferencesCard(profile: profile),
+                    const SizedBox(height: 16),
+                    _ReportsAndExportCard(profile: profile),
+                    const SizedBox(height: 16),
+                    _AppSettingsCard(profile: profile),
+                    const SizedBox(height: 16),
+                    _AccountActionsCard(),
+                  ]),
+                ),
               ),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  _IdentityCard(profile: profile),
-                  const SizedBox(height: 16),
-                  _BiometricsCard(profile: profile),
-                  const SizedBox(height: 16),
-                  _TrainingPreferencesCard(profile: profile),
-                  const SizedBox(height: 16),
-                  _ReportsAndExportCard(profile: profile),
-                  const SizedBox(height: 16),
-                  _AppSettingsCard(profile: profile),
-                  const SizedBox(height: 16),
-                  _AccountActionsCard(),
-                ]),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -682,6 +684,8 @@ class _GlassSectionContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassCard(
       blur: true,
+      sharedBackdrop: true,
+      repaintBoundary: true,
       border: false,
       boxShadow: const [],
       padding: const EdgeInsets.all(16),

@@ -24,6 +24,8 @@ class ExerciseLibraryCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: GlassCard(
         blur: true,
+        sharedBackdrop: true,
+        repaintBoundary: true,
         border: false,
         borderRadius: 16,
         boxShadow: const [],

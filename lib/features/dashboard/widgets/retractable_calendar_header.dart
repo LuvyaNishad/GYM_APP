@@ -72,10 +72,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
       decoration: const BoxDecoration(
         color: AppColors.onyx,
         border: Border(
-          bottom: BorderSide(
-            color: Color(0x1AFFFFFF),
-            width: 0.5,
-          ),
+          bottom: BorderSide(color: Color(0x1AFFFFFF), width: 0.5),
         ),
       ),
       child: SafeArea(
@@ -172,26 +169,33 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
 
               // ── Sub-row: Weekly Consistency Target & Formatted Date ────────
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'THIS WEEK · $completed OF $target DAYS',
-                    style: AppTypography.monoSmall.copyWith(
-                      color: AppColors.platinum,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.0,
+                  Expanded(
+                    child: Text(
+                      'THIS WEEK · $completed OF $target DAYS',
+                      maxLines: 2,
+                      style: AppTypography.monoSmall.copyWith(
+                        color: AppColors.platinum,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.0,
+                      ),
                     ),
                   ),
-                  Text(
-                    local.formatMediumDate(selected),
-                    style: AppTypography.monoSmall.copyWith(
-                      color: isSelectedToday
-                          ? AppColors.primary
-                          : AppColors.warning,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Text(
+                      local.formatMediumDate(selected),
+                      maxLines: 2,
+                      textAlign: TextAlign.end,
+                      style: AppTypography.monoSmall.copyWith(
+                        color: isSelectedToday
+                            ? AppColors.primary
+                            : AppColors.warning,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ],
@@ -271,8 +275,8 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                                     : done
                                     ? AppColors.primary
                                     : (isDayToday
-                                        ? AppColors.primary
-                                        : AppColors.steel),
+                                          ? AppColors.primary
+                                          : AppColors.steel),
                               ),
                             ],
                           ),

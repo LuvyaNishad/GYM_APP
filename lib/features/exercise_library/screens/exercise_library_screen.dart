@@ -224,27 +224,29 @@ class _ExerciseLibraryScreenState extends ConsumerState<ExerciseLibraryScreen> {
                     )
                   : state.filteredExercises.isEmpty
                   ? _buildEmptyState(notifier)
-                  : ListView.builder(
-                      key: const PageStorageKey('exercise_library_list'),
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
-                      physics: const BouncingScrollPhysics(),
-                      padding: EdgeInsets.fromLTRB(
-                        0,
-                        6,
-                        0,
-                        AppShell.bottomPadding(context, extra: 24),
+                  : BackdropGroup(
+                      child: ListView.builder(
+                        key: const PageStorageKey('exercise_library_list'),
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        physics: const BouncingScrollPhysics(),
+                        padding: EdgeInsets.fromLTRB(
+                          0,
+                          6,
+                          0,
+                          AppShell.bottomPadding(context, extra: 24),
+                        ),
+                        itemCount: state.filteredExercises.length,
+                        itemBuilder: (context, index) {
+                          final exercise = state.filteredExercises[index];
+                          return ExerciseLibraryCard(
+                            key: ValueKey(exercise.id),
+                            exercise: exercise,
+                            onTap: () => _openDetailSheet(exercise),
+                            onQuickAdd: () => _openAddToRoutine(exercise),
+                          );
+                        },
                       ),
-                      itemCount: state.filteredExercises.length,
-                      itemBuilder: (context, index) {
-                        final exercise = state.filteredExercises[index];
-                        return ExerciseLibraryCard(
-                          key: ValueKey(exercise.id),
-                          exercise: exercise,
-                          onTap: () => _openDetailSheet(exercise),
-                          onQuickAdd: () => _openAddToRoutine(exercise),
-                        );
-                      },
                     ),
             ),
           ],

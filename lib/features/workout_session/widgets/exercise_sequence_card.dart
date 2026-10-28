@@ -135,26 +135,30 @@ class ExerciseSequenceCard extends ConsumerWidget {
               ),
             ),
             if (isExpanded) ...[
-              Row(
-                children: [
-                  const SizedBox(width: 12),
-                  TextButton.icon(
-                    onPressed: () => ExerciseFormGuideSheet.show(
-                      context: context,
-                      ref: ref,
-                      exercise: exercise,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    TextButton.icon(
+                      onPressed: () => ExerciseFormGuideSheet.show(
+                        context: context,
+                        ref: ref,
+                        exercise: exercise,
+                      ),
+                      icon: const Icon(Icons.info_outline_rounded, size: 18),
+                      label: const Text('Form & records'),
                     ),
-                    icon: const Icon(Icons.info_outline_rounded, size: 18),
-                    label: const Text('Form & records'),
-                  ),
-                  const Spacer(),
-                  TextButton.icon(
-                    onPressed: () => _tools(context, ref),
-                    icon: const Icon(Icons.tune_rounded, size: 18),
-                    label: const Text('Tools'),
-                  ),
-                  const SizedBox(width: 12),
-                ],
+                    TextButton.icon(
+                      onPressed: () => _tools(context, ref),
+                      icon: const Icon(Icons.tune_rounded, size: 18),
+                      label: const Text('Tools'),
+                    ),
+                  ],
+                ),
               ),
               ExerciseSetTable(exercise: exercise),
             ],

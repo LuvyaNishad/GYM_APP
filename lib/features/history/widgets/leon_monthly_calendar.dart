@@ -333,13 +333,12 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
     final monthName = _monthNames[_displayedMonth.month - 1];
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // Previous Button
         IconButton(
           visualDensity: VisualDensity.compact,
           padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
           icon: const Icon(
             Icons.chevron_left_rounded,
             color: AppColors.pureWhite,
@@ -349,82 +348,95 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
         ),
 
         // Quick Nav: Month | Year
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _navView = (_navView == _CalendarNavView.months)
-                      ? _CalendarNavView.days
-                      : _CalendarNavView.months;
-                });
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _navView == _CalendarNavView.months
-                      ? AppColors.amber.withValues(alpha: 0.15)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  monthName.toUpperCase(),
-                  style: TextStyle(
-                    fontFamily: AppTypography.fontBody,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.0,
-                    color: _navView == _CalendarNavView.months
-                        ? AppColors.amber
-                        : AppColors.pureWhite,
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _navView = (_navView == _CalendarNavView.months)
+                          ? _CalendarNavView.days
+                          : _CalendarNavView.months;
+                    });
+                  },
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: 44),
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      color: _navView == _CalendarNavView.months
+                          ? AppColors.amber.withValues(alpha: 0.15)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      monthName.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.fade,
+                      style: TextStyle(
+                        fontFamily: AppTypography.fontBody,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.0,
+                        color: _navView == _CalendarNavView.months
+                            ? AppColors.amber
+                            : AppColors.pureWhite,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-            Text(
-              '  |  ',
-              style: TextStyle(fontSize: 12, color: AppColors.textMuted),
-            ),
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _navView = (_navView == _CalendarNavView.years)
-                      ? _CalendarNavView.days
-                      : _CalendarNavView.years;
-                  _yearAnchor = _displayedMonth.year;
-                });
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _navView == _CalendarNavView.years
-                      ? AppColors.amber.withValues(alpha: 0.15)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  '${_displayedMonth.year}',
-                  style: TextStyle(
-                    fontFamily: AppTypography.fontMono,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.6,
-                    color: _navView == _CalendarNavView.years
-                        ? AppColors.amber
-                        : AppColors.pureWhite,
+              Text(
+                '|',
+                style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+              ),
+              SizedBox(
+                width: 72,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _navView = (_navView == _CalendarNavView.years)
+                          ? _CalendarNavView.days
+                          : _CalendarNavView.years;
+                      _yearAnchor = _displayedMonth.year;
+                    });
+                  },
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: 44),
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      color: _navView == _CalendarNavView.years
+                          ? AppColors.amber.withValues(alpha: 0.15)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '${_displayedMonth.year}',
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontFamily: AppTypography.fontMono,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.6,
+                        color: _navView == _CalendarNavView.years
+                            ? AppColors.amber
+                            : AppColors.pureWhite,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
 
         // Next Button
         IconButton(
           visualDensity: VisualDensity.compact,
           padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
           icon: const Icon(
             Icons.chevron_right_rounded,
             color: AppColors.pureWhite,
@@ -807,8 +819,11 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
           width: 0.8,
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      child: Wrap(
+        alignment: WrapAlignment.spaceEvenly,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12,
+        runSpacing: 8,
         children: [
           _buildLegendItem(color: AppColors.platinum, label: 'WORKOUT'),
           _buildLegendItem(color: AppColors.pureWhite, label: 'TODAY'),

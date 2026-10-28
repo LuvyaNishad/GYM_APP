@@ -19,9 +19,9 @@ class HistorySegmentBar extends StatelessWidget {
       expandedInsets: EdgeInsets.zero,
       showSelectedIcon: false,
       segments: const [
-        ButtonSegment(value: 0, label: Text('SESSIONS')),
-        ButtonSegment(value: 1, label: Text('OVERLOAD')),
-        ButtonSegment(value: 2, label: Text('RADAR')),
+        ButtonSegment(value: 0, label: _SegmentLabel('SESSIONS')),
+        ButtonSegment(value: 1, label: _SegmentLabel('OVERLOAD')),
+        ButtonSegment(value: 2, label: _SegmentLabel('RADAR')),
       ],
       selected: {selectedIndex},
       onSelectionChanged: (selection) {
@@ -31,7 +31,7 @@ class HistorySegmentBar extends StatelessWidget {
       style: ButtonStyle(
         minimumSize: const WidgetStatePropertyAll(Size(44, 48)),
         padding: const WidgetStatePropertyAll(
-          EdgeInsets.symmetric(horizontal: 8),
+          EdgeInsets.symmetric(horizontal: 4),
         ),
         side: const WidgetStatePropertyAll(BorderSide.none),
         textStyle: const WidgetStatePropertyAll(AppTypography.labelSmall),
@@ -46,6 +46,20 @@ class HistorySegmentBar extends StatelessWidget {
               : AppColors.charcoal,
         ),
       ),
+    );
+  }
+}
+
+class _SegmentLabel extends StatelessWidget {
+  const _SegmentLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 72,
+      child: FittedBox(fit: BoxFit.scaleDown, child: Text(label)),
     );
   }
 }
