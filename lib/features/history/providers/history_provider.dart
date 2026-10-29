@@ -377,36 +377,9 @@ final muscleBalanceProvider = Provider<MuscleBalanceModel>((ref) {
     }
   }
 
-  // Detect lagging muscles if volume exists
+  // Cross-muscle load ratios cannot identify missed routine targets. Adaptive
+  // session coverage supplies recommendations instead of this aggregate view.
   final laggingAdvisories = <LaggingMuscleAdvisory>[];
-  if (quads > 0 && (hamstrings / quads) < 0.6) {
-    laggingAdvisories.add(
-      LaggingMuscleAdvisory(
-        muscleName: 'Hamstrings',
-        relativeRatio: double.parse((hamstrings / quads).toStringAsFixed(2)),
-        recommendedExercises: const [
-          'Romanian Deadlift (RDL)',
-          'Seated Leg Curls (Lengthened Bias)',
-        ],
-        rationale: 'Posterior chain volume is below anterior quads.',
-      ),
-    );
-  }
-
-  if (back > 0 && (shoulders / back) < 0.55) {
-    laggingAdvisories.add(
-      LaggingMuscleAdvisory(
-        muscleName: 'Lateral Deltoids',
-        relativeRatio: double.parse((shoulders / back).toStringAsFixed(2)),
-        recommendedExercises: const [
-          'Cable Lateral Raises (B-Stance)',
-          'Dumbbell Y-Raises',
-        ],
-        rationale:
-            'Deltoid stimulus volume is below weekly hyper-volume threshold.',
-      ),
-    );
-  }
 
   // Recovery states computed from real workouts
   final now = DateTime.now();

@@ -6,6 +6,7 @@ import '../../../models/workout_model.dart';
 import '../../../services/hive_service.dart';
 import '../../../services/workout_service.dart';
 import '../../history/providers/history_provider.dart';
+import '../../history/providers/training_coverage_provider.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import '../models/active_session_state.dart';
 import '../models/warmup_plan.dart';
@@ -131,6 +132,29 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     );
     final now = DateTime.now();
 
+    // Capture only an exact routine launch, never guess a plan for freestyle.
+    Map<String, dynamic>? plan;
+    if (initialExercises?.isNotEmpty ?? false) {
+      final index = ref.read(trainingCoverageIndexProvider);
+      final title = splitName.toLowerCase().trim();
+      final routineDay = index.split.workouts
+          .where(
+            (day) =>
+                title == day.name.toLowerCase().trim() ||
+                title == day.id.toLowerCase() ||
+                title ==
+                    '${index.split.shortName} ● ${day.name}'.toLowerCase() ||
+                title ==
+                    '${index.split.shortName} · ${day.name}'.toLowerCase() ||
+                title ==
+                    '${index.split.shortName} • ${day.name}'.toLowerCase() ||
+                title ==
+                    '${index.split.shortName} // ${day.name}'.toLowerCase(),
+          )
+          .firstOrNull;
+      plan = routineDay == null ? null : index.planFor(routineDay).toJson();
+    }
+
     state = ActiveSessionState(
       workoutId: 'wkt_${now.microsecondsSinceEpoch}',
       splitName: splitName,
@@ -140,6 +164,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       isActive: true,
       isPaused: false,
       exercises: exercises,
+      trainingPlan: plan,
       expandedExerciseId: exercises.isNotEmpty
           ? exercises.first.exerciseId
           : null,
@@ -917,6 +942,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       id: state.workoutId,
       userId: userId,
       name: state.splitName,
+      trainingPlan: state.trainingPlan,
       date: state.startTime,
       durationSeconds: state.elapsedSeconds,
       totalVolumeKg: state.totalVolumeKg,

@@ -21,6 +21,7 @@ _WorkoutModel _$WorkoutModelFromJson(Map<String, dynamic> json) =>
       notes: json['notes'] as String?,
       totalVolumeKg: (json['total_volume_kg'] as num?)?.toDouble(),
       averageRpe: (json['average_rpe'] as num?)?.toDouble(),
+      trainingPlan: json['training_plan'] as Map<String, dynamic>?,
     );
 
 Map<String, dynamic> _$WorkoutModelToJson(_WorkoutModel instance) =>
@@ -34,6 +35,7 @@ Map<String, dynamic> _$WorkoutModelToJson(_WorkoutModel instance) =>
       'notes': instance.notes,
       'total_volume_kg': instance.totalVolumeKg,
       'average_rpe': instance.averageRpe,
+      'training_plan': instance.trainingPlan,
     };
 
 _WorkoutExercise _$WorkoutExerciseFromJson(Map<String, dynamic> json) =>

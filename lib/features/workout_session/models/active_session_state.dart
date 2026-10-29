@@ -426,6 +426,7 @@ class ActiveSessionState {
     this.expandedExerciseId,
     this.lastResumedAt,
     this.persistenceError,
+    this.trainingPlan,
   });
 
   final String workoutId;
@@ -438,6 +439,7 @@ class ActiveSessionState {
   final String? expandedExerciseId;
   final DateTime? lastResumedAt;
   final String? persistenceError;
+  final Map<String, dynamic>? trainingPlan;
 
   /// Continue the selected exercise, then scan forward and wrap for skipped sets.
   WorkoutSetTarget? nextPendingSet({String? preferredExerciseId}) {
@@ -490,10 +492,12 @@ class ActiveSessionState {
     bool clearLastResumedAt = false,
     String? persistenceError,
     bool clearPersistenceError = false,
+    Map<String, dynamic>? trainingPlan,
   }) {
     return ActiveSessionState(
       workoutId: workoutId ?? this.workoutId,
       splitName: splitName ?? this.splitName,
+      trainingPlan: trainingPlan ?? this.trainingPlan,
       startTime: startTime ?? this.startTime,
       elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
       isActive: isActive ?? this.isActive,
@@ -514,6 +518,7 @@ class ActiveSessionState {
   Map<String, dynamic> toJson() => {
     'workoutId': workoutId,
     'splitName': splitName,
+    'trainingPlan': trainingPlan,
     'startTime': startTime.toIso8601String(),
     'elapsedSeconds': elapsedSeconds,
     'isActive': isActive,
@@ -527,6 +532,9 @@ class ActiveSessionState {
       ActiveSessionState(
         workoutId: json['workoutId'] as String? ?? '',
         splitName: json['splitName'] as String? ?? "TODAY'S WORKOUT",
+        trainingPlan: json['trainingPlan'] is Map
+            ? Map<String, dynamic>.from(json['trainingPlan'] as Map)
+            : null,
         startTime:
             DateTime.tryParse(json['startTime'] as String? ?? '') ??
             DateTime.now(),

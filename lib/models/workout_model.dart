@@ -23,6 +23,9 @@ abstract class WorkoutModel with _$WorkoutModel {
     String? notes,
     double? totalVolumeKg,
     double? averageRpe,
+
+    /// The routine and muscle targets captured when this session started.
+    Map<String, dynamic>? trainingPlan,
   }) = _WorkoutModel;
 
   factory WorkoutModel.fromJson(Map<String, dynamic> json) =>

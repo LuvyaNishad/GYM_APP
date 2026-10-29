@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$WorkoutModel {
 
- String get id; String get userId; String get name; DateTime get date; List<WorkoutExercise> get exercises; int get durationSeconds; String? get notes; double? get totalVolumeKg; double? get averageRpe;
+ String get id; String get userId; String get name; DateTime get date; List<WorkoutExercise> get exercises; int get durationSeconds; String? get notes; double? get totalVolumeKg; double? get averageRpe;/// The routine and muscle targets captured when this session started.
+ Map<String, dynamic>? get trainingPlan;
 /// Create a copy of WorkoutModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $WorkoutModelCopyWith<WorkoutModel> get copyWith => _$WorkoutModelCopyWithImpl<W
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkoutModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.date, date) || other.date == date)&&const DeepCollectionEquality().equals(other.exercises, exercises)&&(identical(other.durationSeconds, durationSeconds) || other.durationSeconds == durationSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.totalVolumeKg, totalVolumeKg) || other.totalVolumeKg == totalVolumeKg)&&(identical(other.averageRpe, averageRpe) || other.averageRpe == averageRpe));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkoutModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.date, date) || other.date == date)&&const DeepCollectionEquality().equals(other.exercises, exercises)&&(identical(other.durationSeconds, durationSeconds) || other.durationSeconds == durationSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.totalVolumeKg, totalVolumeKg) || other.totalVolumeKg == totalVolumeKg)&&(identical(other.averageRpe, averageRpe) || other.averageRpe == averageRpe)&&const DeepCollectionEquality().equals(other.trainingPlan, trainingPlan));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,name,date,const DeepCollectionEquality().hash(exercises),durationSeconds,notes,totalVolumeKg,averageRpe);
+int get hashCode => Object.hash(runtimeType,id,userId,name,date,const DeepCollectionEquality().hash(exercises),durationSeconds,notes,totalVolumeKg,averageRpe,const DeepCollectionEquality().hash(trainingPlan));
 
 @override
 String toString() {
-  return 'WorkoutModel(id: $id, userId: $userId, name: $name, date: $date, exercises: $exercises, durationSeconds: $durationSeconds, notes: $notes, totalVolumeKg: $totalVolumeKg, averageRpe: $averageRpe)';
+  return 'WorkoutModel(id: $id, userId: $userId, name: $name, date: $date, exercises: $exercises, durationSeconds: $durationSeconds, notes: $notes, totalVolumeKg: $totalVolumeKg, averageRpe: $averageRpe, trainingPlan: $trainingPlan)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $WorkoutModelCopyWith<$Res>  {
   factory $WorkoutModelCopyWith(WorkoutModel value, $Res Function(WorkoutModel) _then) = _$WorkoutModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String name, DateTime date, List<WorkoutExercise> exercises, int durationSeconds, String? notes, double? totalVolumeKg, double? averageRpe
+ String id, String userId, String name, DateTime date, List<WorkoutExercise> exercises, int durationSeconds, String? notes, double? totalVolumeKg, double? averageRpe, Map<String, dynamic>? trainingPlan
 });
 
 
@@ -65,7 +66,7 @@ class _$WorkoutModelCopyWithImpl<$Res>
 
 /// Create a copy of WorkoutModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? date = null,Object? exercises = null,Object? durationSeconds = null,Object? notes = freezed,Object? totalVolumeKg = freezed,Object? averageRpe = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? date = null,Object? exercises = null,Object? durationSeconds = null,Object? notes = freezed,Object? totalVolumeKg = freezed,Object? averageRpe = freezed,Object? trainingPlan = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -76,7 +77,8 @@ as List<WorkoutExercise>,durationSeconds: null == durationSeconds ? _self.durati
 as int,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,totalVolumeKg: freezed == totalVolumeKg ? _self.totalVolumeKg : totalVolumeKg // ignore: cast_nullable_to_non_nullable
 as double?,averageRpe: freezed == averageRpe ? _self.averageRpe : averageRpe // ignore: cast_nullable_to_non_nullable
-as double?,
+as double?,trainingPlan: freezed == trainingPlan ? _self.trainingPlan : trainingPlan // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,
   ));
 }
 
@@ -161,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  DateTime date,  List<WorkoutExercise> exercises,  int durationSeconds,  String? notes,  double? totalVolumeKg,  double? averageRpe)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  DateTime date,  List<WorkoutExercise> exercises,  int durationSeconds,  String? notes,  double? totalVolumeKg,  double? averageRpe,  Map<String, dynamic>? trainingPlan)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WorkoutModel() when $default != null:
-return $default(_that.id,_that.userId,_that.name,_that.date,_that.exercises,_that.durationSeconds,_that.notes,_that.totalVolumeKg,_that.averageRpe);case _:
+return $default(_that.id,_that.userId,_that.name,_that.date,_that.exercises,_that.durationSeconds,_that.notes,_that.totalVolumeKg,_that.averageRpe,_that.trainingPlan);case _:
   return orElse();
 
 }
@@ -182,10 +184,10 @@ return $default(_that.id,_that.userId,_that.name,_that.date,_that.exercises,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  DateTime date,  List<WorkoutExercise> exercises,  int durationSeconds,  String? notes,  double? totalVolumeKg,  double? averageRpe)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  DateTime date,  List<WorkoutExercise> exercises,  int durationSeconds,  String? notes,  double? totalVolumeKg,  double? averageRpe,  Map<String, dynamic>? trainingPlan)  $default,) {final _that = this;
 switch (_that) {
 case _WorkoutModel():
-return $default(_that.id,_that.userId,_that.name,_that.date,_that.exercises,_that.durationSeconds,_that.notes,_that.totalVolumeKg,_that.averageRpe);case _:
+return $default(_that.id,_that.userId,_that.name,_that.date,_that.exercises,_that.durationSeconds,_that.notes,_that.totalVolumeKg,_that.averageRpe,_that.trainingPlan);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +204,10 @@ return $default(_that.id,_that.userId,_that.name,_that.date,_that.exercises,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String name,  DateTime date,  List<WorkoutExercise> exercises,  int durationSeconds,  String? notes,  double? totalVolumeKg,  double? averageRpe)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String name,  DateTime date,  List<WorkoutExercise> exercises,  int durationSeconds,  String? notes,  double? totalVolumeKg,  double? averageRpe,  Map<String, dynamic>? trainingPlan)?  $default,) {final _that = this;
 switch (_that) {
 case _WorkoutModel() when $default != null:
-return $default(_that.id,_that.userId,_that.name,_that.date,_that.exercises,_that.durationSeconds,_that.notes,_that.totalVolumeKg,_that.averageRpe);case _:
+return $default(_that.id,_that.userId,_that.name,_that.date,_that.exercises,_that.durationSeconds,_that.notes,_that.totalVolumeKg,_that.averageRpe,_that.trainingPlan);case _:
   return null;
 
 }
@@ -217,7 +219,7 @@ return $default(_that.id,_that.userId,_that.name,_that.date,_that.exercises,_tha
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class _WorkoutModel implements WorkoutModel {
-  const _WorkoutModel({required this.id, required this.userId, required this.name, required this.date, final  List<WorkoutExercise> exercises = const [], this.durationSeconds = 0, this.notes, this.totalVolumeKg, this.averageRpe}): _exercises = exercises;
+  const _WorkoutModel({required this.id, required this.userId, required this.name, required this.date, final  List<WorkoutExercise> exercises = const [], this.durationSeconds = 0, this.notes, this.totalVolumeKg, this.averageRpe, final  Map<String, dynamic>? trainingPlan}): _exercises = exercises,_trainingPlan = trainingPlan;
   factory _WorkoutModel.fromJson(Map<String, dynamic> json) => _$WorkoutModelFromJson(json);
 
 @override final  String id;
@@ -235,6 +237,17 @@ class _WorkoutModel implements WorkoutModel {
 @override final  String? notes;
 @override final  double? totalVolumeKg;
 @override final  double? averageRpe;
+/// The routine and muscle targets captured when this session started.
+ final  Map<String, dynamic>? _trainingPlan;
+/// The routine and muscle targets captured when this session started.
+@override Map<String, dynamic>? get trainingPlan {
+  final value = _trainingPlan;
+  if (value == null) return null;
+  if (_trainingPlan is EqualUnmodifiableMapView) return _trainingPlan;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(value);
+}
+
 
 /// Create a copy of WorkoutModel
 /// with the given fields replaced by the non-null parameter values.
@@ -249,16 +262,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkoutModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.date, date) || other.date == date)&&const DeepCollectionEquality().equals(other._exercises, _exercises)&&(identical(other.durationSeconds, durationSeconds) || other.durationSeconds == durationSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.totalVolumeKg, totalVolumeKg) || other.totalVolumeKg == totalVolumeKg)&&(identical(other.averageRpe, averageRpe) || other.averageRpe == averageRpe));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkoutModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.date, date) || other.date == date)&&const DeepCollectionEquality().equals(other._exercises, _exercises)&&(identical(other.durationSeconds, durationSeconds) || other.durationSeconds == durationSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.totalVolumeKg, totalVolumeKg) || other.totalVolumeKg == totalVolumeKg)&&(identical(other.averageRpe, averageRpe) || other.averageRpe == averageRpe)&&const DeepCollectionEquality().equals(other._trainingPlan, _trainingPlan));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,name,date,const DeepCollectionEquality().hash(_exercises),durationSeconds,notes,totalVolumeKg,averageRpe);
+int get hashCode => Object.hash(runtimeType,id,userId,name,date,const DeepCollectionEquality().hash(_exercises),durationSeconds,notes,totalVolumeKg,averageRpe,const DeepCollectionEquality().hash(_trainingPlan));
 
 @override
 String toString() {
-  return 'WorkoutModel(id: $id, userId: $userId, name: $name, date: $date, exercises: $exercises, durationSeconds: $durationSeconds, notes: $notes, totalVolumeKg: $totalVolumeKg, averageRpe: $averageRpe)';
+  return 'WorkoutModel(id: $id, userId: $userId, name: $name, date: $date, exercises: $exercises, durationSeconds: $durationSeconds, notes: $notes, totalVolumeKg: $totalVolumeKg, averageRpe: $averageRpe, trainingPlan: $trainingPlan)';
 }
 
 
@@ -269,7 +282,7 @@ abstract mixin class _$WorkoutModelCopyWith<$Res> implements $WorkoutModelCopyWi
   factory _$WorkoutModelCopyWith(_WorkoutModel value, $Res Function(_WorkoutModel) _then) = __$WorkoutModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String name, DateTime date, List<WorkoutExercise> exercises, int durationSeconds, String? notes, double? totalVolumeKg, double? averageRpe
+ String id, String userId, String name, DateTime date, List<WorkoutExercise> exercises, int durationSeconds, String? notes, double? totalVolumeKg, double? averageRpe, Map<String, dynamic>? trainingPlan
 });
 
 
@@ -286,7 +299,7 @@ class __$WorkoutModelCopyWithImpl<$Res>
 
 /// Create a copy of WorkoutModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? date = null,Object? exercises = null,Object? durationSeconds = null,Object? notes = freezed,Object? totalVolumeKg = freezed,Object? averageRpe = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? date = null,Object? exercises = null,Object? durationSeconds = null,Object? notes = freezed,Object? totalVolumeKg = freezed,Object? averageRpe = freezed,Object? trainingPlan = freezed,}) {
   return _then(_WorkoutModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -297,7 +310,8 @@ as List<WorkoutExercise>,durationSeconds: null == durationSeconds ? _self.durati
 as int,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,totalVolumeKg: freezed == totalVolumeKg ? _self.totalVolumeKg : totalVolumeKg // ignore: cast_nullable_to_non_nullable
 as double?,averageRpe: freezed == averageRpe ? _self.averageRpe : averageRpe // ignore: cast_nullable_to_non_nullable
-as double?,
+as double?,trainingPlan: freezed == trainingPlan ? _self._trainingPlan : trainingPlan // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,
   ));
 }
 
