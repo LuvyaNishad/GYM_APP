@@ -1,12 +1,9 @@
-/// Native hardware step tracker service for LEON.
+/// Periodic daily step import, with a sensor fallback on unsupported phones.
 ///
-/// Binds directly to the device's hardware step sensor (TYPE_STEP_COUNTER)
-/// via the Flutter pedometer plugin and native platform channels. Queries
-/// the device's built-in step provider (e.g. OPlus HealthService, Samsung Health,
-/// or Android Health Connect) to synchronize accumulated daily steps and historical
-/// logs without hardcoding. Updates the global [dailyTelemetryProvider] in real time
-/// as the user walks with their phone, persisting step count, 24-hour hourly distribution,
-/// daily history, and all-time records via Hive.
+/// Imports the same daily totals shown by Realme/OPlus Shelf every 30 seconds
+/// in the foreground and on resume. Saves a single atomic snapshot for offline
+/// charts. Provider totals replace previous values; sensor counts are never
+/// added to them. Unsupported phones retain the existing local sensor tracker.
 library;
 
 import 'dart:async';
@@ -16,17 +13,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pedometer/pedometer.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import '../core/constants/app_constants.dart';
 import '../features/dashboard/models/daily_telemetry_model.dart';
 import 'hive_service.dart';
+import 'daily_steps_platform.dart';
 
 /// Step tracking connection and permission status.
 enum StepTrackingStatus {
   active,
   permissionDenied,
   sensorUnavailable,
+  syncFailed,
   uninitialized,
 }
 
@@ -42,8 +40,26 @@ class StepTrackingStatusNotifier extends Notifier<StepTrackingStatus> {
 /// Provider exposing the current step tracking permission and sensor status.
 final stepTrackingStatusProvider =
     NotifierProvider<StepTrackingStatusNotifier, StepTrackingStatus>(
-  StepTrackingStatusNotifier.new,
-);
+      StepTrackingStatusNotifier.new,
+    );
+
+class StepSyncInfo {
+  const StepSyncInfo({this.source, this.updatedAt});
+  final String? source;
+  final DateTime? updatedAt;
+}
+
+class StepSyncInfoNotifier extends Notifier<StepSyncInfo> {
+  @override
+  StepSyncInfo build() => const StepSyncInfo();
+  void update(String source, DateTime? updatedAt) =>
+      state = StepSyncInfo(source: source, updatedAt: updatedAt);
+}
+
+final stepSyncInfoProvider =
+    NotifierProvider<StepSyncInfoNotifier, StepSyncInfo>(
+      StepSyncInfoNotifier.new,
+    );
 
 /// Provider exposing the active [PedometerService].
 final pedometerServiceProvider = Provider<PedometerService>((ref) {
@@ -53,11 +69,25 @@ final pedometerServiceProvider = Provider<PedometerService>((ref) {
   return service;
 });
 
-class PedometerService {
-  PedometerService(this._ref);
+class PedometerService with WidgetsBindingObserver {
+  PedometerService(this._ref, {DateTime Function()? now})
+    : _now = now ?? DateTime.now;
 
   final Ref _ref;
-  static const MethodChannel _nativeChannel = MethodChannel('com.example.leon/pedometer');
+  final DateTime Function() _now;
+  late final DailyStepsPlatform _platform = _ref.read(
+    dailyStepsPlatformProvider,
+  );
+  static const refreshInterval = Duration(seconds: 30);
+  Timer? _refreshTimer;
+  Future<void>? _refreshInFlight;
+  bool _disposed = false;
+  bool _initialized = false;
+  bool _usingPhoneHistory = false;
+  bool _foreground = true;
+  static const MethodChannel _nativeChannel = MethodChannel(
+    'com.example.leon/pedometer',
+  );
 
   StreamSubscription<StepCount>? _stepCountSubscription;
   StreamSubscription<PedestrianStatus>? _pedestrianStatusSubscription;
@@ -79,72 +109,99 @@ class PedometerService {
   String _recordDate = '--';
 
   String _getTodayDateStr() {
-    final now = DateTime.now();
+    final now = _now();
     return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 
   /// Initializes hardware step sensor listener, loads persisted state,
   /// and syncs with the device's native pedometer provider.
   Future<void> initialize() async {
+    if (_disposed || _initialized) return;
+    _initialized = true;
     _loadStateFromHive();
     _checkDateRollover();
+    WidgetsBinding.instance.addObserver(this);
+    _foreground =
+        WidgetsBinding.instance.lifecycleState == null ||
+        WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+    await _refresh(requestPermission: true);
+    _startRefreshTimer();
+  }
 
-    final isTest = WidgetsBinding.instance.runtimeType
-        .toString()
-        .contains('TestWidgetsFlutterBinding');
-    if (isTest) {
-      _isAvailable = true;
-      _ref.read(stepTrackingStatusProvider.notifier).setStatus(StepTrackingStatus.active);
-      return;
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _foreground = state == AppLifecycleState.resumed;
+    _refreshTimer?.cancel();
+    if (_foreground && !_disposed) {
+      unawaited(_refresh());
+      _startRefreshTimer();
     }
+  }
 
-    // Query native built-in step provider and immediate sensor reading
-    await _syncWithNativePedometer();
+  void _startRefreshTimer() {
+    _refreshTimer?.cancel();
+    if (_disposed || !_foreground) return;
+    _refreshTimer = Timer.periodic(
+      refreshInterval,
+      (_) => unawaited(_refresh()),
+    );
+  }
 
-    // Check / request runtime activity recognition permission on Android 10+
+  Future<void> _refresh({bool requestPermission = false}) {
+    if (_disposed) return Future.value();
+    return _refreshInFlight ??= _performRefresh(requestPermission).whenComplete(
+      () {
+        _refreshInFlight = null;
+      },
+    );
+  }
+
+  Future<void> _performRefresh(bool requestPermission) async {
+    _checkDateRollover();
     try {
-      final status = await Permission.activityRecognition.status;
-      if (status.isGranted) {
-        _ref.read(stepTrackingStatusProvider.notifier).setStatus(StepTrackingStatus.active);
-        _startListening();
-      } else {
-        final requested = await Permission.activityRecognition.request();
-        if (requested.isGranted) {
-          _ref.read(stepTrackingStatusProvider.notifier).setStatus(StepTrackingStatus.active);
-          _startListening();
-        } else {
-          _ref.read(stepTrackingStatusProvider.notifier).setStatus(StepTrackingStatus.permissionDenied);
-          debugPrint('[PedometerService] Activity recognition permission not granted: $requested');
-        }
+      var allowed = await _platform.hasMotionPermission();
+      if (!allowed && requestPermission && !_disposed) {
+        allowed = await _platform.requestMotionPermission();
+      }
+      if (_disposed) return;
+      if (!allowed) {
+        _ref
+            .read(stepTrackingStatusProvider.notifier)
+            .setStatus(StepTrackingStatus.permissionDenied);
+        return;
+      }
+      await _syncWithNativePedometer();
+    } on PlatformException catch (e) {
+      if (!_disposed) {
+        _ref
+            .read(stepTrackingStatusProvider.notifier)
+            .setStatus(
+              e.code == 'permission_denied'
+                  ? StepTrackingStatus.permissionDenied
+                  : StepTrackingStatus.syncFailed,
+            );
       }
     } catch (e) {
-      debugPrint('[PedometerService] Error requesting permission: $e');
-      _startListening();
+      if (!_disposed) {
+        _ref
+            .read(stepTrackingStatusProvider.notifier)
+            .setStatus(StepTrackingStatus.syncFailed);
+      }
+      debugPrint('[PedometerService] Daily step refresh failed: $e');
     }
   }
 
   /// Request runtime permission explicitly (e.g. from UI button or tap)
   Future<bool> requestPermission() async {
-    try {
-      final status = await Permission.activityRecognition.request();
-      if (status.isGranted) {
-        _ref.read(stepTrackingStatusProvider.notifier).setStatus(StepTrackingStatus.active);
-        await _syncWithNativePedometer();
-        _startListening();
-        return true;
-      } else {
-        _ref.read(stepTrackingStatusProvider.notifier).setStatus(StepTrackingStatus.permissionDenied);
-      }
-    } catch (e) {
-      debugPrint('[PedometerService] requestPermission error: $e');
-    }
-    return false;
+    await _refresh(requestPermission: true);
+    return !_disposed &&
+        _ref.read(stepTrackingStatusProvider) == StepTrackingStatus.active;
   }
 
   /// Synchronizes today's step count and past history with the device's native
   /// built-in step provider and queries immediate hardware sensor counter.
   Future<void> syncWithInbuiltPedometer() async {
-    await _syncWithNativePedometer();
+    await _refresh();
   }
 
   /// Manually align today's steps with an external or user-entered value.
@@ -178,9 +235,67 @@ class PedometerService {
   }
 
   Future<void> _syncWithNativePedometer() async {
+    final snapshot = await _platform.readDailySteps();
+    if (_disposed) return;
+    if (snapshot != null) {
+      final today = _getTodayDateStr();
+      if (snapshot.date != today) {
+        throw const FormatException(
+          'Step snapshot crossed midnight; retry required',
+        );
+      }
+      final days = {
+        for (final entry in _historicalDays.entries)
+          if (DailyStepsSnapshot.validDate(entry.key) &&
+              entry.key.compareTo(today) <= 0 &&
+              entry.value >= 0)
+            entry.key: entry.value,
+        ...snapshot.days,
+      };
+      final saved = DailyStepsSnapshot(
+        date: today,
+        days: days,
+        source: snapshot.source,
+        updatedAt: _now(),
+      );
+      // A single checked write prevents a partially saved date/count/history.
+      await _ref
+          .read(hiveServiceProvider)
+          .putSettingChecked(
+            AppConstants.settingStepDailySnapshot,
+            jsonEncode(saved.toMap()),
+          );
+      if (_disposed) return;
+      _usingPhoneHistory = true;
+      _stepCountSubscription?.cancel();
+      _pedestrianStatusSubscription?.cancel();
+      _stepCountSubscription = null;
+      _pedestrianStatusSubscription = null;
+      _currentTrackingDate = today;
+      _todayCount = days[today] ?? 0;
+      _hourlySteps = [];
+      _historicalDays = {...days}..remove(today);
+      _updateRecord(days);
+      _isAvailable = true;
+      _ref
+          .read(stepSyncInfoProvider.notifier)
+          .update(saved.source, saved.updatedAt);
+      _ref
+          .read(stepTrackingStatusProvider.notifier)
+          .setStatus(StepTrackingStatus.active);
+      _syncTelemetry();
+      return;
+    }
+    // Do not substitute a different counter if a previously connected provider
+    // becomes unavailable. Preserve the last imported daily totals for retry.
+    if (_usingPhoneHistory) {
+      throw StateError('Phone daily step provider is unavailable');
+    }
     try {
       // Query immediate hardware sensor counter to establish real physical baseline
-      final hwReading = await _nativeChannel.invokeMethod<int>('getImmediateHardwareSteps');
+      final hwReading = await _nativeChannel.invokeMethod<int>(
+        'getImmediateHardwareSteps',
+      );
       if (hwReading != null && hwReading > 0) {
         _lastHwReading = hwReading;
         // Align bootBase so: hwReading - _bootBase + _rebootOffset == _todayCount
@@ -188,15 +303,27 @@ class PedometerService {
       }
 
       await _persistState();
+      if (_disposed) return;
+      _ref
+          .read(stepTrackingStatusProvider.notifier)
+          .setStatus(StepTrackingStatus.active);
+      _ref
+          .read(stepSyncInfoProvider.notifier)
+          .update('Phone step sensor', null);
+      _startListening();
       _syncTelemetry();
     } catch (e) {
-      debugPrint('[PedometerService] Error syncing with hardware pedometer: $e');
+      debugPrint(
+        '[PedometerService] Error syncing with hardware pedometer: $e',
+      );
     }
   }
 
   /// Wipes all cached steps and historical days to start 100% clean.
   Future<void> clearAllStepData() async {
     final hive = _ref.read(hiveServiceProvider);
+    await hive.deleteSettingChecked(AppConstants.settingStepDailySnapshot);
+    _usingPhoneHistory = false;
     _todayCount = 0;
     _hourlySteps = List<int>.filled(24, 0);
     _historicalDays = {};
@@ -207,7 +334,10 @@ class PedometerService {
       _bootBase = _lastHwReading;
     }
     await hive.putSetting(AppConstants.settingStepTodayCount, 0);
-    await hive.putSetting(AppConstants.settingStepHourlyDistribution, jsonEncode(_hourlySteps));
+    await hive.putSetting(
+      AppConstants.settingStepHourlyDistribution,
+      jsonEncode(_hourlySteps),
+    );
     await hive.putSetting(AppConstants.settingStepHistory, jsonEncode({}));
     await hive.putSetting(AppConstants.settingStepRecordSteps, 0);
     await hive.putSetting(AppConstants.settingStepRecordDate, '--');
@@ -218,19 +348,59 @@ class PedometerService {
   void _loadStateFromHive() {
     final hive = _ref.read(hiveServiceProvider);
     final todayStr = _getTodayDateStr();
+    final cached = hive.getSetting<String>(
+      AppConstants.settingStepDailySnapshot,
+    );
+    if (cached != null) {
+      try {
+        final snapshot = DailyStepsSnapshot.fromMap(jsonDecode(cached) as Map);
+        _usingPhoneHistory = true;
+        _currentTrackingDate = todayStr;
+        _todayCount = snapshot.days[todayStr] ?? 0;
+        _hourlySteps = [];
+        _historicalDays = {...snapshot.days}..remove(todayStr);
+        _updateRecord(snapshot.days);
+        _ref
+            .read(stepSyncInfoProvider.notifier)
+            .update(snapshot.source, snapshot.updatedAt);
+        _syncTelemetry();
+        return;
+      } catch (e) {
+        debugPrint('[PedometerService] Invalid step cache: $e');
+      }
+    }
     final savedDate = hive.getSetting<String>(AppConstants.settingStepDate);
 
     _bootBase = hive.getSetting<int>(AppConstants.settingStepBootBase);
-    _rebootOffset = hive.getSetting<int>(AppConstants.settingStepRebootOffset, fallback: 0) ?? 0;
-    _lastHwReading = hive.getSetting<int>(AppConstants.settingStepLastHwReading);
-    _recordSteps = hive.getSetting<int>(AppConstants.settingStepRecordSteps, fallback: 0) ?? 0;
-    _recordDate = hive.getSetting<String>(AppConstants.settingStepRecordDate, fallback: '--') ?? '--';
+    _rebootOffset =
+        hive.getSetting<int>(
+          AppConstants.settingStepRebootOffset,
+          fallback: 0,
+        ) ??
+        0;
+    _lastHwReading = hive.getSetting<int>(
+      AppConstants.settingStepLastHwReading,
+    );
+    _recordSteps =
+        hive.getSetting<int>(
+          AppConstants.settingStepRecordSteps,
+          fallback: 0,
+        ) ??
+        0;
+    _recordDate =
+        hive.getSetting<String>(
+          AppConstants.settingStepRecordDate,
+          fallback: '--',
+        ) ??
+        '--';
 
     final historyRaw = hive.getSetting<String>(AppConstants.settingStepHistory);
     if (historyRaw != null && historyRaw.isNotEmpty) {
       try {
         final decoded = jsonDecode(historyRaw) as Map<String, dynamic>;
-        _historicalDays = decoded.map((k, v) => MapEntry(k, (v as num).toInt()));
+        _historicalDays = decoded.map(
+          (k, v) => MapEntry(k, (v as num).toInt()),
+        );
       } catch (_) {
         _historicalDays = {};
       }
@@ -240,8 +410,15 @@ class PedometerService {
 
     if (savedDate == todayStr) {
       _currentTrackingDate = todayStr;
-      _todayCount = hive.getSetting<int>(AppConstants.settingStepTodayCount, fallback: 0) ?? 0;
-      final hourlyRaw = hive.getSetting<String>(AppConstants.settingStepHourlyDistribution);
+      _todayCount =
+          hive.getSetting<int>(
+            AppConstants.settingStepTodayCount,
+            fallback: 0,
+          ) ??
+          0;
+      final hourlyRaw = hive.getSetting<String>(
+        AppConstants.settingStepHourlyDistribution,
+      );
       if (hourlyRaw != null && hourlyRaw.isNotEmpty) {
         try {
           final decoded = jsonDecode(hourlyRaw) as List<dynamic>;
@@ -258,7 +435,12 @@ class PedometerService {
     } else {
       // Different day or first launch
       if (savedDate != null && savedDate.isNotEmpty) {
-        final prevCount = hive.getSetting<int>(AppConstants.settingStepTodayCount, fallback: 0) ?? 0;
+        final prevCount =
+            hive.getSetting<int>(
+              AppConstants.settingStepTodayCount,
+              fallback: 0,
+            ) ??
+            0;
         if (prevCount > 0) {
           _historicalDays[savedDate] = prevCount;
           if (prevCount > _recordSteps) {
@@ -290,8 +472,21 @@ class PedometerService {
     }
   }
 
+  void _updateRecord(Map<String, int> days) {
+    _recordSteps = 0;
+    _recordDate = '--';
+    for (final entry in days.entries) {
+      if (entry.value > _recordSteps) {
+        _recordSteps = entry.value;
+        final parts = entry.key.split('-');
+        _recordDate = '${parts[2]}/${parts[1]}/${parts[0]}';
+      }
+    }
+  }
+
   void _handleMidnightRollover(String newDateStr, int currentHwSteps) {
-    if (_todayCount > 0 && _currentTrackingDate.isNotEmpty) {
+    if ((_todayCount > 0 || _usingPhoneHistory) &&
+        _currentTrackingDate.isNotEmpty) {
       _historicalDays[_currentTrackingDate] = _todayCount;
       if (_todayCount > _recordSteps) {
         _recordSteps = _todayCount;
@@ -306,10 +501,10 @@ class PedometerService {
 
     _currentTrackingDate = newDateStr;
     _todayCount = 0;
-    _hourlySteps = List<int>.filled(24, 0);
+    _hourlySteps = _usingPhoneHistory ? [] : List<int>.filled(24, 0);
     _rebootOffset = 0;
     _bootBase = currentHwSteps > 0 ? currentHwSteps : null;
-    _persistState();
+    if (!_usingPhoneHistory) _persistState();
     _syncTelemetry();
   }
 
@@ -337,6 +532,7 @@ class PedometerService {
   }
 
   void _onStepCount(StepCount event) {
+    if (_disposed || _usingPhoneHistory) return;
     _isAvailable = true;
     final rawSteps = event.steps;
     final todayStr = _getTodayDateStr();
@@ -355,7 +551,9 @@ class PedometerService {
     }
 
     // If _bootBase is not set yet, align it dynamically with known _todayCount
-    _bootBase ??= (rawSteps >= _todayCount) ? (rawSteps - _todayCount) : rawSteps;
+    _bootBase ??= (rawSteps >= _todayCount)
+        ? (rawSteps - _todayCount)
+        : rawSteps;
 
     final calculatedSteps = math.max(0, rawSteps - _bootBase! + _rebootOffset);
     final delta = calculatedSteps - _todayCount;
@@ -391,12 +589,24 @@ class PedometerService {
       if (_bootBase != null) {
         await hive.putSetting(AppConstants.settingStepBootBase, _bootBase);
       }
-      await hive.putSetting(AppConstants.settingStepRebootOffset, _rebootOffset);
+      await hive.putSetting(
+        AppConstants.settingStepRebootOffset,
+        _rebootOffset,
+      );
       if (_lastHwReading != null) {
-        await hive.putSetting(AppConstants.settingStepLastHwReading, _lastHwReading);
+        await hive.putSetting(
+          AppConstants.settingStepLastHwReading,
+          _lastHwReading,
+        );
       }
-      await hive.putSetting(AppConstants.settingStepHourlyDistribution, jsonEncode(_hourlySteps));
-      await hive.putSetting(AppConstants.settingStepHistory, jsonEncode(_historicalDays));
+      await hive.putSetting(
+        AppConstants.settingStepHourlyDistribution,
+        jsonEncode(_hourlySteps),
+      );
+      await hive.putSetting(
+        AppConstants.settingStepHistory,
+        jsonEncode(_historicalDays),
+      );
       await hive.putSetting(AppConstants.settingStepRecordSteps, _recordSteps);
       await hive.putSetting(AppConstants.settingStepRecordDate, _recordDate);
     } catch (e) {
@@ -405,26 +615,34 @@ class PedometerService {
   }
 
   void _syncTelemetry() {
-    final distanceKm = double.parse((_todayCount * 0.000708).toStringAsFixed(2));
+    final distanceKm = double.parse(
+      (_todayCount * 0.000708).toStringAsFixed(2),
+    );
     final recordKm = double.parse((_recordSteps * 0.000708).toStringAsFixed(2));
 
     Future.microtask(() {
-      _ref.read(dailyTelemetryProvider.notifier).updateDailyStepTelemetry(
-        steps: _todayCount,
-        distanceKm: distanceKm,
-        hourlySteps: List<int>.from(_hourlySteps),
-        historicalDays: Map<String, int>.from(_historicalDays),
-        recordSingleDaySteps: _recordSteps,
-        recordSingleDayKm: recordKm,
-        recordDate: _recordDate,
-      );
+      if (_disposed) return;
+      _ref
+          .read(dailyTelemetryProvider.notifier)
+          .updateDailyStepTelemetry(
+            steps: _todayCount,
+            distanceKm: distanceKm,
+            hourlySteps: List<int>.from(_hourlySteps),
+            historicalDays: Map<String, int>.from(_historicalDays),
+            recordSingleDaySteps: _recordSteps,
+            recordSingleDayKm: recordKm,
+            recordDate: _recordDate,
+          );
     });
   }
 
   void _onStepCountError(dynamic error) {
+    if (_disposed || _usingPhoneHistory) return;
     debugPrint('[PedometerService] Step count error: $error');
     _isAvailable = false;
-    _ref.read(stepTrackingStatusProvider.notifier).setStatus(StepTrackingStatus.sensorUnavailable);
+    _ref
+        .read(stepTrackingStatusProvider.notifier)
+        .setStatus(StepTrackingStatus.sensorUnavailable);
   }
 
   void _onPedestrianStatusChanged(PedestrianStatus event) {
@@ -436,6 +654,9 @@ class PedometerService {
   }
 
   void dispose() {
+    _disposed = true;
+    _refreshTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     _stepCountSubscription?.cancel();
     _pedestrianStatusSubscription?.cancel();
   }

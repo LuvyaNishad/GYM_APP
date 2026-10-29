@@ -1,6 +1,7 @@
 # LEON Master Completion Plan
 
-**Last reconciled:** October 28, 2026  
+**Last reconciled:** October 29, 2026
+
 **Purpose:** Single source of truth for completed work, remaining work, execution order, and definition of done.
 
 > Only unchecked items in this file are active work. Older roadmaps, handoffs, briefs, and verification reports are retained as evidence or historical context; they are not separate backlogs.
@@ -157,6 +158,7 @@ Completed:
 
 #### 6B. Honest data and service states
 
+- [x] Import Realme/OPlus Shelf daily step totals and history, refresh periodically in the foreground/on resume, and show day-by-day graphs with offline caching. See `daily_step_sync_verification.md`.
 - [ ] Replace Recovery's demo factors with workout-history and actual health-input aggregation, or clearly label unavailable inputs.
 - [ ] Replace `NoOpHealthSyncService` with a real integration or keep wearable sync hidden/explicitly unavailable.
 - [ ] Ensure `SyncStatusIndicator` does not claim remote synchronization before a real sync engine exists.

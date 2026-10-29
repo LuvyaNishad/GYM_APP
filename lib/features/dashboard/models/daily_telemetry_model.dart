@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../services/hive_service.dart';
+import '../../../services/daily_steps_platform.dart';
 import '../providers/habit_log_provider.dart';
 
 /// Daily telemetry data points for the dashboard bento grid.
@@ -201,6 +202,33 @@ class DailyTelemetryNotifier extends Notifier<DailyTelemetry> {
             recordDate = savedDate;
           }
         }
+      }
+    }
+
+    // Daily phone imports are stored atomically. Prefer this snapshot over the
+    // older sensor settings, including after a restart or a habit/goal rebuild.
+    final snapshotRaw = hive.getSetting<String>(
+      AppConstants.settingStepDailySnapshot,
+    );
+    if (snapshotRaw != null) {
+      try {
+        final snapshot = DailyStepsSnapshot.fromMap(
+          jsonDecode(snapshotRaw) as Map,
+        );
+        todaySteps = snapshot.days[todayStr] ?? 0;
+        hourlySteps = [];
+        history = {...snapshot.days}..remove(todayStr);
+        recordSteps = 0;
+        recordDate = '--';
+        for (final entry in snapshot.days.entries) {
+          if (entry.value > recordSteps) {
+            recordSteps = entry.value;
+            final parts = entry.key.split('-');
+            recordDate = '${parts[2]}/${parts[1]}/${parts[0]}';
+          }
+        }
+      } catch (_) {
+        // Keep legacy saved data if a snapshot is corrupt.
       }
     }
 

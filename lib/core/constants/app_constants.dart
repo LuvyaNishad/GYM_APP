@@ -60,8 +60,10 @@ abstract final class AppConstants {
   static const String settingStepBootBase = 'step_boot_base';
   static const String settingStepRebootOffset = 'step_reboot_offset';
   static const String settingStepLastHwReading = 'step_last_hw_reading';
-  static const String settingStepHourlyDistribution = 'step_hourly_distribution';
+  static const String settingStepHourlyDistribution =
+      'step_hourly_distribution';
   static const String settingStepHistory = 'step_history_by_date';
+  static const String settingStepDailySnapshot = 'step_daily_snapshot';
   static const String settingStepRecordSteps = 'step_record_steps';
   static const String settingStepRecordDate = 'step_record_date';
 

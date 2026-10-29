@@ -12,9 +12,14 @@ class StepsBentoCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final status = ref.watch(stepTrackingStatusProvider);
+    final updatedAt = ref.watch(
+      stepSyncInfoProvider.select((s) => s.updatedAt),
+    );
     final unavailable =
         status == StepTrackingStatus.permissionDenied ||
-        status == StepTrackingStatus.sensorUnavailable;
+        status == StepTrackingStatus.sensorUnavailable ||
+        (status == StepTrackingStatus.syncFailed &&
+            !DateUtils.isSameDay(updatedAt?.toLocal(), DateTime.now()));
     final steps =
         telemetry?.steps ??
         ref.watch(dailyTelemetryProvider.select((t) => t.steps));
@@ -25,8 +30,10 @@ class StepsBentoCard extends ConsumerWidget {
       caption: unavailable
           ? (status == StepTrackingStatus.permissionDenied
                 ? 'Permission needed'
-                : 'Sensor unavailable')
-          : steps == 0
+                : 'Steps unavailable')
+          : status == StepTrackingStatus.syncFailed
+          ? 'Saved total · retrying'
+          : steps == 0 && updatedAt == null
           ? 'Move to start tracking'
           : 'Recorded today',
       onTap:

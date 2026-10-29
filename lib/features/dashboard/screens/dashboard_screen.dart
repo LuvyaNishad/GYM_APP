@@ -39,7 +39,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    // Warm up native hardware pedometer sensor once in background without triggering top-level rebuilds
+    // Start periodic daily step imports without rebuilding the whole dashboard.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(pedometerServiceProvider);
