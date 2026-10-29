@@ -6,14 +6,10 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../models/progress_model.dart';
+import '../../../models/muscle_radar_data.dart';
 import '../../../shared/widgets/radar_chart.dart';
 
-/// Tactical Muscle Balance Radar Card for LEON Command Center.
-///
-/// Features:
-/// - PPL load distribution telemetry badges
-/// - Staggered draw-on 3-axis radar chart
-/// - Tactical intelligence warning callout banner with 1-tap route action
+/// Weekly volume balance using the same six muscle categories as every radar.
 class RadarChartWidget extends StatelessWidget {
   const RadarChartWidget({super.key, this.snapshot, this.weakThreshold = 0.4});
 
@@ -22,30 +18,24 @@ class RadarChartWidget extends StatelessWidget {
 
   static RadarSnapshot get _demo => RadarSnapshot(
     weekStart: DateTime.now(),
-    pushVolume: 8200,
-    pullVolume: 2600,
+    backVolume: 2600,
     legsVolume: 7400,
+    chestVolume: 4500,
+    armsVolume: 2200,
+    coreVolume: 1200,
+    shouldersVolume: 3700,
   );
 
   @override
   Widget build(BuildContext context) {
     final data = snapshot ?? _demo;
     final axes = <RadarAxis>[
-      RadarAxis(
-        label: 'PUSH',
-        value: data.pushVolume,
-        color: AppColors.chartPush,
-      ),
-      RadarAxis(
-        label: 'PULL',
-        value: data.pullVolume,
-        color: AppColors.chartPull,
-      ),
-      RadarAxis(
-        label: 'LEGS',
-        value: data.legsVolume,
-        color: AppColors.chartLegs,
-      ),
+      for (final category in muscleRadarCategories)
+        RadarAxis(
+          label: category,
+          value: data.muscleVolumes[category]!,
+          color: AppColors.platinum,
+        ),
     ];
 
     final maxVolume = axes.fold<double>(0, (m, a) => math.max(m, a.value));
@@ -122,30 +112,22 @@ class RadarChartWidget extends StatelessWidget {
         const SizedBox(height: 12),
 
         // ── Volume Metric Badges ────────────────────────────────────────────
-        Row(
-          children: [
-            _VolumeBadge(
-              label: 'PUSH',
-              volumeKg: data.pushVolume,
-              color: AppColors.chartPush,
+        for (var row = 0; row < 2; row++)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                for (var column = 0; column < 3; column++) ...[
+                  if (column > 0) const SizedBox(width: 8),
+                  _VolumeBadge(
+                    label: axes[row * 3 + column].label,
+                    volumeKg: axes[row * 3 + column].value,
+                    color: AppColors.platinum,
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(width: 8),
-            _VolumeBadge(
-              label: 'PULL',
-              volumeKg: data.pullVolume,
-              color: weakest.label == 'PULL'
-                  ? AppColors.danger
-                  : AppColors.chartPull,
-              isAlert: weakest.label == 'PULL',
-            ),
-            const SizedBox(width: 8),
-            _VolumeBadge(
-              label: 'LEGS',
-              volumeKg: data.legsVolume,
-              color: AppColors.chartLegs,
-            ),
-          ],
-        ),
+          ),
 
         const SizedBox(height: 16),
 
@@ -205,7 +187,7 @@ class RadarChartWidget extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${weakest.label} volume is low. Consider adding a ${_dayFor(weakest.label)} workout session.',
+                          '${weakest.label} volume is low. Review your plan for ${weakest.label.toLowerCase()} exercises.',
                           style: AppTypography.bodySmall.copyWith(
                             color: AppColors.textPrimary,
                             fontSize: 12,
@@ -228,13 +210,6 @@ class RadarChartWidget extends StatelessWidget {
       ],
     );
   }
-
-  String _dayFor(String axis) => switch (axis) {
-    'PUSH' => 'chest & shoulders',
-    'PULL' => 'back & biceps',
-    'LEGS' => 'lower-body',
-    _ => 'balanced',
-  };
 
   void _showMuscleBalanceDialog(BuildContext context) {
     HapticFeedback.lightImpact();
@@ -262,7 +237,7 @@ class RadarChartWidget extends StatelessWidget {
           ],
         ),
         content: const Text(
-          'Calculated from total direct sets completed across Push, Pull, and Leg muscle groups over the past 7 days.\n\nBalanced training volume prevents joint impingement, promotes postural stability, and ensures proportional physique development.',
+          'Weekly training volume across Back, Legs, Chest, Arms, Core, and Shoulders. Each spoke always represents the same muscle category.\n\nReview the distribution alongside your routine and recovery needs.',
           style: TextStyle(
             fontFamily: AppTypography.fontBody,
             fontSize: 12.5,
@@ -294,13 +269,11 @@ class _VolumeBadge extends StatelessWidget {
     required this.label,
     required this.volumeKg,
     required this.color,
-    this.isAlert = false,
   });
 
   final String label;
   final double volumeKg;
   final Color color;
-  final bool isAlert;
 
   @override
   Widget build(BuildContext context) {
