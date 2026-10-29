@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../models/workout_model.dart';
 import '../../../shared/widgets/glass_card.dart';
-import '../../../shared/widgets/training_coverage_radar.dart';
+
+import '../models/muscle_workload.dart';
+import '../providers/muscle_workload_provider.dart';
+import 'muscle_workload_chart.dart';
 import '../models/training_coverage.dart';
 import '../providers/history_provider.dart';
 import '../providers/training_coverage_provider.dart';
@@ -52,6 +55,49 @@ class _MuscleRadarTabViewState extends ConsumerState<MuscleRadarTabView> {
     final coverage = selected == null
         ? null
         : ref.watch(sessionCoverageProvider(selected));
+    final scope = ref.watch(muscleWorkloadScopeProvider);
+    final isWeek = scope == MuscleWorkloadScope.week;
+    final index = ref.watch(trainingCoverageIndexProvider);
+    final summaries = [
+      for (final workout in workouts)
+        ref.watch(sessionMuscleWorkloadProvider(workout)),
+    ];
+    final anchor = date ?? selected?.date ?? DateTime.now();
+    final monday = DateTime(
+      anchor.year,
+      anchor.month,
+      anchor.day - anchor.weekday + 1,
+    );
+    final end = monday.add(const Duration(days: 7));
+    final now = DateTime.now();
+    final currentWeek = !now.isBefore(monday) && now.isBefore(end);
+    final weeklyTargets = currentWeek ? weeklyWorkloadTargets(index) : null;
+    final weeks = <DateTime, List<MuscleWorkload>>{};
+    for (var i = 0; i < workouts.length; i++) {
+      final date = workouts[i].date;
+      final start = DateTime(
+        date.year,
+        date.month,
+        date.day - date.weekday + 1,
+      );
+      weeks.putIfAbsent(start, () => []).add(summaries[i]);
+    }
+    final weekly = MuscleWorkload.combine(
+      weeks[monday] ?? [],
+      targets: weeklyTargets,
+    );
+    final workload = isWeek
+        ? weekly
+        : selected == null
+        ? MuscleWorkload.combine([])
+        : summaries[workouts.indexOf(selected)];
+    final chartScale = isWeek
+        ? muscleWorkloadScale([
+            weekly,
+            for (final sessions in weeks.values)
+              MuscleWorkload.combine(sessions),
+          ], minimum: 60)
+        : muscleWorkloadScale(summaries);
     final gaps = coverage?.gaps.toList() ?? <MuscleCoverage>[];
     gaps.sort((a, b) => a.fraction.compareTo(b.fraction));
     final priority = gaps.firstOrNull;
@@ -72,7 +118,7 @@ class _MuscleRadarTabViewState extends ConsumerState<MuscleRadarTabView> {
               Row(
                 children: [
                   const Expanded(
-                    child: Text('TRAINING COVERAGE', style: _heading),
+                    child: Text('MUSCLE WORKLOAD', style: _heading),
                   ),
                   IconButton(
                     tooltip: 'About training coverage',
@@ -85,13 +131,36 @@ class _MuscleRadarTabViewState extends ConsumerState<MuscleRadarTabView> {
                   ),
                 ],
               ),
-              if (selected == null) ...[
-                const TrainingCoverageRadar(muscles: [], hasPlan: false),
-                const Text(
-                  'Log a workout to see its muscle coverage.',
-                  style: _caption,
+              SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<MuscleWorkloadScope>(
+                  segments: const [
+                    ButtonSegment(
+                      value: MuscleWorkloadScope.workout,
+                      label: Text('This workout'),
+                    ),
+                    ButtonSegment(
+                      value: MuscleWorkloadScope.week,
+                      label: Text('This week'),
+                    ),
+                  ],
+                  selected: {scope},
+                  showSelectedIcon: false,
+                  onSelectionChanged: (values) => ref
+                      .read(muscleWorkloadScopeProvider.notifier)
+                      .select(values.first),
                 ),
-              ] else ...[
+              ),
+              const SizedBox(height: 12),
+              if (isWeek)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    '${MaterialLocalizations.of(context).formatShortDate(monday)} – ${MaterialLocalizations.of(context).formatShortDate(end.subtract(const Duration(days: 1)))} · ${weekly.workoutCount} workouts',
+                    style: _caption,
+                  ),
+                )
+              else if (selected != null)
                 DropdownButton<String>(
                   value: selected.id,
                   isExpanded: true,
@@ -116,41 +185,46 @@ class _MuscleRadarTabViewState extends ConsumerState<MuscleRadarTabView> {
                       .toList(),
                   onChanged: (id) => setState(() => _selectedId = id),
                 ),
+              if (!isWeek && coverage?.plan != null)
                 Text(
-                  coverage!.plan == null
-                      ? 'Logged working sets · routine day not identified'
-                      : '${coverage.plan!.dayName} · ${coverage.usesSavedPlan ? 'Saved session targets' : 'Compared with current routine'}',
+                  coverage!.usesSavedPlan
+                      ? 'Saved session targets'
+                      : 'Targets from your current routine',
                   style: _caption,
                 ),
-                TrainingCoverageRadar(
-                  key: ValueKey(selected.id),
-                  muscles: coverage.muscles,
-                  hasPlan: coverage.plan != null,
+              const SizedBox(height: 12),
+              _WorkloadMetrics(workload: workload),
+              const SizedBox(height: 6),
+              if (workload.workingSets == 0)
+                const Padding(
+                  padding: EdgeInsets.only(top: 10),
+                  child: Text(
+                    'No working sets logged in this view.',
+                    style: _caption,
+                  ),
                 ),
-                Wrap(
-                  spacing: 18,
-                  runSpacing: 8,
-                  children: [
-                    const _Legend(color: AppColors.primary, label: 'Completed'),
-                    if (coverage.plan != null)
-                      const _Legend(
-                        color: AppColors.platinum,
-                        label: 'Planned target',
-                      ),
-                  ],
+              MuscleWorkloadChart(
+                key: ValueKey(
+                  '${scope.name}:${isWeek ? monday : selected?.id}',
                 ),
-                const SizedBox(height: 12),
+                workload: workload,
+                maxSets: chartScale,
+                paintKey: const ValueKey('training-coverage-web'),
+                weekly: isWeek,
+              ),
+              if (isWeek) ...[
+                const SizedBox(height: 10),
                 Text(
-                  coverage.plan == null
-                      ? 'Relative logged sets. No missing-muscle assessment without a matched routine.'
-                      : 'Working sets against this day’s targets. Extra spokes are visual guides.',
+                  currentWeek
+                      ? 'Targets show your full-week routine. Supporting work is included.'
+                      : 'Logged work for this week. Current routine targets are not applied to past weeks.',
                   style: _caption,
                 ),
               ],
             ],
           ),
         ),
-        if (coverage != null) ...[
+        if (coverage != null && !isWeek) ...[
           const SizedBox(height: 12),
           GlassCard(
             blur: true,
@@ -175,7 +249,7 @@ class _MuscleRadarTabViewState extends ConsumerState<MuscleRadarTabView> {
                 for (final muscle in coverage.muscles)
                   _MuscleRow(muscle: muscle, hasPlan: coverage.plan != null),
                 const Text(
-                  'Primary muscle: 1 per set · supporting muscle: 0.35.',
+                  'Detailed muscles can share a set. The chart counts each broad muscle category once.',
                   style: _caption,
                 ),
               ],
@@ -237,7 +311,8 @@ class _MuscleRadarTabViewState extends ConsumerState<MuscleRadarTabView> {
         child: Text(
           'Coverage compares logged working sets with the exercises planned for that routine day. Muscle assignments follow your routine: shoulder work on Push does not become a missing target on Pull.\n\n'
           'New sessions save their original targets. Older sessions are compared with your current routine when a day can be identified. Unmatched workouts show logged coverage without invented gaps.\n\n'
-          'Primary muscles receive 1 set equivalent; supporting muscles receive 0.35. Warmups and zero-rep sets are excluded. The chart caps each spoke at 100%; the rows retain the full amounts.\n\n'
+          'The filled sectors show work performed, not just plan completion. Primary work counts as 1 set equivalent, supporting work as 0.35. A set counts at most once per broad category. Warmups and zero-rep sets are excluded. Tap a muscle for direct work, supporting work, and its target.\n\n'
+          'Sector area is proportional to set equivalents. Comparable workouts share a scale; weeks use a separate scale. Dashed arcs show planned targets. Historical weeks show logged work without applying your current routine retrospectively. Lifting volume is external weight multiplied by repetitions, excluding warmups.\n\n'
           'Recommendations carry forward to compatible workouts and clear after a newer session meets the targets. This measures plan completion, not muscle growth or recovery.',
           style: _caption,
         ),
@@ -256,26 +331,56 @@ String _sets(double value) => value == value.roundToDouble()
     ? value.toInt().toString()
     : value.toStringAsFixed(1);
 
-class _Legend extends StatelessWidget {
-  const _Legend({required this.color, required this.label});
-  final Color color;
-  final String label;
+class _WorkloadMetrics extends StatelessWidget {
+  const _WorkloadMetrics({required this.workload});
+  final MuscleWorkload workload;
   @override
-  Widget build(BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Container(
-        width: 16,
-        height: 3,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(3),
-        ),
-      ),
-      const SizedBox(width: 6),
-      Text(label, style: _caption),
-    ],
-  );
+  Widget build(BuildContext context) {
+    final minutes = workload.durationSeconds ~/ 60;
+    final duration = workload.durationSeconds <= 0
+        ? '—'
+        : minutes >= 60
+        ? '${minutes ~/ 60}h ${minutes % 60}m'
+        : '${minutes}m';
+    final volume = workload.volumeKg >= 1000
+        ? '${(workload.volumeKg / 1000).toStringAsFixed(1)}k'
+        : workload.volumeKg.round().toString();
+    return Row(
+      children: [
+        for (final metric in [
+          (
+            MediaQuery.textScalerOf(context).scale(12) > 16
+                ? 'Sets'
+                : 'Working sets',
+            workload.workingSets.toString(),
+          ),
+          ('Volume · kg', volume),
+          ('Duration', duration),
+        ])
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(metric.$1, style: _caption),
+                  const SizedBox(height: 4),
+                  Text(
+                    metric.$2,
+                    style: const TextStyle(
+                      fontFamily: 'JetBrainsMono',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 class _MuscleRow extends StatelessWidget {
