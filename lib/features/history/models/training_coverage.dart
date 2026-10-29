@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../models/workout_model.dart';
+import '../../../models/muscle_radar_data.dart';
 import '../../exercise_library/models/exercise_library_item.dart';
 import '../../workout_builder/models/split_model.dart';
 
@@ -71,7 +72,7 @@ String? muscleArea(String muscle) {
       m == 'abs') {
     return 'Core';
   }
-  return null;
+  return radarMuscleCategory(muscle);
 }
 
 String muscleFamily(String area) {
