@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import '../../../services/hive_service.dart';
 import '../../workout_session/providers/active_session_provider.dart';
 import '../data/split_presets.dart';
 import '../models/split_model.dart';
+import '../models/training_schedule.dart';
 import '../../history/providers/history_provider.dart';
 import 'weekly_volume_provider.dart';
 
@@ -16,12 +18,14 @@ class SplitsState {
     required this.activeSplitId,
     this.expandedSplitId,
     required this.loggedVolume,
+    this.schedules = const [],
   });
 
   final List<TrainingSplitModel> splits;
   final String activeSplitId;
   final String? expandedSplitId;
   final Map<String, int> loggedVolume;
+  final List<TrainingSchedule> schedules;
 
   TrainingSplitModel get activeSplit => splits.firstWhere(
     (s) => s.id == activeSplitId,
@@ -40,6 +44,7 @@ class SplitsState {
     String? expandedSplitId,
     bool clearExpanded = false,
     Map<String, int>? loggedVolume,
+    List<TrainingSchedule>? schedules,
   }) {
     return SplitsState(
       splits: splits ?? this.splits,
@@ -48,6 +53,7 @@ class SplitsState {
           ? null
           : (expandedSplitId ?? this.expandedSplitId),
       loggedVolume: loggedVolume ?? this.loggedVolume,
+      schedules: schedules ?? this.schedules,
     );
   }
 }
@@ -81,20 +87,65 @@ class SplitsNotifier extends Notifier<SplitsState> {
         ? savedActiveId
         : allSplits.first.id;
 
+    final history = ref.watch(historyWorkoutsProvider);
+    var schedules = TrainingSchedule.decode(
+      hive.getSetting<String>(AppConstants.settingTrainingSchedules),
+    );
+    if (schedules.isEmpty) {
+      schedules = [
+        TrainingSchedule.fromLegacy(
+          allSplits.firstWhere((split) => split.id == effectiveActiveId),
+          history,
+          scheduleDate(DateTime.now()),
+        ),
+      ];
+      // Preserve the migration boundary across restarts, even before the first workout.
+      hive.putSetting(
+        AppConstants.settingTrainingSchedules,
+        TrainingSchedule.encode(schedules),
+      );
+    }
+
+    if (schedules.last.splitId != effectiveActiveId) {
+      schedules = startTrainingSchedule(
+        schedules,
+        allSplits.firstWhere((split) => split.id == effectiveActiveId),
+        DateTime.now(),
+      );
+      hive.putSetting(
+        AppConstants.settingTrainingSchedules,
+        TrainingSchedule.encode(schedules),
+      );
+    }
     return SplitsState(
       splits: allSplits,
       activeSplitId: effectiveActiveId,
       expandedSplitId: null,
-      loggedVolume: completedWeeklyMuscleSets(
-        ref.watch(historyWorkoutsProvider),
-        DateTime.now(),
-      ),
+      schedules: schedules,
+      loggedVolume: completedWeeklyMuscleSets(history, DateTime.now()),
     );
   }
 
   /// Switches the actively tracked training split.
   void switchActiveSplit(String splitId) {
-    state = state.copyWith(activeSplitId: splitId, clearExpanded: true);
+    if (state.activeSplitId == splitId) return;
+    final split = state.splits.firstWhere((split) => split.id == splitId);
+    final schedules = startTrainingSchedule(
+      state.schedules,
+      split,
+      DateTime.now(),
+    );
+    state = state.copyWith(
+      activeSplitId: splitId,
+      clearExpanded: true,
+      schedules: schedules,
+    );
+    ref
+        .read(hiveServiceProvider)
+        .putSetting(
+          AppConstants.settingTrainingSchedules,
+          TrainingSchedule.encode(schedules),
+        );
     ref
         .read(hiveServiceProvider)
         .putSetting(AppConstants.settingActiveSplitId, splitId);
@@ -112,7 +163,24 @@ class SplitsNotifier extends Notifier<SplitsState> {
     } else {
       current.add(split);
     }
-    state = state.copyWith(splits: current);
+    // Only future/current plan days change after an edit; retain the past copy.
+    final changedCalendar =
+        state.activeSplitId == split.id &&
+        (state.activeSplit.daysPerWeek != split.daysPerWeek ||
+            !listEquals(
+              state.activeSplit.workouts.map((day) => day.isRestDay).toList(),
+              split.workouts.map((day) => day.isRestDay).toList(),
+            ));
+    final schedules = changedCalendar
+        ? startTrainingSchedule(state.schedules, split, DateTime.now())
+        : state.schedules;
+    if (changedCalendar) {
+      await hive.putSetting(
+        AppConstants.settingTrainingSchedules,
+        TrainingSchedule.encode(schedules),
+      );
+    }
+    state = state.copyWith(splits: current, schedules: schedules);
   }
 
   /// Duplicates an existing preset or custom split into a customizable user routine.
@@ -153,14 +221,27 @@ class SplitsNotifier extends Notifier<SplitsState> {
         ? (filtered.isNotEmpty ? filtered.first.id : 'split_ppl')
         : state.activeSplitId;
 
+    final schedules = newActive != state.activeSplitId
+        ? startTrainingSchedule(
+            state.schedules,
+            filtered.firstWhere((split) => split.id == newActive),
+            DateTime.now(),
+          )
+        : state.schedules;
+
     state = state.copyWith(
       splits: filtered,
       activeSplitId: newActive,
+      schedules: schedules,
       expandedSplitId: state.expandedSplitId == splitId
           ? newActive
           : state.expandedSplitId,
     );
     await hive.putSetting(AppConstants.settingActiveSplitId, newActive);
+    await hive.putSetting(
+      AppConstants.settingTrainingSchedules,
+      TrainingSchedule.encode(schedules),
+    );
   }
 
   /// Toggles expansion of a compact split card.

@@ -51,6 +51,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget build(BuildContext context) {
     final userProfile = ref.watch(userProfileProvider);
     final loggedWorkoutDates = ref.watch(loggedWorkoutDatesProvider);
+    final scheduledWorkoutDates = ref.watch(scheduledWorkoutDatesProvider);
     final selectedCalendarDate = ref.watch(selectedCalendarDateProvider);
     final weeklyConsistency = ref.watch(weeklyConsistencyProvider);
 
@@ -74,6 +75,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ref.read(selectedCalendarDateProvider.notifier).select(date);
               },
               loggedWorkoutDates: loggedWorkoutDates,
+              scheduledWorkoutDates: scheduledWorkoutDates,
               completedSessions: weeklyConsistency.completedThisWeek,
               targetSessions: weeklyConsistency.plannedThisWeek,
             ),

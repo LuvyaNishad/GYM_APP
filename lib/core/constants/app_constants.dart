@@ -50,6 +50,7 @@ abstract final class AppConstants {
   static const String settingOnboardingComplete = 'onboarding_complete';
   static const String settingWeightUnit = 'weight_unit';
   static const String settingActiveSplitId = 'active_split_id';
+  static const String settingTrainingSchedules = 'training_schedules_v1';
   static const String settingPrimaryGoal = 'primary_goal';
   static const String settingTargetWeight = 'target_weight';
   static const String settingActiveSessionData = 'active_session_data';

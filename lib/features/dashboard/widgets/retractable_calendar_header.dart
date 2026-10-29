@@ -24,6 +24,7 @@ class RetractableCalendarHeader extends StatefulWidget {
     this.selectedDate,
     this.onDateSelected,
     this.loggedWorkoutDates = const {},
+    this.scheduledWorkoutDates = const {},
     this.completedSessions,
     this.targetSessions,
   });
@@ -34,6 +35,7 @@ class RetractableCalendarHeader extends StatefulWidget {
   final DateTime? selectedDate;
   final ValueChanged<DateTime>? onDateSelected;
   final Set<DateTime> loggedWorkoutDates;
+  final Set<DateTime> scheduledWorkoutDates;
   final int? completedSessions;
   final int? targetSessions;
 
@@ -212,11 +214,14 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                   );
                   final isDayToday = DateUtils.isSameDay(day, today);
                   final isPast = day.isBefore(today);
-                  final isMissed = isPast && !done;
+                  final scheduled = widget.scheduledWorkoutDates.any(
+                    (date) => DateUtils.isSameDay(date, day),
+                  );
+                  final isMissed = isPast && scheduled && !done;
 
                   // Color discipline:
                   // - Green: Day workout was completed (gym hit)
-                  // - Red: Past day with no workout (gym missed)
+                  // - Red: A scheduled workout was missed on a past day
                   // - Yellow (Amber): Selected day if not already green/red
                   // - Charcoal: Unselected future or uncompleted today
                   final Color capsuleColor = done
@@ -261,13 +266,22 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                   return Expanded(
                     child: Semantics(
                       label:
-                          '${local.formatFullDate(day)}${done ? ', workout completed' : (isMissed ? ', workout missed' : '')}',
+                          '${local.formatFullDate(day)}${done
+                              ? ', workout completed'
+                              : isMissed
+                              ? ', workout missed'
+                              : scheduled
+                              ? ', workout scheduled'
+                              : ', no workout scheduled'}',
                       selected: active,
                       button: true,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(10),
                         onTap: () => widget.onDateSelected?.call(day),
                         child: Container(
+                          key: ValueKey(
+                            'activity-day-${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}',
+                          ),
                           margin: const EdgeInsets.symmetric(horizontal: 2.5),
                           padding: const EdgeInsets.symmetric(vertical: 9),
                           decoration: BoxDecoration(

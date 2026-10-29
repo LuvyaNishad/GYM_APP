@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../models/user_model.dart';
 import '../../../services/hive_service.dart';
+import '../../workout_builder/data/split_presets.dart';
+import '../../workout_builder/models/training_schedule.dart';
+import '../../workout_builder/providers/splits_provider.dart';
 import '../models/onboarding_state.dart';
 import '../models/training_goal_config.dart';
 
@@ -12,7 +15,9 @@ export '../models/training_goal_config.dart';
 /// Whether the user has already finished onboarding, read straight from
 /// storage.
 final onboardingCompleteProvider = Provider<bool>((ref) {
-  return ref.watch(hiveServiceProvider).getSetting<bool>(
+  return ref
+          .watch(hiveServiceProvider)
+          .getSetting<bool>(
             AppConstants.settingOnboardingComplete,
             fallback: false,
           ) ??
@@ -154,27 +159,31 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
       AppConstants.settingActiveSplitId,
       state.preferredSplit,
     );
-    await hive.putSetting(
-      AppConstants.settingPrimaryGoal,
-      state.primaryGoal,
+    final split = kPresetSplits.firstWhere(
+      (split) => split.id == state.preferredSplit,
+      orElse: () => kPresetSplits.first,
     );
     await hive.putSetting(
-      AppConstants.settingTargetWeight,
-      state.targetWeight,
+      AppConstants.settingTrainingSchedules,
+      TrainingSchedule.encode([
+        TrainingSchedule.fromSplit(split, DateTime.now()),
+      ]),
     );
+    await hive.putSetting(AppConstants.settingPrimaryGoal, state.primaryGoal);
+    await hive.putSetting(AppConstants.settingTargetWeight, state.targetWeight);
 
     ref.invalidate(onboardingCompleteProvider);
     ref.invalidate(trainingGoalProvider);
+    ref.invalidate(splitsProvider);
     state = state.copyWith(isCompleted: true);
   }
 
   /// Update the active primary goal and persist immediately (e.g. from Profile screen).
   Future<void> updatePrimaryGoal(String goal) async {
     state = state.copyWith(primaryGoal: goal);
-    await ref.read(hiveServiceProvider).putSetting(
-          AppConstants.settingPrimaryGoal,
-          goal,
-        );
+    await ref
+        .read(hiveServiceProvider)
+        .putSetting(AppConstants.settingPrimaryGoal, goal);
     ref.invalidate(trainingGoalProvider);
   }
 
@@ -195,8 +204,8 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
 /// Global provider for [OnboardingNotifier].
 final onboardingProvider =
     NotifierProvider<OnboardingNotifier, OnboardingState>(
-  OnboardingNotifier.new,
-);
+      OnboardingNotifier.new,
+    );
 
 /// Global provider returning the user's active training goal string (e.g. 'BUILD MUSCLE', 'STRENGTH').
 final trainingGoalProvider = Provider<String>((ref) {

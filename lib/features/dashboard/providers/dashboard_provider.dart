@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/progress_model.dart';
+import '../../../core/providers/local_date_provider.dart';
 import '../../../services/analytics_service.dart';
 import '../../../state/app_providers.dart';
 import '../../history/providers/history_provider.dart';
 import '../../workout_builder/providers/splits_provider.dart';
+import '../../workout_builder/models/training_schedule.dart';
 import '../models/weekly_consistency_model.dart';
 
 /// Drives the dashboard radar chart and summary stats.
@@ -46,6 +48,40 @@ final loggedWorkoutDatesProvider = Provider<Set<DateTime>>((ref) {
     dates.add(DateTime(w.date.year, w.date.month, w.date.day));
   }
   return dates;
+});
+
+/// Planned training dates for the displayed week, bounded by activation dates
+/// and explicit recovery days. Completed sessions remain independent evidence.
+final scheduledWorkoutDatesProvider = Provider<Set<DateTime>>((ref) {
+  final today = ref.watch(localDateProvider);
+  final selected = ref.watch(selectedCalendarDateProvider) ?? today;
+  final monday = DateTime(
+    selected.year,
+    selected.month,
+    selected.day - selected.weekday + 1,
+  );
+  final splits = ref.watch(
+    splitsProvider.select(
+      (state) => (split: state.activeSplit, schedules: state.schedules),
+    ),
+  );
+  final schedules = splits.schedules.isEmpty
+      ? [
+          TrainingSchedule.fromLegacy(
+            splits.split,
+            ref.watch(historyWorkoutsProvider),
+            today,
+          ),
+        ]
+      : splits.schedules;
+  return {
+    for (var i = 0; i < 7; i++)
+      if (isScheduledTrainingDay(
+        schedules,
+        DateTime(monday.year, monday.month, monday.day + i),
+      ))
+        DateTime(monday.year, monday.month, monday.day + i),
+  };
 });
 
 /// Computes no-shame weekly workout consistency data.
