@@ -294,8 +294,8 @@ void main() {
       expect(find.text('Steps'), findsWidgets);
       expect(find.text('Edit step goal'), findsOneWidget);
       expect(find.text('Today'), findsOneWidget);
-      expect(find.text('7 days'), findsOneWidget);
-      expect(find.text('30 days'), findsOneWidget);
+      expect(find.text('7d'), findsOneWidget);
+      expect(find.text('30d'), findsOneWidget);
     });
 
     testWidgets(

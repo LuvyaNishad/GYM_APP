@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../services/pedometer_service.dart';
 import '../../../shared/widgets/app_sheet.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/liquid_glass_date_picker.dart';
 import '../models/daily_telemetry_model.dart';
 import '../providers/habit_log_provider.dart';
 import 'calories_detail_sheet.dart';
+import 'steps_detail_sheet.dart';
 
 void _show(BuildContext context, Widget child) => showModalBottomSheet<void>(
   context: context,
@@ -20,7 +20,22 @@ void _show(BuildContext context, Widget child) => showModalBottomSheet<void>(
   builder: (_) => child,
 );
 void showStepsDetailSheet(BuildContext context, DailyTelemetry telemetry) =>
-    _show(context, _StepsSheet(initial: telemetry));
+    _show(
+      context,
+      StepsDetailSheet(
+        requestGoal: (context, goal) async {
+          final value = await _number(
+            context,
+            title: 'Daily step goal',
+            label: 'Steps',
+            initial: goal.toDouble(),
+            min: 500,
+            max: 100000,
+          );
+          return value?.round();
+        },
+      ),
+    );
 void showCaloriesDetailSheet(BuildContext context, DailyTelemetry telemetry) =>
     _show(
       context,
@@ -52,8 +67,8 @@ Future<double?> _number(
   required double max,
 }) async {
   var input = initial == initial.roundToDouble()
-        ? initial.toInt().toString()
-        : initial.toString();
+      ? initial.toInt().toString()
+      : initial.toString();
   final key = GlobalKey<FormState>();
   final value = await showDialog<double>(
     context: context,
@@ -114,183 +129,6 @@ Widget _error(String? error) => error == null
           style: const TextStyle(fontSize: 13, color: AppColors.warning),
         ),
       );
-
-class _StepsSheet extends ConsumerStatefulWidget {
-  const _StepsSheet({required this.initial});
-  final DailyTelemetry initial;
-  @override
-  ConsumerState<_StepsSheet> createState() => _StepsSheetState();
-}
-
-class _StepsSheetState extends ConsumerState<_StepsSheet> {
-  int _period = 1;
-  String? _errorText;
-  @override
-  Widget build(BuildContext context) {
-    final data = ref.watch(dailyTelemetryProvider);
-    final status = ref.watch(stepTrackingStatusProvider);
-    final unavailable =
-        status == StepTrackingStatus.permissionDenied ||
-        status == StepTrackingStatus.sensorUnavailable;
-    final now = DateUtils.dateOnly(DateTime.now());
-    final count = _period == 1 ? 24 : _period;
-    final start = now.subtract(Duration(days: count - 1));
-    final values = List<int?>.generate(
-      count,
-      (i) => _period == 1
-          ? (i < data.hourlySteps.length ? data.hourlySteps[i] : null)
-          : i == count - 1
-          ? (unavailable ? null : data.steps)
-          : data.historicalDays[habitDateKey(start.add(Duration(days: i)))],
-    );
-    final hasData = values.any((v) => v != null && v > 0);
-    final maxValue = values.fold<int>(1, (a, b) => b != null && b > a ? b : a);
-    final local = MaterialLocalizations.of(context);
-    return AppSheet(
-      title: 'Steps',
-      children: [
-        _description(
-          _period == 1
-              ? local.formatFullDate(now)
-              : '${local.formatMediumDate(start)} – ${local.formatMediumDate(now)}',
-        ),
-        _value(unavailable ? 'Unavailable' : '${data.steps} steps'),
-        _description(
-          unavailable
-              ? (status == StepTrackingStatus.permissionDenied
-                    ? 'Allow motion access to count steps on this phone.'
-                    : 'This device does not provide a step sensor. Previously recorded days remain in your history.')
-              : '${data.distanceKm.toStringAsFixed(2)} km estimated · ${data.stepsGoal} step daily goal',
-        ),
-        if (status == StepTrackingStatus.permissionDenied)
-          Padding(
-            padding: const EdgeInsets.only(top: 16),
-            child: FilledButton(
-              onPressed: () =>
-                  ref.read(pedometerServiceProvider).requestPermission(),
-              child: const Text('ALLOW MOTION ACCESS'),
-            ),
-          ),
-        const SizedBox(height: 20),
-        SegmentedButton<int>(
-          segments: const [
-            ButtonSegment(value: 1, label: Text('Today')),
-            ButtonSegment(value: 7, label: Text('7 days')),
-            ButtonSegment(value: 30, label: Text('30 days')),
-          ],
-          selected: {_period},
-          onSelectionChanged: (s) => setState(() => _period = s.first),
-        ),
-        const SizedBox(height: 20),
-        if (!hasData || (_period == 1 && unavailable))
-          GlassCard(
-            child: _description(
-              unavailable && _period == 1
-                  ? 'Step distribution is unavailable on this device.'
-                  : 'No recorded activity in this period. Your chart will appear when steps are recorded.',
-            ),
-          )
-        else
-          GlassCard(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$maxValue steps',
-                  style: AppTypography.monoSmall.copyWith(
-                    color: AppColors.platinum,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 130,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      for (var i = 0; i < count; i++)
-                        Expanded(
-                          child: Tooltip(
-                            triggerMode: TooltipTriggerMode.tap,
-                            message: _period == 1
-                                ? '${i.toString().padLeft(2, '0')}:00 · ${values[i] ?? 0} steps'
-                                : '${local.formatMediumDate(start.add(Duration(days: i)))} · ${values[i] == null ? 'Not recorded' : '${values[i]} steps'}',
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 2,
-                              ),
-                              child: Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Container(
-                                  height: (values[i] ?? 0) / maxValue * 130,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.platinum,
-                                    borderRadius: BorderRadius.circular(3),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      _period == 1 ? '00:00' : local.formatShortDate(start),
-                      style: AppTypography.monoSmall,
-                    ),
-                    Text(
-                      _period == 1 ? '23:00' : local.formatShortDate(now),
-                      style: AppTypography.monoSmall,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _description(
-                  'Touch a bar for its count. Missing days have no bar.',
-                ),
-              ],
-            ),
-          ),
-        const SizedBox(height: 16),
-        TextButton.icon(
-          onPressed: () async {
-            final n = await _number(
-              context,
-              title: 'Daily step goal',
-              label: 'Steps',
-              initial: data.stepsGoal.toDouble(),
-              min: 500,
-              max: 100000,
-            );
-            if (n == null) return;
-            try {
-              await ref
-                  .read(habitLogProvider.notifier)
-                  .setGoals(steps: n.round());
-            } catch (_) {
-              if (mounted) {
-                setState(
-                  () => _errorText = 'Could not save your goal. Try again.',
-                );
-              }
-            }
-          },
-          icon: const Icon(Icons.tune_rounded),
-          label: const Text('Edit step goal'),
-        ),
-        _error(_errorText),
-        _description(
-          'Source: phone step sensor. Distance uses an average stride length and is an estimate.',
-        ),
-      ],
-    );
-  }
-}
 
 class _WaterSheet extends ConsumerStatefulWidget {
   const _WaterSheet();
