@@ -5,12 +5,13 @@
 /// - Compact footsteps bento card (active, 0 steps, unavailable handling)
 /// - Compact 2-column bento grid for active calories burn & water intake + sleep
 /// - Compact daily workout card with prominent 52dp start workout button
-/// - Zero scroll: entire daily overview & start button fits cleanly on initial view
+/// - Scrollable daily overview with adaptive recommendations below the grid
 /// - Clean dark Cyber-Slate palette without sloppy blur glows
 /// - Granular Riverpod rebuild scoping: bento cards watch their own projections via [select]
 library;
 
 import 'package:flutter/material.dart';
+import '../widgets/training_recommendation_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -123,6 +124,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     Expanded(child: SleepBentoCard()),
                   ],
                 ),
+                const TrainingRecommendationCard(),
               ]),
             ),
           ),

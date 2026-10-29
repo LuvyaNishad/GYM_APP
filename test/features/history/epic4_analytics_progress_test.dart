@@ -273,7 +273,7 @@ void main() {
       expect(find.text('SAVE CHANGES'), findsOneWidget);
     });
 
-    testWidgets('MuscleRadarTabView info icon opens MUSCLE BALANCE SCIENCE dialog',
+    testWidgets('MuscleRadarTabView explains adaptive session coverage',
         (tester) async {
       tester.view.physicalSize = const Size(800, 1400);
       tester.view.devicePixelRatio = 1.0;
@@ -297,12 +297,12 @@ void main() {
       await tester.tap(infoIconFinder);
       await tester.pumpAndSettle();
 
-      expect(find.text('MUSCLE BALANCE SCIENCE'), findsOneWidget);
-      expect(find.textContaining('total direct sets completed across Push, Pull, and Leg'), findsOneWidget);
+      expect(find.text('ABOUT TRAINING COVERAGE'), findsOneWidget);
+      expect(find.textContaining('Muscle assignments follow your routine'), findsOneWidget);
 
-      await tester.tap(find.text('UNDERSTOOD'));
+      await tester.tap(find.text('CLOSE'));
       await tester.pumpAndSettle();
-      expect(find.text('MUSCLE BALANCE SCIENCE'), findsNothing);
+      expect(find.text('ABOUT TRAINING COVERAGE'), findsNothing);
     });
 
     testWidgets('RecoveryStatusWidget info icon opens RECOVERY READINESS dialog',

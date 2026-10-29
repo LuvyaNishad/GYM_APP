@@ -19,7 +19,7 @@
 [![Storage](https://img.shields.io/badge/Storage-Hive_CE_(Local--First)-F8981D?style=flat-square)](https://pub.dev/packages/hive_ce)
 [![Exercises](https://img.shields.io/badge/Exercises-220+_Curated-00E676?style=flat-square)](#5-exercise-library--custom-movements-libfeaturesexercise_library)
 [![Analysis](https://img.shields.io/badge/Analysis-0_Issues-00E5FF?style=flat-square)](https://dart.dev/tools/analysis)
-[![Tests](https://img.shields.io/badge/Tests-197_Passing-00E5FF?style=flat-square)](#-tech-stack--architecture)
+[![Tests](https://img.shields.io/badge/Tests-Automated-00E5FF?style=flat-square)](#-tech-stack--architecture)
 [![Design](https://img.shields.io/badge/Design-Apple_HIG_AA/AAA-FFFFFF?style=flat-square&labelColor=0F131B)](./lib/core/theme)
 
 </div>
@@ -76,11 +76,13 @@ flowchart TD
 * **Retractable Calendar Header:** Pinned weekly strip with a tactile grab handle that expands into a full monthly overview with color-coded workout indicators.
 * **Recovery Readiness ECG Widget:** Calculates physiological readiness score based on weekly volume load, workout frequency, and self-reported sleep/hydration. Includes a science explanation modal on info tap.
 * **Restored 2×2 Bento Grid:** High-contrast square cards tracking daily habits:
-  * 👟 **Daily Steps:** Real-time step counter with target progress bar, horizontal history, and 3-metric summary (Goal, Step count, Distance).
-  * 🔥 **Active Calories:** Energy expenditure counter.
+  * 👟 **Daily Steps:** Imports daily totals and past history from the Realme/OPlus phone tracker. Refreshes every 30 seconds while the app is open and immediately on resume. The compact detail sheet loads on tap and shares Calories' rounded bars and short rising bounce. Daily graphs cover 7 days, 30 days, and full history in 30-day windows, with offline caching and manual refresh. Other supported phones use the local step-sensor fallback.
+  * 🔥 **Active Calories:** Manual active-burn logging with selectable 7/30-day history. The compact detail sheet loads on tap; rounded bars reveal with a short bounce, isolated canvas repaints, and reduced-motion support.
   * 💧 **Hydration / Water:** Water intake tracker with 1-tap quick log modal.
   * 🌙 **Sleep Duration:** Sleep logging with restorative recovery rating.
 * **Daily Workout Spotlight:** Displays today's scheduled workout from your active split. If an active session is in progress, it automatically updates to a glowing **`▶ RESUME WORKOUT`** button.
+* **Schedule-Aware Activity Colors:** Completed workouts are green; missed scheduled past workouts are red. Rest days and dates before routine activation stay neutral, with today's pending workout in amber.
+* **✨ Next-Workout Recommendations:** A card below the activity grid carries missed muscle targets forward to the next compatible routine day and clears after a newer session meets them.
 * **Instant Routine Editor Bypass (`EDIT ROUTINE`):** 1-tap button on the workout detail sheet directly opens that specific split inside the Routine Editor, eliminating multi-step navigation friction.
 * **Completed Session Deep Link (`VIEW LOGS`):** When today's workout has already been logged, tapping the card surfaces a direct **`VIEW LOGS`** button that jumps straight to that completed session in History.
 
@@ -121,6 +123,9 @@ flowchart TD
 * **Full Exercise Detail Screen:** Complete guide featuring anatomical primary/secondary muscle highlights, step-by-step setup and execution bullet points, common safety pitfalls, and an interactive 1RM calculator.
 
 ### 6. History & Performance Hub — The Timeline Hub (`lib/features/history`)
+* **Adaptive Training Coverage:** Compares completed working sets with the exercises assigned to that routine day. Shoulder heads assigned to Push do not become gaps on Pull. Primary sets count as 1 and supporting muscle sets as 0.35; warmups and zero-rep sets are excluded.
+* **Animated Spider Radar:** A full web spreads outward once when Radar opens, with isolated canvas repaints, background pausing, and reduced-motion support. The breakdown retains uncapped completed and planned totals.
+* **Saved Session Targets:** New routine sessions preserve their original plan through draft recovery and final saves. Older matched sessions use the current routine; unmatched sessions show logged coverage without missing-muscle assessments.
 * **"Repeat Workout" 1-Tap Launcher:** Instantly restart any past workout session with previous exercises, set counts, and working weights preloaded into the active session with smart conflict handling.
 * **Workout Summary Sharing (`SHARE`):** 1-tap generator that creates a clean, formatted plain-text workout summary (exercises, sets, reps, loads, PR highlights, and total tonnage) directly to the system clipboard with tactile feedback.
 * **Collapsible Notched Calendar:** Pinned header with an ergonomic grab handle. Collapses to a 1-week strip or expands to a 6-row monthly calendar.
@@ -183,7 +188,7 @@ LEON enforces a strict, minimalist design system governed by four mandatory rule
 | **Data Models** | **Freezed & JSON Serializable** | Immutable models with type-safe copy, equality, and JSON codecs |
 | **Custom Graphics** | **Flutter `CustomPainter`** | Hand-crafted 6-axis Radar Balance Canvas & Barbell Plate Diagram |
 | **PDF Generation** | **`pdf` & `printing`** | Vector-rendered 1-page athletic performance reports |
-| **Code Quality** | **Flutter Analyze & Test** | **0 static analysis issues**; **135+ automated unit & widget tests** |
+| **Code Quality** | **Flutter Analyze & Test** | **0 static analysis issues**; automated unit, widget, accessibility, and regression tests |
 
 ---
 
