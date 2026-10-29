@@ -141,12 +141,15 @@ void main() {
         await tester.pump(const Duration(milliseconds: 700));
 
         expect(find.text('MUSCLE BALANCE'), findsOneWidget);
-        expect(find.text('4 / 12 sets'), findsOneWidget);
+        expect(find.text('14 / 26 sets'), findsOneWidget);
+        expect(find.text('Core'), findsOneWidget);
+        expect(find.text('Hamstrings'), findsNothing);
         await tester.ensureVisible(find.text('REVIEW PLAN'));
         expect(find.text('REVIEW PLAN'), findsOneWidget);
         await tester.tap(find.text('Radar'));
         await tester.pumpAndSettle();
         expect(find.byType(MuscleRadarChart), findsOneWidget);
+        expect(find.text('14/26 sets'), findsOneWidget);
       },
     );
   });

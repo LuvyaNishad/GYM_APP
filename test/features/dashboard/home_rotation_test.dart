@@ -152,7 +152,14 @@ void main() {
           logged('now', today),
           logged('old', today.subtract(const Duration(days: 8))),
         ], today),
-        {'Back': 1},
+        {
+          'Back': 1,
+          'Legs': 0,
+          'Chest': 0,
+          'Arms': 0,
+          'Core': 0,
+          'Shoulders': 0,
+        },
       );
     },
   );

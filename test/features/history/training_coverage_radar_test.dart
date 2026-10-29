@@ -6,10 +6,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:leon/core/theme/app_theme.dart';
+import 'package:leon/core/widgets/muscle_spider_chart.dart';
+import 'package:leon/models/muscle_radar_data.dart';
 import 'package:leon/features/history/models/training_coverage.dart';
 import 'package:leon/features/history/providers/history_provider.dart';
 import 'package:leon/features/history/providers/training_coverage_provider.dart';
 import 'package:leon/features/history/widgets/muscle_radar_tab_view.dart';
+import 'package:leon/features/history/widgets/muscle_workload_chart.dart';
 import 'package:leon/features/dashboard/providers/home_workout_view_provider.dart';
 import 'package:leon/features/dashboard/widgets/training_recommendation_card.dart';
 import 'package:leon/models/workout_model.dart';
@@ -22,13 +25,13 @@ const muscles = [
   MuscleCoverage(name: 'Mid back', planned: 3, completed: 2),
 ];
 
-CoverageWebPainter web(WidgetTester tester) =>
+MuscleSpiderPainter web(WidgetTester tester) =>
     tester
             .widget<CustomPaint>(
               find.byKey(const ValueKey('training-coverage-web')),
             )
             .painter!
-        as CoverageWebPainter;
+        as MuscleSpiderPainter;
 
 Widget host(Widget child, {bool reduced = false, double scale = 1}) =>
     MaterialApp(
@@ -59,6 +62,10 @@ void main() {
       );
       final initial = web(tester);
       expect(initial.reveal.value, 0);
+      expect(
+        initial.pointsFor(initial.series.last),
+        everyElement(initial.center),
+      );
       await tester.pump(const Duration(milliseconds: 300));
       expect(
         identical(initial, web(tester)),
@@ -81,15 +88,18 @@ void main() {
         host(TrainingCoverageRadar(muscles: [muscles.first]), reduced: true),
       );
       expect(web(tester).reveal.value, 1);
-      expect(web(tester).directions.length, 6);
-      expect(web(tester).values.where((v) => v > 0).length, 1);
-      expect(find.text('Biceps'), findsOneWidget);
+      expect(MuscleSpiderPainter.directions.length, 6);
+      expect(web(tester).series.last.values.where((v) => v > 0).length, 1);
+      for (final category in muscleRadarCategories) {
+        expect(find.text(category), findsOneWidget);
+      }
+      expect(find.text('Biceps'), findsNothing);
       await tester.pumpAndSettle();
       expect(tester.binding.hasScheduledFrame, false);
       await tester.pumpWidget(
         host(const TrainingCoverageRadar(muscles: []), reduced: true),
       );
-      expect(web(tester).values, everyElement(0));
+      expect(web(tester).series.last.values, everyElement(0));
       expect(tester.takeException(), isNull);
     },
   );
@@ -156,7 +166,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.byType(TrainingCoverageRadar), findsOneWidget);
+      expect(find.byType(MuscleWorkloadChart), findsOneWidget);
       expect(container.exists(sessionCoverageProvider(partial)), true);
       expect(find.text('Rear delts'), findsNothing);
       await tester.pumpWidget(
