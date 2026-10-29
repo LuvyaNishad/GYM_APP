@@ -1,30 +1,28 @@
 import '../../../models/workout_model.dart';
+import '../../../models/muscle_radar_data.dart';
 import '../models/split_model.dart';
 
-String muscleAxis(String group, String exerciseName) {
-  final m = group.toLowerCase();
+String? muscleAxis(String group, String exerciseName) {
+  final category = radarMuscleCategory(group);
+  if (category != null) return category;
   final n = exerciseName.toLowerCase();
-  if (m.contains('bicep') || m.contains('tricep') || m.contains('arm')) {
-    return 'Arms';
+  if (n.contains('romanian') ||
+      n.contains('squat') ||
+      n.contains('hip thrust')) {
+    return 'Legs';
   }
-  if (m.contains('delt') || m.contains('shoulder')) return 'Shoulders';
-  if (m.contains('chest') || m.contains('pec')) return 'Chest';
-  if (m.contains('back') || m.contains('lat')) return 'Back';
-  if (m.contains('ham') ||
-      n.contains('romanian') ||
-      n.contains('hamstring') ||
-      n.contains('leg curl')) {
-    return 'Hamstrings';
+  if (n.contains('row') || n.contains('pull-up') || n.contains('chin-up')) {
+    return 'Back';
   }
-  if (m.contains('calf') || m.contains('calves') || n.contains('calf')) {
-    return 'Calves';
+  if (n.contains('lateral raise') ||
+      n.contains('overhead press') ||
+      n.contains('reverse fly') ||
+      n.contains('face pull')) {
+    return 'Shoulders';
   }
-  if (m.contains('glute') || n.contains('hip thrust')) return 'Glutes';
-  if (m.contains('quad') || m.contains('leg')) return 'Quads';
-  if (m.contains('core') || m.contains('abs') || m.contains('abdominal')) {
-    return 'Core';
-  }
-  return group;
+  if (n.contains('bench press') || n.contains('push-up')) return 'Chest';
+  if (n.contains('crunch') || n.contains('plank')) return 'Core';
+  return radarMuscleCategory(exerciseName);
 }
 
 Map<String, int> completedWeeklyMuscleSets(
@@ -34,7 +32,7 @@ Map<String, int> completedWeeklyMuscleSets(
   final today = DateTime(now.year, now.month, now.day);
   final start = today.subtract(Duration(days: today.weekday - 1));
   final end = start.add(const Duration(days: 7));
-  final totals = <String, int>{};
+  final totals = {for (final category in muscleRadarCategories) category: 0};
   for (final workout in workouts) {
     if (workout.date.isBefore(start) ||
         !workout.date.isBefore(end) ||
@@ -42,20 +40,24 @@ Map<String, int> completedWeeklyMuscleSets(
       continue;
     }
     for (final ex in workout.exercises) {
+      if (ex.isWarmup) continue;
       final axis = muscleAxis(ex.muscleGroup, ex.exerciseName);
+      if (axis == null) continue;
       totals[axis] =
-          (totals[axis] ?? 0) + ex.sets.where((s) => !s.isWarmup).length;
+          totals[axis]! +
+          ex.sets.where((s) => !s.isWarmup && s.reps > 0).length;
     }
   }
   return totals;
 }
 
 Map<String, int> plannedWeeklyMuscleSets(TrainingSplitModel split) {
-  final totals = <String, int>{};
+  final totals = {for (final category in muscleRadarCategories) category: 0};
   final days = split.workouts.where((d) => !d.isRestDay).toList();
   for (final day in days) {
     for (final ex in day.exercises) {
       final axis = muscleAxis(ex.muscleGroup, ex.exerciseName);
+      if (axis == null) continue;
       totals[axis] = (totals[axis] ?? 0) + ex.targetSets;
     }
   }

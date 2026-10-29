@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../models/muscle_radar_data.dart';
 import '../../../shared/widgets/glass_card.dart';
 import 'muscle_radar_chart.dart';
 
@@ -29,16 +30,14 @@ class _MuscleBalanceCardState extends State<MuscleBalanceCard> {
     ).subtract(Duration(days: now.weekday - 1));
     final end = start.add(const Duration(days: 6));
     final local = MaterialLocalizations.of(context);
-    final keys = {
-      ...MuscleRadarChart.kAxes,
-      ...widget.plannedVolume.keys,
-      ...widget.loggedVolume.keys,
-    }.toList();
-    final hasLogs = widget.loggedVolume.values.any((v) => v > 0);
+    final planned = muscleRadarTotals(widget.plannedVolume);
+    final logged = muscleRadarTotals(widget.loggedVolume);
+    const keys = muscleRadarCategories;
+    final hasLogs = logged.values.any((v) => v > 0);
     final maxSets = [
-      ...widget.plannedVolume.values,
-      ...widget.loggedVolume.values,
-    ].fold<int>(1, (a, b) => a > b ? a : b);
+      ...planned.values,
+      ...logged.values,
+    ].fold<double>(1, (a, b) => a > b ? a : b);
     return GlassCard(
       border: false,
       padding: const EdgeInsets.all(16),
@@ -84,12 +83,12 @@ class _MuscleBalanceCardState extends State<MuscleBalanceCard> {
             ),
           if (_chart)
             Center(
-              child: FittedBox(
-                child: MuscleRadarChart(
+              child: LayoutBuilder(
+                builder: (context, constraints) => MuscleRadarChart(
                   plannedVolume: widget.plannedVolume,
                   loggedVolume: widget.loggedVolume,
-                  size: 290,
-                  maxSetsScale: maxSets.toDouble(),
+                  size: constraints.maxWidth.clamp(0.0, 320.0),
+                  maxSetsScale: maxSets,
                 ),
               ),
             ),
@@ -105,15 +104,14 @@ class _MuscleBalanceCardState extends State<MuscleBalanceCard> {
                           child: Text(muscle, style: AppTypography.bodyMedium),
                         ),
                         Text(
-                          '${widget.loggedVolume[muscle] ?? 0} / ${widget.plannedVolume[muscle] ?? 0} sets',
+                          '${logged[muscle]!.toInt()} / ${planned[muscle]!.toInt()} sets',
                           style: AppTypography.monoSmall,
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     LinearProgressIndicator(
-                      value: ((widget.loggedVolume[muscle] ?? 0) / maxSets)
-                          .clamp(0, 1),
+                      value: (logged[muscle]! / maxSets).clamp(0, 1),
                       minHeight: 4,
                       color: AppColors.platinum,
                       backgroundColor: AppColors.steel,
