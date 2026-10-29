@@ -8,6 +8,7 @@ import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/liquid_glass_date_picker.dart';
 import '../models/daily_telemetry_model.dart';
 import '../providers/habit_log_provider.dart';
+import 'calories_detail_sheet.dart';
 
 void _show(BuildContext context, Widget child) => showModalBottomSheet<void>(
   context: context,
@@ -21,7 +22,22 @@ void _show(BuildContext context, Widget child) => showModalBottomSheet<void>(
 void showStepsDetailSheet(BuildContext context, DailyTelemetry telemetry) =>
     _show(context, _StepsSheet(initial: telemetry));
 void showCaloriesDetailSheet(BuildContext context, DailyTelemetry telemetry) =>
-    _show(context, const _CaloriesSheet());
+    _show(
+      context,
+      CaloriesDetailSheet(
+        requestCalories: (context) async {
+          final amount = await _number(
+            context,
+            title: 'Log active calories',
+            label: 'kcal',
+            initial: 100,
+            min: 1,
+            max: 10000,
+          );
+          return amount?.round();
+        },
+      ),
+    );
 void showHydrationDetailSheet(BuildContext context, DailyTelemetry telemetry) =>
     _show(context, const _WaterSheet());
 void showSleepDetailSheet(BuildContext context, DailyTelemetry telemetry) =>
@@ -271,81 +287,6 @@ class _StepsSheetState extends ConsumerState<_StepsSheet> {
         _description(
           'Source: phone step sensor. Distance uses an average stride length and is an estimate.',
         ),
-      ],
-    );
-  }
-}
-
-class _CaloriesSheet extends ConsumerStatefulWidget {
-  const _CaloriesSheet();
-  @override
-  ConsumerState<_CaloriesSheet> createState() => _CaloriesSheetState();
-}
-
-class _CaloriesSheetState extends ConsumerState<_CaloriesSheet> {
-  bool _busy = false;
-  String? _errorText;
-  @override
-  Widget build(BuildContext context) {
-    final calories = ref.watch(
-      dailyTelemetryProvider.select((t) => t.calories),
-    );
-    return AppSheet(
-      title: 'Active calories',
-      busy: _busy,
-      children: [
-        _description(
-          MaterialLocalizations.of(context).formatFullDate(DateTime.now()),
-        ),
-        _value(calories == 0 ? 'No data yet' : '$calories kcal'),
-        _description(
-          'Active burn entered by you. Resting calories are not tracked, and workout sets are not converted into a calorie estimate.',
-        ),
-        const SizedBox(height: 20),
-        GlassCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('MANUAL LOG', style: AppTypography.monoSmall),
-              const SizedBox(height: 10),
-              _description(
-                'Enter active calories from your watch or another activity tracker.',
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        FilledButton(
-          onPressed: _busy
-              ? null
-              : () async {
-                  final n = await _number(
-                    context,
-                    title: 'Log active calories',
-                    label: 'kcal',
-                    initial: 100,
-                    min: 1,
-                    max: 10000,
-                  );
-                  if (n == null || !mounted) return;
-                  setState(() {
-                    _busy = true;
-                    _errorText = null;
-                  });
-                  try {
-                    await ref
-                        .read(habitLogProvider.notifier)
-                        .addCalories(n.round());
-                  } catch (_) {
-                    if (mounted) {
-                      setState(() => _errorText = 'Could not save. Try again.');
-                    }
-                  }
-                  if (mounted) setState(() => _busy = false);
-                },
-          child: Text(_busy ? 'SAVING…' : 'LOG ACTIVE CALORIES'),
-        ),
-        _error(_errorText),
       ],
     );
   }
