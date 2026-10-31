@@ -6,6 +6,8 @@ import 'package:leon/core/providers/local_date_provider.dart';
 import 'package:leon/core/theme/app_colors.dart';
 import 'package:leon/core/theme/app_theme.dart';
 import 'package:leon/features/dashboard/providers/dashboard_provider.dart';
+import 'package:leon/features/dashboard/providers/home_workout_view_provider.dart';
+import 'package:leon/features/dashboard/providers/workout_rotation_provider.dart';
 import 'package:leon/features/dashboard/widgets/retractable_calendar_header.dart';
 import 'package:leon/features/history/providers/history_provider.dart';
 import 'package:leon/features/workout_builder/models/split_model.dart';
@@ -34,6 +36,37 @@ const recoverySplit = TrainingSplitModel(
   ],
 );
 
+const pplSplit = TrainingSplitModel(
+  id: 'custom_ppl',
+  name: 'My PPL',
+  shortName: 'MY PPL',
+  daysPerWeek: 5,
+  description: '',
+  plannedMuscleSets: {},
+  workouts: [
+    SplitWorkoutDay(id: 'push', name: 'Push', targetMuscles: ['Chest']),
+    SplitWorkoutDay(id: 'pull', name: 'Pull', targetMuscles: ['Back']),
+    SplitWorkoutDay(id: 'legs', name: 'Legs', targetMuscles: ['Legs']),
+    SplitWorkoutDay(
+      id: 'rest',
+      name: 'Recovery',
+      targetMuscles: [],
+      isRestDay: true,
+    ),
+  ],
+);
+
+class _PplSplits extends SplitsNotifier {
+  @override
+  SplitsState build() => SplitsState(
+    splits: [pplSplit],
+    activeSplitId: pplSplit.id,
+    loggedVolume: {},
+    // Reproduce the old calendar incorrectly starting at Push on October 28.
+    schedules: [TrainingSchedule.fromSplit(pplSplit, DateTime(2026, 10, 28))],
+  );
+}
+
 class _History extends HistoryWorkoutsNotifier {
   _History(this.workouts);
   final List<WorkoutModel> workouts;
@@ -55,6 +88,92 @@ Color? dayColor(WidgetTester tester, DateTime date) =>
         .color;
 
 void main() {
+  test(
+    'October 29 Legs aligns Home and calendar; recovery expires at midnight',
+    () async {
+      var today = DateTime(2026, 10, 30);
+      final legs = WorkoutModel(
+        id: 'legs',
+        userId: 'guest',
+        name: 'MY PPL · Legs',
+        date: DateTime(2026, 10, 29, 20),
+        trainingPlan: {'splitId': pplSplit.id, 'dayId': 'legs'},
+      );
+      final c = ProviderContainer(
+        overrides: [
+          hiveServiceProvider.overrideWithValue(MemoryHiveService()),
+          localDateProvider.overrideWith((ref) => today),
+          splitsProvider.overrideWith(_PplSplits.new),
+          historyWorkoutsProvider.overrideWith(
+            () => _History([
+              WorkoutModel(
+                id: 'pull',
+                userId: 'guest',
+                name: 'MY PPL · Pull',
+                date: DateTime(2026, 10, 28, 20),
+              ),
+              legs,
+            ]),
+          ),
+        ],
+      );
+      addTearDown(c.dispose);
+      expect(c.read(homeWorkoutViewProvider).day!.id, 'rest');
+      expect(
+        c.read(scheduledWorkoutDatesProvider),
+        contains(DateTime(2026, 10, 29)),
+      );
+      expect(c.read(scheduledWorkoutDatesProvider), isNot(contains(today)));
+      expect(
+        c.read(scheduledWorkoutDatesProvider),
+        contains(DateTime(2026, 10, 31)),
+      );
+
+      c
+          .read(selectedCalendarDateProvider.notifier)
+          .select(DateTime(2026, 10, 29));
+      expect(c.read(homeWorkoutViewProvider).logged.single, legs);
+      c.read(selectedCalendarDateProvider.notifier).clear();
+      c.read(workoutRotationProvider.notifier).selectDayByIndex(1);
+      today = DateTime(2026, 10, 31);
+      c.invalidate(localDateProvider);
+      expect(c.read(homeWorkoutViewProvider).day!.id, 'push');
+      expect(c.read(workoutRotationProvider).isManuallyOverridden, isFalse);
+      expect(
+        c.read(scheduledWorkoutDatesProvider),
+        isNot(contains(DateTime(2026, 10, 30))),
+      );
+      c
+          .read(selectedCalendarDateProvider.notifier)
+          .select(DateTime(2026, 10, 30));
+      expect(c.read(homeWorkoutViewProvider).day!.isRestDay, isTrue);
+
+      // An edited/backdated session changes both surfaces immediately.
+      await c
+          .read(historyWorkoutsProvider.notifier)
+          .updateWorkout(legs.copyWith(date: DateTime(2026, 10, 30, 20)));
+      c.read(selectedCalendarDateProvider.notifier).clear();
+      expect(c.read(homeWorkoutViewProvider).day!.id, 'rest');
+      expect(c.read(scheduledWorkoutDatesProvider), isNot(contains(today)));
+      await c.read(historyWorkoutsProvider.notifier).deleteWorkout('legs');
+      expect(c.read(homeWorkoutViewProvider).day!.id, 'legs');
+      expect(c.read(scheduledWorkoutDatesProvider), contains(today));
+    },
+  );
+
+  test('legacy middle-dot Pull log anchors the correct first day', () {
+    final schedule = TrainingSchedule.fromLegacy(pplSplit, [
+      WorkoutModel(
+        id: 'pull',
+        userId: 'guest',
+        name: 'MY PPL · Pull',
+        date: DateTime(2026, 10, 28, 20),
+      ),
+    ], DateTime(2026, 10, 30));
+    expect(schedule.startIndex, 1);
+    expect(schedule.isTrainingDay(DateTime(2026, 10, 30)), isFalse);
+  });
+
   test(
     'A schedule starting on the 28th never schedules the 26th or 27th and preserves recovery',
     () {

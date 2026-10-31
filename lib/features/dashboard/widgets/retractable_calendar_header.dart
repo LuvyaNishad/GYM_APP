@@ -25,6 +25,7 @@ class RetractableCalendarHeader extends StatefulWidget {
     this.onDateSelected,
     this.loggedWorkoutDates = const {},
     this.scheduledWorkoutDates = const {},
+    this.pausedWorkoutDates = const {},
     this.completedSessions,
     this.targetSessions,
   });
@@ -36,6 +37,7 @@ class RetractableCalendarHeader extends StatefulWidget {
   final ValueChanged<DateTime>? onDateSelected;
   final Set<DateTime> loggedWorkoutDates;
   final Set<DateTime> scheduledWorkoutDates;
+  final Set<DateTime> pausedWorkoutDates;
   final int? completedSessions;
   final int? targetSessions;
 
@@ -217,7 +219,10 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                   final scheduled = widget.scheduledWorkoutDates.any(
                     (date) => DateUtils.isSameDay(date, day),
                   );
-                  final isMissed = isPast && scheduled && !done;
+                  final paused = widget.pausedWorkoutDates.any(
+                    (date) => DateUtils.isSameDay(date, day),
+                  );
+                  final isMissed = isPast && scheduled && !done && !paused;
 
                   // Color discipline:
                   // - Green: Day workout was completed (gym hit)
@@ -270,6 +275,8 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                               ? ', workout completed'
                               : isMissed
                               ? ', workout missed'
+                              : paused
+                              ? ', training paused'
                               : scheduled
                               ? ', workout scheduled'
                               : ', no workout scheduled'}',
@@ -310,6 +317,19 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
+                              if (widget.pausedWorkoutDates.isNotEmpty) ...[
+                                const SizedBox(height: 3),
+                                SizedBox(
+                                  height: 11,
+                                  child: paused && !done
+                                      ? Icon(
+                                          Icons.pause_rounded,
+                                          size: 11,
+                                          color: numberTextColor,
+                                        )
+                                      : null,
+                                ),
+                              ],
                             ],
                           ),
                         ),

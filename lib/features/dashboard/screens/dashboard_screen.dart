@@ -53,6 +53,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final userProfile = ref.watch(userProfileProvider);
     final loggedWorkoutDates = ref.watch(loggedWorkoutDatesProvider);
     final scheduledWorkoutDates = ref.watch(scheduledWorkoutDatesProvider);
+    final pausedWorkoutDates = ref.watch(pausedWorkoutDatesProvider);
     final selectedCalendarDate = ref.watch(selectedCalendarDateProvider);
     final weeklyConsistency = ref.watch(weeklyConsistencyProvider);
 
@@ -77,6 +78,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               },
               loggedWorkoutDates: loggedWorkoutDates,
               scheduledWorkoutDates: scheduledWorkoutDates,
+              pausedWorkoutDates: pausedWorkoutDates,
               completedSessions: weeklyConsistency.completedThisWeek,
               targetSessions: weeklyConsistency.plannedThisWeek,
             ),

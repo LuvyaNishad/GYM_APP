@@ -6,10 +6,12 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../models/workout_model.dart';
 import '../../../shared/widgets/glass_card.dart';
+import '../../../shared/widgets/app_sheet.dart';
 import '../../workout_builder/models/split_model.dart';
 import '../../workout_builder/widgets/create_routine_sheet.dart';
 import '../../workout_session/providers/active_session_provider.dart';
 import '../providers/workout_rotation_provider.dart';
+import 'training_pause_sheet.dart';
 
 void showWorkoutDetailSheet(
   BuildContext context, {
@@ -62,6 +64,28 @@ class _WorkoutDetailContentState extends ConsumerState<_WorkoutDetailContent> {
           widget.date!,
         ).isBefore(DateUtils.dateOnly(DateTime.now()));
     final active = ref.watch(activeSessionProvider.select((s) => s.isActive));
+    if (!past && rotation.isTrainingPaused && !active) {
+      return AppSheet(
+        title: 'Training paused',
+        children: [
+          Text(
+            'Resume training to continue your plan from your last logged workout.',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: () {
+              final parentContext = Navigator.of(context).context;
+              Navigator.pop(context);
+              showTrainingPauseSheet(parentContext);
+            },
+            child: const Text('MANAGE TRAINING PAUSE'),
+          ),
+        ],
+      );
+    }
     return SafeArea(
       top: false,
       child: Container(

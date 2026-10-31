@@ -28,7 +28,7 @@ import '../providers/history_provider.dart';
 
 enum _CalendarNavView { days, months, years }
 
-enum DayStatus { workedOut, missed, rest, future }
+enum DayStatus { workedOut, missed, rest, future, paused }
 
 class LeonMonthlyCalendar extends ConsumerStatefulWidget {
   const LeonMonthlyCalendar({
@@ -122,20 +122,15 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
     if (hasWorkout) {
       return DayStatus.workedOut;
     }
+    final plan = ref.read(workoutCalendarPlanProvider);
+    if (plan.isPausedOn(d)) return DayStatus.paused;
 
     // Future dates or today (if unworked, not yet missed)
     if (d.isAfter(today) || d.isAtSameMomentAs(today)) {
       return DayStatus.future;
     }
 
-    // Past date:
-    // Sunday (weekday 7) and Wednesday (weekday 3) are designated rest days
-    if (d.weekday == DateTime.sunday || d.weekday == DateTime.wednesday) {
-      return DayStatus.rest;
-    }
-
-    // Other scheduled training days (Mon, Tue, Thu, Fri, Sat) without workout = Missed
-    return DayStatus.missed;
+    return plan.isTrainingDay(d) ? DayStatus.missed : DayStatus.rest;
   }
 
   List<DateTime> _buildMonthGrid(DateTime month) {
@@ -211,8 +206,7 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
   Widget build(BuildContext context) {
     final loggedDates = ref.watch(loggedWorkoutDatesProvider);
     final selectedDate = ref.watch(selectedCalendarDateProvider);
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+    final today = ref.watch(workoutCalendarPlanProvider).today;
     final topPadding = MediaQuery.paddingOf(context).top;
 
     return AnimatedBuilder(
@@ -561,14 +555,20 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
               ref.read(selectedCalendarDateProvider.notifier).select(date);
               widget.onDateSelected?.call(date);
             },
-            child: SizedBox(
-              height: 36,
-              child: _buildDayCell(
-                date: date,
-                isCurrentMonth: isCurrentMonth,
-                isToday: isToday,
-                isSelected: isSelected,
-                status: status,
+            child: Semantics(
+              label:
+                  '${MaterialLocalizations.of(context).formatFullDate(date)}, ${status == DayStatus.paused ? 'training paused' : status.name}',
+              selected: isSelected,
+              button: true,
+              child: SizedBox(
+                height: 36,
+                child: _buildDayCell(
+                  date: date,
+                  isCurrentMonth: isCurrentMonth,
+                  isToday: isToday,
+                  isSelected: isSelected,
+                  status: status,
+                ),
               ),
             ),
           ),
@@ -625,6 +625,13 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
         circleBg = AppColors.warning.withValues(alpha: 0.08);
         textColor = AppColors.textMuted;
       }
+    } else if (status == DayStatus.paused) {
+      circleBg = AppColors.charcoal;
+      circleBorder = Border.all(
+        color: AppColors.platinum.withValues(alpha: .5),
+        width: .8,
+      );
+      textColor = AppColors.textSecondary;
     } else if (status == DayStatus.rest) {
       if (isCurrentMonth) {
         // Rest day in current month: subtle dark grey circle
@@ -669,13 +676,18 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
             shape: BoxShape.circle,
             border: circleBorder,
           ),
-          child: Text(
-            '${date.day}',
-            style: TextStyle(
-              fontFamily: AppTypography.fontMono,
-              fontSize: 11.5,
-              fontWeight: fontWeight,
-              color: textColor,
+          child: Tooltip(
+            message: status == DayStatus.paused
+                ? 'Training paused'
+                : MaterialLocalizations.of(context).formatFullDate(date),
+            child: Text(
+              '${date.day}',
+              style: TextStyle(
+                fontFamily: AppTypography.fontMono,
+                fontSize: 11.5,
+                fontWeight: fontWeight,
+                color: textColor,
+              ),
             ),
           ),
         ),
@@ -829,6 +841,7 @@ class _LeonMonthlyCalendarState extends ConsumerState<LeonMonthlyCalendar>
           _buildLegendItem(color: AppColors.pureWhite, label: 'TODAY'),
           _buildLegendItem(color: AppColors.warning, label: 'MISSED'),
           _buildLegendItem(color: const Color(0xFF64748B), label: 'REST'),
+          _buildLegendItem(color: AppColors.platinum, label: 'PAUSED'),
         ],
       ),
     );

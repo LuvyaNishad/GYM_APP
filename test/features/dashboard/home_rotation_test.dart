@@ -63,6 +63,64 @@ void main() {
     ]);
     expect(c.read(workoutRotationProvider).selectedDay.id, 'a');
   });
+  test('Home middle-dot session names advance to the recovery day', () {
+    final c = setup([workout('home', 'AB · Push A', 1)]);
+    expect(c.read(workoutRotationProvider).selectedDay.id, 'rest');
+    expect(c.read(homeWorkoutViewProvider).day!.isRestDay, isTrue);
+  });
+  test('saved routine identity survives a renamed session', () {
+    final c = setup([
+      workout(
+        'renamed',
+        'Evening workout',
+        1,
+      ).copyWith(trainingPlan: {'splitId': 'ab', 'dayId': 'a'}),
+    ]);
+    expect(c.read(workoutRotationProvider).selectedDay.id, 'rest');
+  });
+  test('saved identity from another split cannot advance this split', () {
+    final c = setup([
+      workout(
+        'other',
+        'AB · Push A',
+        1,
+      ).copyWith(trainingPlan: {'splitId': 'other', 'dayId': 'a'}),
+    ]);
+    expect(c.read(workoutRotationProvider).selectedDay.id, 'a');
+  });
+  test('all launch separators preserve exact A/B day matching', () {
+    for (final separator in ['·', '●', '•', '//']) {
+      expect(
+        setup([
+          workout('home', 'AB $separator Push A', 1),
+        ]).read(workoutRotationProvider).selectedDay.id,
+        'rest',
+      );
+    }
+  });
+  test(
+    'editing the latest log resets a manual choice and recomputes rotation',
+    () async {
+      final logged = workout('editable', 'AB ● Push B', 1);
+      final c = setup([logged]);
+      c.read(workoutRotationProvider.notifier).selectDayByIndex(2);
+      await c
+          .read(historyWorkoutsProvider.notifier)
+          .updateWorkout(logged.copyWith(name: 'AB ● Push A'));
+      expect(c.read(workoutRotationProvider).selectedDay.id, 'rest');
+      expect(c.read(workoutRotationProvider).isManuallyOverridden, isFalse);
+    },
+  );
+  test(
+    'tomorrow preview does not skip recovery after a workout completed today',
+    () {
+      final c = setup([workout('today', 'AB ● Push A', 0)]);
+      c
+          .read(selectedCalendarDateProvider.notifier)
+          .select(today.add(const Duration(days: 1)));
+      expect(c.read(homeWorkoutViewProvider).day!.id, 'rest');
+    },
+  );
   test(
     'recovery day lasts one calendar day, then the next training day remains queued',
     () {
