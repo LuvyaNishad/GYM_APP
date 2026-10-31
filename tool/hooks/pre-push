@@ -1,0 +1,22 @@
+#!/bin/sh
+
+repo_root=$(git rev-parse --show-toplevel) || exit 2
+cd "$repo_root" || exit 2
+
+configured_python=$(git config --local --get leon.privateFilesPython || :)
+if test -n "$configured_python"; then
+    exec "$configured_python" tool/check_private_files.py --pre-push
+fi
+
+if command -v py >/dev/null 2>&1 && py -3 -c 'import sys; sys.exit(sys.version_info.major != 3)' >/dev/null 2>&1; then
+    exec py -3 tool/check_private_files.py --pre-push
+fi
+
+for python_command in python3 python; do
+    if command -v "$python_command" >/dev/null 2>&1 && "$python_command" -c 'import sys; sys.exit(sys.version_info.major != 3)' >/dev/null 2>&1; then
+        exec "$python_command" tool/check_private_files.py --pre-push
+    fi
+done
+
+echo "Private-file guard requires Python 3. Push stopped." >&2
+exit 2

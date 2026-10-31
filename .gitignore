@@ -37,6 +37,8 @@ migrate_working_dir/
 *.env
 !.env.example
 .agents/
+.claude/
+.codex/
 .mcp.json
 
 # ── Design and Scratch Assets ────────────────────────────────────────────────
@@ -47,9 +49,30 @@ stitch_screens/
 *.cmd
 
 # ── Internal Documentation, Roadmaps, Prompts & Scratch Notes (Local Only) ───
+# Keep planning/progress in .local/BACKLOG.md. The local push guard also checks
+# tracked documents; only the public README exceptions below belong in Git.
+.local/
 *.md
-!README.md
+**/*.md
+!/README.md
 !ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md
+
+# Automatically ignore any todo, progress, backlog, planning, task, or notes file
+*[Tt][Oo][Dd][Oo]*
+*[Pp][Rr][Oo][Gg][Rr][Ee][Ss][Ss]*.md
+*[Pp][Rr][Oo][Gg][Rr][Ee][Ss][Ss]*.txt
+*[Pp][Ll][Aa][Nn]*.md
+*[Pp][Ll][Aa][Nn]*.txt
+*[Bb][Aa][Cc][Kk][Ll][Oo][Gg]*
+*[Ss][Cc][Rr][Aa][Tt][Cc][Hh]*
+*.todo
+*.plan
+*.progress
+*.notes
+*.task
+*.tasks
+*.scratch
+
 *.txt
 !CMakeLists.txt
 docs/
