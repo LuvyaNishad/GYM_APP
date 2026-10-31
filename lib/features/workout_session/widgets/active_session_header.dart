@@ -1,3 +1,4 @@
+import '../../../core/utils/measurement_units.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
@@ -86,7 +87,7 @@ class ActiveSessionHeader extends ConsumerWidget {
                     if (counts.$2 > 0)
                       Flexible(
                         child: Text(
-                          '${counts.$1}/${counts.$2} sets · ${counts.$3.toStringAsFixed(0)} kg',
+                          '${counts.$1}/${counts.$2} sets · ${ref.watch(measurementUnitsProvider).weight(counts.$3, decimals: 0)}',
                           textAlign: TextAlign.end,
                           style: AppTypography.monoSmall.copyWith(
                             color: AppColors.platinum,

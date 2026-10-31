@@ -1,3 +1,5 @@
+import '../../../state/app_providers.dart';
+import '../../../core/utils/measurement_units.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
@@ -326,7 +328,7 @@ class _CreateRoutineSheetState extends ConsumerState<CreateRoutineSheet> {
                       ),
                     ),
                     subtitle: Text(
-                      '${ex.targetSets} sets × ${ex.repRange} reps · ${ex.restSeconds}s rest',
+                      '${ex.targetSets} sets × ${ex.repRange} reps · ${ex.toActiveExerciseState(defaultRestSeconds: ref.read(userProfileProvider)?.defaultRestSeconds ?? 90).restDurationSeconds}s rest',
                     ),
                     trailing: const Icon(Icons.edit_outlined, size: 19),
                     onTap: _saving
@@ -384,7 +386,7 @@ class _CreateRoutineSheetState extends ConsumerState<CreateRoutineSheet> {
                                 muscleGroup: selected.muscleGroup,
                                 equipment: selected.equipment,
                                 targetWeightKg: 0,
-                                restSeconds: selected.restDurationSeconds,
+                                restSeconds: 90,
                                 isUnilateral: selected.isUnilateral,
                               ),
                             ]);
@@ -430,23 +432,32 @@ class _CreateRoutineSheetState extends ConsumerState<CreateRoutineSheet> {
   }
 }
 
-class _ExerciseEditor extends StatefulWidget {
+class _ExerciseEditor extends ConsumerStatefulWidget {
   const _ExerciseEditor({required this.exercise, required this.onRemove});
   final PlannedExercise exercise;
   final VoidCallback onRemove;
   @override
-  State<_ExerciseEditor> createState() => _ExerciseEditorState();
+  ConsumerState<_ExerciseEditor> createState() => _ExerciseEditorState();
 }
 
-class _ExerciseEditorState extends State<_ExerciseEditor> {
+class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
   final _form = GlobalKey<FormState>();
   late int _sets = widget.exercise.targetSets;
   late final _reps = TextEditingController(text: widget.exercise.repRange);
   late final _weight = TextEditingController(
-    text: widget.exercise.targetWeightKg.toString(),
+    text: ref
+        .read(measurementUnitsProvider)
+        .weightFromKg(widget.exercise.targetWeightKg)
+        .toStringAsFixed(1),
   );
   late final _rest = TextEditingController(
-    text: widget.exercise.restSeconds.toString(),
+    text: widget.exercise
+        .toActiveExerciseState(
+          defaultRestSeconds:
+              ref.read(userProfileProvider)?.defaultRestSeconds ?? 90,
+        )
+        .restDurationSeconds
+        .toString(),
   );
   late double _rir = widget.exercise.targetRir;
   late bool _unilateral = widget.exercise.isUnilateral;
@@ -510,14 +521,15 @@ class _ExerciseEditorState extends State<_ExerciseEditor> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              decoration: const InputDecoration(
-                labelText: 'Starting weight (kg)',
+              decoration: InputDecoration(
+                labelText:
+                    'Starting weight (${ref.read(measurementUnitsProvider).weightLabel})',
                 helperText: '0 for bodyweight or to choose during the session',
               ),
               validator: (v) {
                 final n = double.tryParse(v ?? '');
                 return n == null || !n.isFinite || n < 0 || n > 1500
-                    ? 'Enter 0–1500 kg.'
+                    ? 'Enter 0–${ref.read(measurementUnitsProvider).weightFromKg(1500).round()} ${ref.read(measurementUnitsProvider).weightLabel}.'
                     : null;
               },
             ),
@@ -563,8 +575,23 @@ class _ExerciseEditorState extends State<_ExerciseEditor> {
                   widget.exercise.copyWith(
                     targetSets: _sets,
                     repRange: _reps.text.trim().replaceAll('-', '–'),
-                    targetWeightKg: double.parse(_weight.text),
-                    restSeconds: int.parse(_rest.text),
+                    targetWeightKg: ref
+                        .read(measurementUnitsProvider)
+                        .weightToKg(double.parse(_weight.text)),
+                    restSeconds:
+                        !widget.exercise.restIsExplicit &&
+                            int.parse(_rest.text) ==
+                                widget.exercise
+                                    .toActiveExerciseState(
+                                      defaultRestSeconds:
+                                          ref
+                                              .read(userProfileProvider)
+                                              ?.defaultRestSeconds ??
+                                          90,
+                                    )
+                                    .restDurationSeconds
+                        ? null
+                        : int.parse(_rest.text),
                     targetRir: _rir,
                     isUnilateral: _unilateral,
                   ),

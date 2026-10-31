@@ -18,6 +18,7 @@ class PlannedExercise {
     this.targetRir = 2.0,
     this.targetWeightKg = 60.0,
     this.restSeconds = 90,
+    this.restIsExplicit = false,
     this.supersetGroupId,
     this.isUnilateral = false,
   });
@@ -31,11 +32,12 @@ class PlannedExercise {
   final double targetRir;
   final double targetWeightKg;
   final int restSeconds;
+  final bool restIsExplicit;
   final String? supersetGroupId;
   final bool isUnilateral;
 
   /// Converts this planned exercise into active session state with pre-populated sets.
-  ActiveExerciseState toActiveExerciseState() {
+  ActiveExerciseState toActiveExerciseState({int defaultRestSeconds = 90}) {
     final sets = List.generate(
       targetSets,
       (index) => ActiveSetState(
@@ -58,7 +60,9 @@ class PlannedExercise {
       equipment: equipment,
       sets: sets,
       supersetGroupId: supersetGroupId,
-      restDurationSeconds: restSeconds,
+      restDurationSeconds: restIsExplicit || restSeconds != 90
+          ? restSeconds
+          : defaultRestSeconds,
       isUnilateral: isUnilateral,
     );
   }
@@ -86,6 +90,7 @@ class PlannedExercise {
       targetRir: targetRir ?? this.targetRir,
       targetWeightKg: targetWeightKg ?? this.targetWeightKg,
       restSeconds: restSeconds ?? this.restSeconds,
+      restIsExplicit: restSeconds != null || restIsExplicit,
       supersetGroupId: supersetGroupId ?? this.supersetGroupId,
       isUnilateral: isUnilateral ?? this.isUnilateral,
     );
@@ -102,6 +107,7 @@ class PlannedExercise {
       'targetRir': targetRir,
       'targetWeightKg': targetWeightKg,
       'restSeconds': restSeconds,
+      'restIsExplicit': restIsExplicit,
       'supersetGroupId': supersetGroupId,
       'isUnilateral': isUnilateral,
     };
@@ -111,12 +117,12 @@ class PlannedExercise {
     final name = json['exerciseName'] as String? ?? 'Exercise';
     final muscle = json['muscleGroup'] as String? ?? 'General';
     final rawRest = (json['restSeconds'] as num?)?.toInt();
-    final computedRest = rawRest != null && rawRest != 90
-        ? rawRest
-        : ExerciseLibraryItem.defaultRestForExercise(
-            name: name,
-            category: muscle,
-          );
+    final computedRest =
+        rawRest ??
+        ExerciseLibraryItem.defaultRestForExercise(
+          name: name,
+          category: muscle,
+        );
 
     final explicitUnilateral = json['isUnilateral'] as bool?;
     final inferredUnilateral =
@@ -140,6 +146,7 @@ class PlannedExercise {
       targetRir: (json['targetRir'] as num?)?.toDouble() ?? 2.0,
       targetWeightKg: (json['targetWeightKg'] as num?)?.toDouble() ?? 60.0,
       restSeconds: computedRest,
+      restIsExplicit: json['restIsExplicit'] as bool? ?? rawRest != null,
       supersetGroupId: json['supersetGroupId'] as String?,
       isUnilateral: inferredUnilateral,
     );

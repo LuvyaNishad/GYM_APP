@@ -1,3 +1,4 @@
+import '../../../state/app_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
@@ -129,7 +130,12 @@ class _ExerciseSubstitutionSheetState
                   .read(activeSessionProvider.notifier)
                   .replaceExercise(
                     ex.exerciseId,
-                    item.toActiveExercise(defaultWeightKg: 0),
+                    item.toActiveExercise(
+                      defaultWeightKg: 0,
+                      customRestSeconds:
+                          ref.read(userProfileProvider)?.defaultRestSeconds ??
+                          90,
+                    ),
                   );
               Navigator.pop(context);
             },

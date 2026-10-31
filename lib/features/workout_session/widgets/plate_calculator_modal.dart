@@ -1,3 +1,4 @@
+import '../../../core/utils/measurement_units.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/widgets/app_sheet.dart';
@@ -109,6 +110,7 @@ class PlateCalculatorModal extends ConsumerStatefulWidget {
 
 class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
   late double _target;
+  late final MeasurementUnits _units;
   bool _warmups = false;
   double? _barOverride;
   late final TextEditingController _targetController;
@@ -116,6 +118,7 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
   @override
   void initState() {
     super.initState();
+    _units = ref.read(measurementUnitsProvider);
     final explicitBar = widget.initialBarWeightKg;
     _barOverride =
         explicitBar != null &&
@@ -127,7 +130,9 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
     _target = widget.initialTotalWeightKg.isFinite
         ? widget.initialTotalWeightKg.clamp(0, 1500)
         : 20;
-    _targetController = TextEditingController(text: _target.toStringAsFixed(1));
+    _targetController = TextEditingController(
+      text: _units.weightFromKg(_target).toStringAsFixed(1),
+    );
   }
 
   @override
@@ -159,7 +164,7 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
               children: [
                 for (final kg in [10.0, 15.0, 20.0, 25.0])
                   ChoiceChip(
-                    label: Text('${kg.toInt()} kg'),
+                    label: Text(_units.weight(kg)),
                     selected: kg == bar,
                     onSelected: saving
                         ? null
@@ -177,7 +182,7 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
             for (final plate in kOlympicPlates)
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text('$plate kg'),
+                title: Text(_units.weight(plate)),
                 value: available.contains(plate),
                 onChanged: saving
                     ? null
@@ -261,15 +266,16 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
           controller: _targetController,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: InputDecoration(
-            labelText: 'Target total weight (kg)',
+            labelText: 'Target total weight (${_units.weightLabel})',
             helperText: 'Includes the bar and both sides',
             errorText: _targetError,
           ),
           onChanged: (v) {
-            final n = double.tryParse(v);
+            final parsed = double.tryParse(v);
+            final n = parsed == null ? null : _units.weightToKg(parsed);
             setState(() {
               _targetError = n == null || !n.isFinite || n < 0 || n > 1500
-                  ? 'Enter 0–1500 kg'
+                  ? 'Enter 0–${_units.weightFromKg(1500).round()} ${_units.weightLabel}'
                   : null;
               if (_targetError == null) _target = n!;
             });
@@ -279,9 +285,7 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
         TextButton.icon(
           onPressed: _preferences,
           icon: const Icon(Icons.tune_rounded),
-          label: Text(
-            '${bar.toStringAsFixed(1)} kg bar · Equipment preferences',
-          ),
+          label: Text('${_units.weight(bar)} bar · Equipment preferences'),
         ),
         const SizedBox(height: 10),
         SegmentedButton<bool>(
@@ -300,7 +304,7 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  '${perSide.toStringAsFixed(2)} kg PER SIDE',
+                  '${_units.weight(perSide, decimals: 2)} PER SIDE',
                   style: AppTypography.monoMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -343,7 +347,7 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
                                 child: RotatedBox(
                                   quarterTurns: 3,
                                   child: Text(
-                                    '$kg kg',
+                                    _units.weight(kg),
                                     style: AppTypography.monoSmall,
                                   ),
                                 ),
@@ -359,7 +363,7 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
                   breakdown.isEmpty
                       ? 'Empty bar'
                       : breakdown.entries
-                            .map((e) => '${e.value} × ${e.key} kg')
+                            .map((e) => '${e.value} × ${_units.weight(e.key)}')
                             .join('  +  '),
                   style: AppTypography.monoSmall,
                   textAlign: TextAlign.center,
@@ -386,7 +390,9 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
                 '${step.percentage}%',
                 style: AppTypography.monoSmall,
               ),
-              title: Text('${step.weightKg} kg × ${step.reps} reps'),
+              title: Text(
+                '${_units.weight(step.weightKg)} × ${step.reps} reps',
+              ),
               subtitle: const Text('Warmup · excluded from working volume'),
             ),
         ],
@@ -395,8 +401,8 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
             padding: const EdgeInsets.only(top: 16),
             child: Text(
               _target < bar
-                  ? 'The empty bar weighs ${bar.toStringAsFixed(1)} kg, above your target. Choose a lighter bar if needed.'
-                  : 'Closest load below your target: ${actual.toStringAsFixed(2)} kg with these plates.',
+                  ? 'The empty bar weighs ${_units.weight(bar)}, above your target. Choose a lighter bar if needed.'
+                  : 'Closest load below your target: ${_units.weight(actual, decimals: 2)} with these plates.',
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.warning,
               ),
@@ -413,7 +419,7 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
           child: Text(
             widget.onWeightSelected == null
                 ? 'DONE'
-                : 'APPLY ${actual.toStringAsFixed(2)} KG',
+                : 'APPLY ${_units.weight(actual, decimals: 2)}',
           ),
         ),
       ],

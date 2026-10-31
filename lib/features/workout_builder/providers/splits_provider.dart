@@ -5,11 +5,13 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/local_date_provider.dart';
 import '../../../services/hive_service.dart';
+import '../../../state/app_providers.dart';
 import '../../workout_session/providers/active_session_provider.dart';
 import '../data/split_presets.dart';
 import '../models/split_model.dart';
 import '../models/training_schedule.dart';
 import '../models/workout_sequence.dart';
+import '../models/programme_configuration.dart';
 import '../../history/providers/history_provider.dart';
 import 'weekly_volume_provider.dart';
 
@@ -66,6 +68,7 @@ class SplitsNotifier extends Notifier<SplitsState> {
   SplitsState build() {
     ref.keepAlive();
     final hive = ref.watch(hiveServiceProvider);
+    final user = ref.watch(userProfileProvider);
 
     List<TrainingSplitModel> customSplits = [];
     try {
@@ -77,9 +80,16 @@ class SplitsNotifier extends Notifier<SplitsState> {
       customSplits = [];
     }
 
-    final allSplits = [...kPresetSplits, ...customSplits];
+    final allSplits = [
+      for (final split in [...kPresetSplits, fullBodySplit])
+        configureProgramme(split, user),
+      ...customSplits,
+    ];
 
     final savedActiveId =
+        (user?.preferredSplit == null
+            ? null
+            : resolveSplitId(user!.preferredSplit!)) ??
         hive.getSetting<String>(
           AppConstants.settingActiveSplitId,
           fallback: 'split_ppl',
@@ -92,7 +102,8 @@ class SplitsNotifier extends Notifier<SplitsState> {
 
     final history = ref.watch(historyWorkoutsProvider);
     var schedules = TrainingSchedule.decode(
-      hive.getSetting<String>(AppConstants.settingTrainingSchedules),
+      user?.trainingSchedules ??
+          hive.getSetting<String>(AppConstants.settingTrainingSchedules),
     );
     if (schedules.isEmpty) {
       schedules = [
@@ -195,12 +206,22 @@ class SplitsNotifier extends Notifier<SplitsState> {
     }
     _savingSchedule = true;
     try {
-      await ref
-          .read(hiveServiceProvider)
-          .putSettingChecked(
-            AppConstants.settingTrainingSchedules,
-            TrainingSchedule.encode(schedules),
-          );
+      if (ref.read(userProfileProvider) != null) {
+        await ref
+            .read(userProfileProvider.notifier)
+            .update(
+              (user) => user.copyWith(
+                trainingSchedules: TrainingSchedule.encode(schedules),
+              ),
+            );
+      } else {
+        await ref
+            .read(hiveServiceProvider)
+            .putSettingChecked(
+              AppConstants.settingTrainingSchedules,
+              TrainingSchedule.encode(schedules),
+            );
+      }
       state = state.copyWith(schedules: schedules);
     } finally {
       _savingSchedule = false;
@@ -225,28 +246,40 @@ class SplitsNotifier extends Notifier<SplitsState> {
   }
 
   /// Switches the actively tracked training split.
-  void switchActiveSplit(String splitId) {
+  Future<void> switchActiveSplit(String splitId) async {
     if (state.activeSplitId == splitId) return;
     final split = state.splits.firstWhere((split) => split.id == splitId);
     final schedules = startTrainingSchedule(
       state.schedules,
       split,
-      DateTime.now(),
+      ref.read(localDateProvider),
     );
+    final profile = ref.read(userProfileProvider);
+    if (profile != null) {
+      await ref
+          .read(userProfileProvider.notifier)
+          .update(
+            (user) => user.copyWith(
+              preferredSplit: splitId,
+              trainingSchedules: TrainingSchedule.encode(schedules),
+            ),
+          );
+    } else {
+      await ref
+          .read(hiveServiceProvider)
+          .putSettingChecked(
+            AppConstants.settingTrainingSchedules,
+            TrainingSchedule.encode(schedules),
+          );
+      await ref
+          .read(hiveServiceProvider)
+          .putSettingChecked(AppConstants.settingActiveSplitId, splitId);
+    }
     state = state.copyWith(
       activeSplitId: splitId,
       clearExpanded: true,
       schedules: schedules,
     );
-    ref
-        .read(hiveServiceProvider)
-        .putSetting(
-          AppConstants.settingTrainingSchedules,
-          TrainingSchedule.encode(schedules),
-        );
-    ref
-        .read(hiveServiceProvider)
-        .putSetting(AppConstants.settingActiveSplitId, splitId);
   }
 
   /// Saves a custom training split to state and local storage.
@@ -273,10 +306,16 @@ class SplitsNotifier extends Notifier<SplitsState> {
         ? startTrainingSchedule(state.schedules, split, DateTime.now())
         : state.schedules;
     if (changedCalendar) {
-      await hive.putSetting(
-        AppConstants.settingTrainingSchedules,
-        TrainingSchedule.encode(schedules),
-      );
+      try {
+        await _saveTrainingSchedules(schedules);
+      } catch (_) {
+        await hive.put(
+          AppConstants.hiveBoxSplits,
+          split.id,
+          state.activeSplit.toJson(),
+        );
+        rethrow;
+      }
     }
     state = state.copyWith(splits: current, schedules: schedules);
   }
@@ -312,7 +351,6 @@ class SplitsNotifier extends Notifier<SplitsState> {
   /// Deletes a custom training split and falls back safely if it was active.
   Future<void> deleteCustomSplit(String splitId) async {
     final hive = ref.read(hiveServiceProvider);
-    await hive.delete(AppConstants.hiveBoxSplits, splitId);
 
     final filtered = state.splits.where((s) => s.id != splitId).toList();
     final newActive = state.activeSplitId == splitId
@@ -327,6 +365,9 @@ class SplitsNotifier extends Notifier<SplitsState> {
           )
         : state.schedules;
 
+    // Switch durably before deleting the active routine; a failed deletion is retryable.
+    if (newActive != state.activeSplitId) await switchActiveSplit(newActive);
+    await hive.delete(AppConstants.hiveBoxSplits, splitId);
     state = state.copyWith(
       splits: filtered,
       activeSplitId: newActive,
@@ -334,11 +375,6 @@ class SplitsNotifier extends Notifier<SplitsState> {
       expandedSplitId: state.expandedSplitId == splitId
           ? newActive
           : state.expandedSplitId,
-    );
-    await hive.putSetting(AppConstants.settingActiveSplitId, newActive);
-    await hive.putSetting(
-      AppConstants.settingTrainingSchedules,
-      TrainingSchedule.encode(schedules),
     );
   }
 
@@ -355,7 +391,12 @@ class SplitsNotifier extends Notifier<SplitsState> {
   void startWorkoutFromDay(BuildContext context, SplitWorkoutDay day) {
     if (!_canStartTraining(context)) return;
     final activeExercises = day.exercises
-        .map((e) => e.toActiveExerciseState())
+        .map(
+          (e) => e.toActiveExerciseState(
+            defaultRestSeconds:
+                ref.read(userProfileProvider)?.defaultRestSeconds ?? 90,
+          ),
+        )
         .toList();
 
     ref

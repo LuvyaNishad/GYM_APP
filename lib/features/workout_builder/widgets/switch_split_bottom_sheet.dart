@@ -1,3 +1,4 @@
+import '../../../shared/widgets/persistence_feedback.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
@@ -14,7 +15,7 @@ class SwitchSplitBottomSheet extends StatefulWidget {
 
   final List<TrainingSplitModel> splits;
   final String activeSplitId;
-  final ValueChanged<String> onSplitSelected;
+  final Future<void> Function(String) onSplitSelected;
 
   @override
   State<SwitchSplitBottomSheet> createState() => _SwitchSplitBottomSheetState();
@@ -22,6 +23,7 @@ class SwitchSplitBottomSheet extends StatefulWidget {
 
 class _SwitchSplitBottomSheetState extends State<SwitchSplitBottomSheet> {
   late String _selectedSplitId;
+  bool _saving = false;
 
   @override
   void initState() {
@@ -258,10 +260,18 @@ class _SwitchSplitBottomSheetState extends State<SwitchSplitBottomSheet> {
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: () {
-                    widget.onSplitSelected(_selectedSplitId);
-                    Navigator.of(context).pop();
-                  },
+                  onPressed: _saving
+                      ? null
+                      : () async {
+                          setState(() => _saving = true);
+                          final success = await persistWithFeedback(
+                            context,
+                            () => widget.onSplitSelected(_selectedSplitId),
+                          );
+                          if (!context.mounted) return;
+                          setState(() => _saving = false);
+                          if (success) Navigator.of(context).pop();
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.pureWhite,
                     foregroundColor: AppColors.onyx,

@@ -1,3 +1,4 @@
+import '../../../shared/widgets/persistence_feedback.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
@@ -157,10 +158,14 @@ class _RoutineLibraryScreenState extends ConsumerState<RoutineLibraryScreen> {
                 ),
                 if (activeId != split.id)
                   FilledButton(
-                    onPressed: () {
-                      ref
-                          .read(splitsProvider.notifier)
-                          .switchActiveSplit(split.id);
+                    onPressed: () async {
+                      final success = await persistWithFeedback(
+                        context,
+                        () => ref
+                            .read(splitsProvider.notifier)
+                            .switchActiveSplit(split.id),
+                      );
+                      if (!success || !mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('${split.name} is now active.')),
                       );

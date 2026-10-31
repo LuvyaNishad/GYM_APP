@@ -1,3 +1,4 @@
+import '../../../state/app_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
@@ -59,7 +60,12 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
         final rotation = ref.read(workoutRotationProvider);
         final day = rotation.selectedDay;
         final exercises = day.exercises
-            .map((e) => e.toActiveExerciseState())
+            .map(
+              (e) => e.toActiveExerciseState(
+                defaultRestSeconds:
+                    ref.read(userProfileProvider)?.defaultRestSeconds ?? 90,
+              ),
+            )
             .toList();
         ref
             .read(activeSessionProvider.notifier)

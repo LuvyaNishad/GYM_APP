@@ -1,3 +1,5 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/utils/measurement_units.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
@@ -6,7 +8,7 @@ import '../../../shared/widgets/glass_card.dart';
 import '../models/active_session_state.dart';
 
 /// Review completed work before committing it to history.
-class WorkoutSummaryDialog extends StatefulWidget {
+class WorkoutSummaryDialog extends ConsumerStatefulWidget {
   const WorkoutSummaryDialog({
     super.key,
     required this.session,
@@ -15,10 +17,11 @@ class WorkoutSummaryDialog extends StatefulWidget {
   final ActiveSessionState session;
   final FutureOr<void> Function() onConfirmedSave;
   @override
-  State<WorkoutSummaryDialog> createState() => _WorkoutSummaryDialogState();
+  ConsumerState<WorkoutSummaryDialog> createState() =>
+      _WorkoutSummaryDialogState();
 }
 
-class _WorkoutSummaryDialogState extends State<WorkoutSummaryDialog> {
+class _WorkoutSummaryDialogState extends ConsumerState<WorkoutSummaryDialog> {
   bool _saving = false;
   String? _error;
   Future<void> _save() async {
@@ -88,7 +91,9 @@ class _WorkoutSummaryDialogState extends State<WorkoutSummaryDialog> {
                   ),
                   _metric(
                     'VOLUME',
-                    '${session.totalVolumeKg.toStringAsFixed(0)} kg',
+                    ref
+                        .watch(measurementUnitsProvider)
+                        .weight(session.totalVolumeKg, decimals: 0),
                   ),
                   _metric('LOGGED', '${session.completedSetCount} sets'),
                 ],

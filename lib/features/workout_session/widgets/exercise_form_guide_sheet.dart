@@ -1,3 +1,4 @@
+import '../../../core/utils/measurement_units.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_typography.dart';
@@ -101,14 +102,14 @@ class ExerciseFormGuideSheet extends ConsumerWidget {
               Text(
                 sets.isEmpty
                     ? 'No saved working sets yet.'
-                    : 'Heaviest logged: ${bestWeight.toStringAsFixed(1)} kg',
+                    : 'Heaviest logged: ${ref.watch(measurementUnitsProvider).weight(bestWeight)}',
                 style: AppTypography.bodyMedium,
               ),
               if (e1rm > 0)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    'Estimated 1RM: ${e1rm.toStringAsFixed(1)} kg\nEpley estimate from saved sets of 1–12 reps.',
+                    'Estimated 1RM: ${ref.watch(measurementUnitsProvider).weight(e1rm)}\nEpley estimate from saved sets of 1–12 reps.',
                     style: AppTypography.bodySmall,
                   ),
                 ),

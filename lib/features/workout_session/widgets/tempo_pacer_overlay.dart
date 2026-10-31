@@ -1,3 +1,4 @@
+import '../../../core/utils/measurement_units.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
@@ -85,7 +86,7 @@ class TempoPacerOverlay extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Top Navigation & Split Status
-                  _buildTopBar(context, state, notifier),
+                  _buildTopBar(context, state, notifier, ref),
                   Consumer(
                     builder: (context, ref, _) {
                       final auto = ref.watch(tempoAutoLogProvider);
@@ -143,6 +144,7 @@ class TempoPacerOverlay extends ConsumerWidget {
     BuildContext context,
     TempoPacerState state,
     TempoPacerNotifier notifier,
+    WidgetRef ref,
   ) {
     final view = View.of(context);
     final physicalTop = view.padding.top / view.devicePixelRatio;
@@ -195,8 +197,8 @@ class TempoPacerOverlay extends ConsumerWidget {
                 const SizedBox(height: 2),
                 Text(
                   state.weightKg != null
-                      ? '${state.weightKg!.toInt()} KG • SET ${(state.setIndex ?? 0) + 1} OF 3'
-                      : 'SET ${(state.setIndex ?? 0) + 1} OF 3',
+                      ? '${ref.watch(measurementUnitsProvider).weight(state.weightKg)} • SET ${(state.setIndex ?? 0) + 1} '
+                      : 'SET ${(state.setIndex ?? 0) + 1} ',
                   style: const TextStyle(
                     fontFamily: AppTypography.fontMono,
                     fontSize: 11.0,

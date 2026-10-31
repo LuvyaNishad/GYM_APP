@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/hive_service.dart';
+import '../../../state/app_providers.dart';
+import '../../../models/user_model.dart';
 
 class PlatePreferences {
   const PlatePreferences({
@@ -13,6 +15,13 @@ class PlatePreferences {
 class PlatePreferencesNotifier extends Notifier<PlatePreferences> {
   @override
   PlatePreferences build() {
+    final user = ref.watch(userProfileProvider);
+    if (user != null) {
+      return PlatePreferences(
+        barKg: _bar(user.barbellTareKg),
+        plates: _plates(user.availablePlates),
+      );
+    }
     final data = ref
         .watch(hiveServiceProvider)
         .getSetting<Map>('plate_preferences_v1');
@@ -29,10 +38,22 @@ class PlatePreferencesNotifier extends Notifier<PlatePreferences> {
       barKg: _bar(preferences.barKg),
       plates: _plates(preferences.plates),
     );
-    await ref.read(hiveServiceProvider).putSettingChecked(
-      'plate_preferences_v1',
-      {'bar': preferences.barKg, 'plates': preferences.plates},
-    );
+    await ref
+        .read(userProfileProvider.notifier)
+        .transform(
+          (current) =>
+              (current ??
+                      UserModel(
+                        id: 'guest_user',
+                        displayName: '',
+                        email: '',
+                        createdAt: DateTime.now(),
+                      ))
+                  .copyWith(
+                    barbellTareKg: preferences.barKg,
+                    availablePlates: preferences.plates,
+                  ),
+        );
     if (ref.mounted) state = preferences;
   }
 

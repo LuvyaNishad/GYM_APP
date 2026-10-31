@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/measurement_units.dart';
 import '../models/active_session_state.dart';
 import '../providers/active_session_provider.dart';
 import 'tempo_pacer_overlay.dart';
@@ -26,6 +27,7 @@ class ExerciseSetTable extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(activeSessionProvider.notifier);
+    final units = ref.watch(measurementUnitsProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -56,7 +58,7 @@ class ExerciseSetTable extends ConsumerWidget {
                 flex: 5,
                 child: Center(
                   child: Text(
-                    'KG',
+                    units.weightLabel.toUpperCase(),
                     style: AppTypography.bodySmall.copyWith(
                       fontSize: 11.0,
                       fontWeight: FontWeight.w700,
@@ -117,21 +119,27 @@ class ExerciseSetTable extends ConsumerWidget {
           if (i > 0) const Divider(height: 1, color: AppColors.steel),
           if (exercise.isUnilateral)
             _UnilateralSetRowWidget(
-              key: ValueKey('${exercise.exerciseId}_uni_$i'),
+              key: ValueKey(
+                '${exercise.exerciseId}_uni_${units.weightLabel}_$i',
+              ),
               exerciseId: exercise.exerciseId,
               set: exercise.sets[i],
               setIndex: i,
               notifier: notifier,
+              units: units,
               onShowSetOptions: () =>
                   _showSetOptionsSheet(context, i, notifier),
             )
           else
             _BilateralSetRowWidget(
-              key: ValueKey('${exercise.exerciseId}_bi_$i'),
+              key: ValueKey(
+                '${exercise.exerciseId}_bi_${units.weightLabel}_$i',
+              ),
               exerciseId: exercise.exerciseId,
               set: exercise.sets[i],
               setIndex: i,
               notifier: notifier,
+              units: units,
               onShowSetOptions: () =>
                   _showSetOptionsSheet(context, i, notifier),
             ),
@@ -600,6 +608,7 @@ class _BilateralSetRowWidget extends StatefulWidget {
     required this.setIndex,
     required this.notifier,
     required this.onShowSetOptions,
+    required this.units,
   });
 
   final String exerciseId;
@@ -607,6 +616,7 @@ class _BilateralSetRowWidget extends StatefulWidget {
   final int setIndex;
   final ActiveSessionNotifier notifier;
   final VoidCallback onShowSetOptions;
+  final MeasurementUnits units;
 
   @override
   State<_BilateralSetRowWidget> createState() => _BilateralSetRowWidgetState();
@@ -668,6 +678,7 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
   }
 
   String _formatWeight(double w) {
+    w = widget.units.weightFromKg(w);
     if (w >= 10 && w % 1 == 0) {
       return '${w.toInt()}';
     }
@@ -706,7 +717,7 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
     final isCompleted = set.isCompleted;
 
     final prevWeightText = set.previousWeightKg != null
-        ? '${_formatWeight(set.previousWeightKg!)} kg'
+        ? '${_formatWeight(set.previousWeightKg!)} ${widget.units.weightLabel}'
         : '—';
     final prevRepsText = set.previousReps != null ? '${set.previousReps}' : '—';
 
@@ -827,7 +838,7 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
                         widget.notifier.updateSetValues(
                           exerciseId: widget.exerciseId,
                           setIndex: widget.setIndex,
-                          weightKg: parsed,
+                          weightKg: widget.units.weightToKg(parsed),
                         );
                       }
                     },
@@ -1013,6 +1024,7 @@ class _UnilateralSetRowWidget extends StatefulWidget {
     required this.setIndex,
     required this.notifier,
     required this.onShowSetOptions,
+    required this.units,
   });
 
   final String exerciseId;
@@ -1020,6 +1032,7 @@ class _UnilateralSetRowWidget extends StatefulWidget {
   final int setIndex;
   final ActiveSessionNotifier notifier;
   final VoidCallback onShowSetOptions;
+  final MeasurementUnits units;
 
   @override
   State<_UnilateralSetRowWidget> createState() =>
@@ -1101,6 +1114,7 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
   }
 
   String _formatWeight(double w) {
+    w = widget.units.weightFromKg(w);
     if (w >= 10 && w % 1 == 0) {
       return '${w.toInt()}';
     }
@@ -1332,7 +1346,7 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                                   widget.notifier.updateSetValues(
                                     exerciseId: widget.exerciseId,
                                     setIndex: widget.setIndex,
-                                    weightKg: p,
+                                    weightKg: widget.units.weightToKg(p),
                                   );
                                 }
                               },
@@ -1340,7 +1354,7 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            'prev: $prevLeftW kg',
+                            'prev: $prevLeftW ${widget.units.weightLabel}',
                             style: AppTypography.monoSmall.copyWith(
                               fontSize: 11.0,
                               fontWeight: FontWeight.w500,
@@ -1586,7 +1600,7 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                                   widget.notifier.updateSetValues(
                                     exerciseId: widget.exerciseId,
                                     setIndex: widget.setIndex,
-                                    weightKgRight: p,
+                                    weightKgRight: widget.units.weightToKg(p),
                                   );
                                 }
                               },
@@ -1594,7 +1608,7 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            'prev: $prevRightW kg',
+                            'prev: $prevRightW ${widget.units.weightLabel}',
                             style: AppTypography.monoSmall.copyWith(
                               fontSize: 11.0,
                               fontWeight: FontWeight.w500,
