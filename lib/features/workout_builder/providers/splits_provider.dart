@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/providers/local_date_provider.dart';
 import '../../../services/hive_service.dart';
 import '../../workout_session/providers/active_session_provider.dart';
 import '../data/split_presets.dart';
 import '../models/split_model.dart';
 import '../models/training_schedule.dart';
+import '../models/workout_sequence.dart';
 import '../../history/providers/history_provider.dart';
 import 'weekly_volume_provider.dart';
 
@@ -59,6 +61,7 @@ class SplitsState {
 }
 
 class SplitsNotifier extends Notifier<SplitsState> {
+  bool _savingSchedule = false;
   @override
   SplitsState build() {
     ref.keepAlive();
@@ -106,11 +109,13 @@ class SplitsNotifier extends Notifier<SplitsState> {
       );
     }
 
-    if (schedules.last.splitId != effectiveActiveId) {
+    final today = scheduleDate(DateTime.now());
+    if (trainingScheduleForDate(schedules, today)?.splitId !=
+        effectiveActiveId) {
       schedules = startTrainingSchedule(
         schedules,
         allSplits.firstWhere((split) => split.id == effectiveActiveId),
-        DateTime.now(),
+        today,
       );
       hive.putSetting(
         AppConstants.settingTrainingSchedules,
@@ -124,6 +129,99 @@ class SplitsNotifier extends Notifier<SplitsState> {
       schedules: schedules,
       loggedVolume: completedWeeklyMuscleSets(history, DateTime.now()),
     );
+  }
+
+  /// Pause until the user resumes, or optionally until a chosen return date.
+  Future<void> pauseTraining({DateTime? resumeOn}) async {
+    if (ref.read(activeSessionProvider).isActive) {
+      throw StateError(
+        'Finish or discard your current workout before pausing.',
+      );
+    }
+    final today = ref.read(localDateProvider);
+    final returnDate = resumeOn == null ? null : scheduleDate(resumeOn);
+    if (returnDate != null && !returnDate.isAfter(today)) {
+      throw ArgumentError('Choose a return date after today.');
+    }
+    final active = trainingScheduleForDate(state.schedules, today);
+    final historyStart = active?.historyStartedOn ?? today;
+    await _saveTrainingSchedules([
+      ...state.schedules.where(
+        (schedule) => schedule.startedOn.isBefore(today),
+      ),
+      TrainingSchedule.fromSplit(
+        state.activeSplit,
+        today,
+        isPaused: true,
+        historyStartedOn: historyStart,
+      ),
+      if (returnDate != null) _scheduleForReturn(returnDate, historyStart),
+    ]);
+  }
+
+  Future<void> resumeTraining() async {
+    final today = ref.read(localDateProvider);
+    final active = trainingScheduleForDate(state.schedules, today);
+    if (active?.isPaused != true) return;
+    await _saveTrainingSchedules([
+      ...state.schedules.where(
+        (schedule) => schedule.startedOn.isBefore(today),
+      ),
+      _scheduleForReturn(today, active!.historyStartedOn),
+    ]);
+  }
+
+  TrainingSchedule _scheduleForReturn(DateTime date, DateTime historyStart) {
+    final split = state.activeSplit;
+    final latest = latestCompletedSplitDay(
+      split,
+      ref.read(historyWorkoutsProvider),
+      // Future-dated logs must never determine the return workout.
+      ref.read(localDateProvider),
+    );
+    final index = latest == null ? 0 : nextWorkoutDayIndex(split, latest, date);
+    return TrainingSchedule.fromSplit(
+      split,
+      date,
+      // Workout-only routines restart their weekly training/rest pattern.
+      startIndex: split.workouts.any((day) => day.isRestDay) ? index : 0,
+      historyStartedOn: historyStart,
+    );
+  }
+
+  Future<void> _saveTrainingSchedules(List<TrainingSchedule> schedules) async {
+    if (_savingSchedule) {
+      throw StateError('Your schedule is already being saved.');
+    }
+    _savingSchedule = true;
+    try {
+      await ref
+          .read(hiveServiceProvider)
+          .putSettingChecked(
+            AppConstants.settingTrainingSchedules,
+            TrainingSchedule.encode(schedules),
+          );
+      state = state.copyWith(schedules: schedules);
+    } finally {
+      _savingSchedule = false;
+    }
+  }
+
+  bool _canStartTraining(BuildContext context) {
+    if (!state.schedules.any((schedule) => schedule.isPaused)) return true;
+    if (trainingScheduleForDate(
+          state.schedules,
+          ref.read(localDateProvider),
+        )?.isPaused !=
+        true) {
+      return true;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Resume training from Home before starting a workout.'),
+      ),
+    );
+    return false;
   }
 
   /// Switches the actively tracked training split.
@@ -255,6 +353,7 @@ class SplitsNotifier extends Notifier<SplitsState> {
 
   /// Launches an active workout session with the selected day's exercises.
   void startWorkoutFromDay(BuildContext context, SplitWorkoutDay day) {
+    if (!_canStartTraining(context)) return;
     final activeExercises = day.exercises
         .map((e) => e.toActiveExerciseState())
         .toList();
@@ -272,6 +371,7 @@ class SplitsNotifier extends Notifier<SplitsState> {
 
   /// Starts a freestyle / empty active workout session with 0 exercises preloaded.
   void startEmptyWorkout(BuildContext context) {
+    if (!_canStartTraining(context)) return;
     ref
         .read(activeSessionProvider.notifier)
         .startSession(
