@@ -1,3 +1,5 @@
+import 'package:leon/services/hive_service.dart';
+import '../../helpers/memory_hive_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +17,8 @@ void main() {
         email: 'leon@fitness.os',
         memberSince: DateTime(2026, 1, 1),
         heightCm: 180.0,
+        age: 26,
+        sex: 'male',
         currentWeightKg: 80.0,
         targetWeightKg: 75.0,
         weightUnit: 'kg',
@@ -63,14 +67,16 @@ void main() {
   });
 
   group('AccountProfileNotifier State Tests', () {
-    test('Updates biometrics and updates state', () {
-      final container = ProviderContainer();
+    test('Updates biometrics and updates state', () async {
+      final container = ProviderContainer(
+        overrides: [hiveServiceProvider.overrideWithValue(MemoryHiveService())],
+      );
       addTearDown(container.dispose);
 
       final notifier = container.read(accountProfileProvider.notifier);
-      expect(container.read(accountProfileProvider).currentWeightKg, equals(78.5));
+      expect(container.read(accountProfileProvider).currentWeightKg, isNull);
 
-      notifier.updateBiometrics(
+      await notifier.updateBiometrics(
         heightCm: 185.0,
         currentWeightKg: 85.0,
         targetWeightKg: 80.0,
@@ -83,16 +89,21 @@ void main() {
       expect(updated.targetWeightKg, equals(80.0));
     });
 
-    test('Toggles preferences correctly', () {
-      final container = ProviderContainer();
+    test('Toggles preferences correctly', () async {
+      final container = ProviderContainer(
+        overrides: [hiveServiceProvider.overrideWithValue(MemoryHiveService())],
+      );
       addTearDown(container.dispose);
 
       final notifier = container.read(accountProfileProvider.notifier);
-      notifier.toggleAudioCues(false);
+      await notifier.toggleAudioCues(false);
       expect(container.read(accountProfileProvider).audioCuesEnabled, isFalse);
 
-      notifier.toggleCycleTracking(true);
-      expect(container.read(accountProfileProvider).cycleTrackingEnabled, isTrue);
+      await notifier.toggleCycleTracking(true);
+      expect(
+        container.read(accountProfileProvider).cycleTrackingEnabled,
+        isTrue,
+      );
     });
   });
 
@@ -116,7 +127,9 @@ void main() {
   });
 
   group('ProfileScreen Widget Tests', () {
-    testWidgets('Renders Account screen components and actions', (tester) async {
+    testWidgets('Renders Account screen components and actions', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
@@ -125,11 +138,7 @@ void main() {
       });
 
       await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(
-            home: ProfileScreen(),
-          ),
-        ),
+        const ProviderScope(child: MaterialApp(home: ProfileScreen())),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -137,8 +146,8 @@ void main() {
       // Verify Account Header & Identity
       expect(find.text('ACCOUNT'), findsOneWidget);
       expect(find.text('Personal Profile & Settings'), findsOneWidget);
-      expect(find.text('Leon'), findsOneWidget);
-      expect(find.text('leon@fitness.os'), findsOneWidget);
+      expect(find.text('Guest'), findsOneWidget);
+      expect(find.text('leon@fitness.os'), findsNothing);
 
       // Verify Physical Biometrics & Goal delta
       expect(find.text('BIOMETRICS & GOALS'), findsOneWidget);
@@ -151,8 +160,8 @@ void main() {
       expect(find.text('Default Rest Timer'), findsOneWidget);
 
       // Verify Export actions
-      expect(find.text('REPORTS & DATA EXPORT'), findsOneWidget);
-      expect(find.text('Export Monthly PDF Report'), findsOneWidget);
+      expect(find.text('REPORTS & DATA EXPORT'), findsNothing);
+      expect(find.text('Export Monthly PDF Report'), findsNothing);
     });
   });
 }

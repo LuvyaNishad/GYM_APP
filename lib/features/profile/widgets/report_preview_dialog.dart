@@ -54,8 +54,11 @@ class _ReportPreviewSheetState extends State<_ReportPreviewSheet> {
             backgroundColor: AppColors.charcoal,
             content: Row(
               children: [
-                const Icon(Icons.check_circle_rounded,
-                    color: AppColors.primary, size: 20),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -81,14 +84,15 @@ class _ReportPreviewSheetState extends State<_ReportPreviewSheet> {
   }
 
   void _copySummaryText() {
-    final summary = '''
+    final summary =
+        '''
 # AEON PERFORMANCE REPORT
 Athlete: ${widget.profile.displayName}
 Date: ${DateTime.now().toIso8601String().substring(0, 10)}
 Height: ${widget.profile.formattedHeight}
 Current Weight: ${widget.profile.formatWeight(widget.profile.currentWeightKg)}
 Goal Weight: ${widget.profile.formatWeight(widget.profile.targetWeightKg)}
-BMI: ${widget.profile.bmi.toStringAsFixed(1)} (${widget.profile.bmiCategory})
+BMI: ${widget.profile.formattedBmi} (${widget.profile.bmiCategory})
 Estimated Maintenance: ${widget.profile.maintenanceCaloriesEstimate} kcal
 Workouts Logged: ${widget.profile.totalWorkouts} sessions
 Total Volume Lifted: ${widget.profile.totalVolumeKg} kg
@@ -167,8 +171,11 @@ Rest Timer Default: ${widget.profile.defaultRestSeconds}s
               ),
               IconButton(
                 onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.close_rounded,
-                    color: AppColors.platinum, size: 20),
+                icon: const Icon(
+                  Icons.close_rounded,
+                  color: AppColors.platinum,
+                  size: 20,
+                ),
               ),
             ],
           ),
@@ -203,7 +210,9 @@ Rest Timer Default: ${widget.profile.defaultRestSeconds}s
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
@@ -222,14 +231,25 @@ Rest Timer Default: ${widget.profile.defaultRestSeconds}s
                 ),
                 const SizedBox(height: 12),
                 _reportRow(
-                    'Biometrics',
-                    '${profile.formattedHeight} · ${profile.formatWeight(profile.currentWeightKg)}'),
-                _reportRow('BMI & Category',
-                    '${profile.bmi.toStringAsFixed(1)} · ${profile.bmiCategory}'),
+                  'Biometrics',
+                  '${profile.formattedHeight} · ${profile.formatWeight(profile.currentWeightKg)}',
+                ),
                 _reportRow(
-                    'Goal Weight', profile.formatWeight(profile.targetWeightKg)),
-                _reportRow('Sessions Logged', '${profile.totalWorkouts} sessions'),
-                _reportRow('Volume Lifted', '${profile.totalVolumeKg} kg total'),
+                  'BMI & Category',
+                  '${profile.formattedBmi} · ${profile.bmiCategory}',
+                ),
+                _reportRow(
+                  'Goal Weight',
+                  profile.formatWeight(profile.targetWeightKg),
+                ),
+                _reportRow(
+                  'Sessions Logged',
+                  '${profile.totalWorkouts} sessions',
+                ),
+                _reportRow(
+                  'Volume Lifted',
+                  '${profile.totalVolumeKg} kg total',
+                ),
                 _reportRow('Active Split', profile.preferredSplit),
               ],
             ),
@@ -271,8 +291,9 @@ Rest Timer Default: ${widget.profile.defaultRestSeconds}s
                     backgroundColor: _isSaved
                         ? const Color(0xFF2E7D32)
                         : AppColors.pureWhite,
-                    foregroundColor:
-                        _isSaved ? AppColors.pureWhite : AppColors.background,
+                    foregroundColor: _isSaved
+                        ? AppColors.pureWhite
+                        : AppColors.background,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -285,7 +306,8 @@ Rest Timer Default: ${widget.profile.defaultRestSeconds}s
                           child: CircularProgressIndicator(
                             strokeWidth: 2.2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.background),
+                              AppColors.background,
+                            ),
                           ),
                         )
                       : Row(
@@ -299,9 +321,7 @@ Rest Timer Default: ${widget.profile.defaultRestSeconds}s
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              _isSaved
-                                  ? 'PDF Generated'
-                                  : 'Export 1-Page PDF',
+                              _isSaved ? 'PDF Generated' : 'Export 1-Page PDF',
                               style: const TextStyle(
                                 fontFamily: AppTypography.fontDisplay,
                                 fontSize: 13.5,

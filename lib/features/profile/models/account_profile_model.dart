@@ -1,25 +1,34 @@
-/// Account & User Profile Data Model for LEON.
-///
-/// Encapsulates personal information, physical biometrics, training
-/// preferences, goal milestones, and app settings.
-library;
+import '../../../core/utils/measurement_units.dart';
+import '../../../models/user_model.dart';
 
+const _unchanged = Object();
+
+/// Account is a view of the canonical local profile plus derived metrics.
 class AccountProfile {
   const AccountProfile({
     this.id = 'guest_user',
-    this.displayName = 'Leon',
-    this.email = 'leon@fitness.os',
+    this.displayName = '',
+    this.email = '',
     this.avatarUrl,
     required this.memberSince,
-    this.heightCm = 180.0,
-    this.currentWeightKg = 78.5,
-    this.targetWeightKg = 74.0,
+    this.age,
+    this.sex,
+    this.heightCm,
+    this.currentWeightKg,
+    this.targetWeightKg,
+    this.startingWeightKg,
+    this.goalDirection,
+    this.weightUpdatedAt,
     this.weightUnit = 'kg',
     this.heightUnit = 'cm',
-    this.preferredSplit = 'Push / Pull / Legs',
-    this.experienceLevel = 'Intermediate',
+    this.preferredSplit = 'split_ppl',
+    this.experienceLevel = 'Not set',
+    this.trainingDaysPerWeek,
+    this.equipment = const [],
+    this.injuries = const [],
+    this.primaryGoal = 'BUILD MUSCLE',
     this.defaultRestSeconds = 90,
-    this.barbellTareKg = 20.0,
+    this.barbellTareKg = 20,
     this.cycleTrackingEnabled = false,
     this.audioCuesEnabled = true,
     this.hapticFeedbackEnabled = true,
@@ -32,209 +41,259 @@ class AccountProfile {
   final String email;
   final String? avatarUrl;
   final DateTime memberSince;
-
-  /// Height in centimeters.
-  final double heightCm;
-
-  /// Current weight in kilograms.
-  final double currentWeightKg;
-
-  /// Target goal weight in kilograms.
-  final double targetWeightKg;
-
-  /// Measurement units ('kg' or 'lbs').
+  final int? age;
+  final String? sex;
+  final double? heightCm;
+  final double? currentWeightKg;
+  final double? targetWeightKg;
+  final double? startingWeightKg;
+  final String? goalDirection;
+  final DateTime? weightUpdatedAt;
   final String weightUnit;
-
-  /// Height display unit ('cm' or 'ft').
   final String heightUnit;
-
-  /// Selected training split (e.g. 'Push / Pull / Legs').
   final String preferredSplit;
-
-  /// Experience tier ('Beginner', 'Intermediate', 'Advanced').
   final String experienceLevel;
-
-  /// Default rest countdown in seconds (60, 90, 120, 180).
+  final int? trainingDaysPerWeek;
+  final List<String> equipment;
+  final List<String> injuries;
+  final String primaryGoal;
   final int defaultRestSeconds;
-
-  /// Standard Olympic barbell base tare weight (20.0 kg or 15.0 kg).
   final double barbellTareKg;
-
-  /// Menstrual cycle tracking enabled for recovery modulation.
   final bool cycleTrackingEnabled;
-
-  /// Audio beeps on rest countdown and set completion.
   final bool audioCuesEnabled;
-
-  /// Haptic feedback enabled.
   final bool hapticFeedbackEnabled;
-
-  /// All-time sessions logged.
   final int totalWorkouts;
+  final double totalVolumeKg;
 
-  /// All-time volume lifted in kg.
-  final int totalVolumeKg;
-
-  // ── Smart Computed Biometric Helpers ─────────────────────────────────────
-
-  /// Body Mass Index (BMI).
-  double get bmi {
-    if (heightCm <= 0) return 0.0;
-    final heightMeters = heightCm / 100.0;
-    return currentWeightKg / (heightMeters * heightMeters);
-  }
-
-  /// BMI classification label.
-  String get bmiCategory {
-    final value = bmi;
-    if (value < 18.5) return 'Underweight';
-    if (value < 25.0) return 'Normal Weight';
-    if (value < 30.0) return 'Overweight';
-    return 'Athletic / Muscular';
-  }
-
-  /// Remaining weight delta to reach target goal (in kg).
-  double get weightDeltaKg => (currentWeightKg - targetWeightKg).abs();
-
-  /// Whether current weight is above target (cutting/fat loss).
-  bool get isCutting => currentWeightKg > targetWeightKg;
-
-  /// Goal progress percentage (0.0 to 1.0).
-  double get goalProgress {
-    // If current weight is already at or past target
-    if ((isCutting && currentWeightKg <= targetWeightKg) ||
-        (!isCutting && currentWeightKg >= targetWeightKg)) {
-      return 1.0;
+  MeasurementUnits get units =>
+      MeasurementUnits(weightUnit: weightUnit, heightUnit: heightUnit);
+  String get formattedHeight => units.height(heightCm);
+  String formatWeight(double? kg) => units.weight(kg);
+  double? get bmi =>
+      heightCm == null || currentWeightKg == null || heightCm! <= 0
+      ? null
+      : currentWeightKg! / ((heightCm! / 100) * (heightCm! / 100));
+  String get formattedBmi => bmi?.toStringAsFixed(1) ?? 'Not set';
+  String get bmiCategory => bmi == null
+      ? 'Height and weight needed'
+      : bmi! < 18.5
+      ? 'Underweight'
+      : bmi! < 25
+      ? 'Normal Weight'
+      : bmi! < 30
+      ? 'Overweight'
+      : 'Obesity range';
+  double? get weightDeltaKg => currentWeightKg == null || targetWeightKg == null
+      ? null
+      : (currentWeightKg! - targetWeightKg!).abs();
+  bool get isCutting =>
+      goalDirection == 'lose' ||
+      (goalDirection == null &&
+          currentWeightKg != null &&
+          targetWeightKg != null &&
+          currentWeightKg! > targetWeightKg!);
+  double? get goalProgress {
+    if (startingWeightKg == null ||
+        currentWeightKg == null ||
+        targetWeightKg == null) {
+      return null;
     }
-    // Estimated starting reference point (e.g. 5 kg difference baseline)
-    final totalDelta = (weightDeltaKg + 3.0);
-    final completed = 3.0;
-    return (completed / totalDelta).clamp(0.15, 0.95);
+    final total = targetWeightKg! - startingWeightKg!;
+    if (total == 0) return currentWeightKg == targetWeightKg ? 1 : 0;
+    return ((currentWeightKg! - startingWeightKg!) / total).clamp(0.0, 1.0);
   }
 
-  /// Estimated Basal Metabolic Rate (BMR) via Harris-Benedict formula.
-  int get bmrEstimate {
-    return (10 * currentWeightKg + 6.25 * heightCm - 5 * 26 + 5).round();
-  }
-
-  /// Estimated Daily Maintenance Calories (TDEE for moderately active lifter).
-  int get maintenanceCaloriesEstimate => (bmrEstimate * 1.55).round();
-
-  /// Height formatted according to user preference.
-  String get formattedHeight {
-    if (heightUnit == 'ft') {
-      final totalInches = heightCm / 2.54;
-      final feet = totalInches ~/ 12;
-      final inches = (totalInches % 12).round();
-      return "$feet'$inches\"";
+  int? get bmrEstimate {
+    if (age == null ||
+        heightCm == null ||
+        currentWeightKg == null ||
+        !['male', 'female'].contains(sex)) {
+      return null;
     }
-    return '${heightCm.toStringAsFixed(0)} cm';
+    return (10 * currentWeightKg! +
+            6.25 * heightCm! -
+            5 * age! +
+            (sex == 'male' ? 5 : -161))
+        .round();
   }
 
-  /// Formatted weight in selected unit.
-  String formatWeight(double kg) {
-    if (weightUnit == 'lbs') {
-      final lbs = kg * 2.20462;
-      return '${lbs.toStringAsFixed(1)} lbs';
-    }
-    return '${kg.toStringAsFixed(1)} kg';
-  }
+  int? get maintenanceCaloriesEstimate =>
+      bmrEstimate == null ? null : (bmrEstimate! * 1.55).round();
+  String get calorieAssumptions => bmrEstimate == null
+      ? 'Add age, height, weight and sex to estimate calories.'
+      : 'Mifflin–St Jeor estimate; assumes moderate activity (1.55). Actual needs vary.';
 
   AccountProfile copyWith({
     String? id,
     String? displayName,
     String? email,
-    String? avatarUrl,
+    Object? avatarUrl = _unchanged,
     DateTime? memberSince,
-    double? heightCm,
-    double? currentWeightKg,
-    double? targetWeightKg,
+    Object? age = _unchanged,
+    Object? sex = _unchanged,
+    Object? heightCm = _unchanged,
+    Object? currentWeightKg = _unchanged,
+    Object? targetWeightKg = _unchanged,
+    Object? startingWeightKg = _unchanged,
+    Object? goalDirection = _unchanged,
+    Object? weightUpdatedAt = _unchanged,
     String? weightUnit,
     String? heightUnit,
     String? preferredSplit,
     String? experienceLevel,
+    Object? trainingDaysPerWeek = _unchanged,
+    List<String>? equipment,
+    List<String>? injuries,
+    String? primaryGoal,
     int? defaultRestSeconds,
     double? barbellTareKg,
     bool? cycleTrackingEnabled,
     bool? audioCuesEnabled,
     bool? hapticFeedbackEnabled,
     int? totalWorkouts,
-    int? totalVolumeKg,
-  }) {
-    return AccountProfile(
-      id: id ?? this.id,
-      displayName: displayName ?? this.displayName,
-      email: email ?? this.email,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
-      memberSince: memberSince ?? this.memberSince,
-      heightCm: heightCm ?? this.heightCm,
-      currentWeightKg: currentWeightKg ?? this.currentWeightKg,
-      targetWeightKg: targetWeightKg ?? this.targetWeightKg,
-      weightUnit: weightUnit ?? this.weightUnit,
-      heightUnit: heightUnit ?? this.heightUnit,
-      preferredSplit: preferredSplit ?? this.preferredSplit,
-      experienceLevel: experienceLevel ?? this.experienceLevel,
-      defaultRestSeconds: defaultRestSeconds ?? this.defaultRestSeconds,
-      barbellTareKg: barbellTareKg ?? this.barbellTareKg,
-      cycleTrackingEnabled: cycleTrackingEnabled ?? this.cycleTrackingEnabled,
-      audioCuesEnabled: audioCuesEnabled ?? this.audioCuesEnabled,
-      hapticFeedbackEnabled:
-          hapticFeedbackEnabled ?? this.hapticFeedbackEnabled,
-      totalWorkouts: totalWorkouts ?? this.totalWorkouts,
-      totalVolumeKg: totalVolumeKg ?? this.totalVolumeKg,
-    );
-  }
+    double? totalVolumeKg,
+  }) => AccountProfile(
+    id: id ?? this.id,
+    displayName: displayName ?? this.displayName,
+    email: email ?? this.email,
+    avatarUrl: identical(avatarUrl, _unchanged)
+        ? this.avatarUrl
+        : avatarUrl as String?,
+    memberSince: memberSince ?? this.memberSince,
+    age: identical(age, _unchanged) ? this.age : age as int?,
+    sex: identical(sex, _unchanged) ? this.sex : sex as String?,
+    heightCm: identical(heightCm, _unchanged)
+        ? this.heightCm
+        : heightCm as double?,
+    currentWeightKg: identical(currentWeightKg, _unchanged)
+        ? this.currentWeightKg
+        : currentWeightKg as double?,
+    targetWeightKg: identical(targetWeightKg, _unchanged)
+        ? this.targetWeightKg
+        : targetWeightKg as double?,
+    startingWeightKg: identical(startingWeightKg, _unchanged)
+        ? this.startingWeightKg
+        : startingWeightKg as double?,
+    goalDirection: identical(goalDirection, _unchanged)
+        ? this.goalDirection
+        : goalDirection as String?,
+    weightUpdatedAt: identical(weightUpdatedAt, _unchanged)
+        ? this.weightUpdatedAt
+        : weightUpdatedAt as DateTime?,
+    weightUnit: weightUnit ?? this.weightUnit,
+    heightUnit: heightUnit ?? this.heightUnit,
+    preferredSplit: preferredSplit ?? this.preferredSplit,
+    experienceLevel: experienceLevel ?? this.experienceLevel,
+    trainingDaysPerWeek: identical(trainingDaysPerWeek, _unchanged)
+        ? this.trainingDaysPerWeek
+        : trainingDaysPerWeek as int?,
+    equipment: equipment ?? this.equipment,
+    injuries: injuries ?? this.injuries,
+    primaryGoal: primaryGoal ?? this.primaryGoal,
+    defaultRestSeconds: defaultRestSeconds ?? this.defaultRestSeconds,
+    barbellTareKg: barbellTareKg ?? this.barbellTareKg,
+    cycleTrackingEnabled: cycleTrackingEnabled ?? this.cycleTrackingEnabled,
+    audioCuesEnabled: audioCuesEnabled ?? this.audioCuesEnabled,
+    hapticFeedbackEnabled: hapticFeedbackEnabled ?? this.hapticFeedbackEnabled,
+    totalWorkouts: totalWorkouts ?? this.totalWorkouts,
+    totalVolumeKg: totalVolumeKg ?? this.totalVolumeKg,
+  );
 
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'id': id,
-      'display_name': displayName,
-      'email': email,
-      'avatar_url': avatarUrl,
-      'member_since': memberSince.toIso8601String(),
-      'height_cm': heightCm,
-      'current_weight_kg': currentWeightKg,
-      'target_weight_kg': targetWeightKg,
-      'weight_unit': weightUnit,
-      'height_unit': heightUnit,
-      'preferred_split': preferredSplit,
-      'experience_level': experienceLevel,
-      'default_rest_seconds': defaultRestSeconds,
-      'barbell_tare_kg': barbellTareKg,
-      'cycle_tracking_enabled': cycleTrackingEnabled,
-      'audio_cues_enabled': audioCuesEnabled,
-      'haptic_feedback_enabled': hapticFeedbackEnabled,
-      'total_workouts': totalWorkouts,
-      'total_volume_kg': totalVolumeKg,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'schema_version': 2,
+    'id': id,
+    'display_name': displayName,
+    'email': email,
+    'avatar_url': avatarUrl,
+    'member_since': memberSince.toIso8601String(),
+    'age': age,
+    'sex': sex,
+    'height_cm': heightCm,
+    'current_weight_kg': currentWeightKg,
+    'target_weight_kg': targetWeightKg,
+    'starting_weight_kg': startingWeightKg,
+    'goal_direction': goalDirection,
+    'weight_updated_at': weightUpdatedAt?.toIso8601String(),
+    'weight_unit': weightUnit,
+    'height_unit': heightUnit,
+    'preferred_split': preferredSplit,
+    'experience_level': experienceLevel,
+    'training_days_per_week': trainingDaysPerWeek,
+    'equipment': equipment,
+    'injuries': injuries,
+    'primary_goal': primaryGoal,
+    'default_rest_seconds': defaultRestSeconds,
+    'barbell_tare_kg': barbellTareKg,
+    'cycle_tracking_enabled': cycleTrackingEnabled,
+    'audio_cues_enabled': audioCuesEnabled,
+    'haptic_feedback_enabled': hapticFeedbackEnabled,
+    'total_workouts': totalWorkouts,
+    'total_volume_kg': totalVolumeKg,
+  };
 
-  factory AccountProfile.fromJson(Map<String, dynamic> json) {
-    return AccountProfile(
-      id: (json['id'] as String?) ?? 'guest_user',
-      displayName: (json['display_name'] as String?) ?? 'Leon',
-      email: (json['email'] as String?) ?? 'leon@fitness.os',
-      avatarUrl: json['avatar_url'] as String?,
-      memberSince: json['member_since'] != null
-          ? DateTime.tryParse(json['member_since'] as String) ??
-              DateTime(2026, 10, 1)
-          : DateTime(2026, 10, 1),
-      heightCm: (json['height_cm'] as num?)?.toDouble() ?? 180.0,
-      currentWeightKg: (json['current_weight_kg'] as num?)?.toDouble() ?? 78.5,
-      targetWeightKg: (json['target_weight_kg'] as num?)?.toDouble() ?? 74.0,
-      weightUnit: (json['weight_unit'] as String?) ?? 'kg',
-      heightUnit: (json['height_unit'] as String?) ?? 'cm',
-      preferredSplit:
-          (json['preferred_split'] as String?) ?? 'Push / Pull / Legs',
-      experienceLevel: (json['experience_level'] as String?) ?? 'Intermediate',
-      defaultRestSeconds: (json['default_rest_seconds'] as int?) ?? 90,
-      barbellTareKg: (json['barbell_tare_kg'] as num?)?.toDouble() ?? 20.0,
-      cycleTrackingEnabled: (json['cycle_tracking_enabled'] as bool?) ?? false,
-      audioCuesEnabled: (json['audio_cues_enabled'] as bool?) ?? true,
-      hapticFeedbackEnabled:
-          (json['haptic_feedback_enabled'] as bool?) ?? true,
-      totalWorkouts: (json['total_workouts'] as int?) ?? 24,
-      totalVolumeKg: (json['total_volume_kg'] as int?) ?? 48600,
-    );
-  }
+  factory AccountProfile.fromJson(Map<String, dynamic> json) => AccountProfile(
+    id: (json['id'] as String?) ?? 'guest_user',
+    displayName: (json['display_name'] as String?) ?? '',
+    email: (json['email'] as String?) ?? '',
+    avatarUrl: json['avatar_url'] as String?,
+    memberSince:
+        DateTime.tryParse(json['member_since'] as String? ?? '') ??
+        DateTime.now(),
+    age: (json['age'] as num?)?.toInt(),
+    sex: json['sex'] as String?,
+    heightCm: (json['height_cm'] as num?)?.toDouble(),
+    currentWeightKg: (json['current_weight_kg'] as num?)?.toDouble(),
+    targetWeightKg: (json['target_weight_kg'] as num?)?.toDouble(),
+    startingWeightKg: (json['starting_weight_kg'] as num?)?.toDouble(),
+    goalDirection: json['goal_direction'] as String?,
+    weightUpdatedAt: DateTime.tryParse(
+      json['weight_updated_at'] as String? ?? '',
+    ),
+    weightUnit: (json['weight_unit'] as String?) ?? 'kg',
+    heightUnit: (json['height_unit'] as String?) ?? 'cm',
+    preferredSplit: (json['preferred_split'] as String?) ?? 'split_ppl',
+    experienceLevel: (json['experience_level'] as String?) ?? 'Not set',
+    trainingDaysPerWeek: (json['training_days_per_week'] as num?)?.toInt(),
+    equipment: (json['equipment'] as List? ?? []).cast<String>(),
+    injuries: (json['injuries'] as List? ?? []).cast<String>(),
+    primaryGoal: (json['primary_goal'] as String?) ?? 'BUILD MUSCLE',
+    defaultRestSeconds: (json['default_rest_seconds'] as num?)?.toInt() ?? 90,
+    barbellTareKg: (json['barbell_tare_kg'] as num?)?.toDouble() ?? 20,
+    cycleTrackingEnabled: (json['cycle_tracking_enabled'] as bool?) ?? false,
+    audioCuesEnabled: (json['audio_cues_enabled'] as bool?) ?? true,
+    hapticFeedbackEnabled: (json['haptic_feedback_enabled'] as bool?) ?? true,
+    totalWorkouts: (json['total_workouts'] as num?)?.toInt() ?? 0,
+    totalVolumeKg: (json['total_volume_kg'] as num?)?.toDouble() ?? 0,
+  );
+
+  factory AccountProfile.fromUser(UserModel user) => AccountProfile(
+    id: user.id,
+    displayName: user.displayName,
+    email: user.email,
+    avatarUrl: user.avatarUrl,
+    memberSince: user.createdAt ?? DateTime.now(),
+    age: user.age,
+    sex: user.sex,
+    heightCm: user.heightCm,
+    currentWeightKg: user.currentWeight,
+    targetWeightKg: user.targetWeight,
+    startingWeightKg: user.startingWeightKg,
+    goalDirection: user.goalDirection,
+    weightUpdatedAt: user.weightUpdatedAt,
+    weightUnit: user.weightUnit,
+    heightUnit: user.heightUnit,
+    preferredSplit: user.preferredSplit ?? 'split_ppl',
+    experienceLevel: user.experienceLevel ?? 'Not set',
+    trainingDaysPerWeek: user.trainingDaysPerWeek,
+    equipment: user.equipment,
+    injuries: user.injuries,
+    primaryGoal: user.primaryGoal,
+    defaultRestSeconds: user.defaultRestSeconds,
+    barbellTareKg: user.barbellTareKg,
+    cycleTrackingEnabled: user.cyclesEnabled,
+    audioCuesEnabled: user.audioCuesEnabled,
+    hapticFeedbackEnabled: user.hapticFeedbackEnabled,
+    totalWorkouts: user.totalWorkouts,
+    totalVolumeKg: user.totalVolumeKg.toDouble(),
+  );
 }

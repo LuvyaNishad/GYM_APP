@@ -1,6 +1,8 @@
+import '../../workout_builder/providers/splits_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../shared/widgets/persistence_feedback.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
@@ -14,8 +16,6 @@ import '../models/account_profile_model.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/edit_biometrics_dialog.dart';
 import '../widgets/edit_profile_dialog.dart';
-import '../widgets/export_data_dialog.dart';
-import '../widgets/report_preview_dialog.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -62,8 +62,6 @@ class ProfileScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     _TrainingPreferencesCard(profile: profile),
                     const SizedBox(height: 16),
-                    _ReportsAndExportCard(profile: profile),
-                    const SizedBox(height: 16),
                     _AppSettingsCard(profile: profile),
                     const SizedBox(height: 16),
                     _AccountActionsCard(),
@@ -103,11 +101,21 @@ class _IdentityCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(profile.displayName, style: AppTypography.headlineSmall),
+                Text(
+                  profile.displayName.isEmpty ? 'Guest' : profile.displayName,
+                  style: AppTypography.headlineSmall,
+                ),
                 const SizedBox(height: 4),
-                Text(profile.email, style: AppTypography.bodySmall),
+                Text(
+                  profile.email.isEmpty ? 'Local profile' : profile.email,
+                  style: AppTypography.bodySmall,
+                ),
                 const SizedBox(height: 4),
-                Text('Member since $joined', style: AppTypography.bodySmall),
+                Text('Profile since $joined', style: AppTypography.bodySmall),
+                Text(
+                  '${profile.totalWorkouts} workouts ? ${profile.formatWeight(profile.totalVolumeKg)} volume',
+                  style: AppTypography.bodySmall,
+                ),
               ],
             ),
           ),
@@ -177,19 +185,24 @@ class _BiometricsCard extends StatelessWidget {
           const Divider(height: 28),
           _ValueRow(
             label: 'BMI · ${profile.bmiCategory}',
-            value: profile.bmi.toStringAsFixed(1),
+            value: profile.formattedBmi,
           ),
           const SizedBox(height: 12),
           _ValueRow(
             label: 'Est. maintenance',
-            value: '${profile.maintenanceCaloriesEstimate} kcal/day',
+            value: profile.maintenanceCaloriesEstimate == null
+                ? 'Not enough input'
+                : '${profile.maintenanceCaloriesEstimate} kcal/day',
           ),
+          Text(profile.calorieAssumptions, style: AppTypography.bodySmall),
           const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
                 child: Text(
-                  profile.weightDeltaKg == 0
+                  profile.weightDeltaKg == null
+                      ? 'Set a current and goal weight'
+                      : profile.weightDeltaKg == 0
                       ? 'At your goal weight'
                       : '${profile.isCutting ? 'Lose' : 'Gain'} ${profile.formatWeight(profile.weightDeltaKg)} to reach your goal',
                   style: AppTypography.bodySmall,
@@ -197,22 +210,25 @@ class _BiometricsCard extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                '${(profile.goalProgress * 100).toInt()}%',
+                profile.goalProgress == null
+                    ? 'Not set'
+                    : '${(profile.goalProgress! * 100).toInt()}%',
                 style: AppTypography.dataLabel,
               ),
             ],
           ),
           const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: profile.goalProgress.clamp(0.0, 1.0),
-              minHeight: 4,
-              color: AppColors.platinum,
-              backgroundColor: AppColors.steel,
-              semanticsLabel: 'Weight goal progress',
+          if (profile.goalProgress != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: (profile.goalProgress ?? 0).clamp(0.0, 1.0),
+                minHeight: 4,
+                color: AppColors.platinum,
+                backgroundColor: AppColors.steel,
+                semanticsLabel: 'Weight goal progress',
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -247,7 +263,14 @@ class _TrainingPreferencesCard extends ConsumerWidget {
           const Divider(height: 24),
           _PreferenceTile(
             title: 'Training Split',
-            subtitle: profile.preferredSplit,
+            subtitle:
+                ref
+                    .watch(splitsProvider)
+                    .splits
+                    .where((s) => s.id == profile.preferredSplit)
+                    .firstOrNull
+                    ?.name ??
+                'Choose a split',
             trailing: TextButton(
               onPressed: () => showEditProfileSheet(context, profile),
               child: const Text('Change'),
@@ -260,10 +283,27 @@ class _TrainingPreferencesCard extends ConsumerWidget {
             numeric: false,
           ),
           const Divider(height: 24),
+          Text(
+            'Weekly frequency: ${profile.trainingDaysPerWeek ?? 'Not set'}',
+            style: AppTypography.bodyMedium,
+          ),
+          Text(
+            'Equipment: ${profile.trainingDaysPerWeek == null
+                ? 'Not configured'
+                : profile.equipment.isEmpty
+                ? 'Bodyweight'
+                : profile.equipment.join(', ')}',
+            style: AppTypography.bodySmall,
+          ),
+          Text(
+            'Injury notes: ${profile.injuries.isEmpty ? 'None entered' : profile.injuries.join(', ')}. Review your routine; these notes do not screen exercises.',
+            style: AppTypography.bodySmall,
+          ),
+          const Divider(height: 24),
           const Text('Default Rest Timer', style: AppTypography.bodyLarge),
           const SizedBox(height: 4),
           const Text(
-            'Auto-countdown between sets',
+            'Used when an exercise has no custom rest time',
             style: AppTypography.bodySmall,
           ),
           const SizedBox(height: 8),
@@ -274,9 +314,14 @@ class _TrainingPreferencesCard extends ConsumerWidget {
                 ChoiceChip(
                   label: Text('${seconds}s'),
                   selected: profile.defaultRestSeconds == seconds,
-                  onSelected: (_) {
-                    notifier.updatePreferences(defaultRestSeconds: seconds);
-                    HapticFeedback.lightImpact();
+                  onSelected: (_) async {
+                    final success = await persistWithFeedback(
+                      context,
+                      () => notifier.updatePreferences(
+                        defaultRestSeconds: seconds,
+                      ),
+                    );
+                    if (success) HapticFeedback.lightImpact();
                   },
                   side: BorderSide.none,
                   selectedColor: AppColors.primary.withValues(alpha: 0.16),
@@ -295,11 +340,14 @@ class _TrainingPreferencesCard extends ConsumerWidget {
             title: 'Barbell weight',
             subtitle: 'Base weight for plate calculations',
             trailing: TextButton(
-              onPressed: () {
-                notifier.updatePreferences(
-                  barbellTareKg: profile.barbellTareKg == 20.0 ? 15.0 : 20.0,
+              onPressed: () async {
+                final success = await persistWithFeedback(
+                  context,
+                  () => notifier.updatePreferences(
+                    barbellTareKg: profile.barbellTareKg == 20.0 ? 15.0 : 20.0,
+                  ),
                 );
-                HapticFeedback.lightImpact();
+                if (success) HapticFeedback.lightImpact();
               },
               child: Text(
                 profile.formatWeight(profile.barbellTareKg),
@@ -308,45 +356,6 @@ class _TrainingPreferencesCard extends ConsumerWidget {
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ReportsAndExportCard extends StatelessWidget {
-  const _ReportsAndExportCard({required this.profile});
-  final AccountProfile profile;
-
-  @override
-  Widget build(BuildContext context) {
-    return _GlassSectionContainer(
-      child: Column(
-        children: [
-          const _SectionHeader(
-            title: 'REPORTS & DATA EXPORT',
-            icon: Icons.analytics_outlined,
-          ),
-          const SizedBox(height: 12),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.picture_as_pdf_outlined),
-            title: const Text('Export Monthly PDF Report'),
-            subtitle: const Text(
-              'Workout volume, personal records and muscle balance',
-            ),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => showReportPreviewSheet(context, profile),
-          ),
-          const Divider(height: 16),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.file_download_outlined),
-            title: const Text('Backup Workout Data'),
-            subtitle: const Text('Export your history as JSON or CSV'),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => showExportDataSheet(context, profile),
           ),
         ],
       ),
@@ -369,25 +378,19 @@ class _AppSettingsCard extends ConsumerWidget {
           _PreferenceTile(
             title: 'Units of Measurement',
             subtitle: profile.weightUnit == 'kg'
-                ? 'Metric (kg, cm, ml)'
-                : 'Imperial (lbs, ft, oz)',
+                ? 'Weight: kg ? Height: ${profile.heightUnit == 'cm' ? 'cm' : 'ft/in'}'
+                : 'Weight: lbs ? Height: ${profile.heightUnit == 'cm' ? 'cm' : 'ft/in'}',
             trailing: TextButton(
-              onPressed: () {
-                notifier.updateBiometrics(
-                  weightUnit: profile.weightUnit == 'kg' ? 'lbs' : 'kg',
+              onPressed: () async {
+                final success = await persistWithFeedback(
+                  context,
+                  () => notifier.updateBiometrics(
+                    weightUnit: profile.weightUnit == 'kg' ? 'lbs' : 'kg',
+                  ),
                 );
-                HapticFeedback.lightImpact();
+                if (success) HapticFeedback.lightImpact();
               },
               child: Text(profile.weightUnit.toUpperCase()),
-            ),
-          ),
-          const Divider(height: 24),
-          _PreferenceTile(
-            title: 'Cycle-Aware Training',
-            subtitle: 'Adjust training across hormone phases',
-            trailing: Switch(
-              value: profile.cycleTrackingEnabled,
-              onChanged: notifier.toggleCycleTracking,
             ),
           ),
           const Divider(height: 24),
@@ -396,7 +399,10 @@ class _AppSettingsCard extends ConsumerWidget {
             subtitle: 'Play a chime when your rest timer ends',
             trailing: Switch(
               value: profile.audioCuesEnabled,
-              onChanged: notifier.toggleAudioCues,
+              onChanged: (value) => persistWithFeedback(
+                context,
+                () => notifier.toggleAudioCues(value),
+              ),
             ),
           ),
           const Divider(height: 24),
@@ -405,7 +411,10 @@ class _AppSettingsCard extends ConsumerWidget {
             subtitle: 'Vibrate when sets and exercises are checked',
             trailing: Switch(
               value: profile.hapticFeedbackEnabled,
-              onChanged: notifier.toggleHapticFeedback,
+              onChanged: (value) => persistWithFeedback(
+                context,
+                () => notifier.toggleHapticFeedback(value),
+              ),
             ),
           ),
         ],
@@ -436,7 +445,11 @@ class _AccountActionsCard extends ConsumerWidget {
                 content:
                     'This will restart the onboarding survey from the very beginning so you can retake the setup questions.',
                 onConfirm: () async {
-                  await ref.read(onboardingProvider.notifier).reset();
+                  final saved = await persistWithFeedback(
+                    context,
+                    () => ref.read(onboardingProvider.notifier).reset(),
+                  );
+                  if (!saved) return;
                   if (context.mounted) {
                     context.go(AppConstants.routeOnboarding);
                   }
@@ -476,11 +489,15 @@ class _AccountActionsCard extends ConsumerWidget {
                 context,
                 title: 'Reset Profile Data',
                 content:
-                    'This will reset your biometrics and training preferences back to initial defaults.',
+                    'This resets units, rest, barbell, sound and haptic defaults. Your profile and workout data stay saved.',
                 onConfirm: () async {
-                  await ref
-                      .read(accountProfileProvider.notifier)
-                      .resetToDefaults();
+                  final success = await persistWithFeedback(
+                    context,
+                    () => ref
+                        .read(accountProfileProvider.notifier)
+                        .resetToDefaults(),
+                  );
+                  if (!success) return;
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -524,95 +541,6 @@ class _AccountActionsCard extends ConsumerWidget {
             ),
           ),
           const Divider(color: AppColors.steel, height: 16),
-
-          // Clear Local Workout Cache
-          InkWell(
-            onTap: () {
-              _showConfirmDialog(
-                context,
-                title: 'Clear Cache',
-                content:
-                    'Temporary app cache and chart caches will be cleared without deleting your workout history.',
-                onConfirm: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      backgroundColor: AppColors.charcoal,
-                      content: Text(
-                        'Temporary cache cleared.',
-                        style: TextStyle(
-                          fontFamily: AppTypography.fontBody,
-                          fontSize: 13.0,
-                          color: AppColors.pureWhite,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-            borderRadius: BorderRadius.circular(10),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.cleaning_services_rounded,
-                    color: AppColors.textSecondary,
-                    size: 20,
-                  ),
-                  SizedBox(width: 12),
-                  Text(
-                    'Clear Cache',
-                    style: TextStyle(
-                      fontFamily: AppTypography.fontBody,
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.pureWhite,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const Divider(color: AppColors.steel, height: 16),
-
-          // Sign Out / Switch User
-          InkWell(
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  backgroundColor: AppColors.charcoal,
-                  content: Text(
-                    'Local session active. Guest mode is enabled.',
-                    style: TextStyle(
-                      fontFamily: AppTypography.fontBody,
-                      fontSize: 13.0,
-                      color: AppColors.pureWhite,
-                    ),
-                  ),
-                ),
-              );
-            },
-            borderRadius: BorderRadius.circular(10),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  Icon(Icons.logout_rounded, color: AppColors.danger, size: 20),
-                  SizedBox(width: 12),
-                  Text(
-                    'Sign Out / Switch Account',
-                    style: TextStyle(
-                      fontFamily: AppTypography.fontBody,
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.danger,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );

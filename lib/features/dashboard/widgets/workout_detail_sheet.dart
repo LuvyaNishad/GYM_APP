@@ -1,3 +1,5 @@
+import '../../../core/utils/measurement_units.dart';
+import '../../../state/app_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -152,7 +154,7 @@ class _WorkoutDetailContentState extends ConsumerState<_WorkoutDetailContent> {
                                   contentPadding: EdgeInsets.zero,
                                   title: Text(exercise.exerciseName),
                                   subtitle: Text(
-                                    '${exercise.sets.length} sets · ${exercise.sets.map((s) => '${s.weightKg} kg × ${s.reps}').join(', ')}',
+                                    '${exercise.sets.length} sets · ${exercise.sets.map((s) => '${ref.watch(measurementUnitsProvider).weight(s.weightKg)} × ${s.reps}').join(', ')}',
                                   ),
                                 ),
                             ],
@@ -277,7 +279,15 @@ class _WorkoutDetailContentState extends ConsumerState<_WorkoutDetailContent> {
                                       splitName:
                                           '${rotation.split.shortName} · ${day.name}',
                                       initialExercises: day.exercises
-                                          .map((e) => e.toActiveExerciseState())
+                                          .map(
+                                            (e) => e.toActiveExerciseState(
+                                              defaultRestSeconds:
+                                                  ref
+                                                      .read(userProfileProvider)
+                                                      ?.defaultRestSeconds ??
+                                                  90,
+                                            ),
+                                          )
                                           .toList(),
                                     );
                                 Navigator.pop(context);

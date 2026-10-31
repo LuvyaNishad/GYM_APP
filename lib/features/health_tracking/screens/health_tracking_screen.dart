@@ -1,9 +1,12 @@
+library;
+
+import '../../../core/utils/measurement_units.dart';
+
 /// Health Tracking & Body Recomposition Screen for LEON.
 ///
 /// Features:
 /// - Tab 0: Daily Wearable Metrics (Steps, Heart Rate, Sleep, Active Calories)
 /// - Tab 1: Recomposition & Body Measurement Tracker (Waist, Arms, Chest, Thighs, BF%, 30-day deltas)
-library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +17,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/sync_status_indicator.dart';
 import '../models/body_measurement_model.dart';
 import '../providers/body_measurements_provider.dart';
+import '../../../shared/widgets/persistence_feedback.dart';
 import '../providers/health_tracking_provider.dart';
 import '../widgets/health_metric_card.dart';
 import '../widgets/log_measurement_sheet.dart';
@@ -158,7 +162,9 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                       physics: const BouncingScrollPhysics(),
                       children: [
                         _SectionHeader(
-                            label: 'TODAY', timestamp: snapshot.recordedAt),
+                          label: 'TODAY',
+                          timestamp: snapshot.recordedAt,
+                        ),
                         const SizedBox(height: 12),
                         Row(
                           children: [
@@ -218,8 +224,9 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                       ],
                     ),
                     loading: () => const Center(
-                      child:
-                          CircularProgressIndicator(color: Color(0xFF00E5FF)),
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF00E5FF),
+                      ),
                     ),
                     error: (err, _) => Center(
                       child: Text(
@@ -243,6 +250,21 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
     RecompositionSummary summary,
     List<BodyMeasurementEntry> measurements,
   ) {
+    final units = ref.watch(measurementUnitsProvider);
+    String change(double? value, {bool weight = false, bool percent = false}) {
+      if (value == null) return 'Not enough data';
+      final display = percent
+          ? value
+          : weight
+          ? units.weightFromKg(value)
+          : units.heightFromCm(value);
+      return '${display > 0 ? '+' : ''}${display.toStringAsFixed(1)} ${percent
+          ? '%'
+          : weight
+          ? units.weightLabel
+          : units.heightInputLabel}';
+    }
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
       physics: const BouncingScrollPhysics(),
@@ -283,7 +305,9 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                       backgroundColor: const Color(0xFF00E5FF),
                       foregroundColor: AppColors.onyx,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       visualDensity: VisualDensity.compact,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -308,14 +332,12 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                     child: _buildMetricTile(
                       label: 'WEIGHT',
                       value: summary.latestWeight > 0
-                          ? '${summary.latestWeight}'
+                          ? units
+                                .weightFromKg(summary.latestWeight)
+                                .toStringAsFixed(1)
                           : '--',
-                      unit: summary.latestWeight > 0 ? 'KG' : '',
-                      delta: summary.latestWeight > 0
-                          ? (summary.weightDelta30d != 0
-                              ? '${summary.weightDelta30d > 0 ? '+' : ''}${summary.weightDelta30d} kg'
-                              : 'STABLE')
-                          : 'NO DATA',
+                      unit: summary.latestWeight > 0 ? units.weightLabel : '',
+                      delta: change(summary.weightDelta30d, weight: true),
                       isPositiveBetter: false,
                     ),
                   ),
@@ -327,9 +349,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                           ? '${summary.latestBodyFat}%'
                           : '--',
                       unit: '',
-                      delta: summary.bodyFatDelta30d != null
-                          ? '${summary.bodyFatDelta30d! > 0 ? '+' : ''}${summary.bodyFatDelta30d}%'
-                          : 'NO DATA',
+                      delta: change(summary.bodyFatDelta30d, percent: true),
                       isPositiveBetter: false,
                     ),
                   ),
@@ -339,6 +359,15 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
           ),
         ),
 
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            summary.comparisonDays == null
+                ? 'For a monthly comparison, log a recent measurement and one from about 30 days ago.'
+                : 'Change over ${summary.comparisonDays} days, using a baseline near 30 days ago.',
+            style: AppTypography.bodySmall,
+          ),
+        ),
         const SizedBox(height: 14),
 
         // ── 2. Circumference Grid ───────────────────────────────────────────
@@ -347,12 +376,8 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
             Expanded(
               child: _buildCircumferenceCard(
                 label: 'WAIST',
-                value: summary.latestWaist != null
-                    ? '${summary.latestWaist} cm'
-                    : '--',
-                delta: summary.waistDelta30d != null
-                    ? '${summary.waistDelta30d! > 0 ? '+' : ''}${summary.waistDelta30d} cm (30d)'
-                    : null,
+                value: units.length(summary.latestWaist),
+                delta: change(summary.waistDelta30d),
                 icon: Icons.straighten_rounded,
               ),
             ),
@@ -360,12 +385,8 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
             Expanded(
               child: _buildCircumferenceCard(
                 label: 'ARMS (FLEXED)',
-                value: summary.latestArms != null
-                    ? '${summary.latestArms} cm'
-                    : '--',
-                delta: summary.armDelta30d != null
-                    ? '${summary.armDelta30d! > 0 ? '+' : ''}${summary.armDelta30d} cm (30d)'
-                    : null,
+                value: units.length(summary.latestArms),
+                delta: change(summary.armDelta30d),
                 icon: Icons.fitness_center_rounded,
               ),
             ),
@@ -377,12 +398,8 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
             Expanded(
               child: _buildCircumferenceCard(
                 label: 'CHEST',
-                value: summary.latestChest != null
-                    ? '${summary.latestChest} cm'
-                    : '--',
-                delta: summary.chestDelta30d != null
-                    ? '${summary.chestDelta30d! > 0 ? '+' : ''}${summary.chestDelta30d} cm (30d)'
-                    : null,
+                value: units.length(summary.latestChest),
+                delta: change(summary.chestDelta30d),
                 icon: Icons.shield_outlined,
               ),
             ),
@@ -390,10 +407,8 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
             Expanded(
               child: _buildCircumferenceCard(
                 label: 'THIGHS',
-                value: measurements.isNotEmpty && measurements.first.thighsCm != null
-                    ? '${measurements.first.thighsCm} cm'
-                    : '--',
-                delta: 'STABLE (30d)',
+                value: units.length(summary.latestThighs),
+                delta: change(summary.thighDelta30d),
                 icon: Icons.directions_walk_rounded,
               ),
             ),
@@ -422,9 +437,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
             decoration: BoxDecoration(
               color: AppColors.charcoal,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: AppColors.steel.withValues(alpha: 0.4),
-              ),
+              border: Border.all(color: AppColors.steel.withValues(alpha: 0.4)),
             ),
             child: Column(
               children: const [
@@ -459,74 +472,79 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
           )
         else
           for (final m in measurements) ...[
-          Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.charcoal,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: AppColors.steel.withValues(alpha: 0.4),
-                width: 1.0,
+            Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.charcoal,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: AppColors.steel.withValues(alpha: 0.4),
+                  width: 1.0,
+                ),
               ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _formatDate(m.date),
-                      style: const TextStyle(
-                        fontFamily: AppTypography.fontMono,
-                        fontSize: 11.0,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${m.weightKg} KG · ${m.bodyFatPercent ?? '--'}% BF',
-                      style: const TextStyle(
-                        fontFamily: AppTypography.fontMono,
-                        fontSize: 13.0,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.pureWhite,
-                      ),
-                    ),
-                    if (m.notes != null) ...[
-                      const SizedBox(height: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        m.notes!,
+                        _formatDate(m.date),
                         style: const TextStyle(
-                          fontFamily: AppTypography.fontBody,
-                          fontSize: 11.5,
-                          color: AppColors.platinum,
+                          fontFamily: AppTypography.fontMono,
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textSecondary,
                         ),
                       ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${units.weight(m.weightKg)} · ${m.bodyFatPercent ?? '--'}% BF',
+                        style: const TextStyle(
+                          fontFamily: AppTypography.fontMono,
+                          fontSize: 13.0,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.pureWhite,
+                        ),
+                      ),
+                      if (m.notes != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          m.notes!,
+                          style: const TextStyle(
+                            fontFamily: AppTypography.fontBody,
+                            fontSize: 11.5,
+                            color: AppColors.platinum,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.delete_outline_rounded,
-                    color: AppColors.textSecondary,
-                    size: 18,
                   ),
-                  tooltip: 'Delete Check-in',
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () {
-                    HapticFeedback.selectionClick();
-                    ref
-                        .read(bodyMeasurementsProvider.notifier)
-                        .deleteMeasurement(m.id);
-                  },
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      color: AppColors.textSecondary,
+                      size: 18,
+                    ),
+                    tooltip: 'Delete Check-in',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () async {
+                      final success = await persistWithFeedback(
+                        context,
+                        () => ref
+                            .read(bodyMeasurementsProvider.notifier)
+                            .deleteMeasurement(m.id),
+                        message:
+                            'Could not delete the check-in. Please try again.',
+                      );
+                      if (success) HapticFeedback.selectionClick();
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
       ],
     );
   }
@@ -543,9 +561,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
       decoration: BoxDecoration(
         color: AppColors.onyx,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.steel.withValues(alpha: 0.4),
-        ),
+        border: Border.all(color: AppColors.steel.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -612,9 +628,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
       decoration: BoxDecoration(
         color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: AppColors.steel.withValues(alpha: 0.4),
-        ),
+        border: Border.all(color: AppColors.steel.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -662,8 +676,18 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
 
   String _formatDate(DateTime d) {
     const months = [
-      'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-      'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC',
     ];
     return '${months[d.month - 1]} ${d.day}, ${d.year}';
   }

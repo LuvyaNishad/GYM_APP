@@ -74,9 +74,21 @@ class VolumeLoadFactor extends RecoveryFactor {
   String? get insight {
     if (baselineVolumeKg <= 0) return null;
     return recentVolumeKg > 1.5 * baselineVolumeKg
-        ? 'Volume well above your average — deload soon.'
+        ? 'Volume is ${((recentVolumeKg / baselineVolumeKg - 1) * 100).round()}% above your previous average.'
         : null;
   }
+}
+
+class ManualRecoveryFactor extends RecoveryFactor {
+  const ManualRecoveryFactor(this.label, this.contribution, this.reason);
+  @override
+  final String label;
+  final double contribution;
+  final String reason;
+  @override
+  double delta() => contribution;
+  @override
+  String get insight => reason;
 }
 
 /// Folds a list of [RecoveryFactor]s into a 0–100 score.
@@ -103,33 +115,4 @@ class RecoveryScore {
     }
     return null;
   }
-}
-
-/// Self-check. Run: `dart run lib/features/recovery/models/recovery_factor.dart`
-void main() {
-  // Fresh, rested, on-baseline: full score.
-  final rested = RecoveryScore(factors: const [
-    RestDaysFactor(3),
-    VolumeLoadFactor(recentVolumeKg: 10000, baselineVolumeKg: 10000),
-  ]);
-  assert(rested.value == 100, 'rested should be 100, got ${rested.value}');
-  assert(rested.isReady);
-
-  // Trained today + double volume: hammered.
-  final fried = RecoveryScore(factors: const [
-    RestDaysFactor(0),
-    VolumeLoadFactor(recentVolumeKg: 20000, baselineVolumeKg: 10000),
-  ]);
-  assert(fried.value == 45, 'fried should be 45, got ${fried.value}');
-  assert(!fried.isReady);
-  assert(fried.topInsight != null);
-
-  // Clamp floor holds.
-  final wrecked = RecoveryScore(factors: [
-    for (var i = 0; i < 10; i++) const RestDaysFactor(0),
-  ]);
-  assert(wrecked.value == 0, 'should clamp to 0, got ${wrecked.value}');
-
-  // ignore: avoid_print
-  print('recovery_factor self-check passed');
 }

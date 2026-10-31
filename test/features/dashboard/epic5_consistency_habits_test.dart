@@ -1,3 +1,5 @@
+import 'package:leon/services/hive_service.dart';
+import '../../helpers/memory_hive_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +16,11 @@ void main() {
     test(
       'weeklyConsistencyProvider calculates compliance and supportive message',
       () {
-        final container = ProviderContainer();
+        final container = ProviderContainer(
+          overrides: [
+            hiveServiceProvider.overrideWithValue(MemoryHiveService()),
+          ],
+        );
         addTearDown(container.dispose);
 
         final consistency = container.read(weeklyConsistencyProvider);
@@ -35,7 +41,11 @@ void main() {
     test(
       'bodyMeasurementsProvider manages entries and computes 30-day deltas',
       () async {
-        final container = ProviderContainer();
+        final container = ProviderContainer(
+          overrides: [
+            hiveServiceProvider.overrideWithValue(MemoryHiveService()),
+          ],
+        );
         addTearDown(container.dispose);
 
         final initial = container.read(bodyMeasurementsProvider);

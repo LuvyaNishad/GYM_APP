@@ -26,6 +26,8 @@ class DayHabits {
   const DayHabits({
     this.water = const [],
     this.sleepHours = 0,
+    this.sleepLogged = false,
+    this.soreness,
     this.bedtime,
     this.wakeTime,
     this.feeling,
@@ -33,6 +35,8 @@ class DayHabits {
   });
   final List<WaterEntry> water;
   final double sleepHours;
+  final bool sleepLogged;
+  final int? soreness;
   final DateTime? bedtime;
   final DateTime? wakeTime;
   final String? feeling;
@@ -41,6 +45,9 @@ class DayHabits {
   DayHabits copyWith({
     List<WaterEntry>? water,
     double? sleepHours,
+    bool? sleepLogged,
+    int? soreness,
+    bool clearSoreness = false,
     DateTime? bedtime,
     DateTime? wakeTime,
     String? feeling,
@@ -50,6 +57,8 @@ class DayHabits {
   }) => DayHabits(
     water: water ?? this.water,
     sleepHours: sleepHours ?? this.sleepHours,
+    sleepLogged: sleepLogged ?? this.sleepLogged,
+    soreness: clearSoreness ? null : soreness ?? this.soreness,
     bedtime: clearTimes ? null : bedtime ?? this.bedtime,
     wakeTime: clearTimes ? null : wakeTime ?? this.wakeTime,
     feeling: clearFeeling ? null : feeling ?? this.feeling,
@@ -58,6 +67,8 @@ class DayHabits {
   Map<String, dynamic> toJson() => {
     'water': water.map((e) => e.toJson()).toList(),
     'sleepHours': sleepHours,
+    'sleepLogged': sleepLogged,
+    'soreness': soreness,
     'bedtime': bedtime?.toIso8601String(),
     'wakeTime': wakeTime?.toIso8601String(),
     'feeling': feeling,
@@ -68,6 +79,9 @@ class DayHabits {
         .map((e) => WaterEntry.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList(),
     sleepHours: (json['sleepHours'] as num?)?.toDouble() ?? 0,
+    sleepLogged:
+        json['sleepLogged'] as bool? ?? ((json['sleepHours'] as num?) ?? 0) > 0,
+    soreness: (json['soreness'] as num?)?.toInt(),
     bedtime: DateTime.tryParse(json['bedtime'] as String? ?? ''),
     wakeTime: DateTime.tryParse(json['wakeTime'] as String? ?? ''),
     feeling: json['feeling'] as String?,
@@ -183,6 +197,7 @@ class HabitLogNotifier extends Notifier<HabitLog> {
       date,
       (day) => day.copyWith(
         sleepHours: hours,
+        sleepLogged: true,
         bedtime: bedtime,
         wakeTime: wakeTime,
         clearTimes: bedtime == null,
@@ -196,6 +211,44 @@ class HabitLogNotifier extends Notifier<HabitLog> {
     DateTime.now(),
     (day) => day.copyWith(calories: (day.calories + calories).clamp(0, 50000)),
   );
+
+  Future<void> saveRecoveryCheckIn({
+    required DateTime date,
+    double? hours,
+    int? waterToAdd,
+    required int? soreness,
+  }) {
+    if (hours != null && (!hours.isFinite || hours < 0 || hours > 24)) {
+      throw ArgumentError('Sleep must be between 0 and 24 hours.');
+    }
+    if (waterToAdd != null && (waterToAdd < 0 || waterToAdd > 10000)) {
+      throw ArgumentError('Hydration must be between 0 and 10000 ml.');
+    }
+    if (soreness != null && (soreness < 0 || soreness > 10)) {
+      throw ArgumentError('Soreness must be between 0 and 10.');
+    }
+    final now = DateTime.now();
+    return _day(
+      date,
+      (day) => day.copyWith(
+        sleepHours: hours,
+        sleepLogged: hours == null ? day.sleepLogged : true,
+        soreness: soreness,
+        clearSoreness: soreness == null,
+        water: waterToAdd == null
+            ? day.water
+            : [
+                ...day.water,
+                WaterEntry(
+                  id: '${now.microsecondsSinceEpoch}',
+                  ml: waterToAdd,
+                  time: now,
+                ),
+              ],
+      ),
+    );
+  }
+
   Future<void> setGoals({int? waterMl, double? sleepHours, int? steps}) =>
       _change(
         (log) => log.copyWith(

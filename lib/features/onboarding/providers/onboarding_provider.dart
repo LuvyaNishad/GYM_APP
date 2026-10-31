@@ -1,11 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
-import '../../../models/user_model.dart';
+import '../../../state/app_providers.dart';
 import '../../../services/hive_service.dart';
-import '../../workout_builder/data/split_presets.dart';
-import '../../workout_builder/models/training_schedule.dart';
-import '../../workout_builder/providers/splits_provider.dart';
+import '../../profile/providers/profile_provider.dart';
+import '../../workout_builder/models/programme_configuration.dart';
 import '../models/onboarding_state.dart';
 import '../models/training_goal_config.dart';
 
@@ -15,7 +14,8 @@ export '../models/training_goal_config.dart';
 /// Whether the user has already finished onboarding, read straight from
 /// storage.
 final onboardingCompleteProvider = Provider<bool>((ref) {
-  return ref
+  return ref.watch(userProfileProvider)?.onboardingComplete ??
+      ref
           .watch(hiveServiceProvider)
           .getSetting<bool>(
             AppConstants.settingOnboardingComplete,
@@ -29,7 +29,29 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   @override
   OnboardingState build() {
     ref.keepAlive();
-    return OnboardingState(isCompleted: ref.watch(onboardingCompleteProvider));
+    final user = ref.read(userProfileProvider);
+    return OnboardingState(
+      isCompleted: ref.read(onboardingCompleteProvider),
+      agentName: user?.displayName ?? '',
+      age: user?.age ?? 24,
+      ageProvided: user?.age != null,
+      height: user?.heightCm ?? 178,
+      heightProvided: user?.heightCm != null,
+      isHeightCm: user?.heightUnit != 'ft',
+      weight: user?.currentWeight ?? 78,
+      weightProvided: user?.currentWeight != null,
+      isWeightKg: user?.weightUnit != 'lbs',
+      targetWeight: user?.targetWeight ?? 74,
+      targetProvided: user?.targetWeight != null,
+      preferredSplit: resolveSplitId(user?.preferredSplit ?? 'PPL'),
+      experienceLevel: user?.experienceLevel ?? 'Not set',
+      primaryGoal: user?.primaryGoal ?? 'BUILD MUSCLE',
+      trainingDaysPerWeek: user?.trainingDaysPerWeek ?? 5,
+      equipment: user?.trainingDaysPerWeek == null
+          ? const ['Dumbbells', 'Barbell', 'Bench', 'Pull-up Bar']
+          : user!.equipment,
+      injuries: user?.injuries ?? const [],
+    );
   }
 
   void setPage(int page) {
@@ -54,13 +76,22 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     state = state.copyWith(agentName: name);
   }
 
-  void setAge(int age) {
-    state = state.copyWith(age: age);
+  void setAge(int? age) {
+    state = state.copyWith(age: age, ageProvided: age != null);
+  }
+
+  void clearBiometric(String field) {
+    state = state.copyWith(
+      heightProvided: field == 'height' ? false : null,
+      weightProvided: field == 'weight' ? false : null,
+      targetProvided: field == 'target' ? false : null,
+    );
   }
 
   void setHeight(double height, {bool? isCm}) {
     state = state.copyWith(
       height: height,
+      heightProvided: true,
       isHeightCm: isCm ?? state.isHeightCm,
     );
   }
@@ -72,6 +103,7 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   void setWeight(double weight, {bool? isKg}) {
     state = state.copyWith(
       weight: weight,
+      weightProvided: true,
       isWeightKg: isKg ?? state.isWeightKg,
     );
   }
@@ -81,7 +113,7 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   }
 
   void setTargetWeight(double weight) {
-    state = state.copyWith(targetWeight: weight);
+    state = state.copyWith(targetWeight: weight, targetProvided: true);
   }
 
   void setExperienceLevel(String level) {
@@ -97,11 +129,16 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   }
 
   void setPreferredSplit(String split) {
-    state = state.copyWith(preferredSplit: split);
+    state = state.copyWith(preferredSplit: resolveSplitId(split));
   }
 
   void toggleEquipment(String item) {
     final list = List<String>.from(state.equipment);
+    if (item == 'Bodyweight Only') {
+      state = state.copyWith(equipment: const ['Bodyweight Only']);
+      return;
+    }
+    list.remove('Bodyweight Only');
     if (list.contains(item)) {
       list.remove(item);
     } else {
@@ -126,78 +163,34 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
 
   /// Mark onboarding as completed and persist user profile.
   Future<void> complete() async {
-    final hive = ref.read(hiveServiceProvider);
-
-    final displayName = state.agentName.trim().isNotEmpty
-        ? state.agentName.trim()
-        : 'Leon';
-
-    final user = UserModel(
-      id: AppConstants.hiveKeyLocalProfile,
-      email: 'athlete@leon.fit',
-      displayName: displayName,
-      currentWeight: state.weight,
-      targetWeight: state.targetWeight,
-      preferredSplit: state.preferredSplit,
-      weightUnit: state.isWeightKg ? 'kg' : 'lbs',
-      createdAt: DateTime.now(),
-      lastActiveAt: DateTime.now(),
-    );
-
-    await hive.put(
-      AppConstants.hiveBoxUser,
-      AppConstants.hiveKeyLocalProfile,
-      user.toJson(),
-    );
-
-    await hive.putSetting(AppConstants.settingOnboardingComplete, true);
-    await hive.putSetting(
-      AppConstants.settingWeightUnit,
-      state.isWeightKg ? 'kg' : 'lbs',
-    );
-    await hive.putSetting(
-      AppConstants.settingActiveSplitId,
-      state.preferredSplit,
-    );
-    final split = kPresetSplits.firstWhere(
-      (split) => split.id == state.preferredSplit,
-      orElse: () => kPresetSplits.first,
-    );
-    await hive.putSetting(
-      AppConstants.settingTrainingSchedules,
-      TrainingSchedule.encode([
-        TrainingSchedule.fromSplit(split, DateTime.now()),
-      ]),
-    );
-    await hive.putSetting(AppConstants.settingPrimaryGoal, state.primaryGoal);
-    await hive.putSetting(AppConstants.settingTargetWeight, state.targetWeight);
-
-    ref.invalidate(onboardingCompleteProvider);
-    ref.invalidate(trainingGoalProvider);
-    ref.invalidate(splitsProvider);
+    await ref
+        .read(accountProfileProvider.notifier)
+        .applySetup(
+          displayName: state.agentName.trim(),
+          splitId: state.preferredSplit,
+          experience: state.experienceLevel,
+          days: state.trainingDaysPerWeek,
+          equipment: state.equipment,
+          injuries: state.injuries,
+          primaryGoal: state.primaryGoal,
+          age: state.ageProvided ? state.age : null,
+          heightCm: state.heightProvided ? state.height : null,
+          weightKg: state.weightProvided ? state.weight : null,
+          targetKg: state.targetProvided ? state.targetWeight : null,
+          weightUnit: state.isWeightKg ? 'kg' : 'lbs',
+          heightUnit: state.isHeightCm ? 'cm' : 'ft',
+        );
     state = state.copyWith(isCompleted: true);
   }
 
-  /// Update the active primary goal and persist immediately (e.g. from Profile screen).
   Future<void> updatePrimaryGoal(String goal) async {
+    await ref.read(accountProfileProvider.notifier).updatePrimaryGoal(goal);
     state = state.copyWith(primaryGoal: goal);
-    await ref
-        .read(hiveServiceProvider)
-        .putSetting(AppConstants.settingPrimaryGoal, goal);
-    ref.invalidate(trainingGoalProvider);
   }
 
-  /// Reset the onboarding flow (for re-onboarding / testing).
+  /// Replay only resets the draft; saved data and completion remain intact.
   Future<void> reset() async {
-    await ref
-        .read(hiveServiceProvider)
-        .deleteSetting(AppConstants.settingOnboardingComplete);
-    await ref
-        .read(hiveServiceProvider)
-        .deleteSetting(AppConstants.settingPrimaryGoal);
-    ref.invalidate(onboardingCompleteProvider);
-    ref.invalidate(trainingGoalProvider);
-    state = const OnboardingState();
+    ref.invalidateSelf();
   }
 }
 
@@ -209,12 +202,8 @@ final onboardingProvider =
 
 /// Global provider returning the user's active training goal string (e.g. 'BUILD MUSCLE', 'STRENGTH').
 final trainingGoalProvider = Provider<String>((ref) {
-  final hive = ref.watch(hiveServiceProvider);
-  final savedGoal = hive.getSetting<String>(AppConstants.settingPrimaryGoal);
-  if (savedGoal != null && savedGoal.isNotEmpty) {
-    return savedGoal;
-  }
-  return ref.watch(onboardingProvider.select((s) => s.primaryGoal));
+  return ref.watch(userProfileProvider)?.primaryGoal ??
+      ref.watch(onboardingProvider.select((s) => s.primaryGoal));
 });
 
 /// Global provider exposing the active [TrainingGoalConfig] based on the user's primary goal.

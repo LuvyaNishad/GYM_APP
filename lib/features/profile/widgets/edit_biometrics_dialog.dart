@@ -1,389 +1,194 @@
-/// Edit Biometrics & Physical Goals Bottom Sheet for LEON.
-library;
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/measurement_units.dart';
+import '../../../shared/widgets/app_sheet.dart';
+import '../../../shared/widgets/persistence_feedback.dart';
 import '../models/account_profile_model.dart';
 import '../providers/profile_provider.dart';
 
-/// Shows the Edit Biometrics modal sheet.
-void showEditBiometricsSheet(BuildContext context, AccountProfile profile) {
-  HapticFeedback.lightImpact();
-  showModalBottomSheet<void>(
-    context: context,
-    useRootNavigator: true,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (ctx) => _EditBiometricsSheet(profile: profile),
-  );
-}
+void showEditBiometricsSheet(BuildContext context, AccountProfile profile) =>
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      builder: (_) => _BiometricsEditor(profile: profile),
+    );
 
-class _EditBiometricsSheet extends ConsumerStatefulWidget {
-  const _EditBiometricsSheet({required this.profile});
-
+class _BiometricsEditor extends ConsumerStatefulWidget {
+  const _BiometricsEditor({required this.profile});
   final AccountProfile profile;
-
   @override
-  ConsumerState<_EditBiometricsSheet> createState() =>
-      _EditBiometricsSheetState();
+  ConsumerState<_BiometricsEditor> createState() => _BiometricsEditorState();
 }
 
-class _EditBiometricsSheetState extends ConsumerState<_EditBiometricsSheet> {
-  late final TextEditingController _heightController;
-  late final TextEditingController _weightController;
-  late final TextEditingController _targetWeightController;
-  late String _weightUnit;
-
+class _BiometricsEditorState extends ConsumerState<_BiometricsEditor> {
+  late final TextEditingController _height, _weight, _target, _age;
+  late MeasurementUnits _units;
+  late String? _sex;
+  bool _pending = false;
   @override
   void initState() {
     super.initState();
-    _heightController = TextEditingController(
-      text: widget.profile.heightCm.toStringAsFixed(0),
+    final p = widget.profile;
+    _units = p.units;
+    _sex = p.sex;
+    _height = TextEditingController(
+      text: p.heightCm == null
+          ? ''
+          : _units.heightFromCm(p.heightCm!).toStringAsFixed(1),
     );
-    _weightUnit = widget.profile.weightUnit;
-    final w = _weightUnit == 'lbs'
-        ? widget.profile.currentWeightKg * 2.20462
-        : widget.profile.currentWeightKg;
-    final tw = _weightUnit == 'lbs'
-        ? widget.profile.targetWeightKg * 2.20462
-        : widget.profile.targetWeightKg;
-
-    _weightController = TextEditingController(text: w.toStringAsFixed(1));
-    _targetWeightController =
-        TextEditingController(text: tw.toStringAsFixed(1));
+    _weight = TextEditingController(
+      text: p.currentWeightKg == null
+          ? ''
+          : _units.weightFromKg(p.currentWeightKg!).toStringAsFixed(1),
+    );
+    _target = TextEditingController(
+      text: p.targetWeightKg == null
+          ? ''
+          : _units.weightFromKg(p.targetWeightKg!).toStringAsFixed(1),
+    );
+    _age = TextEditingController(text: p.age?.toString() ?? '');
   }
 
   @override
   void dispose() {
-    _heightController.dispose();
-    _weightController.dispose();
-    _targetWeightController.dispose();
+    _height.dispose();
+    _weight.dispose();
+    _target.dispose();
+    _age.dispose();
     super.dispose();
   }
 
-  void _save() {
-    final h = double.tryParse(_heightController.text) ?? widget.profile.heightCm;
-    var w = double.tryParse(_weightController.text) ??
-        widget.profile.currentWeightKg;
-    var tw = double.tryParse(_targetWeightController.text) ??
-        widget.profile.targetWeightKg;
-
-    // Normalize to kg if in lbs
-    if (_weightUnit == 'lbs') {
-      w = w / 2.20462;
-      tw = tw / 2.20462;
+  void _changeUnits(MeasurementUnits next) {
+    for (final field in [_weight, _target]) {
+      final value = double.tryParse(field.text);
+      if (value != null) {
+        field.text = next
+            .weightFromKg(_units.weightToKg(value))
+            .toStringAsFixed(1);
+      }
     }
-
-    ref.read(accountProfileProvider.notifier).updateBiometrics(
-          heightCm: h,
-          currentWeightKg: w,
-          targetWeightKg: tw,
-          weightUnit: _weightUnit,
-        );
-
-    HapticFeedback.lightImpact();
-    Navigator.of(context).pop();
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        backgroundColor: AppColors.charcoal,
-        content: Text(
-          'Biometrics updated & BMI recalculated!',
-          style: TextStyle(
-            fontFamily: AppTypography.fontBody,
-            fontSize: 13.0,
-            color: AppColors.pureWhite,
-          ),
-        ),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    final height = double.tryParse(_height.text);
+    if (height != null) {
+      _height.text = next
+          .heightFromCm(_units.heightToCm(height))
+          .toStringAsFixed(1);
+    }
+    setState(() => _units = next);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      padding: EdgeInsets.fromLTRB(
-        20,
-        12,
-        20,
-        MediaQuery.of(context).viewInsets.bottom + 28,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Drag handle
-          Center(
-            child: Container(
-              width: 38,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Update Biometrics',
-                style: TextStyle(
-                  fontFamily: AppTypography.fontDisplay,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.pureWhite,
-                  letterSpacing: 0.2,
-                ),
-              ),
-              IconButton(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.close_rounded,
-                    color: AppColors.platinum, size: 20),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Height Field
-          const Text(
-            'HEIGHT (CM)',
-            style: TextStyle(
-              fontFamily: AppTypography.fontDisplay,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textSecondary,
-              letterSpacing: 1.0,
-            ),
-          ),
-          const SizedBox(height: 6),
-          TextField(
-            controller: _heightController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: const TextStyle(
-              fontFamily: AppTypography.fontMono,
-              fontSize: 15,
-              color: AppColors.pureWhite,
-            ),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: AppColors.charcoal,
-              suffixText: 'cm',
-              suffixStyle: const TextStyle(color: AppColors.textSecondary),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: AppColors.steel.withValues(alpha: 0.5),
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: AppColors.steel.withValues(alpha: 0.5),
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.primary),
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // Current Weight Field
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'CURRENT WEIGHT ($_weightUnit)'.toUpperCase(),
-                style: const TextStyle(
-                  fontFamily: AppTypography.fontDisplay,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textSecondary,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              // Unit toggle
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _unitChip('kg'),
-                  const SizedBox(width: 4),
-                  _unitChip('lbs'),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          TextField(
-            controller: _weightController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: const TextStyle(
-              fontFamily: AppTypography.fontMono,
-              fontSize: 15,
-              color: AppColors.pureWhite,
-            ),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: AppColors.charcoal,
-              suffixText: _weightUnit,
-              suffixStyle: const TextStyle(color: AppColors.textSecondary),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: AppColors.steel.withValues(alpha: 0.5),
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: AppColors.steel.withValues(alpha: 0.5),
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.primary),
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // Target Weight Field
-          Text(
-            'GOAL / TARGET WEIGHT ($_weightUnit)'.toUpperCase(),
-            style: const TextStyle(
-              fontFamily: AppTypography.fontDisplay,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textSecondary,
-              letterSpacing: 1.0,
-            ),
-          ),
-          const SizedBox(height: 6),
-          TextField(
-            controller: _targetWeightController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: const TextStyle(
-              fontFamily: AppTypography.fontMono,
-              fontSize: 15,
-              color: AppColors.pureWhite,
-            ),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: AppColors.charcoal,
-              suffixText: _weightUnit,
-              suffixStyle: const TextStyle(color: AppColors.textSecondary),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: AppColors.steel.withValues(alpha: 0.5),
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: AppColors.steel.withValues(alpha: 0.5),
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.primary),
-              ),
-            ),
-          ),
-          const SizedBox(height: 22),
-
-          // Save button
-          ElevatedButton(
-            onPressed: _save,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.pureWhite,
-              foregroundColor: AppColors.background,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-            child: const Text(
-              'Update Biometrics',
-              style: TextStyle(
-                fontFamily: AppTypography.fontDisplay,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.3,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _unitChip(String unit) {
-    final isSel = _weightUnit == unit;
-    return InkWell(
-      onTap: () {
-        if (_weightUnit != unit) {
-          setState(() {
-            _weightUnit = unit;
-            final current = double.tryParse(_weightController.text) ?? 78.5;
-            final target =
-                double.tryParse(_targetWeightController.text) ?? 74.0;
-            if (unit == 'lbs') {
-              _weightController.text = (current * 2.20462).toStringAsFixed(1);
-              _targetWeightController.text =
-                  (target * 2.20462).toStringAsFixed(1);
-            } else {
-              _weightController.text = (current / 2.20462).toStringAsFixed(1);
-              _targetWeightController.text =
-                  (target / 2.20462).toStringAsFixed(1);
-            }
-          });
+  Future<void> _save() async {
+    if (_pending) return;
+    setState(() => _pending = true);
+    final saved = await persistWithFeedback(
+      context,
+      () async {
+        double? number(TextEditingController field) {
+          if (field.text.trim().isEmpty) return null;
+          final value = double.tryParse(field.text);
+          if (value == null || !value.isFinite || value <= 0) {
+            throw const FormatException();
+          }
+          return value;
         }
+
+        final h = number(_height), w = number(_weight), t = number(_target);
+        final age = _age.text.trim().isEmpty ? null : int.tryParse(_age.text);
+        if (_age.text.isNotEmpty && (age == null || age < 13 || age > 120)) {
+          throw const FormatException();
+        }
+        await ref
+            .read(accountProfileProvider.notifier)
+            .updateBiometrics(
+              age: age,
+              sex: _sex,
+              heightCm: h == null ? null : _units.heightToCm(h),
+              currentWeightKg: w == null ? null : _units.weightToKg(w),
+              targetWeightKg: t == null ? null : _units.weightToKg(t),
+              weightUnit: _units.weightLabel,
+              heightUnit: _units.heightUnit,
+              replace: true,
+            );
       },
-      borderRadius: BorderRadius.circular(6),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          color: isSel
-              ? AppColors.primary.withValues(alpha: 0.2)
-              : AppColors.charcoal,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: isSel
-                ? AppColors.primary
-                : AppColors.steel.withValues(alpha: 0.4),
-          ),
-        ),
-        child: Text(
-          unit.toUpperCase(),
-          style: TextStyle(
-            fontFamily: AppTypography.fontMono,
-            fontSize: 11,
-            fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
-            color: isSel ? AppColors.primary : AppColors.textSecondary,
-          ),
-        ),
-      ),
+      message:
+          'Could not save biometrics. Check your values and try again. Your edits are still here.',
     );
+    if (!mounted) return;
+    setState(() => _pending = false);
+    if (saved) Navigator.of(context).pop();
   }
+
+  Widget _input(TextEditingController field, String label) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: TextField(
+      controller: field,
+      style: AppTypography.monoMedium,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: InputDecoration(labelText: label),
+    ),
+  );
+  @override
+  Widget build(BuildContext context) => PersistenceForm(
+    pending: _pending,
+    child: AppSheet(
+      title: 'Update Biometrics',
+      children: [
+        const Text(
+          'Personal values are optional. Empty fields stay unset.',
+          style: AppTypography.bodySmall,
+        ),
+        const SizedBox(height: 12),
+        SegmentedButton<String>(
+          segments: const [
+            ButtonSegment(value: 'cm', label: Text('cm')),
+            ButtonSegment(value: 'ft', label: Text('ft / in')),
+          ],
+          selected: {_units.heightUnit},
+          onSelectionChanged: (s) => _changeUnits(
+            MeasurementUnits(
+              weightUnit: _units.weightUnit,
+              heightUnit: s.first,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _input(_height, 'Height (${_units.heightInputLabel})'),
+        SegmentedButton<String>(
+          segments: const [
+            ButtonSegment(value: 'kg', label: Text('kg')),
+            ButtonSegment(value: 'lbs', label: Text('lbs')),
+          ],
+          selected: {_units.weightLabel},
+          onSelectionChanged: (s) => _changeUnits(
+            MeasurementUnits(
+              weightUnit: s.first,
+              heightUnit: _units.heightUnit,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _input(_weight, 'Current weight (${_units.weightLabel})'),
+        _input(_target, 'Goal weight (${_units.weightLabel})'),
+        _input(_age, 'Age'),
+        DropdownButtonFormField<String>(
+          initialValue: _sex,
+          decoration: const InputDecoration(
+            labelText: 'Sex (for calorie estimate)',
+          ),
+          items: const [
+            DropdownMenuItem(value: null, child: Text('Not set')),
+            DropdownMenuItem(value: 'male', child: Text('Male')),
+            DropdownMenuItem(value: 'female', child: Text('Female')),
+          ],
+          onChanged: (value) => setState(() => _sex = value),
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton(
+          onPressed: _pending ? null : _save,
+          child: const Text('Update Biometrics'),
+        ),
+      ],
+    ),
+  );
 }

@@ -4,9 +4,11 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../services/hive_service.dart';
+import '../../../core/providers/local_date_provider.dart';
+import '../../../core/constants/app_constants.dart';
 import '../models/body_measurement_model.dart';
 
-const String _boxName = 'body_measurements';
+const String _boxName = AppConstants.hiveBoxBodyMeasurements;
 
 class BodyMeasurementsNotifier extends Notifier<List<BodyMeasurementEntry>> {
   @override
@@ -28,30 +30,45 @@ class BodyMeasurementsNotifier extends Notifier<List<BodyMeasurementEntry>> {
     return [];
   }
 
-  Future<void> addMeasurement(BodyMeasurementEntry entry) async {
-    final hive = ref.read(hiveServiceProvider);
-    try {
-      await hive.put(_boxName, entry.id, entry.toJson());
-    } catch (_) {}
+  Future<void> _changes = Future.value();
 
-    final updated = [entry, ...state.where((e) => e.id != entry.id)]
+  Future<void> _change(Future<void> Function() action) {
+    final result = _changes.catchError((Object _) {}).then((_) => action());
+    _changes = result;
+    return result;
+  }
+
+  Future<void> addMeasurement(BodyMeasurementEntry entry) => _change(() async {
+    final sizes = [entry.waistCm, entry.chestCm, entry.armsCm, entry.thighsCm];
+    final bodyFat = entry.bodyFatPercent;
+    if (!entry.weightKg.isFinite ||
+        entry.weightKg <= 0 ||
+        sizes.any(
+          (value) => value != null && (!value.isFinite || value <= 0),
+        ) ||
+        (bodyFat != null &&
+            (!bodyFat.isFinite || bodyFat < 0 || bodyFat > 100))) {
+      throw ArgumentError(
+        'Measurements must be finite and within valid ranges.',
+      );
+    }
+    final hive = ref.read(hiveServiceProvider);
+    await hive.put(_boxName, entry.id, entry.toJson());
+    if (!ref.mounted) return;
+    state = [entry, ...state.where((e) => e.id != entry.id)]
       ..sort((a, b) => b.date.compareTo(a.date));
-    state = updated;
-  }
+  });
 
-  Future<void> deleteMeasurement(String id) async {
-    final hive = ref.read(hiveServiceProvider);
-    try {
-      await hive.delete(_boxName, id);
-    } catch (_) {}
-
-    state = state.where((e) => e.id != id).toList();
-  }
+  Future<void> deleteMeasurement(String id) => _change(() async {
+    await ref.read(hiveServiceProvider).delete(_boxName, id);
+    if (ref.mounted) state = state.where((e) => e.id != id).toList();
+  });
 }
 
 final bodyMeasurementsProvider =
     NotifierProvider<BodyMeasurementsNotifier, List<BodyMeasurementEntry>>(
-        BodyMeasurementsNotifier.new);
+      BodyMeasurementsNotifier.new,
+    );
 
 class RecompositionSummary {
   const RecompositionSummary({
@@ -65,10 +82,15 @@ class RecompositionSummary {
     this.armDelta30d,
     this.latestChest,
     this.chestDelta30d,
+    this.latestThighs,
+    this.thighDelta30d,
+    this.comparisonDays,
   });
 
   final double latestWeight;
-  final double weightDelta30d;
+  final double? weightDelta30d;
+  final double? latestThighs, thighDelta30d;
+  final int? comparisonDays;
   final double? latestBodyFat;
   final double? bodyFatDelta30d;
   final double? latestWaist;
@@ -80,41 +102,51 @@ class RecompositionSummary {
 }
 
 final recompositionSummaryProvider = Provider<RecompositionSummary>((ref) {
-  final entries = ref.watch(bodyMeasurementsProvider);
+  final today = ref.watch(localDateProvider);
+  final entries = ref
+      .watch(bodyMeasurementsProvider)
+      .where(
+        (e) =>
+            e.date.isBefore(DateTime(today.year, today.month, today.day + 1)),
+      )
+      .toList();
   if (entries.isEmpty) {
-    return const RecompositionSummary(
-      latestWeight: 0.0,
-      weightDelta30d: 0.0,
-    );
+    return const RecompositionSummary(latestWeight: 0, weightDelta30d: null);
   }
-
   final latest = entries.first;
-  final oldest = entries.last;
-
-  double wDelta = latest.weightKg - oldest.weightKg;
-  double? bfDelta = (latest.bodyFatPercent != null && oldest.bodyFatPercent != null)
-      ? latest.bodyFatPercent! - oldest.bodyFatPercent!
+  final cutoff = DateTime(
+    latest.date.year,
+    latest.date.month,
+    latest.date.day - 30,
+  );
+  // At most seven days of tolerance, with the actual interval exposed to the UI.
+  final baseline = entries
+      .where(
+        (e) =>
+            e.date.isBefore(cutoff.add(const Duration(days: 1))) &&
+            !e.date.isBefore(cutoff.subtract(const Duration(days: 7))),
+      )
+      .firstOrNull;
+  final recent = !latest.date.isBefore(today.subtract(const Duration(days: 7)));
+  double? delta(double? current, double? previous) =>
+      recent && baseline != null && current != null && previous != null
+      ? double.parse((current - previous).toStringAsFixed(1))
       : null;
-  double? waistDelta = (latest.waistCm != null && oldest.waistCm != null)
-      ? latest.waistCm! - oldest.waistCm!
-      : null;
-  double? armDelta = (latest.armsCm != null && oldest.armsCm != null)
-      ? latest.armsCm! - oldest.armsCm!
-      : null;
-  double? chestDelta = (latest.chestCm != null && oldest.chestCm != null)
-      ? latest.chestCm! - oldest.chestCm!
-      : null;
-
   return RecompositionSummary(
     latestWeight: latest.weightKg,
-    weightDelta30d: double.parse(wDelta.toStringAsFixed(1)),
+    weightDelta30d: delta(latest.weightKg, baseline?.weightKg),
     latestBodyFat: latest.bodyFatPercent,
-    bodyFatDelta30d: bfDelta != null ? double.parse(bfDelta.toStringAsFixed(1)) : null,
+    bodyFatDelta30d: delta(latest.bodyFatPercent, baseline?.bodyFatPercent),
     latestWaist: latest.waistCm,
-    waistDelta30d: waistDelta != null ? double.parse(waistDelta.toStringAsFixed(1)) : null,
+    waistDelta30d: delta(latest.waistCm, baseline?.waistCm),
     latestArms: latest.armsCm,
-    armDelta30d: armDelta != null ? double.parse(armDelta.toStringAsFixed(1)) : null,
+    armDelta30d: delta(latest.armsCm, baseline?.armsCm),
     latestChest: latest.chestCm,
-    chestDelta30d: chestDelta != null ? double.parse(chestDelta.toStringAsFixed(1)) : null,
+    chestDelta30d: delta(latest.chestCm, baseline?.chestCm),
+    latestThighs: latest.thighsCm,
+    thighDelta30d: delta(latest.thighsCm, baseline?.thighsCm),
+    comparisonDays: recent && baseline != null
+        ? latest.date.difference(baseline.date).inDays
+        : null,
   );
 });

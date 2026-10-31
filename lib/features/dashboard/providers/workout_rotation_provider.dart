@@ -1,3 +1,7 @@
+library;
+
+import '../../../state/app_providers.dart';
+
 /// Smart Workout Auto-Rotation Provider for LEON.
 ///
 /// Intelligently resolves today's workout day based on completed workout history:
@@ -6,7 +10,6 @@
 /// - If the lifter already finished a workout today, marks it completed and shows next up.
 /// - Allows rapid day swapping if the user wants to rotate or do a different session today.
 /// - Pre-loads the exact planned exercises and sets directly into the active workout session.
-library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -314,7 +317,12 @@ class WorkoutRotationNotifier extends Notifier<WorkoutRotationState> {
     }
     final day = state.selectedDay;
     final activeExercises = day.exercises
-        .map((e) => e.toActiveExerciseState())
+        .map(
+          (e) => e.toActiveExerciseState(
+            defaultRestSeconds:
+                ref.read(userProfileProvider)?.defaultRestSeconds ?? 90,
+          ),
+        )
         .toList();
 
     ref

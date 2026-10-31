@@ -1,3 +1,4 @@
+import '../../../state/app_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -161,7 +162,12 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
           .startSession(
             splitName: '${rotation.split.shortName} · ${day.name}',
             initialExercises: day.exercises
-                .map((e) => e.toActiveExerciseState())
+                .map(
+                  (e) => e.toActiveExerciseState(
+                    defaultRestSeconds:
+                        ref.read(userProfileProvider)?.defaultRestSeconds ?? 90,
+                  ),
+                )
                 .toList(),
           );
       context.push(AppConstants.routeWorkoutSession);

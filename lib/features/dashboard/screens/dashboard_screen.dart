@@ -1,3 +1,8 @@
+library;
+
+import '../../recovery/providers/recovery_provider.dart';
+import '../widgets/recovery_status_widget.dart';
+
 /// LEON Dashboard Screen.
 ///
 /// Features:
@@ -8,7 +13,6 @@
 /// - Scrollable daily overview with adaptive recommendations below the grid
 /// - Clean dark Cyber-Slate palette without sloppy blur glows
 /// - Granular Riverpod rebuild scoping: bento cards watch their own projections via [select]
-library;
 
 import 'package:flutter/material.dart';
 import '../widgets/training_recommendation_card.dart';
@@ -125,6 +129,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     SizedBox(width: 10),
                     Expanded(child: SleepBentoCard()),
                   ],
+                ),
+                const SizedBox(height: 14),
+                RecoveryStatusWidget(
+                  readinessScore: ref.watch(recoveryScoreProvider),
                 ),
                 const TrainingRecommendationCard(),
               ]),

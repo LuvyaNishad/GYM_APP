@@ -146,7 +146,7 @@ class PdfReportService {
                     pw.SizedBox(width: 8),
                     _metricCard(
                       'BMI INDEX',
-                      '${profile.bmi.toStringAsFixed(1)} (${profile.bmiCategory})',
+                      '${profile.formattedBmi} (${profile.bmiCategory})',
                       cardBg,
                       cyanAccent,
                       textSecondary,
@@ -228,16 +228,37 @@ class PdfReportService {
                   padding: const pw.EdgeInsets.all(12),
                   child: pw.Column(
                     children: [
-                      _tableRow('EXERCISE', '1-REP MAX (EST)', 'RECORD WEIGHT',
-                          borderSteel, isHeader: true),
-                      _tableRow('Barbell Bench Press', '118 kg', '100 kg × 5 reps',
-                          borderSteel),
-                      _tableRow('Barbell Back Squat', '162 kg', '140 kg × 5 reps',
-                          borderSteel),
-                      _tableRow('Conventional Deadlift', '205 kg', '180 kg × 3 reps',
-                          borderSteel),
-                      _tableRow('Standing Overhead Press', '76 kg', '65 kg × 6 reps',
-                          borderSteel),
+                      _tableRow(
+                        'EXERCISE',
+                        '1-REP MAX (EST)',
+                        'RECORD WEIGHT',
+                        borderSteel,
+                        isHeader: true,
+                      ),
+                      _tableRow(
+                        'Barbell Bench Press',
+                        '118 kg',
+                        '100 kg × 5 reps',
+                        borderSteel,
+                      ),
+                      _tableRow(
+                        'Barbell Back Squat',
+                        '162 kg',
+                        '140 kg × 5 reps',
+                        borderSteel,
+                      ),
+                      _tableRow(
+                        'Conventional Deadlift',
+                        '205 kg',
+                        '180 kg × 3 reps',
+                        borderSteel,
+                      ),
+                      _tableRow(
+                        'Standing Overhead Press',
+                        '76 kg',
+                        '65 kg × 6 reps',
+                        borderSteel,
+                      ),
                     ],
                   ),
                 ),
@@ -268,19 +289,25 @@ class PdfReportService {
                       pw.Text(
                         '- Experience Level: ${profile.experienceLevel} | Progressive Overload Enforced',
                         style: const pw.TextStyle(
-                            color: textPrimary, fontSize: 10),
+                          color: textPrimary,
+                          fontSize: 10,
+                        ),
                       ),
                       pw.SizedBox(height: 4),
                       pw.Text(
                         '- Default Rest Timer: ${profile.defaultRestSeconds}s auto-countdown | Barbell Tare: ${profile.barbellTareKg} kg Olympic bar',
                         style: const pw.TextStyle(
-                            color: textPrimary, fontSize: 10),
+                          color: textPrimary,
+                          fontSize: 10,
+                        ),
                       ),
                       pw.SizedBox(height: 4),
                       pw.Text(
                         '- Menstrual Cycle Optimization: ${profile.cycleTrackingEnabled ? "Active & Phase-Calibrated" : "Disabled"}',
                         style: const pw.TextStyle(
-                            color: textPrimary, fontSize: 10),
+                          color: textPrimary,
+                          fontSize: 10,
+                        ),
                       ),
                     ],
                   ),

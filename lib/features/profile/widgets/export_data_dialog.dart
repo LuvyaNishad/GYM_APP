@@ -47,7 +47,7 @@ class _ExportDataSheetState extends State<_ExportDataSheet> {
           'height_cm': p.heightCm,
           'current_weight_kg': p.currentWeightKg,
           'target_weight_kg': p.targetWeightKg,
-          'bmi': double.parse(p.bmi.toStringAsFixed(1)),
+          'bmi': double.parse((p.bmi ?? 0).toStringAsFixed(1)),
           'bmi_category': p.bmiCategory,
           'bmr_estimate_kcal': p.bmrEstimate,
           'maintenance_tdee_kcal': p.maintenanceCaloriesEstimate,
@@ -73,7 +73,7 @@ class _ExportDataSheetState extends State<_ExportDataSheet> {
 ${DateTime.now().toIso8601String().substring(0, 10)},Biometrics,Height,${p.heightCm},cm
 ${DateTime.now().toIso8601String().substring(0, 10)},Biometrics,CurrentWeight,${p.currentWeightKg},kg
 ${DateTime.now().toIso8601String().substring(0, 10)},Biometrics,TargetWeight,${p.targetWeightKg},kg
-${DateTime.now().toIso8601String().substring(0, 10)},Biometrics,BMI,${p.bmi.toStringAsFixed(1)},pts
+${DateTime.now().toIso8601String().substring(0, 10)},Biometrics,BMI,${(p.bmi ?? 0).toStringAsFixed(1)},pts
 ${DateTime.now().toIso8601String().substring(0, 10)},Training,TotalWorkouts,${p.totalWorkouts},sessions
 ${DateTime.now().toIso8601String().substring(0, 10)},Training,TotalVolume,${p.totalVolumeKg},kg
 ${DateTime.now().toIso8601String().substring(0, 10)},PR,BenchPress,100,kg
@@ -155,8 +155,11 @@ ${DateTime.now().toIso8601String().substring(0, 10)},PR,Deadlift,180,kg''';
               ),
               IconButton(
                 onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.close_rounded,
-                    color: AppColors.platinum, size: 20),
+                icon: const Icon(
+                  Icons.close_rounded,
+                  color: AppColors.platinum,
+                  size: 20,
+                ),
               ),
             ],
           ),
@@ -191,8 +194,7 @@ ${DateTime.now().toIso8601String().substring(0, 10)},PR,Deadlift,180,kg''';
                         style: TextStyle(
                           fontFamily: AppTypography.fontMono,
                           fontSize: 12.0,
-                          fontWeight:
-                              isSel ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
                           color: isSel
                               ? AppColors.primary
                               : AppColors.textSecondary,
@@ -213,9 +215,7 @@ ${DateTime.now().toIso8601String().substring(0, 10)},PR,Deadlift,180,kg''';
             decoration: BoxDecoration(
               color: AppColors.charcoal,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: AppColors.steel.withValues(alpha: 0.5),
-              ),
+              border: Border.all(color: AppColors.steel.withValues(alpha: 0.5)),
             ),
             child: SingleChildScrollView(
               child: Text(

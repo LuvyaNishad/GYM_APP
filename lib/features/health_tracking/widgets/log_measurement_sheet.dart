@@ -7,8 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/measurement_units.dart';
 import '../models/body_measurement_model.dart';
 import '../providers/body_measurements_provider.dart';
+import '../../../shared/widgets/persistence_feedback.dart';
 
 class LogMeasurementSheet extends ConsumerStatefulWidget {
   const LogMeasurementSheet({super.key});
@@ -28,12 +30,13 @@ class LogMeasurementSheet extends ConsumerStatefulWidget {
 }
 
 class _LogMeasurementSheetState extends ConsumerState<LogMeasurementSheet> {
-  final _weightController = TextEditingController(text: '79.2');
-  final _bodyFatController = TextEditingController(text: '16.0');
-  final _waistController = TextEditingController(text: '82.0');
-  final _chestController = TextEditingController(text: '103.0');
-  final _armsController = TextEditingController(text: '38.0');
-  final _thighsController = TextEditingController(text: '58.5');
+  final _entryId = 'm_${DateTime.now().microsecondsSinceEpoch}';
+  final _weightController = TextEditingController();
+  final _bodyFatController = TextEditingController();
+  final _waistController = TextEditingController();
+  final _chestController = TextEditingController();
+  final _armsController = TextEditingController();
+  final _thighsController = TextEditingController();
   final _notesController = TextEditingController();
 
   @override
@@ -48,8 +51,36 @@ class _LogMeasurementSheetState extends ConsumerState<LogMeasurementSheet> {
     super.dispose();
   }
 
-  void _save() {
-    final weight = double.tryParse(_weightController.text) ?? 75.0;
+  bool _isSaving = false;
+
+  Future<void> _save() async {
+    if (_isSaving) return;
+    final weight = double.tryParse(_weightController.text);
+    if (weight == null || !weight.isFinite || weight <= 0) {
+      await persistWithFeedback(context, () async {
+        throw const FormatException();
+      }, message: 'Enter a valid positive weight.');
+      return;
+    }
+    for (final (controller, label, isPercent) in [
+      (_bodyFatController, 'body fat percentage', true),
+      (_waistController, 'waist measurement', false),
+      (_chestController, 'chest measurement', false),
+      (_armsController, 'arm measurement', false),
+      (_thighsController, 'thigh measurement', false),
+    ]) {
+      final text = controller.text.trim();
+      if (text.isEmpty) continue;
+      final value = double.tryParse(text);
+      if (value == null ||
+          !value.isFinite ||
+          (isPercent ? value < 0 || value > 100 : value <= 0)) {
+        await persistWithFeedback(context, () async {
+          throw const FormatException();
+        }, message: 'Enter a valid $label or leave it empty.');
+        return;
+      }
+    }
     final bf = double.tryParse(_bodyFatController.text);
     final waist = double.tryParse(_waistController.text);
     final chest = double.tryParse(_chestController.text);
@@ -57,21 +88,30 @@ class _LogMeasurementSheetState extends ConsumerState<LogMeasurementSheet> {
     final thighs = double.tryParse(_thighsController.text);
     final notes = _notesController.text.trim();
 
+    final units = ref.read(measurementUnitsProvider);
     final entry = BodyMeasurementEntry(
-      id: 'm_${DateTime.now().millisecondsSinceEpoch}',
+      id: _entryId,
       date: DateTime.now(),
-      weightKg: weight,
+      weightKg: units.weightToKg(weight),
       bodyFatPercent: bf,
-      waistCm: waist,
-      chestCm: chest,
-      armsCm: arms,
-      thighsCm: thighs,
+      waistCm: waist == null ? null : units.heightToCm(waist),
+      chestCm: chest == null ? null : units.heightToCm(chest),
+      armsCm: arms == null ? null : units.heightToCm(arms),
+      thighsCm: thighs == null ? null : units.heightToCm(thighs),
       notes: notes.isNotEmpty ? notes : null,
     );
 
+    setState(() => _isSaving = true);
+    final success = await persistWithFeedback(
+      context,
+      () => ref.read(bodyMeasurementsProvider.notifier).addMeasurement(entry),
+      message:
+          'Could not save measurements. Your input is still here. Please try again.',
+    );
+    if (!mounted) return;
+    setState(() => _isSaving = false);
+    if (!success) return;
     HapticFeedback.mediumImpact();
-    ref.read(bodyMeasurementsProvider.notifier).addMeasurement(entry);
-
     Navigator.of(context).pop();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -91,192 +131,201 @@ class _LogMeasurementSheetState extends ConsumerState<LogMeasurementSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final units = ref.watch(measurementUnitsProvider);
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
-      ),
-      decoration: const BoxDecoration(
-        color: AppColors.onyx,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(
-          top: BorderSide(color: AppColors.steel, width: 1.0),
+    return PersistenceForm(
+      pending: _isSaving,
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
         ),
-      ),
-      padding: EdgeInsets.fromLTRB(16, 12, 16, bottomInset + 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Drag handle
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.steel.withValues(alpha: 0.8),
-                borderRadius: BorderRadius.circular(2),
+        decoration: const BoxDecoration(
+          color: AppColors.onyx,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(top: BorderSide(color: AppColors.steel, width: 1.0)),
+        ),
+        padding: EdgeInsets.fromLTRB(16, 12, 16, bottomInset + 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Drag handle
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.steel.withValues(alpha: 0.8),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
+            const SizedBox(height: 12),
 
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.straighten_rounded,
-                    color: Color(0xFF00E5FF),
+            // Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.straighten_rounded,
+                      color: Color(0xFF00E5FF),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'RECORD MEASUREMENTS',
+                      style: AppTypography.headlineSmall.copyWith(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                        color: AppColors.pureWhite,
+                      ),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: AppColors.textSecondary,
                     size: 20,
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'RECORD MEASUREMENTS',
-                    style: AppTypography.headlineSmall.copyWith(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.8,
-                      color: AppColors.pureWhite,
-                    ),
-                  ),
-                ],
-              ),
-              IconButton(
-                icon: const Icon(Icons.close_rounded,
-                    color: AppColors.textSecondary, size: 20),
-                onPressed: () => Navigator.of(context).pop(),
-                visualDensity: VisualDensity.compact,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          Flexible(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildInputField(
-                          label: 'WEIGHT',
-                          suffix: 'KG',
-                          controller: _weightController,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildInputField(
-                          label: 'BODY FAT',
-                          suffix: '%',
-                          controller: _bodyFatController,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildInputField(
-                          label: 'WAIST',
-                          suffix: 'CM',
-                          controller: _waistController,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildInputField(
-                          label: 'CHEST',
-                          suffix: 'CM',
-                          controller: _chestController,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildInputField(
-                          label: 'ARMS (FLEXED)',
-                          suffix: 'CM',
-                          controller: _armsController,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildInputField(
-                          label: 'THIGHS',
-                          suffix: 'CM',
-                          controller: _thighsController,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _notesController,
-                    style: const TextStyle(
-                      fontFamily: AppTypography.fontBody,
-                      fontSize: 12.5,
-                      color: AppColors.pureWhite,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: 'CHECK-IN NOTES (OPTIONAL)',
-                      labelStyle: const TextStyle(
-                        fontFamily: AppTypography.fontMono,
-                        fontSize: 11.0,
-                        color: AppColors.textSecondary,
-                        letterSpacing: 0.5,
-                      ),
-                      filled: true,
-                      fillColor: AppColors.charcoal,
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.steel),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _save,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00E5FF),
-                foregroundColor: AppColors.onyx,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  onPressed: _isSaving
+                      ? null
+                      : () => Navigator.of(context).pop(),
+                  visualDensity: VisualDensity.compact,
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 13),
-              ),
-              child: const Text(
-                'SAVE MEASUREMENTS',
-                style: TextStyle(
-                  fontFamily: AppTypography.fontBody,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            Flexible(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildInputField(
+                            label: 'WEIGHT',
+                            suffix: units.weightLabel.toUpperCase(),
+                            controller: _weightController,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildInputField(
+                            label: 'BODY FAT',
+                            suffix: '%',
+                            controller: _bodyFatController,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildInputField(
+                            label: 'WAIST',
+                            suffix: units.heightInputLabel.toUpperCase(),
+                            controller: _waistController,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildInputField(
+                            label: 'CHEST',
+                            suffix: units.heightInputLabel.toUpperCase(),
+                            controller: _chestController,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildInputField(
+                            label: 'ARMS (FLEXED)',
+                            suffix: units.heightInputLabel.toUpperCase(),
+                            controller: _armsController,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildInputField(
+                            label: 'THIGHS',
+                            suffix: units.heightInputLabel.toUpperCase(),
+                            controller: _thighsController,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _notesController,
+                      style: const TextStyle(
+                        fontFamily: AppTypography.fontBody,
+                        fontSize: 12.5,
+                        color: AppColors.pureWhite,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'CHECK-IN NOTES (OPTIONAL)',
+                        labelStyle: const TextStyle(
+                          fontFamily: AppTypography.fontMono,
+                          fontSize: 11.0,
+                          color: AppColors.textSecondary,
+                          letterSpacing: 0.5,
+                        ),
+                        filled: true,
+                        fillColor: AppColors.charcoal,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.steel),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
-        ],
+
+            const SizedBox(height: 16),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isSaving ? null : _save,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00E5FF),
+                  foregroundColor: AppColors.onyx,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                ),
+                child: const Text(
+                  'SAVE MEASUREMENTS',
+                  style: TextStyle(
+                    fontFamily: AppTypography.fontBody,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -311,7 +360,10 @@ class _LogMeasurementSheetState extends ConsumerState<LogMeasurementSheet> {
         ),
         filled: true,
         fillColor: AppColors.charcoal,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 10,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: AppColors.steel),

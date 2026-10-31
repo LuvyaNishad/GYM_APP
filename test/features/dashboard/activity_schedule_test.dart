@@ -99,22 +99,27 @@ void main() {
         date: DateTime(2026, 10, 29, 20),
         trainingPlan: {'splitId': pplSplit.id, 'dayId': 'legs'},
       );
+      final hive = MemoryHiveService();
+      final pull = WorkoutModel(
+        id: 'pull',
+        userId: 'guest',
+        name: 'MY PPL · Pull',
+        date: DateTime(2026, 10, 28, 20),
+      );
+      // Mutation checks must reload the same records from actual storage.
+      for (final workout in [pull, legs]) {
+        await hive.put(
+          AppConstants.hiveBoxWorkouts,
+          workout.id,
+          workout.toJson(),
+        );
+      }
       final c = ProviderContainer(
         overrides: [
-          hiveServiceProvider.overrideWithValue(MemoryHiveService()),
+          hiveServiceProvider.overrideWithValue(hive),
           localDateProvider.overrideWith((ref) => today),
           splitsProvider.overrideWith(_PplSplits.new),
-          historyWorkoutsProvider.overrideWith(
-            () => _History([
-              WorkoutModel(
-                id: 'pull',
-                userId: 'guest',
-                name: 'MY PPL · Pull',
-                date: DateTime(2026, 10, 28, 20),
-              ),
-              legs,
-            ]),
-          ),
+          historyWorkoutsProvider.overrideWith(() => _History([pull, legs])),
         ],
       );
       addTearDown(c.dispose);
@@ -252,7 +257,7 @@ void main() {
       for (final day in weekly) {
         expect(day.isBefore(started), isFalse);
       }
-      container
+      await container
           .read(splitsProvider.notifier)
           .switchActiveSplit('split_upper_lower');
       final switched = container.read(splitsProvider);

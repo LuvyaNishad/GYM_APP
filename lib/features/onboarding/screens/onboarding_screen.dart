@@ -10,6 +10,11 @@ import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/leon_button.dart';
 import '../providers/onboarding_provider.dart';
+import '../../../models/user_model.dart';
+import '../../../core/utils/measurement_units.dart';
+import '../../workout_builder/models/programme_configuration.dart';
+import '../../workout_builder/providers/splits_provider.dart';
+import '../../../shared/widgets/persistence_feedback.dart';
 import '../widgets/onboarding_top_bar.dart';
 import '../widgets/tactical_radar_widget.dart';
 
@@ -35,6 +40,8 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   late final PageController _pageController;
+  bool _saving = false;
+  final _biometricsForm = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -48,6 +55,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     _pageController.dispose();
     super.dispose();
   }
+
+  Widget _scrollableSurvey(Widget child) => SingleChildScrollView(child: child);
 
   void _goToPage(int page) {
     FocusScope.of(context).unfocus();
@@ -74,8 +83,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _completeAndNavigate() async {
-    await ref.read(onboardingProvider.notifier).complete();
-    if (mounted) {
+    if (_saving) return;
+    setState(() => _saving = true);
+    final success = await persistWithFeedback(
+      context,
+      () => ref.read(onboardingProvider.notifier).complete(),
+      message:
+          'Could not save setup. Your choices are still here. Please try again.',
+    );
+    if (!mounted) return;
+    setState(() => _saving = false);
+    if (success) {
       GoRouter.maybeOf(context)?.go(AppConstants.routeDashboard);
     }
   }
@@ -87,7 +105,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           // Ambient Glow Background
@@ -144,16 +162,26 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       _buildWelcome(context, notifier),
 
                       // Screen 2: Step 01 / 04: Goal & Experience
-                      _buildGoalAndExperienceStep(context, state, notifier),
+                      _scrollableSurvey(
+                        _buildGoalAndExperienceStep(context, state, notifier),
+                      ),
 
                       // Screen 3: Step 02 / 04: Biometrics (Height, Weight, Target)
                       _buildBiometricsStep(context, state, notifier),
 
                       // Screen 4: Step 03 / 04: Split & Schedule
-                      _buildSplitAndScheduleStep(context, state, notifier),
+                      _scrollableSurvey(
+                        _buildSplitAndScheduleStep(context, state, notifier),
+                      ),
 
                       // Screen 5: Step 04 / 04: Injuries & Equipment
-                      _buildInjuriesAndEquipmentStep(context, state, notifier),
+                      _scrollableSurvey(
+                        _buildInjuriesAndEquipmentStep(
+                          context,
+                          state,
+                          notifier,
+                        ),
+                      ),
 
                       // Screen 6: Ready / Routine Overview
                       _buildReadyStep(context, state, notifier),
@@ -319,30 +347,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Sign In Link
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Already have an account? ',
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                  fontSize: 12.0,
-                ),
-              ),
-              GestureDetector(
-                onTap: () => context.push(AppConstants.routeLogin),
-                child: Text(
-                  'Sign in',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12.0,
-                  ),
-                ),
-              ),
-            ],
-          ),
           const SizedBox(height: 16),
         ],
       ),
@@ -403,7 +407,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ],
             ),
           ),
-          const Spacer(flex: 1),
+          const SizedBox(height: 20),
 
           // Question 1: Primary Goal (2x2 Grid)
           Row(
@@ -436,7 +440,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             physics: const NeverScrollableScrollPhysics(),
             mainAxisSpacing: 8,
             crossAxisSpacing: 8,
-            childAspectRatio: 2.3,
+            childAspectRatio: 1.5,
             children: objectives.map((item) {
               final isSelected =
                   state.primaryGoal == item['title'] ||
@@ -510,7 +514,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             }).toList(),
           ),
 
-          const Spacer(flex: 1),
+          const SizedBox(height: 20),
 
           // Question 2: Experience Tier (3 horizontal segments)
           Row(
@@ -605,7 +609,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             }).toList(),
           ),
 
-          const Spacer(flex: 2),
+          const SizedBox(height: 20),
 
           // Continue Button
           LeonButton(
@@ -626,404 +630,144 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     OnboardingState state,
     OnboardingNotifier notifier,
   ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Step Header
-          Center(
-            child: Column(
-              children: [
-                Text(
-                  'BODY BIOMETRICS',
-                  style: AppTypography.headlineMedium.copyWith(
-                    letterSpacing: 2.0,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Configure your physical baseline and target goal weight.',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 12.0,
-                  ),
-                ),
-              ],
+    final units = MeasurementUnits(
+      weightUnit: state.isWeightKg ? 'kg' : 'lbs',
+      heightUnit: state.isHeightCm ? 'cm' : 'ft',
+    );
+    Widget input(
+      String label,
+      String key,
+      double? value,
+      void Function(double) save,
+      double maximum,
+    ) => TextFormField(
+      key: ValueKey('$key-${units.weightLabel}-${units.heightInputLabel}'),
+      initialValue: value?.toStringAsFixed(1) ?? '',
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: InputDecoration(labelText: label, helperText: 'Optional'),
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      validator: (text) {
+        if (text == null || text.isEmpty) return null;
+        final number = double.tryParse(text);
+        return number == null ||
+                !number.isFinite ||
+                number <= 0 ||
+                number > maximum
+            ? 'Enter a valid positive value'
+            : null;
+      },
+      onChanged: (text) {
+        final number = double.tryParse(text);
+        if (text.isEmpty) {
+          notifier.clearBiometric(key);
+          return;
+        }
+        if (number != null &&
+            number.isFinite &&
+            number > 0 &&
+            number <= maximum) {
+          save(number);
+        }
+      },
+    );
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Form(
+        key: _biometricsForm,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'BODY BIOMETRICS',
+              style: AppTypography.headlineMedium.copyWith(letterSpacing: 1.5),
             ),
-          ),
-          const Spacer(flex: 1),
-
-          // Unit Toggle
-          Center(
-            child: Container(
-              padding: const EdgeInsets.all(3),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E2537),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+            const SizedBox(height: 8),
+            const Text(
+              'Leave any field empty if you do not want to provide it.',
+              style: AppTypography.bodySmall,
+            ),
+            const SizedBox(height: 16),
+            SegmentedButton<bool>(
+              segments: const [
+                ButtonSegment(value: true, label: Text('kg / cm')),
+                ButtonSegment(value: false, label: Text('lbs / ft-in')),
+              ],
+              selected: {state.isWeightKg},
+              onSelectionChanged: (values) {
+                notifier.setWeightUnit(values.first);
+                notifier.setHeightUnit(values.first);
+              },
+            ),
+            const SizedBox(height: 16),
+            GlassCard(
+              blur: true,
+              child: Column(
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      notifier.setWeightUnit(true);
-                      notifier.setHeightUnit(true);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: state.isWeightKg
-                            ? AppColors.primary.withValues(alpha: 0.20)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(12),
-                        border: state.isWeightKg
-                            ? Border.all(
-                                color: AppColors.primary.withValues(
-                                  alpha: 0.40,
-                                ),
-                              )
-                            : null,
-                      ),
-                      child: Text(
-                        'METRIC (KG / CM)',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: state.isWeightKg
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11.0,
-                        ),
-                      ),
+                  TextFormField(
+                    initialValue: state.ageProvided ? '${state.age}' : '',
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Age (optional)',
+                      helperText: 'Used for calorie estimates',
                     ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) return null;
+                      final age = int.tryParse(value);
+                      return age == null || age < 13 || age > 120
+                          ? 'Enter age from 13 to 120'
+                          : null;
+                    },
+                    onChanged: (value) {
+                      final age = int.tryParse(value);
+                      notifier.setAge(
+                        age != null && age >= 13 && age <= 120 ? age : null,
+                      );
+                    },
                   ),
-                  GestureDetector(
-                    onTap: () {
-                      notifier.setWeightUnit(false);
-                      notifier.setHeightUnit(false);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: !state.isWeightKg
-                            ? AppColors.primary.withValues(alpha: 0.20)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(12),
-                        border: !state.isWeightKg
-                            ? Border.all(
-                                color: AppColors.primary.withValues(
-                                  alpha: 0.40,
-                                ),
-                              )
-                            : null,
-                      ),
-                      child: Text(
-                        'IMPERIAL (LBS / IN)',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: !state.isWeightKg
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11.0,
-                        ),
-                      ),
-                    ),
+                  input(
+                    'Height (${units.heightInputLabel})',
+                    'height',
+                    state.heightProvided
+                        ? units.heightFromCm(state.height)
+                        : null,
+                    (value) => notifier.setHeight(units.heightToCm(value)),
+                    units.heightFromCm(250),
+                  ),
+                  input(
+                    'Current weight (${units.weightLabel})',
+                    'weight',
+                    state.weightProvided
+                        ? units.weightFromKg(state.weight)
+                        : null,
+                    (value) => notifier.setWeight(units.weightToKg(value)),
+                    units.weightFromKg(500),
+                  ),
+                  input(
+                    'Goal weight (${units.weightLabel})',
+                    'target',
+                    state.targetProvided
+                        ? units.weightFromKg(state.targetWeight)
+                        : null,
+                    (value) =>
+                        notifier.setTargetWeight(units.weightToKg(value)),
+                    units.weightFromKg(500),
                   ),
                 ],
               ),
             ),
-          ),
-
-          const Spacer(flex: 1),
-
-          // Question 3: Height & Current Weight side-by-side
-          Row(
-            children: [
-              // Height Card
-              Expanded(
-                child: GlassCard(
-                  borderRadius: 14,
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    children: [
-                      Text(
-                        'HEIGHT',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.textSecondary,
-                          letterSpacing: 1.2,
-                          fontSize: 11.0,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        state.isHeightCm
-                            ? '${state.height.toInt()} cm'
-                            : '${(state.height / 2.54).round()} in',
-                        style: AppTypography.headlineMedium.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w800,
-                          fontFamily: AppTypography.fontMono,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            visualDensity: VisualDensity.compact,
-                            icon: const Icon(
-                              Icons.remove_circle_outline,
-                              color: AppColors.primary,
-                              size: 22,
-                            ),
-                            onPressed: () => notifier.setHeight(
-                              (state.height - 1).clamp(120, 230),
-                            ),
-                          ),
-                          IconButton(
-                            visualDensity: VisualDensity.compact,
-                            icon: const Icon(
-                              Icons.add_circle_outline,
-                              color: AppColors.primary,
-                              size: 22,
-                            ),
-                            onPressed: () => notifier.setHeight(
-                              (state.height + 1).clamp(120, 230),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-
-              // Weight Card
-              Expanded(
-                child: GlassCard(
-                  borderRadius: 14,
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    children: [
-                      Text(
-                        'CURRENT WEIGHT',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.textSecondary,
-                          letterSpacing: 1.2,
-                          fontSize: 11.0,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        state.isWeightKg
-                            ? '${state.weight.toStringAsFixed(1)} kg'
-                            : '${(state.weight * 2.20462).toStringAsFixed(1)} lbs',
-                        style: AppTypography.headlineMedium.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w800,
-                          fontFamily: AppTypography.fontMono,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            visualDensity: VisualDensity.compact,
-                            icon: const Icon(
-                              Icons.remove_circle_outline,
-                              color: AppColors.primary,
-                              size: 22,
-                            ),
-                            onPressed: () => notifier.setWeight(
-                              (state.weight - 0.5).clamp(40, 200),
-                            ),
-                          ),
-                          IconButton(
-                            visualDensity: VisualDensity.compact,
-                            icon: const Icon(
-                              Icons.add_circle_outline,
-                              color: AppColors.primary,
-                              size: 22,
-                            ),
-                            onPressed: () => notifier.setWeight(
-                              (state.weight + 0.5).clamp(40, 200),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const Spacer(flex: 1),
-
-          // Question 4: Target Goal Weight
-          GlassCard(
-            borderRadius: 14,
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'TARGET GOAL WEIGHT',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.2,
-                        fontSize: 11.0,
-                      ),
-                    ),
-                    Text(
-                      state.isWeightKg
-                          ? '${state.targetWeight.toStringAsFixed(1)} kg'
-                          : '${(state.targetWeight * 2.20462).toStringAsFixed(1)} lbs',
-                      style: AppTypography.headlineSmall.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w800,
-                        fontFamily: AppTypography.fontMono,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => notifier.setTargetWeight(
-                          state.weight - (state.isWeightKg ? 4.0 : 4.08),
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 6,
-                            horizontal: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: Colors.white.withValues(alpha: 0.04),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.1),
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              state.isWeightKg ? 'Cut (-4 kg)' : 'Cut (-9 lbs)',
-                              maxLines: 2,
-                              textAlign: TextAlign.center,
-                              style: AppTypography.labelSmall.copyWith(
-                                color: AppColors.textSecondary,
-                                fontSize: 11.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => notifier.setTargetWeight(state.weight),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 6,
-                            horizontal: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: Colors.white.withValues(alpha: 0.04),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.1),
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Maintain',
-                              maxLines: 2,
-                              textAlign: TextAlign.center,
-                              style: AppTypography.labelSmall.copyWith(
-                                color: AppColors.textSecondary,
-                                fontSize: 11.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => notifier.setTargetWeight(
-                          state.weight + (state.isWeightKg ? 4.0 : 4.08),
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 6,
-                            horizontal: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: Colors.white.withValues(alpha: 0.04),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.1),
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              state.isWeightKg
-                                  ? 'Bulk (+4 kg)'
-                                  : 'Bulk (+9 lbs)',
-                              maxLines: 2,
-                              textAlign: TextAlign.center,
-                              style: AppTypography.labelSmall.copyWith(
-                                color: AppColors.textSecondary,
-                                fontSize: 11.0,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            const SizedBox(height: 24),
+            LeonButton(
+              label: 'CONTINUE',
+              onPressed: () {
+                if (_biometricsForm.currentState!.validate()) _nextPage();
+              },
             ),
-          ),
-
-          const Spacer(flex: 2),
-
-          // Continue Button
-          LeonButton(
-            label: 'CONTINUE',
-            icon: Icons.arrow_forward_rounded,
-            width: double.infinity,
-            onPressed: _nextPage,
-          ),
-          const SizedBox(height: 8),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  // ── SCREEN 4: STEP 03 / 04: SPLIT & SCHEDULE (QUESTIONS 5 & 6) ─────────────
   Widget _buildSplitAndScheduleStep(
     BuildContext context,
     OnboardingState state,
@@ -1083,11 +827,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ],
             ),
           ),
-          const Spacer(flex: 1),
+          const SizedBox(height: 20),
 
           // Question 5: Training Frequency
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            spacing: 16,
+            runSpacing: 8,
+            alignment: WrapAlignment.spaceBetween,
             children: [
               Row(
                 children: [
@@ -1172,7 +918,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             }).toList(),
           ),
 
-          const Spacer(flex: 1),
+          const SizedBox(height: 20),
 
           // Question 6: Training Split
           Row(
@@ -1200,7 +946,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 8),
           ...splits.map((item) {
-            final isSelected = state.preferredSplit == item['id'];
+            final isSelected =
+                resolveSplitId(state.preferredSplit) ==
+                resolveSplitId(item['id'] as String);
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: InkWell(
@@ -1267,7 +1015,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             );
           }),
 
-          const Spacer(flex: 2),
+          const SizedBox(height: 20),
 
           // Continue Button
           LeonButton(
@@ -1330,7 +1078,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ],
             ),
           ),
-          const Spacer(flex: 1),
+          const SizedBox(height: 20),
 
           // Question 7: Areas to protect / Injuries
           Row(
@@ -1409,7 +1157,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             }).toList(),
           ),
 
-          const Spacer(flex: 1),
+          const SizedBox(height: 20),
 
           // Equipment Profile
           Row(
@@ -1477,7 +1225,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             }).toList(),
           ),
 
-          const Spacer(flex: 2),
+          const SizedBox(height: 20),
 
           // Finalize Button
           LeonButton(
@@ -1498,314 +1246,90 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     OnboardingState state,
     OnboardingNotifier notifier,
   ) {
-    // Generate split-aware routine schedule preview
-    final List<Map<String, dynamic>> schedule;
-    if (state.preferredSplit == 'Upper/Lower') {
-      schedule = [
-        {
-          'day': '01',
-          'name': 'Upper Body A',
-          'focus': 'Bench Press, Barbell Row, OHP',
-          'color': AppColors.primary,
-        },
-        {
-          'day': '02',
-          'name': 'Lower Body A',
-          'focus': 'Squat, Romanian Deadlift, Calves',
-          'color': AppColors.secondary,
-        },
-        {
-          'day': '03',
-          'name': 'Active Recovery',
-          'focus': 'Mobility & Light Cardio',
-          'color': AppColors.textPrimary,
-        },
-        {
-          'day': '04',
-          'name': 'Upper Body B',
-          'focus': 'Incline DB Press, Pull-ups, Arms',
-          'color': AppColors.primary,
-        },
-        {
-          'day': '05',
-          'name': 'Lower Body B',
-          'focus': 'Deadlift, Leg Press, Core',
-          'color': AppColors.secondary,
-        },
-      ];
-    } else if (state.preferredSplit == 'Full Body') {
-      schedule = [
-        {
-          'day': '01',
-          'name': 'Full Body A',
-          'focus': 'Squat, Bench Press, Barbell Row',
-          'color': AppColors.primary,
-        },
-        {
-          'day': '02',
-          'name': 'Active Recovery',
-          'focus': 'Mobility & Core Stability',
-          'color': AppColors.textPrimary,
-        },
-        {
-          'day': '03',
-          'name': 'Full Body B',
-          'focus': 'Deadlift, Overhead Press, Pull-ups',
-          'color': AppColors.secondary,
-        },
-        {
-          'day': '04',
-          'name': 'Rest Day',
-          'focus': 'Active Recovery & Stretching',
-          'color': AppColors.textPrimary,
-        },
-        {
-          'day': '05',
-          'name': 'Full Body C',
-          'focus': 'Leg Press, Incline DB, Lat Pulldown',
-          'color': AppColors.primary,
-        },
-      ];
-    } else if (state.preferredSplit == 'Arnold Split') {
-      schedule = [
-        {
-          'day': '01',
-          'name': 'Chest & Back',
-          'focus': 'Bench Press, Barbell Rows, Flyes',
-          'color': AppColors.primary,
-        },
-        {
-          'day': '02',
-          'name': 'Shoulders & Arms',
-          'focus': 'OHP, Lateral Raises, Biceps/Triceps',
-          'color': AppColors.secondary,
-        },
-        {
-          'day': '03',
-          'name': 'Legs & Lower Body',
-          'focus': 'Squats, Romanian Deadlifts, Calves',
-          'color': AppColors.purple,
-        },
-        {
-          'day': '04',
-          'name': 'Chest & Back B',
-          'focus': 'Incline Press, Lat Pulldowns',
-          'color': AppColors.primary,
-        },
-        {
-          'day': '05',
-          'name': 'Shoulders & Arms B',
-          'focus': 'Dumbbell Shoulder Press, Arm Super-sets',
-          'color': AppColors.secondary,
-        },
-      ];
-    } else {
-      // Default: PPL
-      schedule = [
-        {
-          'day': '01',
-          'name': 'Push Day',
-          'focus': 'Chest, Shoulders, Triceps',
-          'color': AppColors.primary,
-        },
-        {
-          'day': '02',
-          'name': 'Pull Day',
-          'focus': 'Back, Biceps, Rear Delts',
-          'color': AppColors.purple,
-        },
-        {
-          'day': '03',
-          'name': 'Leg Day',
-          'focus': 'Quads, Hamstrings, Calves',
-          'color': AppColors.secondary,
-        },
-        {
-          'day': '04',
-          'name': 'Push Day B',
-          'focus': 'Incline Press, Lateral Raises, Dips',
-          'color': AppColors.primary,
-        },
-        {
-          'day': '05',
-          'name': 'Pull Day B',
-          'focus': 'Barbell Rows, Pull-ups, Curls',
-          'color': AppColors.purple,
-        },
-        {
-          'day': '06',
-          'name': 'Leg Day B',
-          'focus': 'Romanian Deadlifts, Leg Press',
-          'color': AppColors.secondary,
-        },
-      ];
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          Text(
-            'WORKOUT PLAN READY',
-            style: AppTypography.headlineMedium.copyWith(
-              letterSpacing: 2.0,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Your split is configured and ready to log.',
-            textAlign: TextAlign.center,
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-              fontSize: 12.0,
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Overview Glass Card
-          GlassCard(
-            borderRadius: 16,
-            padding: const EdgeInsets.all(16),
-            borderColor: AppColors.primary.withValues(alpha: 0.3),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      state.preferredSplit,
-                      style: AppTypography.headlineSmall.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        '${state.trainingDaysPerWeek} DAYS / WK',
-                        style: AppTypography.monoSmall.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11.0,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Goal: ${state.primaryGoal}',
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                          fontSize: 11.5,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      'Target: ${state.targetWeight.toStringAsFixed(1)} ${state.isWeightKg ? "kg" : "lbs"}',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                        fontSize: 11.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // Schedule List
-          Expanded(
-            child: ListView.separated(
-              itemCount: schedule.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemBuilder: (context, index) {
-                final item = schedule[index];
-
-                return GlassCard(
-                  borderRadius: 14,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        item['day'] as String,
-                        style: AppTypography.monoSmall.copyWith(
-                          color: AppColors.textMuted,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item['name'] as String,
-                              style: AppTypography.headlineSmall.copyWith(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
-                              ),
-                            ),
-                            Text(
-                              item['focus'] as String,
-                              style: AppTypography.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
-                                fontSize: 11.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: item['color'] as Color,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: (item['color'] as Color).withValues(
-                                alpha: 0.6,
-                              ),
-                              blurRadius: 6,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-
-          const SizedBox(height: 12),
-          LeonButton(
-            label: 'START WORKOUT',
-            icon: Icons.fitness_center_rounded,
-            width: double.infinity,
-            onPressed: _completeAndNavigate,
-          ),
-          const SizedBox(height: 8),
-        ],
+    final split = ref
+        .watch(splitsProvider)
+        .splits
+        .firstWhere(
+          (s) => s.id == resolveSplitId(state.preferredSplit),
+          orElse: () => fullBodySplit,
+        );
+    final plan = configureProgramme(
+      split,
+      UserModel(
+        id: 'preview',
+        email: '',
+        displayName: '',
+        createdAt: DateTime.now(),
+        trainingDaysPerWeek: state.trainingDaysPerWeek,
+        equipment: state.equipment,
       ),
+    );
+    final units = MeasurementUnits(
+      weightUnit: state.isWeightKg ? 'kg' : 'lbs',
+      heightUnit: state.isHeightCm ? 'cm' : 'ft',
+    );
+    return ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        Text(
+          'WORKOUT PLAN READY',
+          style: AppTypography.headlineMedium.copyWith(letterSpacing: 1.5),
+        ),
+        const SizedBox(height: 12),
+        GlassCard(
+          blur: true,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(plan.name, style: AppTypography.headlineSmall),
+              Text(
+                '${state.trainingDaysPerWeek} training days per week. Workouts rotate in the order below.',
+                style: AppTypography.bodyMedium,
+              ),
+              Text(
+                'Goal: ${state.primaryGoal}',
+                style: AppTypography.bodySmall,
+              ),
+              Text(
+                state.targetProvided
+                    ? 'Target: ${units.weight(state.targetWeight)}'
+                    : 'Target weight: Not set',
+                style: AppTypography.bodySmall,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Injury notes are saved for your review. Exercises are not medically screened; edit the routine to suit your needs.',
+                style: AppTypography.bodySmall,
+              ),
+            ],
+          ),
+        ),
+        for (final day in plan.workouts)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: GlassCard(
+              blur: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(day.name, style: AppTypography.headlineSmall),
+                  Text(
+                    day.exercises.isEmpty
+                        ? 'No matching equipment. Add exercises in Routines.'
+                        : day.exercises.map((e) => e.exerciseName).join(', '),
+                    style: AppTypography.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        const SizedBox(height: 24),
+        LeonButton(
+          label: 'SAVE SETUP',
+          isLoading: _saving,
+          onPressed: _completeAndNavigate,
+        ),
+      ],
     );
   }
 }

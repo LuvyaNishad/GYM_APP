@@ -12,20 +12,20 @@ class OnboardingState {
     this.weight = 78,
     this.isWeightKg = true,
     this.targetWeight = 74,
-    this.experienceLevel = 'INTERMEDIATE',
+    this.experienceLevel = 'Not set',
     this.primaryGoal = 'BUILD MUSCLE',
     this.trainingDaysPerWeek = 5,
     this.preferredSplit = 'PPL',
-    this.equipment = const [
-      'Dumbbells',
-      'Barbell',
-      'Bench',
-      'Pull-up Bar',
-    ],
+    this.equipment = const ['Dumbbells', 'Barbell', 'Bench', 'Pull-up Bar'],
     this.injuries = const [],
     this.isCompleted = false,
+    this.ageProvided = false,
+    this.heightProvided = false,
+    this.weightProvided = false,
+    this.targetProvided = false,
   });
 
+  final bool ageProvided, heightProvided, weightProvided, targetProvided;
   final int currentPage;
   final String agentName;
   final int age;
@@ -78,8 +78,16 @@ class OnboardingState {
     List<String>? equipment,
     List<String>? injuries,
     bool? isCompleted,
+    bool? ageProvided,
+    bool? heightProvided,
+    bool? weightProvided,
+    bool? targetProvided,
   }) {
     return OnboardingState(
+      ageProvided: ageProvided ?? this.ageProvided,
+      heightProvided: heightProvided ?? this.heightProvided,
+      weightProvided: weightProvided ?? this.weightProvided,
+      targetProvided: targetProvided ?? this.targetProvided,
       currentPage: currentPage ?? this.currentPage,
       agentName: agentName ?? this.agentName,
       age: age ?? this.age,
