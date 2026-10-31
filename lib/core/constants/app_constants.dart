@@ -40,6 +40,8 @@ abstract final class AppConstants {
   static const String hiveBoxSettings = 'settings';
   static const String hiveBoxProgress = 'progress';
   static const String hiveBoxSplits = 'splits';
+  static const String hiveBoxBodyMeasurements = 'body_measurements';
+  static const String hiveBoxCustomExercises = 'custom_exercises';
 
   /// Key the single on-device profile is stored under in [hiveBoxUser].
   /// LEON is local-first and guest-first, so there is exactly one local

@@ -43,6 +43,22 @@ class MemoryHiveService extends HiveService {
   }
 
   @override
+  Future<void> putAll<T>(
+    String boxName,
+    Iterable<T> models, {
+    required String Function(T) keyOf,
+    required Map<String, dynamic> Function(T) toJson,
+  }) async {
+    if (documentGate != null) await documentGate!.future;
+    if (failDocuments) throw StateError('documents unavailable');
+    final encoded = {
+      for (final model in models) keyOf(model): jsonEncode(toJson(model)),
+    };
+    documentWrites++;
+    documents.putIfAbsent(boxName, () => {}).addAll(encoded);
+  }
+
+  @override
   List<T> readAll<T>(
     String boxName,
     T Function(Map<String, dynamic>) fromJson,

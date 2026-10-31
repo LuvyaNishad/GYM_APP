@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/constants/app_constants.dart';
 import '../models/workout_model.dart';
 import 'hive_service.dart';
+import 'workout_history.dart';
 
 /// Provider that exposes the WorkoutService singleton.
 final workoutServiceProvider = Provider<WorkoutService>(
@@ -26,9 +27,12 @@ class WorkoutService {
   /// Pass a null [userId] to fetch every stored workout (guest mode, where
   /// records carry a placeholder user id).
   Future<List<WorkoutModel>> fetchWorkouts({String? userId}) async {
-    final all = _hive.readAll(
-      AppConstants.hiveBoxWorkouts,
-      WorkoutModel.fromJson,
+    return readWorkouts(userId: userId);
+  }
+
+  List<WorkoutModel> readWorkouts({String? userId}) {
+    final all = recalculateWorkoutHistory(
+      _hive.readAll(AppConstants.hiveBoxWorkouts, WorkoutModel.fromJson),
     );
     final scoped = userId == null
         ? all
@@ -38,16 +42,21 @@ class WorkoutService {
   }
 
   /// Fetch a single workout by id, or null when absent.
-  Future<WorkoutModel?> fetchWorkout(String workoutId) async => _hive.read(
-    AppConstants.hiveBoxWorkouts,
-    workoutId,
-    WorkoutModel.fromJson,
-  );
+  Future<WorkoutModel?> fetchWorkout(String workoutId) async =>
+      readWorkouts().where((workout) => workout.id == workoutId).firstOrNull;
 
   /// Save a new or updated workout, keyed by [WorkoutModel.id].
   /// Each session has its own identity, including sessions on the same day.
   Future<void> saveWorkout(WorkoutModel workout) async {
-    await _hive.put(AppConstants.hiveBoxWorkouts, workout.id, workout.toJson());
+    final normalized = recalculateWorkoutHistory([
+      ...readWorkouts().where((entry) => entry.id != workout.id),
+      workout,
+    ]).firstWhere((entry) => entry.id == workout.id);
+    await _hive.put(
+      AppConstants.hiveBoxWorkouts,
+      workout.id,
+      normalized.toJson(),
+    );
   }
 
   /// Delete a workout by id. No-op when it doesn't exist.
@@ -62,12 +71,10 @@ class WorkoutService {
   static double totalVolumeKg(WorkoutModel workout) {
     var volume = 0.0;
     for (final exercise in workout.exercises) {
+      if (exercise.isWarmup) continue;
       for (final set in exercise.sets) {
         if (set.isWarmup) continue;
-        volume += set.weightKg * set.reps;
-        if (set.weightKgRight != null) {
-          volume += set.weightKgRight! * (set.repsRight ?? set.reps);
-        }
+        volume += workoutSetVolumeKg(set);
       }
     }
     return volume;

@@ -13,6 +13,7 @@ import '../models/split_model.dart';
 import '../models/user_model.dart';
 import '../services/hive_service.dart';
 import '../services/split_service.dart';
+import '../services/profile_storage.dart';
 
 // ── Auth State ────────────────────────────────────────────────────────────────
 
@@ -30,8 +31,9 @@ class CurrentUserId extends Notifier<String?> {
   void signedOut() => state = null;
 }
 
-final currentUserIdProvider =
-    NotifierProvider<CurrentUserId, String?>(CurrentUserId.new);
+final currentUserIdProvider = NotifierProvider<CurrentUserId, String?>(
+  CurrentUserId.new,
+);
 
 /// Whether the app has completed its bootstrap (Hive init, DI, etc.)
 class AppBootstrapped extends Notifier<bool> {
@@ -44,8 +46,9 @@ class AppBootstrapped extends Notifier<bool> {
   void markReady() => state = true;
 }
 
-final appBootstrappedProvider =
-    NotifierProvider<AppBootstrapped, bool>(AppBootstrapped.new);
+final appBootstrappedProvider = NotifierProvider<AppBootstrapped, bool>(
+  AppBootstrapped.new,
+);
 
 // ── Theme ─────────────────────────────────────────────────────────────────────
 
@@ -65,8 +68,9 @@ class BottomNavIndex extends Notifier<int> {
   void select(int index) => state = index;
 }
 
-final bottomNavIndexProvider =
-    NotifierProvider<BottomNavIndex, int>(BottomNavIndex.new);
+final bottomNavIndexProvider = NotifierProvider<BottomNavIndex, int>(
+  BottomNavIndex.new,
+);
 
 // ── Training Split ────────────────────────────────────────────────────────────
 
@@ -96,8 +100,9 @@ class ActiveSplit extends Notifier<SplitModel?> {
   }
 }
 
-final activeSplitProvider =
-    NotifierProvider<ActiveSplit, SplitModel?>(ActiveSplit.new);
+final activeSplitProvider = NotifierProvider<ActiveSplit, SplitModel?>(
+  ActiveSplit.new,
+);
 
 // ── User Profile ──────────────────────────────────────────────────────────────
 
@@ -112,49 +117,70 @@ class UserProfile extends Notifier<UserModel?> {
   UserModel? build() {
     ref.keepAlive();
     try {
-      return ref.watch(hiveServiceProvider).read(
-            AppConstants.hiveBoxUser,
-            AppConstants.hiveKeyLocalProfile,
-            UserModel.fromJson,
-          );
+      return readLocalProfile(ref.watch(hiveServiceProvider));
     } catch (_) {
       // A profile left behind by a schema change must not block boot.
       return null;
     }
   }
 
-  /// Replace the stored profile. Passing null only clears in-memory state —
-  /// use [erase] to remove it from storage.
-  Future<void> load(UserModel? profile) async {
-    if (profile != null) {
-      await ref.read(hiveServiceProvider).put(
-            AppConstants.hiveBoxUser,
-            AppConstants.hiveKeyLocalProfile,
-            profile.toJson(),
-          );
-    }
-    state = profile;
+  Future<void> _writes = Future.value();
+
+  /// All profile consumers share one persistence queue and read the latest value.
+  Future<void> transform(
+    UserModel? Function(UserModel? current) change, {
+    Map<String, dynamic>? accountMirror,
+  }) {
+    final result = _writes.catchError((Object _) {}).then((_) async {
+      final updated = change(state);
+      if (updated == null) return;
+      final hive = ref.read(hiveServiceProvider);
+      if (accountMirror == null) {
+        await hive.put(
+          AppConstants.hiveBoxUser,
+          AppConstants.hiveKeyLocalProfile,
+          updated.toJson(),
+        );
+      } else {
+        await hive.putAll<MapEntry<String, Map<String, dynamic>>>(
+          AppConstants.hiveBoxUser,
+          [
+            MapEntry(AppConstants.hiveKeyLocalProfile, updated.toJson()),
+            MapEntry('account_profile_data', accountMirror),
+          ],
+          keyOf: (entry) => entry.key,
+          toJson: (entry) => entry.value,
+        );
+      }
+      if (ref.mounted) state = updated;
+    });
+    _writes = result;
+    return result;
   }
 
-  /// Apply a partial change and persist it. No-op when unloaded.
-  Future<void> update(UserModel Function(UserModel current) change) async {
-    final current = state;
-    if (current == null) return;
-    await load(change(current));
+  Future<void> load(UserModel? profile) {
+    if (profile == null) {
+      state = null;
+      return Future.value();
+    }
+    return transform((_) => profile);
   }
+
+  Future<void> update(UserModel Function(UserModel current) change) =>
+      transform((current) => current == null ? null : change(current));
 
   /// Drop the in-memory profile without touching storage (sign-out).
   void clear() => state = null;
 
   /// Delete the stored profile as well (account reset).
   Future<void> erase() async {
-    await ref.read(hiveServiceProvider).delete(
-          AppConstants.hiveBoxUser,
-          AppConstants.hiveKeyLocalProfile,
-        );
+    await ref
+        .read(hiveServiceProvider)
+        .delete(AppConstants.hiveBoxUser, AppConstants.hiveKeyLocalProfile);
     state = null;
   }
 }
 
-final userProfileProvider =
-    NotifierProvider<UserProfile, UserModel?>(UserProfile.new);
+final userProfileProvider = NotifierProvider<UserProfile, UserModel?>(
+  UserProfile.new,
+);

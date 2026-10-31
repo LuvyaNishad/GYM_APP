@@ -12,6 +12,35 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
   displayName: json['display_name'] as String,
   avatarUrl: json['avatar_url'] as String?,
   weightUnit: json['weight_unit'] as String? ?? 'kg',
+  heightUnit: json['height_unit'] as String? ?? 'cm',
+  age: (json['age'] as num?)?.toInt(),
+  heightCm: (json['height_cm'] as num?)?.toDouble(),
+  experienceLevel: json['experience_level'] as String?,
+  trainingDaysPerWeek: (json['training_days_per_week'] as num?)?.toInt(),
+  equipment:
+      (json['equipment'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
+  injuries:
+      (json['injuries'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
+  primaryGoal: json['primary_goal'] as String? ?? 'BUILD MUSCLE',
+  startingWeightKg: (json['starting_weight_kg'] as num?)?.toDouble(),
+  goalDirection: json['goal_direction'] as String?,
+  weightUpdatedAt: json['weight_updated_at'] == null
+      ? null
+      : DateTime.parse(json['weight_updated_at'] as String),
+  defaultRestSeconds: (json['default_rest_seconds'] as num?)?.toInt() ?? 90,
+  barbellTareKg: (json['barbell_tare_kg'] as num?)?.toDouble() ?? 20,
+  availablePlates:
+      (json['available_plates'] as List<dynamic>?)
+          ?.map((e) => (e as num).toDouble())
+          .toList() ??
+      const [25.0, 20.0, 15.0, 10.0, 5.0, 2.5, 1.25],
+  audioCuesEnabled: json['audio_cues_enabled'] as bool? ?? true,
+  hapticFeedbackEnabled: json['haptic_feedback_enabled'] as bool? ?? true,
+  schemaVersion: (json['schema_version'] as num?)?.toInt() ?? 2,
+  trainingSchedules: json['training_schedules'] as String?,
+  onboardingComplete: json['onboarding_complete'] as bool? ?? false,
   totalWorkouts: (json['total_workouts'] as num?)?.toInt() ?? 0,
   totalVolumeKg: (json['total_volume_kg'] as num?)?.toInt() ?? 0,
   createdAt: json['created_at'] == null
@@ -34,6 +63,25 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
       'display_name': instance.displayName,
       'avatar_url': instance.avatarUrl,
       'weight_unit': instance.weightUnit,
+      'height_unit': instance.heightUnit,
+      'age': instance.age,
+      'height_cm': instance.heightCm,
+      'experience_level': instance.experienceLevel,
+      'training_days_per_week': instance.trainingDaysPerWeek,
+      'equipment': instance.equipment,
+      'injuries': instance.injuries,
+      'primary_goal': instance.primaryGoal,
+      'starting_weight_kg': instance.startingWeightKg,
+      'goal_direction': instance.goalDirection,
+      'weight_updated_at': instance.weightUpdatedAt?.toIso8601String(),
+      'default_rest_seconds': instance.defaultRestSeconds,
+      'barbell_tare_kg': instance.barbellTareKg,
+      'available_plates': instance.availablePlates,
+      'audio_cues_enabled': instance.audioCuesEnabled,
+      'haptic_feedback_enabled': instance.hapticFeedbackEnabled,
+      'schema_version': instance.schemaVersion,
+      'training_schedules': instance.trainingSchedules,
+      'onboarding_complete': instance.onboardingComplete,
       'total_workouts': instance.totalWorkouts,
       'total_volume_kg': instance.totalVolumeKg,
       'created_at': instance.createdAt?.toIso8601String(),

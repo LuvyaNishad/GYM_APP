@@ -32,14 +32,20 @@ class HiveService {
     AppConstants.hiveBoxUser,
     AppConstants.hiveBoxProgress,
     AppConstants.hiveBoxSplits,
+    AppConstants.hiveBoxBodyMeasurements,
+    AppConstants.hiveBoxCustomExercises,
   ];
 
   /// Initialise Hive and open every box the app needs.
   ///
   /// Must be awaited during bootstrap, before `runApp`, so that synchronous
   /// reads via [read] / [readAll] are safe from the first frame.
-  static Future<void> init() async {
-    await Hive.initFlutter();
+  static Future<void> init({String? storagePath}) async {
+    if (storagePath == null) {
+      await Hive.initFlutter();
+    } else {
+      Hive.init(storagePath);
+    }
     for (final name in _documentBoxes) {
       await Hive.openBox<String>(name);
     }

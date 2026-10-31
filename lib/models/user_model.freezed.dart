@@ -15,9 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserModel {
 
- String get id; String get email; String get displayName; String? get avatarUrl; String get weightUnit; int get totalWorkouts; int get totalVolumeKg; DateTime? get createdAt; DateTime? get lastActiveAt;// ── New fields ──────────────────────────────────────────────────────────
-/// Current body weight in the user's preferred [weightUnit].
- double? get currentWeight;/// Goal body weight in the user's preferred [weightUnit].
+ String get id; String get email; String get displayName; String? get avatarUrl; String get weightUnit; String get heightUnit; int? get age; double? get heightCm; String? get experienceLevel; int? get trainingDaysPerWeek; List<String> get equipment; List<String> get injuries; String get primaryGoal; double? get startingWeightKg; String? get goalDirection; DateTime? get weightUpdatedAt; int get defaultRestSeconds; double get barbellTareKg; List<double> get availablePlates; bool get audioCuesEnabled; bool get hapticFeedbackEnabled; int get schemaVersion; String? get trainingSchedules; bool get onboardingComplete; int get totalWorkouts; int get totalVolumeKg; DateTime? get createdAt; DateTime? get lastActiveAt;// ── New fields ──────────────────────────────────────────────────────────
+/// Current body weight in kilograms, independent of display units.
+ double? get currentWeight;/// Goal body weight in kilograms, independent of display units.
  double? get targetWeight;/// User's preferred training split — e.g. `'PPL'`, `'Upper/Lower'`.
  String? get preferredSplit;/// Biological sex, used to unlock cycle-aware recovery. One of
 /// `'male'`, `'female'`, or null (unset / prefer not to say).
@@ -36,16 +36,16 @@ $UserModelCopyWith<UserModel> get copyWith => _$UserModelCopyWithImpl<UserModel>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserModel&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.weightUnit, weightUnit) || other.weightUnit == weightUnit)&&(identical(other.totalWorkouts, totalWorkouts) || other.totalWorkouts == totalWorkouts)&&(identical(other.totalVolumeKg, totalVolumeKg) || other.totalVolumeKg == totalVolumeKg)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.lastActiveAt, lastActiveAt) || other.lastActiveAt == lastActiveAt)&&(identical(other.currentWeight, currentWeight) || other.currentWeight == currentWeight)&&(identical(other.targetWeight, targetWeight) || other.targetWeight == targetWeight)&&(identical(other.preferredSplit, preferredSplit) || other.preferredSplit == preferredSplit)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.cyclesEnabled, cyclesEnabled) || other.cyclesEnabled == cyclesEnabled));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserModel&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.weightUnit, weightUnit) || other.weightUnit == weightUnit)&&(identical(other.heightUnit, heightUnit) || other.heightUnit == heightUnit)&&(identical(other.age, age) || other.age == age)&&(identical(other.heightCm, heightCm) || other.heightCm == heightCm)&&(identical(other.experienceLevel, experienceLevel) || other.experienceLevel == experienceLevel)&&(identical(other.trainingDaysPerWeek, trainingDaysPerWeek) || other.trainingDaysPerWeek == trainingDaysPerWeek)&&const DeepCollectionEquality().equals(other.equipment, equipment)&&const DeepCollectionEquality().equals(other.injuries, injuries)&&(identical(other.primaryGoal, primaryGoal) || other.primaryGoal == primaryGoal)&&(identical(other.startingWeightKg, startingWeightKg) || other.startingWeightKg == startingWeightKg)&&(identical(other.goalDirection, goalDirection) || other.goalDirection == goalDirection)&&(identical(other.weightUpdatedAt, weightUpdatedAt) || other.weightUpdatedAt == weightUpdatedAt)&&(identical(other.defaultRestSeconds, defaultRestSeconds) || other.defaultRestSeconds == defaultRestSeconds)&&(identical(other.barbellTareKg, barbellTareKg) || other.barbellTareKg == barbellTareKg)&&const DeepCollectionEquality().equals(other.availablePlates, availablePlates)&&(identical(other.audioCuesEnabled, audioCuesEnabled) || other.audioCuesEnabled == audioCuesEnabled)&&(identical(other.hapticFeedbackEnabled, hapticFeedbackEnabled) || other.hapticFeedbackEnabled == hapticFeedbackEnabled)&&(identical(other.schemaVersion, schemaVersion) || other.schemaVersion == schemaVersion)&&(identical(other.trainingSchedules, trainingSchedules) || other.trainingSchedules == trainingSchedules)&&(identical(other.onboardingComplete, onboardingComplete) || other.onboardingComplete == onboardingComplete)&&(identical(other.totalWorkouts, totalWorkouts) || other.totalWorkouts == totalWorkouts)&&(identical(other.totalVolumeKg, totalVolumeKg) || other.totalVolumeKg == totalVolumeKg)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.lastActiveAt, lastActiveAt) || other.lastActiveAt == lastActiveAt)&&(identical(other.currentWeight, currentWeight) || other.currentWeight == currentWeight)&&(identical(other.targetWeight, targetWeight) || other.targetWeight == targetWeight)&&(identical(other.preferredSplit, preferredSplit) || other.preferredSplit == preferredSplit)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.cyclesEnabled, cyclesEnabled) || other.cyclesEnabled == cyclesEnabled));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,email,displayName,avatarUrl,weightUnit,totalWorkouts,totalVolumeKg,createdAt,lastActiveAt,currentWeight,targetWeight,preferredSplit,sex,cyclesEnabled);
+int get hashCode => Object.hashAll([runtimeType,id,email,displayName,avatarUrl,weightUnit,heightUnit,age,heightCm,experienceLevel,trainingDaysPerWeek,const DeepCollectionEquality().hash(equipment),const DeepCollectionEquality().hash(injuries),primaryGoal,startingWeightKg,goalDirection,weightUpdatedAt,defaultRestSeconds,barbellTareKg,const DeepCollectionEquality().hash(availablePlates),audioCuesEnabled,hapticFeedbackEnabled,schemaVersion,trainingSchedules,onboardingComplete,totalWorkouts,totalVolumeKg,createdAt,lastActiveAt,currentWeight,targetWeight,preferredSplit,sex,cyclesEnabled]);
 
 @override
 String toString() {
-  return 'UserModel(id: $id, email: $email, displayName: $displayName, avatarUrl: $avatarUrl, weightUnit: $weightUnit, totalWorkouts: $totalWorkouts, totalVolumeKg: $totalVolumeKg, createdAt: $createdAt, lastActiveAt: $lastActiveAt, currentWeight: $currentWeight, targetWeight: $targetWeight, preferredSplit: $preferredSplit, sex: $sex, cyclesEnabled: $cyclesEnabled)';
+  return 'UserModel(id: $id, email: $email, displayName: $displayName, avatarUrl: $avatarUrl, weightUnit: $weightUnit, heightUnit: $heightUnit, age: $age, heightCm: $heightCm, experienceLevel: $experienceLevel, trainingDaysPerWeek: $trainingDaysPerWeek, equipment: $equipment, injuries: $injuries, primaryGoal: $primaryGoal, startingWeightKg: $startingWeightKg, goalDirection: $goalDirection, weightUpdatedAt: $weightUpdatedAt, defaultRestSeconds: $defaultRestSeconds, barbellTareKg: $barbellTareKg, availablePlates: $availablePlates, audioCuesEnabled: $audioCuesEnabled, hapticFeedbackEnabled: $hapticFeedbackEnabled, schemaVersion: $schemaVersion, trainingSchedules: $trainingSchedules, onboardingComplete: $onboardingComplete, totalWorkouts: $totalWorkouts, totalVolumeKg: $totalVolumeKg, createdAt: $createdAt, lastActiveAt: $lastActiveAt, currentWeight: $currentWeight, targetWeight: $targetWeight, preferredSplit: $preferredSplit, sex: $sex, cyclesEnabled: $cyclesEnabled)';
 }
 
 
@@ -56,7 +56,7 @@ abstract mixin class $UserModelCopyWith<$Res>  {
   factory $UserModelCopyWith(UserModel value, $Res Function(UserModel) _then) = _$UserModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String email, String displayName, String? avatarUrl, String weightUnit, int totalWorkouts, int totalVolumeKg, DateTime? createdAt, DateTime? lastActiveAt, double? currentWeight, double? targetWeight, String? preferredSplit, String? sex, bool cyclesEnabled
+ String id, String email, String displayName, String? avatarUrl, String weightUnit, String heightUnit, int? age, double? heightCm, String? experienceLevel, int? trainingDaysPerWeek, List<String> equipment, List<String> injuries, String primaryGoal, double? startingWeightKg, String? goalDirection, DateTime? weightUpdatedAt, int defaultRestSeconds, double barbellTareKg, List<double> availablePlates, bool audioCuesEnabled, bool hapticFeedbackEnabled, int schemaVersion, String? trainingSchedules, bool onboardingComplete, int totalWorkouts, int totalVolumeKg, DateTime? createdAt, DateTime? lastActiveAt, double? currentWeight, double? targetWeight, String? preferredSplit, String? sex, bool cyclesEnabled
 });
 
 
@@ -73,14 +73,33 @@ class _$UserModelCopyWithImpl<$Res>
 
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = null,Object? displayName = null,Object? avatarUrl = freezed,Object? weightUnit = null,Object? totalWorkouts = null,Object? totalVolumeKg = null,Object? createdAt = freezed,Object? lastActiveAt = freezed,Object? currentWeight = freezed,Object? targetWeight = freezed,Object? preferredSplit = freezed,Object? sex = freezed,Object? cyclesEnabled = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = null,Object? displayName = null,Object? avatarUrl = freezed,Object? weightUnit = null,Object? heightUnit = null,Object? age = freezed,Object? heightCm = freezed,Object? experienceLevel = freezed,Object? trainingDaysPerWeek = freezed,Object? equipment = null,Object? injuries = null,Object? primaryGoal = null,Object? startingWeightKg = freezed,Object? goalDirection = freezed,Object? weightUpdatedAt = freezed,Object? defaultRestSeconds = null,Object? barbellTareKg = null,Object? availablePlates = null,Object? audioCuesEnabled = null,Object? hapticFeedbackEnabled = null,Object? schemaVersion = null,Object? trainingSchedules = freezed,Object? onboardingComplete = null,Object? totalWorkouts = null,Object? totalVolumeKg = null,Object? createdAt = freezed,Object? lastActiveAt = freezed,Object? currentWeight = freezed,Object? targetWeight = freezed,Object? preferredSplit = freezed,Object? sex = freezed,Object? cyclesEnabled = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
 as String?,weightUnit: null == weightUnit ? _self.weightUnit : weightUnit // ignore: cast_nullable_to_non_nullable
-as String,totalWorkouts: null == totalWorkouts ? _self.totalWorkouts : totalWorkouts // ignore: cast_nullable_to_non_nullable
+as String,heightUnit: null == heightUnit ? _self.heightUnit : heightUnit // ignore: cast_nullable_to_non_nullable
+as String,age: freezed == age ? _self.age : age // ignore: cast_nullable_to_non_nullable
+as int?,heightCm: freezed == heightCm ? _self.heightCm : heightCm // ignore: cast_nullable_to_non_nullable
+as double?,experienceLevel: freezed == experienceLevel ? _self.experienceLevel : experienceLevel // ignore: cast_nullable_to_non_nullable
+as String?,trainingDaysPerWeek: freezed == trainingDaysPerWeek ? _self.trainingDaysPerWeek : trainingDaysPerWeek // ignore: cast_nullable_to_non_nullable
+as int?,equipment: null == equipment ? _self.equipment : equipment // ignore: cast_nullable_to_non_nullable
+as List<String>,injuries: null == injuries ? _self.injuries : injuries // ignore: cast_nullable_to_non_nullable
+as List<String>,primaryGoal: null == primaryGoal ? _self.primaryGoal : primaryGoal // ignore: cast_nullable_to_non_nullable
+as String,startingWeightKg: freezed == startingWeightKg ? _self.startingWeightKg : startingWeightKg // ignore: cast_nullable_to_non_nullable
+as double?,goalDirection: freezed == goalDirection ? _self.goalDirection : goalDirection // ignore: cast_nullable_to_non_nullable
+as String?,weightUpdatedAt: freezed == weightUpdatedAt ? _self.weightUpdatedAt : weightUpdatedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,defaultRestSeconds: null == defaultRestSeconds ? _self.defaultRestSeconds : defaultRestSeconds // ignore: cast_nullable_to_non_nullable
+as int,barbellTareKg: null == barbellTareKg ? _self.barbellTareKg : barbellTareKg // ignore: cast_nullable_to_non_nullable
+as double,availablePlates: null == availablePlates ? _self.availablePlates : availablePlates // ignore: cast_nullable_to_non_nullable
+as List<double>,audioCuesEnabled: null == audioCuesEnabled ? _self.audioCuesEnabled : audioCuesEnabled // ignore: cast_nullable_to_non_nullable
+as bool,hapticFeedbackEnabled: null == hapticFeedbackEnabled ? _self.hapticFeedbackEnabled : hapticFeedbackEnabled // ignore: cast_nullable_to_non_nullable
+as bool,schemaVersion: null == schemaVersion ? _self.schemaVersion : schemaVersion // ignore: cast_nullable_to_non_nullable
+as int,trainingSchedules: freezed == trainingSchedules ? _self.trainingSchedules : trainingSchedules // ignore: cast_nullable_to_non_nullable
+as String?,onboardingComplete: null == onboardingComplete ? _self.onboardingComplete : onboardingComplete // ignore: cast_nullable_to_non_nullable
+as bool,totalWorkouts: null == totalWorkouts ? _self.totalWorkouts : totalWorkouts // ignore: cast_nullable_to_non_nullable
 as int,totalVolumeKg: null == totalVolumeKg ? _self.totalVolumeKg : totalVolumeKg // ignore: cast_nullable_to_non_nullable
 as int,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,lastActiveAt: freezed == lastActiveAt ? _self.lastActiveAt : lastActiveAt // ignore: cast_nullable_to_non_nullable
@@ -174,10 +193,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email,  String displayName,  String? avatarUrl,  String weightUnit,  int totalWorkouts,  int totalVolumeKg,  DateTime? createdAt,  DateTime? lastActiveAt,  double? currentWeight,  double? targetWeight,  String? preferredSplit,  String? sex,  bool cyclesEnabled)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email,  String displayName,  String? avatarUrl,  String weightUnit,  String heightUnit,  int? age,  double? heightCm,  String? experienceLevel,  int? trainingDaysPerWeek,  List<String> equipment,  List<String> injuries,  String primaryGoal,  double? startingWeightKg,  String? goalDirection,  DateTime? weightUpdatedAt,  int defaultRestSeconds,  double barbellTareKg,  List<double> availablePlates,  bool audioCuesEnabled,  bool hapticFeedbackEnabled,  int schemaVersion,  String? trainingSchedules,  bool onboardingComplete,  int totalWorkouts,  int totalVolumeKg,  DateTime? createdAt,  DateTime? lastActiveAt,  double? currentWeight,  double? targetWeight,  String? preferredSplit,  String? sex,  bool cyclesEnabled)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
-return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.weightUnit,_that.totalWorkouts,_that.totalVolumeKg,_that.createdAt,_that.lastActiveAt,_that.currentWeight,_that.targetWeight,_that.preferredSplit,_that.sex,_that.cyclesEnabled);case _:
+return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.weightUnit,_that.heightUnit,_that.age,_that.heightCm,_that.experienceLevel,_that.trainingDaysPerWeek,_that.equipment,_that.injuries,_that.primaryGoal,_that.startingWeightKg,_that.goalDirection,_that.weightUpdatedAt,_that.defaultRestSeconds,_that.barbellTareKg,_that.availablePlates,_that.audioCuesEnabled,_that.hapticFeedbackEnabled,_that.schemaVersion,_that.trainingSchedules,_that.onboardingComplete,_that.totalWorkouts,_that.totalVolumeKg,_that.createdAt,_that.lastActiveAt,_that.currentWeight,_that.targetWeight,_that.preferredSplit,_that.sex,_that.cyclesEnabled);case _:
   return orElse();
 
 }
@@ -195,10 +214,10 @@ return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.wei
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email,  String displayName,  String? avatarUrl,  String weightUnit,  int totalWorkouts,  int totalVolumeKg,  DateTime? createdAt,  DateTime? lastActiveAt,  double? currentWeight,  double? targetWeight,  String? preferredSplit,  String? sex,  bool cyclesEnabled)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email,  String displayName,  String? avatarUrl,  String weightUnit,  String heightUnit,  int? age,  double? heightCm,  String? experienceLevel,  int? trainingDaysPerWeek,  List<String> equipment,  List<String> injuries,  String primaryGoal,  double? startingWeightKg,  String? goalDirection,  DateTime? weightUpdatedAt,  int defaultRestSeconds,  double barbellTareKg,  List<double> availablePlates,  bool audioCuesEnabled,  bool hapticFeedbackEnabled,  int schemaVersion,  String? trainingSchedules,  bool onboardingComplete,  int totalWorkouts,  int totalVolumeKg,  DateTime? createdAt,  DateTime? lastActiveAt,  double? currentWeight,  double? targetWeight,  String? preferredSplit,  String? sex,  bool cyclesEnabled)  $default,) {final _that = this;
 switch (_that) {
 case _UserModel():
-return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.weightUnit,_that.totalWorkouts,_that.totalVolumeKg,_that.createdAt,_that.lastActiveAt,_that.currentWeight,_that.targetWeight,_that.preferredSplit,_that.sex,_that.cyclesEnabled);case _:
+return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.weightUnit,_that.heightUnit,_that.age,_that.heightCm,_that.experienceLevel,_that.trainingDaysPerWeek,_that.equipment,_that.injuries,_that.primaryGoal,_that.startingWeightKg,_that.goalDirection,_that.weightUpdatedAt,_that.defaultRestSeconds,_that.barbellTareKg,_that.availablePlates,_that.audioCuesEnabled,_that.hapticFeedbackEnabled,_that.schemaVersion,_that.trainingSchedules,_that.onboardingComplete,_that.totalWorkouts,_that.totalVolumeKg,_that.createdAt,_that.lastActiveAt,_that.currentWeight,_that.targetWeight,_that.preferredSplit,_that.sex,_that.cyclesEnabled);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -215,10 +234,10 @@ return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.wei
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email,  String displayName,  String? avatarUrl,  String weightUnit,  int totalWorkouts,  int totalVolumeKg,  DateTime? createdAt,  DateTime? lastActiveAt,  double? currentWeight,  double? targetWeight,  String? preferredSplit,  String? sex,  bool cyclesEnabled)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email,  String displayName,  String? avatarUrl,  String weightUnit,  String heightUnit,  int? age,  double? heightCm,  String? experienceLevel,  int? trainingDaysPerWeek,  List<String> equipment,  List<String> injuries,  String primaryGoal,  double? startingWeightKg,  String? goalDirection,  DateTime? weightUpdatedAt,  int defaultRestSeconds,  double barbellTareKg,  List<double> availablePlates,  bool audioCuesEnabled,  bool hapticFeedbackEnabled,  int schemaVersion,  String? trainingSchedules,  bool onboardingComplete,  int totalWorkouts,  int totalVolumeKg,  DateTime? createdAt,  DateTime? lastActiveAt,  double? currentWeight,  double? targetWeight,  String? preferredSplit,  String? sex,  bool cyclesEnabled)?  $default,) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
-return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.weightUnit,_that.totalWorkouts,_that.totalVolumeKg,_that.createdAt,_that.lastActiveAt,_that.currentWeight,_that.targetWeight,_that.preferredSplit,_that.sex,_that.cyclesEnabled);case _:
+return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.weightUnit,_that.heightUnit,_that.age,_that.heightCm,_that.experienceLevel,_that.trainingDaysPerWeek,_that.equipment,_that.injuries,_that.primaryGoal,_that.startingWeightKg,_that.goalDirection,_that.weightUpdatedAt,_that.defaultRestSeconds,_that.barbellTareKg,_that.availablePlates,_that.audioCuesEnabled,_that.hapticFeedbackEnabled,_that.schemaVersion,_that.trainingSchedules,_that.onboardingComplete,_that.totalWorkouts,_that.totalVolumeKg,_that.createdAt,_that.lastActiveAt,_that.currentWeight,_that.targetWeight,_that.preferredSplit,_that.sex,_that.cyclesEnabled);case _:
   return null;
 
 }
@@ -230,7 +249,7 @@ return $default(_that.id,_that.email,_that.displayName,_that.avatarUrl,_that.wei
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class _UserModel implements UserModel {
-  const _UserModel({required this.id, required this.email, required this.displayName, this.avatarUrl, this.weightUnit = 'kg', this.totalWorkouts = 0, this.totalVolumeKg = 0, this.createdAt, this.lastActiveAt, this.currentWeight, this.targetWeight, this.preferredSplit, this.sex, this.cyclesEnabled = false});
+  const _UserModel({required this.id, required this.email, required this.displayName, this.avatarUrl, this.weightUnit = 'kg', this.heightUnit = 'cm', this.age, this.heightCm, this.experienceLevel, this.trainingDaysPerWeek, final  List<String> equipment = const [], final  List<String> injuries = const [], this.primaryGoal = 'BUILD MUSCLE', this.startingWeightKg, this.goalDirection, this.weightUpdatedAt, this.defaultRestSeconds = 90, this.barbellTareKg = 20, final  List<double> availablePlates = const [25.0, 20.0, 15.0, 10.0, 5.0, 2.5, 1.25], this.audioCuesEnabled = true, this.hapticFeedbackEnabled = true, this.schemaVersion = 2, this.trainingSchedules, this.onboardingComplete = false, this.totalWorkouts = 0, this.totalVolumeKg = 0, this.createdAt, this.lastActiveAt, this.currentWeight, this.targetWeight, this.preferredSplit, this.sex, this.cyclesEnabled = false}): _equipment = equipment,_injuries = injuries,_availablePlates = availablePlates;
   factory _UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
 
 @override final  String id;
@@ -238,14 +257,51 @@ class _UserModel implements UserModel {
 @override final  String displayName;
 @override final  String? avatarUrl;
 @override@JsonKey() final  String weightUnit;
+@override@JsonKey() final  String heightUnit;
+@override final  int? age;
+@override final  double? heightCm;
+@override final  String? experienceLevel;
+@override final  int? trainingDaysPerWeek;
+ final  List<String> _equipment;
+@override@JsonKey() List<String> get equipment {
+  if (_equipment is EqualUnmodifiableListView) return _equipment;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_equipment);
+}
+
+ final  List<String> _injuries;
+@override@JsonKey() List<String> get injuries {
+  if (_injuries is EqualUnmodifiableListView) return _injuries;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_injuries);
+}
+
+@override@JsonKey() final  String primaryGoal;
+@override final  double? startingWeightKg;
+@override final  String? goalDirection;
+@override final  DateTime? weightUpdatedAt;
+@override@JsonKey() final  int defaultRestSeconds;
+@override@JsonKey() final  double barbellTareKg;
+ final  List<double> _availablePlates;
+@override@JsonKey() List<double> get availablePlates {
+  if (_availablePlates is EqualUnmodifiableListView) return _availablePlates;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_availablePlates);
+}
+
+@override@JsonKey() final  bool audioCuesEnabled;
+@override@JsonKey() final  bool hapticFeedbackEnabled;
+@override@JsonKey() final  int schemaVersion;
+@override final  String? trainingSchedules;
+@override@JsonKey() final  bool onboardingComplete;
 @override@JsonKey() final  int totalWorkouts;
 @override@JsonKey() final  int totalVolumeKg;
 @override final  DateTime? createdAt;
 @override final  DateTime? lastActiveAt;
 // ── New fields ──────────────────────────────────────────────────────────
-/// Current body weight in the user's preferred [weightUnit].
+/// Current body weight in kilograms, independent of display units.
 @override final  double? currentWeight;
-/// Goal body weight in the user's preferred [weightUnit].
+/// Goal body weight in kilograms, independent of display units.
 @override final  double? targetWeight;
 /// User's preferred training split — e.g. `'PPL'`, `'Upper/Lower'`.
 @override final  String? preferredSplit;
@@ -269,16 +325,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserModel&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.weightUnit, weightUnit) || other.weightUnit == weightUnit)&&(identical(other.totalWorkouts, totalWorkouts) || other.totalWorkouts == totalWorkouts)&&(identical(other.totalVolumeKg, totalVolumeKg) || other.totalVolumeKg == totalVolumeKg)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.lastActiveAt, lastActiveAt) || other.lastActiveAt == lastActiveAt)&&(identical(other.currentWeight, currentWeight) || other.currentWeight == currentWeight)&&(identical(other.targetWeight, targetWeight) || other.targetWeight == targetWeight)&&(identical(other.preferredSplit, preferredSplit) || other.preferredSplit == preferredSplit)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.cyclesEnabled, cyclesEnabled) || other.cyclesEnabled == cyclesEnabled));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserModel&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.weightUnit, weightUnit) || other.weightUnit == weightUnit)&&(identical(other.heightUnit, heightUnit) || other.heightUnit == heightUnit)&&(identical(other.age, age) || other.age == age)&&(identical(other.heightCm, heightCm) || other.heightCm == heightCm)&&(identical(other.experienceLevel, experienceLevel) || other.experienceLevel == experienceLevel)&&(identical(other.trainingDaysPerWeek, trainingDaysPerWeek) || other.trainingDaysPerWeek == trainingDaysPerWeek)&&const DeepCollectionEquality().equals(other._equipment, _equipment)&&const DeepCollectionEquality().equals(other._injuries, _injuries)&&(identical(other.primaryGoal, primaryGoal) || other.primaryGoal == primaryGoal)&&(identical(other.startingWeightKg, startingWeightKg) || other.startingWeightKg == startingWeightKg)&&(identical(other.goalDirection, goalDirection) || other.goalDirection == goalDirection)&&(identical(other.weightUpdatedAt, weightUpdatedAt) || other.weightUpdatedAt == weightUpdatedAt)&&(identical(other.defaultRestSeconds, defaultRestSeconds) || other.defaultRestSeconds == defaultRestSeconds)&&(identical(other.barbellTareKg, barbellTareKg) || other.barbellTareKg == barbellTareKg)&&const DeepCollectionEquality().equals(other._availablePlates, _availablePlates)&&(identical(other.audioCuesEnabled, audioCuesEnabled) || other.audioCuesEnabled == audioCuesEnabled)&&(identical(other.hapticFeedbackEnabled, hapticFeedbackEnabled) || other.hapticFeedbackEnabled == hapticFeedbackEnabled)&&(identical(other.schemaVersion, schemaVersion) || other.schemaVersion == schemaVersion)&&(identical(other.trainingSchedules, trainingSchedules) || other.trainingSchedules == trainingSchedules)&&(identical(other.onboardingComplete, onboardingComplete) || other.onboardingComplete == onboardingComplete)&&(identical(other.totalWorkouts, totalWorkouts) || other.totalWorkouts == totalWorkouts)&&(identical(other.totalVolumeKg, totalVolumeKg) || other.totalVolumeKg == totalVolumeKg)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.lastActiveAt, lastActiveAt) || other.lastActiveAt == lastActiveAt)&&(identical(other.currentWeight, currentWeight) || other.currentWeight == currentWeight)&&(identical(other.targetWeight, targetWeight) || other.targetWeight == targetWeight)&&(identical(other.preferredSplit, preferredSplit) || other.preferredSplit == preferredSplit)&&(identical(other.sex, sex) || other.sex == sex)&&(identical(other.cyclesEnabled, cyclesEnabled) || other.cyclesEnabled == cyclesEnabled));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,email,displayName,avatarUrl,weightUnit,totalWorkouts,totalVolumeKg,createdAt,lastActiveAt,currentWeight,targetWeight,preferredSplit,sex,cyclesEnabled);
+int get hashCode => Object.hashAll([runtimeType,id,email,displayName,avatarUrl,weightUnit,heightUnit,age,heightCm,experienceLevel,trainingDaysPerWeek,const DeepCollectionEquality().hash(_equipment),const DeepCollectionEquality().hash(_injuries),primaryGoal,startingWeightKg,goalDirection,weightUpdatedAt,defaultRestSeconds,barbellTareKg,const DeepCollectionEquality().hash(_availablePlates),audioCuesEnabled,hapticFeedbackEnabled,schemaVersion,trainingSchedules,onboardingComplete,totalWorkouts,totalVolumeKg,createdAt,lastActiveAt,currentWeight,targetWeight,preferredSplit,sex,cyclesEnabled]);
 
 @override
 String toString() {
-  return 'UserModel(id: $id, email: $email, displayName: $displayName, avatarUrl: $avatarUrl, weightUnit: $weightUnit, totalWorkouts: $totalWorkouts, totalVolumeKg: $totalVolumeKg, createdAt: $createdAt, lastActiveAt: $lastActiveAt, currentWeight: $currentWeight, targetWeight: $targetWeight, preferredSplit: $preferredSplit, sex: $sex, cyclesEnabled: $cyclesEnabled)';
+  return 'UserModel(id: $id, email: $email, displayName: $displayName, avatarUrl: $avatarUrl, weightUnit: $weightUnit, heightUnit: $heightUnit, age: $age, heightCm: $heightCm, experienceLevel: $experienceLevel, trainingDaysPerWeek: $trainingDaysPerWeek, equipment: $equipment, injuries: $injuries, primaryGoal: $primaryGoal, startingWeightKg: $startingWeightKg, goalDirection: $goalDirection, weightUpdatedAt: $weightUpdatedAt, defaultRestSeconds: $defaultRestSeconds, barbellTareKg: $barbellTareKg, availablePlates: $availablePlates, audioCuesEnabled: $audioCuesEnabled, hapticFeedbackEnabled: $hapticFeedbackEnabled, schemaVersion: $schemaVersion, trainingSchedules: $trainingSchedules, onboardingComplete: $onboardingComplete, totalWorkouts: $totalWorkouts, totalVolumeKg: $totalVolumeKg, createdAt: $createdAt, lastActiveAt: $lastActiveAt, currentWeight: $currentWeight, targetWeight: $targetWeight, preferredSplit: $preferredSplit, sex: $sex, cyclesEnabled: $cyclesEnabled)';
 }
 
 
@@ -289,7 +345,7 @@ abstract mixin class _$UserModelCopyWith<$Res> implements $UserModelCopyWith<$Re
   factory _$UserModelCopyWith(_UserModel value, $Res Function(_UserModel) _then) = __$UserModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String email, String displayName, String? avatarUrl, String weightUnit, int totalWorkouts, int totalVolumeKg, DateTime? createdAt, DateTime? lastActiveAt, double? currentWeight, double? targetWeight, String? preferredSplit, String? sex, bool cyclesEnabled
+ String id, String email, String displayName, String? avatarUrl, String weightUnit, String heightUnit, int? age, double? heightCm, String? experienceLevel, int? trainingDaysPerWeek, List<String> equipment, List<String> injuries, String primaryGoal, double? startingWeightKg, String? goalDirection, DateTime? weightUpdatedAt, int defaultRestSeconds, double barbellTareKg, List<double> availablePlates, bool audioCuesEnabled, bool hapticFeedbackEnabled, int schemaVersion, String? trainingSchedules, bool onboardingComplete, int totalWorkouts, int totalVolumeKg, DateTime? createdAt, DateTime? lastActiveAt, double? currentWeight, double? targetWeight, String? preferredSplit, String? sex, bool cyclesEnabled
 });
 
 
@@ -306,14 +362,33 @@ class __$UserModelCopyWithImpl<$Res>
 
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = null,Object? displayName = null,Object? avatarUrl = freezed,Object? weightUnit = null,Object? totalWorkouts = null,Object? totalVolumeKg = null,Object? createdAt = freezed,Object? lastActiveAt = freezed,Object? currentWeight = freezed,Object? targetWeight = freezed,Object? preferredSplit = freezed,Object? sex = freezed,Object? cyclesEnabled = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = null,Object? displayName = null,Object? avatarUrl = freezed,Object? weightUnit = null,Object? heightUnit = null,Object? age = freezed,Object? heightCm = freezed,Object? experienceLevel = freezed,Object? trainingDaysPerWeek = freezed,Object? equipment = null,Object? injuries = null,Object? primaryGoal = null,Object? startingWeightKg = freezed,Object? goalDirection = freezed,Object? weightUpdatedAt = freezed,Object? defaultRestSeconds = null,Object? barbellTareKg = null,Object? availablePlates = null,Object? audioCuesEnabled = null,Object? hapticFeedbackEnabled = null,Object? schemaVersion = null,Object? trainingSchedules = freezed,Object? onboardingComplete = null,Object? totalWorkouts = null,Object? totalVolumeKg = null,Object? createdAt = freezed,Object? lastActiveAt = freezed,Object? currentWeight = freezed,Object? targetWeight = freezed,Object? preferredSplit = freezed,Object? sex = freezed,Object? cyclesEnabled = null,}) {
   return _then(_UserModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
 as String?,weightUnit: null == weightUnit ? _self.weightUnit : weightUnit // ignore: cast_nullable_to_non_nullable
-as String,totalWorkouts: null == totalWorkouts ? _self.totalWorkouts : totalWorkouts // ignore: cast_nullable_to_non_nullable
+as String,heightUnit: null == heightUnit ? _self.heightUnit : heightUnit // ignore: cast_nullable_to_non_nullable
+as String,age: freezed == age ? _self.age : age // ignore: cast_nullable_to_non_nullable
+as int?,heightCm: freezed == heightCm ? _self.heightCm : heightCm // ignore: cast_nullable_to_non_nullable
+as double?,experienceLevel: freezed == experienceLevel ? _self.experienceLevel : experienceLevel // ignore: cast_nullable_to_non_nullable
+as String?,trainingDaysPerWeek: freezed == trainingDaysPerWeek ? _self.trainingDaysPerWeek : trainingDaysPerWeek // ignore: cast_nullable_to_non_nullable
+as int?,equipment: null == equipment ? _self._equipment : equipment // ignore: cast_nullable_to_non_nullable
+as List<String>,injuries: null == injuries ? _self._injuries : injuries // ignore: cast_nullable_to_non_nullable
+as List<String>,primaryGoal: null == primaryGoal ? _self.primaryGoal : primaryGoal // ignore: cast_nullable_to_non_nullable
+as String,startingWeightKg: freezed == startingWeightKg ? _self.startingWeightKg : startingWeightKg // ignore: cast_nullable_to_non_nullable
+as double?,goalDirection: freezed == goalDirection ? _self.goalDirection : goalDirection // ignore: cast_nullable_to_non_nullable
+as String?,weightUpdatedAt: freezed == weightUpdatedAt ? _self.weightUpdatedAt : weightUpdatedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,defaultRestSeconds: null == defaultRestSeconds ? _self.defaultRestSeconds : defaultRestSeconds // ignore: cast_nullable_to_non_nullable
+as int,barbellTareKg: null == barbellTareKg ? _self.barbellTareKg : barbellTareKg // ignore: cast_nullable_to_non_nullable
+as double,availablePlates: null == availablePlates ? _self._availablePlates : availablePlates // ignore: cast_nullable_to_non_nullable
+as List<double>,audioCuesEnabled: null == audioCuesEnabled ? _self.audioCuesEnabled : audioCuesEnabled // ignore: cast_nullable_to_non_nullable
+as bool,hapticFeedbackEnabled: null == hapticFeedbackEnabled ? _self.hapticFeedbackEnabled : hapticFeedbackEnabled // ignore: cast_nullable_to_non_nullable
+as bool,schemaVersion: null == schemaVersion ? _self.schemaVersion : schemaVersion // ignore: cast_nullable_to_non_nullable
+as int,trainingSchedules: freezed == trainingSchedules ? _self.trainingSchedules : trainingSchedules // ignore: cast_nullable_to_non_nullable
+as String?,onboardingComplete: null == onboardingComplete ? _self.onboardingComplete : onboardingComplete // ignore: cast_nullable_to_non_nullable
+as bool,totalWorkouts: null == totalWorkouts ? _self.totalWorkouts : totalWorkouts // ignore: cast_nullable_to_non_nullable
 as int,totalVolumeKg: null == totalVolumeKg ? _self.totalVolumeKg : totalVolumeKg // ignore: cast_nullable_to_non_nullable
 as int,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,lastActiveAt: freezed == lastActiveAt ? _self.lastActiveAt : lastActiveAt // ignore: cast_nullable_to_non_nullable
