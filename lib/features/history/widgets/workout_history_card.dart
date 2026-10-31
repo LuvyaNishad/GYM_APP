@@ -1,5 +1,10 @@
-/// Expandable workout session history card for LEON.
 library;
+
+import '../../../state/app_providers.dart';
+
+import '../../../core/utils/measurement_units.dart';
+
+/// Expandable workout session history card for LEON.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -60,13 +65,11 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
   }
 
   String _formatTonnage(double volume) {
-    final intVol = volume.toInt();
-    if (intVol >= 1000) {
-      final k = (intVol / 1000).toStringAsFixed(1);
-      return '$k'
-          'K KG';
-    }
-    return '$intVol KG';
+    final units = ref.watch(measurementUnitsProvider);
+    final value = units.weightFromKg(volume);
+    return value >= 1000
+        ? '${(value / 1000).toStringAsFixed(1)}K ${units.weightLabel}'
+        : '${value.toStringAsFixed(0)} ${units.weightLabel}';
   }
 
   String _generateWorkoutSummary(WorkoutModel w) {
@@ -89,7 +92,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
         final warmupTag = s.isWarmup ? ' [Warmup]' : '';
         final prTag = s.isPr ? ' 🏆 PR' : '';
         buffer.writeln(
-          '  Set ${i + 1}: ${s.weightKg}kg × ${s.reps}$warmupTag$prTag',
+          '  Set ${i + 1}: ${ref.read(measurementUnitsProvider).weight(s.weightKg)} × ${s.reps}${s.weightKgRight == null ? '' : ' | Right: ${ref.read(measurementUnitsProvider).weight(s.weightKgRight)} × ${s.repsRight}'}$warmupTag$prTag',
         );
       }
       buffer.writeln('');
@@ -216,6 +219,8 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
         exerciseId: ex.exerciseId,
         name: ex.exerciseName,
         muscleGroup: ex.muscleGroup,
+        restDurationSeconds:
+            ref.read(userProfileProvider)?.defaultRestSeconds ?? 90,
         isUnilateral: ex.sets.any((s) => s.repsRight != null),
         sets: ex.sets.asMap().entries.map((entry) {
           final idx = entry.key;
@@ -464,7 +469,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
                                         : null,
                                   ),
                                   child: Text(
-                                    '${ex.sets[i].weightKg}kg × ${ex.sets[i].reps}',
+                                    '${ref.watch(measurementUnitsProvider).weight(ex.sets[i].weightKg)} × ${ex.sets[i].reps}${ex.sets[i].weightKgRight == null ? '' : ' | R: ${ref.watch(measurementUnitsProvider).weight(ex.sets[i].weightKgRight)} × ${ex.sets[i].repsRight}'}',
                                     style: TextStyle(
                                       fontFamily: AppTypography.fontMono,
                                       fontSize: 11.0,

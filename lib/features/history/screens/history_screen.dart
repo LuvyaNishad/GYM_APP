@@ -1,3 +1,7 @@
+library;
+
+import '../../../core/utils/measurement_units.dart';
+
 /// Main History & Performance Screen for LEON.
 ///
 /// Features:
@@ -7,7 +11,6 @@
 ///   * SESSIONS: Chronological workout feed synced with calendar date filter
 ///   * OVERLOAD: 1RM progression curve (fl_chart), volume trends, PR trophy wall
 ///   * RADAR: 6-spoke animated Spider Radar chart, lagging muscle alerts, recovery state
-library;
 
 import 'package:flutter/material.dart';
 import 'package:leon/core/theme/app_typography.dart';
@@ -25,14 +28,12 @@ import '../widgets/sessions_tab_view.dart';
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
 
-  String _formatTonnage(double volume) {
-    final intVol = volume.toInt();
-    if (intVol >= 1000) {
-      final k = (intVol / 1000).toStringAsFixed(1);
-      return '$k'
-          'K KG';
-    }
-    return '$intVol KG';
+  String _formatTonnage(double volume, WidgetRef ref) {
+    final units = ref.watch(measurementUnitsProvider);
+    final value = units.weightFromKg(volume);
+    return value >= 1000
+        ? '${(value / 1000).toStringAsFixed(1)}K ${units.weightLabel}'
+        : '${value.toStringAsFixed(0)} ${units.weightLabel}';
   }
 
   @override
@@ -97,7 +98,7 @@ class HistoryScreen extends ConsumerWidget {
                                     style: TextStyle(fontSize: 12),
                                   ),
                                   Text(
-                                    '${_formatTonnage(summary.totalTonnageKg)} LIFTED',
+                                    '${_formatTonnage(summary.totalTonnageKg, ref)} LIFTED',
                                     style: const TextStyle(
                                       fontFamily: AppTypography.fontMono,
                                       fontSize: 11.5,
@@ -109,7 +110,7 @@ class HistoryScreen extends ConsumerWidget {
                                 ],
                               ),
                               Text(
-                                'NEXT: ${_formatTonnage(summary.nextLevelTonnageTarget)}',
+                                'NEXT: ${_formatTonnage(summary.nextLevelTonnageTarget, ref)}',
                                 style: const TextStyle(
                                   fontFamily: AppTypography.fontMono,
                                   fontSize: 11.0,

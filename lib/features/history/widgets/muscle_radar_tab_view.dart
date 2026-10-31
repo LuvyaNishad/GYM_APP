@@ -1,3 +1,4 @@
+import '../../../core/utils/measurement_units.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -331,20 +332,22 @@ String _sets(double value) => value == value.roundToDouble()
     ? value.toInt().toString()
     : value.toStringAsFixed(1);
 
-class _WorkloadMetrics extends StatelessWidget {
+class _WorkloadMetrics extends ConsumerWidget {
   const _WorkloadMetrics({required this.workload});
   final MuscleWorkload workload;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final minutes = workload.durationSeconds ~/ 60;
     final duration = workload.durationSeconds <= 0
         ? '—'
         : minutes >= 60
         ? '${minutes ~/ 60}h ${minutes % 60}m'
         : '${minutes}m';
-    final volume = workload.volumeKg >= 1000
-        ? '${(workload.volumeKg / 1000).toStringAsFixed(1)}k'
-        : workload.volumeKg.round().toString();
+    final units = ref.watch(measurementUnitsProvider);
+    final displayed = units.weightFromKg(workload.volumeKg);
+    final volume = displayed >= 1000
+        ? '${(displayed / 1000).toStringAsFixed(1)}k'
+        : displayed.round().toString();
     return Row(
       children: [
         for (final metric in [
@@ -354,7 +357,7 @@ class _WorkloadMetrics extends StatelessWidget {
                 : 'Working sets',
             workload.workingSets.toString(),
           ),
-          ('Volume · kg', volume),
+          ('Volume · ${units.weightLabel}', volume),
           ('Duration', duration),
         ])
           Expanded(

@@ -4,10 +4,7 @@ library;
 class HistorySummaryModel {
   const HistorySummaryModel({
     required this.currentStreakDays,
-    required this.longestStreakDays,
     required this.completedWorkoutsCount,
-    required this.missedWorkoutsCount,
-    required this.complianceRate,
     required this.totalTonnageKg,
     required this.prCount,
     required this.gamificationLevel,
@@ -18,17 +15,8 @@ class HistorySummaryModel {
   /// Current consecutive days or active streak.
   final int currentStreakDays;
 
-  /// Longest all-time streak.
-  final int longestStreakDays;
-
   /// Total completed workouts.
   final int completedWorkoutsCount;
-
-  /// Total missed/skipped scheduled workouts.
-  final int missedWorkoutsCount;
-
-  /// Attendance compliance (0.0 to 1.0).
-  final double complianceRate;
 
   /// Total lifetime or period weight lifted (kg).
   final double totalTonnageKg;

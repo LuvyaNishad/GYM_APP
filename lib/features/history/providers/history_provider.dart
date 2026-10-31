@@ -1,12 +1,16 @@
-/// History and analytics data providers for LEON.
 library;
+
+import '../../../core/providers/local_date_provider.dart';
+
+import '../../../core/utils/measurement_units.dart';
+
+/// History and analytics data providers for LEON.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/strength_math.dart';
 import '../../../models/workout_model.dart';
-import '../../../services/hive_service.dart';
+import '../../../services/workout_service.dart';
 import '../models/exercise_progress_model.dart';
 import '../models/history_summary_model.dart';
 import '../models/muscle_balance_model.dart';
@@ -60,56 +64,32 @@ final selectedCalendarDateProvider =
 class HistoryWorkoutsNotifier extends Notifier<List<WorkoutModel>> {
   @override
   List<WorkoutModel> build() {
-    return _loadWorkouts();
+    return ref.watch(workoutServiceProvider).readWorkouts();
   }
 
-  List<WorkoutModel> _loadWorkouts() {
-    final hive = ref.watch(hiveServiceProvider);
-    List<WorkoutModel> stored = [];
-    try {
-      stored = hive.readAll(
-        AppConstants.hiveBoxWorkouts,
-        WorkoutModel.fromJson,
-      );
-    } catch (_) {
-      stored = [];
+  Future<void> _changes = Future.value();
+
+  List<WorkoutModel> _loadWorkouts() =>
+      ref.read(workoutServiceProvider).readWorkouts();
+
+  Future<void> _change(Future<void> Function() action) {
+    final result = _changes.catchError((Object _) {}).then((_) async {
+      await action();
+      if (ref.mounted) state = _loadWorkouts();
+    });
+    _changes = result;
+    return result;
+  }
+
+  Future<void> updateWorkout(WorkoutModel updated) => _change(() async {
+    if (!state.any((workout) => workout.id == updated.id)) {
+      throw StateError('This workout no longer exists.');
     }
+    await ref.read(workoutServiceProvider).saveWorkout(updated);
+  });
 
-    if (stored.isNotEmpty) {
-      stored.sort((a, b) => b.date.compareTo(a.date));
-      return stored;
-    }
-
-    // Clean initial state: zero fake workouts
-    return [];
-  }
-
-  /// Updates a historical workout in Hive and synchronizes state.
-  Future<void> updateWorkout(WorkoutModel updated) async {
-    final hive = ref.read(hiveServiceProvider);
-    try {
-      await hive.put(
-        AppConstants.hiveBoxWorkouts,
-        updated.id,
-        updated.toJson(),
-      );
-    } catch (_) {}
-
-    state = [
-      for (final w in state)
-        if (w.id == updated.id) updated else w,
-    ];
-  }
-
-  /// Deletes a historical workout from Hive and local state.
-  Future<void> deleteWorkout(String workoutId) async {
-    final hive = ref.read(hiveServiceProvider);
-    try {
-      await hive.delete(AppConstants.hiveBoxWorkouts, workoutId);
-    } catch (_) {}
-
-    state = state.where((w) => w.id != workoutId).toList();
-  }
+  Future<void> deleteWorkout(String workoutId) =>
+      _change(() => ref.read(workoutServiceProvider).deleteWorkout(workoutId));
 
   /// Re-syncs from persistent storage.
   void refresh() {
@@ -122,17 +102,20 @@ final historyWorkoutsProvider =
       HistoryWorkoutsNotifier.new,
     );
 
-/// Computes streak, compliance, tonnage, and gamification ranks.
+/// Computes current streak, actual tonnage, and progress levels.
 final historySummaryProvider = Provider<HistorySummaryModel>((ref) {
-  final workouts = ref.watch(historyWorkoutsProvider);
+  final today = ref.watch(localDateProvider);
+  final workouts = ref
+      .watch(historyWorkoutsProvider)
+      .where(
+        (w) => !DateTime(w.date.year, w.date.month, w.date.day).isAfter(today),
+      )
+      .toList();
 
   if (workouts.isEmpty) {
     return const HistorySummaryModel(
       currentStreakDays: 0,
-      longestStreakDays: 0,
       completedWorkoutsCount: 0,
-      missedWorkoutsCount: 0,
-      complianceRate: 0.0,
       totalTonnageKg: 0.0,
       prCount: 0,
       gamificationLevel: 1,
@@ -179,8 +162,7 @@ final historySummaryProvider = Provider<HistorySummaryModel>((ref) {
         ..sort((a, b) => b.compareTo(a));
 
   int currentStreak = 0;
-  final now = DateTime.now();
-  final todayMidnight = DateTime(now.year, now.month, now.day);
+  final todayMidnight = today;
   final yesterdayMidnight = todayMidnight.subtract(const Duration(days: 1));
 
   if (sortedDates.isNotEmpty &&
@@ -198,16 +180,10 @@ final historySummaryProvider = Provider<HistorySummaryModel>((ref) {
   }
 
   final completed = workouts.length;
-  const missed = 0;
-  final totalPlanned = completed + missed;
-  final compliance = totalPlanned > 0 ? (completed / totalPlanned) : 1.0;
 
   return HistorySummaryModel(
     currentStreakDays: currentStreak,
-    longestStreakDays: currentStreak,
     completedWorkoutsCount: completed,
-    missedWorkoutsCount: missed,
-    complianceRate: compliance,
     totalTonnageKg: totalTonnage,
     prCount: prCount,
     gamificationLevel: level,
@@ -219,7 +195,14 @@ final historySummaryProvider = Provider<HistorySummaryModel>((ref) {
 /// Available exercises for progressive overload selection.
 final availableOverloadExercisesProvider =
     Provider<List<ExerciseProgressModel>>((ref) {
-      final workouts = ref.watch(historyWorkoutsProvider);
+      final today = ref.watch(localDateProvider);
+      final workouts = ref
+          .watch(historyWorkoutsProvider)
+          .where(
+            (w) =>
+                !DateTime(w.date.year, w.date.month, w.date.day).isAfter(today),
+          )
+          .toList();
       if (workouts.isEmpty) return const [];
 
       final Map<String, List<StrengthDataPoint>> pointsByEx = {};
@@ -237,17 +220,28 @@ final availableOverloadExercisesProvider =
           int maxReps = 0;
           double exVolume = 0;
 
+          double bestEstimate = 0;
           for (final s in ex.sets) {
-            if (s.isWarmup) continue;
-            exVolume += s.weightKg * s.reps;
-            if (s.weightKg > maxWeight) {
-              maxWeight = s.weightKg;
-              maxReps = s.reps;
+            if (ex.isWarmup || s.isWarmup) continue;
+            final sides = [
+              (s.weightKg, s.reps),
+              if (s.weightKgRight != null || s.repsRight != null)
+                (s.weightKgRight ?? s.weightKg, s.repsRight ?? s.reps),
+            ];
+            for (final (weight, reps) in sides) {
+              if (weight <= 0 || reps <= 0) continue;
+              exVolume += weight * reps;
+              final estimate = StrengthMath.calculateEpley1RM(weight, reps);
+              if (estimate > bestEstimate) {
+                bestEstimate = estimate;
+                maxWeight = weight;
+                maxReps = reps;
+              }
             }
           }
 
           if (maxWeight > 0) {
-            final e1rm = StrengthMath.calculateEpley1RM(maxWeight, maxReps);
+            final e1rm = bestEstimate;
             pointsByEx
                 .putIfAbsent(key, () => [])
                 .add(
@@ -299,7 +293,13 @@ final availableOverloadExercisesProvider =
 
 /// Recent PR breakthroughs for the trophy wall.
 final recentPrMilestonesProvider = Provider<List<PrMilestone>>((ref) {
-  final workouts = ref.watch(historyWorkoutsProvider);
+  final today = ref.watch(localDateProvider);
+  final workouts = ref
+      .watch(historyWorkoutsProvider)
+      .where(
+        (w) => !DateTime(w.date.year, w.date.month, w.date.day).isAfter(today),
+      )
+      .toList();
   final milestones = <PrMilestone>[];
 
   for (final w in workouts) {
@@ -310,7 +310,8 @@ final recentPrMilestonesProvider = Provider<List<PrMilestone>>((ref) {
             PrMilestone(
               exerciseName: ex.exerciseName,
               recordType: 'Set PR',
-              valueFormatted: '${s.weightKg} KG × ${s.reps} Reps',
+              valueFormatted:
+                  '${ref.watch(measurementUnitsProvider).weight(s.weightKg)} × ${s.reps} reps',
               date: w.date,
               deltaFormatted: 'NEW PR',
             ),

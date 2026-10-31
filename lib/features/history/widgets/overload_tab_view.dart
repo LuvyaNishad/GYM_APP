@@ -1,6 +1,9 @@
+library;
+
+import '../../../core/utils/measurement_units.dart';
+
 /// Progressive Overload Tab View for LEON History:
 /// 1RM progression trajectory with fl_chart, volume trends, and PR trophy wall.
-library;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -36,11 +39,9 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
     if (duration == null) return points;
     final cutoff = now.subtract(duration);
     final filtered = points.where((p) => p.date.isAfter(cutoff)).toList();
-    if (filtered.length < 2 && points.length >= 2) {
-      return points.sublist(points.length - 2);
-    }
     return filtered;
   }
+
   @override
   Widget build(BuildContext context) {
     final exercises = ref.watch(availableOverloadExercisesProvider);
@@ -127,8 +128,10 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                         .select(ex.exerciseId);
                   },
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 7,
+                    ),
                     decoration: BoxDecoration(
                       color: ex.exerciseId == selectedId
                           ? AppColors.pureWhite
@@ -199,7 +202,10 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                         textBaseline: TextBaseline.alphabetic,
                         children: [
                           Text(
-                            '${currentEx.allTimeBest1RM}',
+                            ref
+                                .watch(measurementUnitsProvider)
+                                .weightFromKg(currentEx.allTimeBest1RM)
+                                .toStringAsFixed(1),
                             style: const TextStyle(
                               fontFamily: AppTypography.fontMono,
                               fontSize: 28.0,
@@ -208,9 +214,9 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                             ),
                           ),
                           const SizedBox(width: 4),
-                          const Text(
-                            'KG',
-                            style: TextStyle(
+                          Text(
+                            ref.watch(measurementUnitsProvider).weightLabel,
+                            style: const TextStyle(
                               fontFamily: AppTypography.fontBody,
                               fontSize: 14.0,
                               fontWeight: FontWeight.w700,
@@ -224,8 +230,10 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
 
                   // Progress pill
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
@@ -244,7 +252,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '+${currentEx.recentDeltaPercent}%',
+                          '${currentEx.recentDeltaPercent > 0 ? '+' : ''}${currentEx.recentDeltaPercent}%',
                           style: const TextStyle(
                             fontFamily: AppTypography.fontMono,
                             fontSize: 12.0,
@@ -285,7 +293,9 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                           child: Container(
                             margin: const EdgeInsets.only(left: 4),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: _selectedRange == range
                                   ? const Color(0xFF00E5FF)
@@ -320,10 +330,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
               const SizedBox(height: 16),
 
               // ── fl_chart Line Chart ──────────────────────────────────────
-              SizedBox(
-                height: 160,
-                child: _buildStrengthLineChart(currentEx),
-              ),
+              SizedBox(height: 160, child: _buildStrengthLineChart(currentEx)),
 
               const SizedBox(height: 12),
 
@@ -397,8 +404,10 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                     ],
                   ),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.steel.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(6),
@@ -436,74 +445,76 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                 )
               else
                 for (final pr in prMilestones)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.onyx,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: AppColors.steel.withValues(alpha: 0.4),
-                        width: 0.8,
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.onyx,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.steel.withValues(alpha: 0.4),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                pr.exerciseName,
+                                style: const TextStyle(
+                                  fontFamily: AppTypography.fontBody,
+                                  fontSize: 13.0,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.pureWhite,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                pr.recordType.toUpperCase(),
+                                style: const TextStyle(
+                                  fontFamily: AppTypography.fontMono,
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                pr.valueFormatted,
+                                style: const TextStyle(
+                                  fontFamily: AppTypography.fontMono,
+                                  fontSize: 13.0,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.pureWhite,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                pr.deltaFormatted,
+                                style: const TextStyle(
+                                  fontFamily: AppTypography.fontMono,
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF00E676),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              pr.exerciseName,
-                              style: const TextStyle(
-                                fontFamily: AppTypography.fontBody,
-                                fontSize: 13.0,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.pureWhite,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              pr.recordType.toUpperCase(),
-                              style: const TextStyle(
-                                fontFamily: AppTypography.fontMono,
-                                fontSize: 11.0,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              pr.valueFormatted,
-                              style: const TextStyle(
-                                fontFamily: AppTypography.fontMono,
-                                fontSize: 13.0,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.pureWhite,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              pr.deltaFormatted,
-                              style: const TextStyle(
-                                fontFamily: AppTypography.fontMono,
-                                fontSize: 11.0,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF00E676),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
                   ),
-                ),
             ],
           ),
         ),
@@ -531,7 +542,9 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
     double maxY = 0;
 
     for (int i = 0; i < points.length; i++) {
-      final y = points[i].estimated1RM;
+      final y = ref
+          .watch(measurementUnitsProvider)
+          .weightFromKg(points[i].estimated1RM);
       if (y < minY) minY = y;
       if (y > maxY) maxY = y;
       spots.add(FlSpot(i.toDouble(), y));
@@ -555,8 +568,12 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
         ),
         titlesData: FlTitlesData(
           show: true,
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -617,11 +634,11 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
               show: true,
               getDotPainter: (spot, percent, barData, index) =>
                   FlDotCirclePainter(
-                radius: 4.0,
-                color: AppColors.pureWhite,
-                strokeWidth: 2,
-                strokeColor: const Color(0xFF00E5FF),
-              ),
+                    radius: 4.0,
+                    color: AppColors.pureWhite,
+                    strokeWidth: 2,
+                    strokeColor: const Color(0xFF00E5FF),
+                  ),
             ),
             belowBarData: BarAreaData(
               show: true,
@@ -744,7 +761,9 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                     for (int i = 0; i < repTable.length; i++) ...[
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 7),
+                          horizontal: 12,
+                          vertical: 7,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -757,7 +776,11 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                               ),
                             ),
                             Text(
-                              '${repTable[i]['weightKg']} KG',
+                              ref
+                                  .watch(measurementUnitsProvider)
+                                  .weight(
+                                    (repTable[i]['weightKg'] as num).toDouble(),
+                                  ),
                               style: const TextStyle(
                                 fontFamily: AppTypography.fontMono,
                                 fontSize: 12.0,
