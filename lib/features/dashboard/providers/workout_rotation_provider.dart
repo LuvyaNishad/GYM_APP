@@ -2,7 +2,7 @@
 ///
 /// Intelligently resolves today's workout day based on completed workout history:
 /// - If the lifter completed Pull Day yesterday, automatically queues Legs Day today.
-/// - If Legs Day was completed, automatically queues Push Day.
+/// - Preserves any recovery days after the completed workout.
 /// - If the lifter already finished a workout today, marks it completed and shows next up.
 /// - Allows rapid day swapping if the user wants to rotate or do a different session today.
 /// - Pre-loads the exact planned exercises and sets directly into the active workout session.
@@ -17,6 +17,8 @@ import '../../../core/providers/local_date_provider.dart';
 import '../../../models/workout_model.dart';
 import '../../history/providers/history_provider.dart';
 import '../../workout_builder/models/split_model.dart';
+import '../../workout_builder/models/training_schedule.dart';
+import '../../workout_builder/models/workout_sequence.dart';
 import '../../workout_builder/providers/splits_provider.dart';
 import '../../workout_session/providers/active_session_provider.dart';
 
@@ -34,6 +36,11 @@ class WorkoutRotationState {
     this.lastCompletedDate,
     required this.isCompletedToday,
     required this.rotationReason,
+    this.isTrainingPaused = false,
+    this.resumeOn,
+    this.resumeDayIndex = 0,
+    this.schedule,
+    this.resumeSchedule,
   });
 
   /// The workout day currently queued for today (can be manually selected or auto-recommended).
@@ -65,9 +72,40 @@ class WorkoutRotationState {
 
   /// Human-readable explanation of why this workout is queued.
   final String rotationReason;
+  final bool isTrainingPaused;
+  final DateTime? resumeOn;
+  final int resumeDayIndex;
+  final TrainingSchedule? schedule;
+  final TrainingSchedule? resumeSchedule;
 
   /// Whether the user manually chose a different day than what was auto-recommended.
   bool get isManuallyOverridden => dayIndex != recommendedIndex;
+
+  /// Today's completed workout already advanced the queue to tomorrow.
+  /// Future previews must not advance it a second time.
+  SplitWorkoutDay dayForDate(DateTime date, DateTime today) {
+    if (split.workouts.isEmpty) return selectedDay;
+    if (isTrainingPaused && resumeOn != null && !date.isBefore(resumeOn!)) {
+      final offset =
+          !split.workouts.any((day) => day.isRestDay) && resumeSchedule != null
+          ? resumeSchedule!.trainingDaysBetween(resumeOn!, date)
+          : workoutDateDifference(date, resumeOn!);
+      return split.workouts[(resumeDayIndex + offset) % split.workouts.length];
+    }
+    var offset = workoutDateDifference(date, today);
+    if (offset > 0 &&
+        !split.workouts.any((day) => day.isRestDay) &&
+        schedule != null) {
+      offset = schedule!.trainingDaysBetween(today, date);
+    }
+    if (offset > 0 &&
+        !isManuallyOverridden &&
+        lastCompletedDate != null &&
+        workoutDateDifference(today, lastCompletedDate!) == 0) {
+      offset--;
+    }
+    return split.workouts[(dayIndex + offset) % split.workouts.length];
+  }
 
   WorkoutRotationState copyWith({
     SplitWorkoutDay? selectedDay,
@@ -92,6 +130,11 @@ class WorkoutRotationState {
       lastCompletedDate: lastCompletedDate ?? this.lastCompletedDate,
       isCompletedToday: isCompletedToday ?? this.isCompletedToday,
       rotationReason: rotationReason ?? this.rotationReason,
+      isTrainingPaused: isTrainingPaused,
+      resumeOn: resumeOn,
+      resumeDayIndex: resumeDayIndex,
+      schedule: schedule,
+      resumeSchedule: resumeSchedule,
     );
   }
 }
@@ -99,7 +142,9 @@ class WorkoutRotationState {
 class WorkoutRotationNotifier extends Notifier<WorkoutRotationState> {
   int? _manualSelectedIndex;
   String? _lastSplitId;
-  String? _lastCompletionId;
+  WorkoutModel? _lastCompletion;
+  DateTime? _lastDate;
+  TrainingSchedule? _lastSchedule;
 
   @override
   WorkoutRotationState build() {
@@ -107,11 +152,19 @@ class WorkoutRotationNotifier extends Notifier<WorkoutRotationState> {
 
     final splitsState = ref.watch(splitsProvider);
     final historyWorkouts = ref.watch(historyWorkoutsProvider);
+    final today = ref.watch(localDateProvider);
 
     final split = splitsState.activeSplit;
-    if (_lastSplitId != split.id) {
+    final schedule = trainingScheduleForDate(splitsState.schedules, today);
+    final paused = schedule?.isPaused == true;
+    final resumeOn = trainingResumeDate(splitsState.schedules, today);
+    if (_lastSplitId != split.id ||
+        _lastDate != today ||
+        _lastSchedule != schedule) {
       _manualSelectedIndex = null;
       _lastSplitId = split.id;
+      _lastDate = today;
+      _lastSchedule = schedule;
     }
     final workouts = split.workouts;
 
@@ -132,63 +185,40 @@ class WorkoutRotationNotifier extends Notifier<WorkoutRotationState> {
         totalDays: 1,
         isCompletedToday: false,
         rotationReason: 'Standard routine',
+        isTrainingPaused: paused,
+        resumeOn: resumeOn,
+        schedule: schedule,
+        resumeSchedule: resumeOn == null
+            ? null
+            : trainingScheduleForDate(splitsState.schedules, resumeOn),
       );
     }
 
-    WorkoutModel? lastW;
-    DateTime? lastDate;
-    bool isToday = false;
-    int matchedIndex = -1;
+    final latest = latestCompletedSplitDay(split, historyWorkouts, today);
+    final lastW = latest?.workout;
+    final lastDate = lastW?.date;
+    final isToday = historyWorkouts.any(
+      (workout) => workoutDateDifference(today, workout.date) == 0,
+    );
 
-    final now = DateTime.now();
-    final today = ref.watch(localDateProvider);
-    final completed = historyWorkouts.where((w) => !w.date.isAfter(now)).toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
-    isToday = completed.any((w) => DateUtils.isSameDay(w.date, today));
-    // Use exact day names. Similar A/B days and unrelated split histories must
-    // not advance one another through a guessed dominant muscle group.
-    for (final candidate in completed) {
-      final parts = candidate.name.toLowerCase().split(RegExp(r'\s*[●•]|\s*//\s*'));
-      final title = candidate.name.toLowerCase().trim();
-      final prefixMatches = parts.length == 1 ||
-          parts.first.trim() == split.shortName.toLowerCase().trim();
-      if (!prefixMatches) continue;
-      matchedIndex = workouts.indexWhere((w) =>
-          title == w.id.toLowerCase() ||
-          title == w.name.toLowerCase().trim() ||
-          parts.last.trim() == w.name.toLowerCase().trim());
-      if (matchedIndex >= 0) {
-        lastW = candidate;
-        lastDate = candidate.date;
-        break;
-      }
-    }
-
-    if (_lastCompletionId != lastW?.id) {
+    if (_lastCompletion != lastW) {
       _manualSelectedIndex = null;
-      _lastCompletionId = lastW?.id;
+      _lastCompletion = lastW;
     }
 
     int recommendedIndex = 0;
     String reason = '';
 
-    if (matchedIndex != -1 && lastW != null) {
-      var nextIdx = (matchedIndex + 1) % workouts.length;
-      var restDaysElapsed = today.difference(DateUtils.dateOnly(lastDate!)).inDays - 1;
-      var skipped = 0;
-      while (workouts[nextIdx].isRestDay && restDaysElapsed > 0 && skipped < workouts.length) {
-        nextIdx = (nextIdx + 1) % workouts.length;
-        restDaysElapsed--;
-        skipped++;
-      }
+    if (latest != null) {
+      final nextIdx = nextWorkoutDayIndex(split, latest, today);
       recommendedIndex = nextIdx;
-      final lastDayName = workouts[matchedIndex].name;
+      final lastDayName = workouts[latest.index].name;
       final nextDayName = workouts[nextIdx].name;
 
-      if (DateUtils.isSameDay(lastDate, today)) {
+      if (workoutDateDifference(today, latest.workout.date) == 0) {
         reason = 'Completed $lastDayName today • Next up: $nextDayName';
       } else {
-        final daysAgo = today.difference(DateUtils.dateOnly(lastDate)).inDays;
+        final daysAgo = workoutDateDifference(today, latest.workout.date);
         if (daysAgo <= 1) {
           reason =
               'Following $lastDayName yesterday • $nextDayName is next in rotation';
@@ -220,6 +250,15 @@ class WorkoutRotationNotifier extends Notifier<WorkoutRotationState> {
       lastCompletedDate: lastDate,
       isCompletedToday: isToday,
       rotationReason: reason,
+      isTrainingPaused: paused,
+      resumeOn: resumeOn,
+      resumeDayIndex: resumeOn == null || latest == null
+          ? 0
+          : nextWorkoutDayIndex(split, latest, resumeOn),
+      schedule: schedule,
+      resumeSchedule: resumeOn == null
+          ? null
+          : trainingScheduleForDate(splitsState.schedules, resumeOn),
     );
   }
 
@@ -234,6 +273,7 @@ class WorkoutRotationNotifier extends Notifier<WorkoutRotationState> {
 
   /// Select a specific day by its 0-based index in the split rotation.
   void selectDayByIndex(int index) {
+    if (state.isTrainingPaused) return;
     if (index >= 0 && index < state.split.workouts.length) {
       _manualSelectedIndex = index;
       final selected = state.split.workouts[index];
@@ -264,6 +304,14 @@ class WorkoutRotationNotifier extends Notifier<WorkoutRotationState> {
 
   /// Initiates the active workout session pre-populated with this day's planned exercises.
   void startWorkout(BuildContext context) {
+    if (state.isTrainingPaused) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Resume training from Home before starting a workout.'),
+        ),
+      );
+      return;
+    }
     final day = state.selectedDay;
     final activeExercises = day.exercises
         .map((e) => e.toActiveExerciseState())
