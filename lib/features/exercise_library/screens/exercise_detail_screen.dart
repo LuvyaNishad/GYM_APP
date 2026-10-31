@@ -1,3 +1,5 @@
+import '../../../core/utils/measurement_units.dart';
+import '../../../state/app_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +13,8 @@ import '../../workout_session/providers/exercise_favorites_provider.dart';
 import '../models/exercise_library_item.dart';
 import '../providers/exercise_library_provider.dart';
 import '../widgets/add_to_routine_dialog.dart';
+import 'custom_exercise_creator_screen.dart';
+import '../../../shared/widgets/persistence_feedback.dart';
 
 /// Full-screen Exercise Detail and Form Guide screen.
 ///
@@ -61,21 +65,19 @@ class ExerciseDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Resolve exercise from argument, repository, or fallback
-    ExerciseLibraryItem resolved = exercise ?? _fallbackExercise;
-    if (exercise == null && exerciseId != null) {
-      final catalog = ref.watch(exerciseLibraryProvider);
-      final found = catalog.allExercises.firstWhere(
-        (e) => e.id == exerciseId,
-        orElse: () => _fallbackExercise,
-      );
-      resolved = found;
-    }
+    final catalog = ref.watch(exerciseLibraryProvider);
+    final id = exerciseId ?? exercise?.id;
+    final resolved =
+        catalog.allExercises.where((item) => item.id == id).firstOrNull ??
+        exercise ??
+        _fallbackExercise;
 
     final alternatives = ref
         .read(exerciseLibraryProvider.notifier)
         .getAlternatives(resolved.id);
-    final favorite = ref.watch(exerciseFavoritesProvider).contains(resolved.name);
+    final favorite = ref
+        .watch(exerciseFavoritesProvider)
+        .contains(resolved.name);
     final activeSession = ref.watch(
       activeSessionProvider.select(
         (s) => (
@@ -111,6 +113,61 @@ class ExerciseDetailScreen extends ConsumerWidget {
           ),
         ),
         actions: [
+          if (resolved.isCustom)
+            PopupMenuButton<String>(
+              tooltip: 'Custom exercise actions',
+              itemBuilder: (_) => const [
+                PopupMenuItem(
+                  value: 'edit',
+                  child: Text('Edit custom exercise'),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text('Remove from library'),
+                ),
+              ],
+              onSelected: (action) async {
+                if (action == 'edit') {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) =>
+                          CustomExerciseCreatorScreen(exercise: resolved),
+                    ),
+                  );
+                  return;
+                }
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (dialog) => AlertDialog(
+                    title: const Text('Remove custom exercise?'),
+                    content: const Text(
+                      'This removes it from the exercise library. Existing routines, saved workouts, and active sessions keep their own copies.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(dialog).pop(false),
+                        child: const Text('CANCEL'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(dialog).pop(true),
+                        child: const Text('REMOVE'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed != true || !context.mounted) return;
+                final success = await persistWithFeedback(
+                  context,
+                  () => ref
+                      .read(exerciseLibraryProvider.notifier)
+                      .deleteCustomExercise(resolved.id),
+                  message: 'Could not remove the exercise. Please try again.',
+                );
+                if (success && context.mounted) {
+                  Navigator.of(context).maybePop();
+                }
+              },
+            ),
           IconButton(
             tooltip: favorite ? 'Remove favorite' : 'Add favorite',
             icon: Icon(
@@ -120,22 +177,24 @@ class ExerciseDetailScreen extends ConsumerWidget {
             ),
             onPressed: () async {
               try {
-                await ref.read(exerciseFavoritesProvider.notifier).toggle(resolved.name);
+                await ref
+                    .read(exerciseFavoritesProvider.notifier)
+                    .toggle(resolved.name);
               } catch (_) {
                 if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  backgroundColor: AppColors.charcoal,
-                  behavior: SnackBarBehavior.floating,
-                  content: Text(
-                    'Could not save favorite. Try again.',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.pureWhite,
-                      fontSize: 12.0,
+                  SnackBar(
+                    backgroundColor: AppColors.charcoal,
+                    behavior: SnackBarBehavior.floating,
+                    content: Text(
+                      'Could not save favorite. Try again.',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.pureWhite,
+                        fontSize: 12.0,
+                      ),
                     ),
                   ),
-                ),
-              );
+                );
               }
             },
           ),
@@ -694,6 +753,8 @@ class ExerciseDetailScreen extends ConsumerWidget {
 
                   final activeEx = resolved.toActiveExercise(
                     defaultWeightKg: 0,
+                    customRestSeconds:
+                        ref.read(userProfileProvider)?.defaultRestSeconds ?? 90,
                   );
                   notifier.addExercise(activeEx);
 
@@ -736,34 +797,39 @@ class ExerciseDetailScreen extends ConsumerWidget {
 }
 
 /// Interactive 1RM Calculator widget based on Epley Formula.
-class Exercise1RmCalculatorCard extends StatefulWidget {
+class Exercise1RmCalculatorCard extends ConsumerStatefulWidget {
   const Exercise1RmCalculatorCard({
     super.key,
-    this.initialWeight = 100.0,
-    this.initialReps = 10,
+    this.initialWeight = 0,
+    this.initialReps = 0,
   });
 
   final double initialWeight;
   final int initialReps;
 
   @override
-  State<Exercise1RmCalculatorCard> createState() =>
+  ConsumerState<Exercise1RmCalculatorCard> createState() =>
       _Exercise1RmCalculatorCardState();
 }
 
-class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
+class _Exercise1RmCalculatorCardState
+    extends ConsumerState<Exercise1RmCalculatorCard> {
   late final TextEditingController _weightController;
   late final TextEditingController _repsController;
-  double _calculated1Rm = 133.3;
+  double? _calculated1Rm;
+  late final MeasurementUnits _units;
 
   @override
   void initState() {
     super.initState();
+    _units = ref.read(measurementUnitsProvider);
     _weightController = TextEditingController(
-      text: widget.initialWeight.toStringAsFixed(0),
+      text: widget.initialWeight > 0
+          ? _units.weightFromKg(widget.initialWeight).toStringAsFixed(1)
+          : '',
     );
     _repsController = TextEditingController(
-      text: widget.initialReps.toString(),
+      text: widget.initialReps > 0 ? widget.initialReps.toString() : '',
     );
     _recalculate();
   }
@@ -776,14 +842,18 @@ class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
   }
 
   void _recalculate() {
-    final weight = double.tryParse(_weightController.text) ?? 0.0;
+    final weight = _units.weightToKg(
+      double.tryParse(_weightController.text) ?? 0.0,
+    );
     final reps = int.tryParse(_repsController.text) ?? 0;
-    if (weight > 0 && reps > 0) {
+    if (weight.isFinite && weight > 0 && reps > 0 && reps <= 12) {
       if (reps == 1) {
         setState(() => _calculated1Rm = weight);
       } else {
         setState(() => _calculated1Rm = weight * (1.0 + (reps / 30.0)));
       }
+    } else {
+      setState(() => _calculated1Rm = null);
     }
   }
 
@@ -839,7 +909,7 @@ class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Weight (kg)',
+                      'Weight (${_units.weightLabel})',
                       style: AppTypography.labelSmall.copyWith(
                         fontSize: 11.5,
                         color: AppColors.platinum,
@@ -961,7 +1031,9 @@ class _Exercise1RmCalculatorCardState extends State<Exercise1RmCalculatorCard> {
                   ),
                 ),
                 Text(
-                  '${_calculated1Rm.toStringAsFixed(1)} kg',
+                  _calculated1Rm == null
+                      ? 'Enter weight and 1–12 reps'
+                      : _units.weight(_calculated1Rm),
                   style: const TextStyle(
                     fontFamily: AppTypography.fontMono,
                     fontSize: 18.0,

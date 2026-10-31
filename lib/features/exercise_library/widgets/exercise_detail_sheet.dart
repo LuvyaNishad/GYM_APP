@@ -1,3 +1,5 @@
+import '../../../core/utils/measurement_units.dart';
+import '../../history/providers/history_provider.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -495,6 +497,11 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
   }
 
   Widget _buildPersonalRecordBanner() {
+    final points = ref
+        .watch(availableOverloadExercisesProvider)
+        .where((e) => e.exerciseId == _currentExercise.id)
+        .firstOrNull;
+    final units = ref.watch(measurementUnitsProvider);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -532,7 +539,9 @@ class _ExerciseDetailSheetState extends ConsumerState<ExerciseDetailSheet> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '85.0 kg × 8 reps  ·  Est. 1RM: 105.4 kg',
+                  points == null
+                      ? 'No working sets logged'
+                      : 'Estimated 1RM: ${units.weight(points.allTimeBest1RM)} · from saved working sets',
                   style: AppTypography.bodySmall.copyWith(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,

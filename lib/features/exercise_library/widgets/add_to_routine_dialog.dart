@@ -1,3 +1,4 @@
+import '../../../state/app_providers.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,6 +41,7 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
   int _targetSets = 3;
   String _targetRepRange = '8-12 reps';
   late int _restSeconds;
+  bool _restEdited = false;
   final double _defaultWeight = 60.0;
 
   static const List<String> _repRanges = [
@@ -54,7 +56,7 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
   @override
   void initState() {
     super.initState();
-    _restSeconds = widget.exercise.defaultRestSeconds;
+    _restSeconds = ref.read(userProfileProvider)?.defaultRestSeconds ?? 90;
   }
 
   Future<void> _onConfirm(List<_RoutineDestination> destinations) async {
@@ -113,7 +115,8 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
         targetSets: _targetSets,
         repRange: _targetRepRange.replaceAll(' reps', ''),
         targetWeightKg: _defaultWeight,
-        restSeconds: _restSeconds,
+        restSeconds: _restEdited ? _restSeconds : 90,
+        restIsExplicit: _restEdited,
       );
 
       final targetDayName = destination.label.contains(': ')
@@ -157,7 +160,7 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
       );
 
       await splitsNotifier.saveCustomSplit(updatedSplit);
-      splitsNotifier.switchActiveSplit(updatedSplit.id);
+      await splitsNotifier.switchActiveSplit(updatedSplit.id);
     }
 
     if (mounted) {
@@ -421,7 +424,10 @@ class _AddToRoutineDialogState extends ConsumerState<AddToRoutineDialog> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 3),
                           child: InkWell(
-                            onTap: () => setState(() => _restSeconds = secs),
+                            onTap: () => setState(() {
+                              _restSeconds = secs;
+                              _restEdited = true;
+                            }),
                             borderRadius: BorderRadius.circular(8),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 140),

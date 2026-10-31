@@ -1,3 +1,4 @@
+import '../../helpers/memory_hive_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:leon/features/exercise_library/models/exercise_library_item.dart';
@@ -79,7 +80,7 @@ void main() {
     late ExerciseRepository repo;
 
     setUp(() {
-      repo = ExerciseRepository();
+      repo = ExerciseRepository(hive: MemoryHiveService());
       repo.setCatalog(mockExercises);
     });
 
@@ -127,12 +128,10 @@ void main() {
     late ProviderContainer container;
 
     setUp(() {
-      repo = ExerciseRepository();
+      repo = ExerciseRepository(hive: MemoryHiveService());
       repo.setCatalog(mockExercises);
       container = ProviderContainer(
-        overrides: [
-          exerciseRepositoryProvider.overrideWithValue(repo),
-        ],
+        overrides: [exerciseRepositoryProvider.overrideWithValue(repo)],
       );
     });
 
@@ -161,7 +160,7 @@ void main() {
       expect(state.filter.selectedCategory, 'All');
     });
 
-    test('adds custom exercise and updates state', () {
+    test('adds custom exercise and updates state', () async {
       final notifier = container.read(exerciseLibraryProvider.notifier);
       const custom = ExerciseLibraryItem(
         id: 'custom-hack-squat',
@@ -174,10 +173,13 @@ void main() {
         isCustom: true,
       );
 
-      notifier.addCustomExercise(custom);
+      await notifier.addCustomExercise(custom);
       final state = container.read(exerciseLibraryProvider);
       expect(state.allExercises.length, 5);
-      expect(state.filteredExercises.any((e) => e.id == 'custom-hack-squat'), isTrue);
+      expect(
+        state.filteredExercises.any((e) => e.id == 'custom-hack-squat'),
+        isTrue,
+      );
     });
   });
 }

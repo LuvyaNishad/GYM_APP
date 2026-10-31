@@ -4,10 +4,13 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/exercise_library_item.dart';
 import '../providers/exercise_library_provider.dart';
+import '../../../shared/widgets/persistence_feedback.dart';
 
 /// Screen allowing the user to create a personalized custom exercise definition.
 class CustomExerciseCreatorScreen extends ConsumerStatefulWidget {
-  const CustomExerciseCreatorScreen({super.key});
+  const CustomExerciseCreatorScreen({super.key, this.exercise});
+
+  final ExerciseLibraryItem? exercise;
 
   @override
   ConsumerState<CustomExerciseCreatorScreen> createState() =>
@@ -48,6 +51,26 @@ class _CustomExerciseCreatorScreenState
     'other',
   ];
 
+  bool _isSaving = false;
+  late final String _exerciseId;
+
+  @override
+  void initState() {
+    super.initState();
+    final exercise = widget.exercise;
+    _exerciseId =
+        exercise?.id ?? 'custom_${DateTime.now().microsecondsSinceEpoch}';
+    if (exercise != null) {
+      _nameController.text = exercise.name;
+      _primaryMusclesController.text = exercise.primaryMuscles.join(', ');
+      _cuesController.text = exercise.instructions.join('\n');
+      _category = exercise.category;
+      _equipment = exercise.primaryEquipment;
+      _exerciseType = exercise.exerciseType;
+      _restSeconds = exercise.defaultRestSeconds;
+    }
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -56,10 +79,11 @@ class _CustomExerciseCreatorScreenState
     super.dispose();
   }
 
-  void _saveExercise() {
+  Future<void> _saveExercise() async {
+    if (_isSaving) return;
     if (!_formKey.currentState!.validate()) return;
 
-    final id = 'custom_${DateTime.now().millisecondsSinceEpoch}';
+    final id = _exerciseId;
     final name = _nameController.text.trim();
     final primaryMuscles = _primaryMusclesController.text
         .split(RegExp(r'[,;]'))
@@ -81,14 +105,43 @@ class _CustomExerciseCreatorScreenState
       difficulty: 'intermediate',
       tags: ['custom', _category.toLowerCase(), _equipment],
       instructions: cues.isNotEmpty
-          ? [cues]
+          ? cues
+                .split('\n')
+                .map((line) => line.trim())
+                .where((line) => line.isNotEmpty)
+                .toList()
           : ['Execute movement with controlled form.'],
       coachingNotes: cues,
       defaultRestSeconds: _restSeconds,
       isCustom: true,
     );
 
-    ref.read(exerciseLibraryProvider.notifier).addCustomExercise(customItem);
+    final item = widget.exercise == null
+        ? customItem
+        : widget.exercise!.copyWith(
+            name: name,
+            category: _category,
+            primaryMuscles: customItem.primaryMuscles,
+            equipment: customItem.equipment,
+            primaryEquipment: _equipment,
+            exerciseType: _exerciseType,
+            instructions: customItem.instructions,
+            coachingNotes: cues,
+            defaultRestSeconds: _restSeconds,
+          );
+    setState(() => _isSaving = true);
+    final notifier = ref.read(exerciseLibraryProvider.notifier);
+    final success = await persistWithFeedback(
+      context,
+      () => widget.exercise == null
+          ? notifier.addCustomExercise(item)
+          : notifier.updateCustomExercise(item),
+      message:
+          'Could not save the exercise. Your input is still here. Please try again.',
+    );
+    if (!mounted) return;
+    setState(() => _isSaving = false);
+    if (!success) return;
     // Auto-filter to Custom movements so the new exercise is immediately visible at the top
     ref.read(exerciseLibraryProvider.notifier).setOnlyCustom(true);
 
@@ -112,7 +165,7 @@ class _CustomExerciseCreatorScreenState
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Exercise "$name" created & filtered in library!',
+                'Exercise "$name" saved.',
                 style: AppTypography.bodySmall.copyWith(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
@@ -129,290 +182,295 @@ class _CustomExerciseCreatorScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.onyx,
-      appBar: AppBar(
+    return PersistenceForm(
+      pending: _isSaving,
+      child: Scaffold(
         backgroundColor: AppColors.onyx,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            size: 20,
-            color: AppColors.pureWhite,
+        appBar: AppBar(
+          backgroundColor: AppColors.onyx,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 20,
+              color: AppColors.pureWhite,
+            ),
+            onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
           ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          'CREATE CUSTOM EXERCISE',
-          style: AppTypography.headlineMedium.copyWith(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.8,
-            color: AppColors.pureWhite,
+          title: Text(
+            widget.exercise == null
+                ? 'CREATE CUSTOM EXERCISE'
+                : 'EDIT CUSTOM EXERCISE',
+            style: AppTypography.headlineMedium.copyWith(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+              color: AppColors.pureWhite,
+            ),
           ),
         ),
-      ),
-      body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            children: [
-              // ── Exercise Name Input ───────────────────────────────────
-              _buildFieldLabel('EXERCISE NAME *'),
-              const SizedBox(height: 6),
-              TextFormField(
-                controller: _nameController,
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.pureWhite,
+        body: SafeArea(
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              children: [
+                // ── Exercise Name Input ───────────────────────────────────
+                _buildFieldLabel('EXERCISE NAME *'),
+                const SizedBox(height: 6),
+                TextFormField(
+                  controller: _nameController,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.pureWhite,
+                  ),
+                  decoration: _inputDecoration(
+                    hintText: 'e.g. Arsenal Strength Hack Squat',
+                  ),
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return 'Please enter an exercise name';
+                    }
+                    return null;
+                  },
                 ),
-                decoration: _inputDecoration(
-                  hintText: 'e.g. Arsenal Strength Hack Squat',
-                ),
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty) {
-                    return 'Please enter an exercise name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 18),
+                const SizedBox(height: 18),
 
-              // ── Muscle Category Selector ──────────────────────────────
-              _buildFieldLabel('TARGET MUSCLE GROUP'),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _categories.map((cat) {
-                  final isSelected = _category == cat;
-                  return InkWell(
-                    onTap: () => setState(() => _category = cat),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 7,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.pureWhite
-                            : AppColors.charcoal,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
+                // ── Muscle Category Selector ──────────────────────────────
+                _buildFieldLabel('TARGET MUSCLE GROUP'),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _categories.map((cat) {
+                    final isSelected = _category == cat;
+                    return InkWell(
+                      onTap: () => setState(() => _category = cat),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 7,
+                        ),
+                        decoration: BoxDecoration(
                           color: isSelected
                               ? AppColors.pureWhite
-                              : AppColors.steel,
-                          width: 1.0,
+                              : AppColors.charcoal,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.pureWhite
+                                : AppColors.steel,
+                            width: 1.0,
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        cat,
-                        style: AppTypography.labelSmall.copyWith(
-                          fontSize: 12.0,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                          color: isSelected
-                              ? AppColors.onyx
-                              : AppColors.platinum,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 18),
-
-              // ── Primary Muscles Text Input ────────────────────────────
-              _buildFieldLabel('PRIMARY MUSCLES (COMMA SEPARATED)'),
-              const SizedBox(height: 6),
-              TextFormField(
-                controller: _primaryMusclesController,
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.pureWhite,
-                ),
-                decoration: _inputDecoration(
-                  hintText: 'e.g. Quadriceps, Gluteus Maximus',
-                ),
-              ),
-              const SizedBox(height: 18),
-
-              // ── Equipment Dropdown ────────────────────────────────────
-              _buildFieldLabel('PRIMARY EQUIPMENT'),
-              const SizedBox(height: 6),
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.charcoal,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.steel, width: 1.0),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _equipment,
-                    isExpanded: true,
-                    dropdownColor: AppColors.charcoal,
-                    icon: const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: AppColors.platinum,
-                    ),
-                    items: _equipmentOptions.map((opt) {
-                      return DropdownMenuItem<String>(
-                        value: opt,
                         child: Text(
-                          opt.toUpperCase(),
-                          style: AppTypography.monoSmall.copyWith(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.pureWhite,
+                          cat,
+                          style: AppTypography.labelSmall.copyWith(
+                            fontSize: 12.0,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: isSelected
+                                ? AppColors.onyx
+                                : AppColors.platinum,
                           ),
                         ),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) setState(() => _equipment = val);
-                    },
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 18),
+
+                // ── Primary Muscles Text Input ────────────────────────────
+                _buildFieldLabel('PRIMARY MUSCLES (COMMA SEPARATED)'),
+                const SizedBox(height: 6),
+                TextFormField(
+                  controller: _primaryMusclesController,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.pureWhite,
+                  ),
+                  decoration: _inputDecoration(
+                    hintText: 'e.g. Quadriceps, Gluteus Maximus',
                   ),
                 ),
-              ),
-              const SizedBox(height: 18),
+                const SizedBox(height: 18),
 
-              // ── Exercise Type (Compound / Isolation) ──────────────────
-              _buildFieldLabel('MOVEMENT TYPE'),
-              const SizedBox(height: 6),
-              Row(
-                children: ['compound', 'isolation'].map((type) {
-                  final isSelected = _exerciseType == type;
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: InkWell(
-                        onTap: () => setState(() => _exerciseType = type),
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.pureWhite
-                                : AppColors.charcoal,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: isSelected
-                                  ? AppColors.pureWhite
-                                  : AppColors.steel,
-                              width: 1.0,
+                // ── Equipment Dropdown ────────────────────────────────────
+                _buildFieldLabel('PRIMARY EQUIPMENT'),
+                const SizedBox(height: 6),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.charcoal,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.steel, width: 1.0),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _equipment,
+                      isExpanded: true,
+                      dropdownColor: AppColors.charcoal,
+                      icon: const Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: AppColors.platinum,
+                      ),
+                      items: _equipmentOptions.map((opt) {
+                        return DropdownMenuItem<String>(
+                          value: opt,
+                          child: Text(
+                            opt.toUpperCase(),
+                            style: AppTypography.monoSmall.copyWith(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.pureWhite,
                             ),
                           ),
-                          child: Center(
-                            child: Text(
-                              type.toUpperCase(),
-                              style: AppTypography.monoSmall.copyWith(
-                                fontSize: 12.0,
-                                fontWeight: isSelected
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _equipment = val);
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                // ── Exercise Type (Compound / Isolation) ──────────────────
+                _buildFieldLabel('MOVEMENT TYPE'),
+                const SizedBox(height: 6),
+                Row(
+                  children: ['compound', 'isolation'].map((type) {
+                    final isSelected = _exerciseType == type;
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: InkWell(
+                          onTap: () => setState(() => _exerciseType = type),
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.pureWhite
+                                  : AppColors.charcoal,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
                                 color: isSelected
-                                    ? AppColors.onyx
-                                    : AppColors.platinum,
+                                    ? AppColors.pureWhite
+                                    : AppColors.steel,
+                                width: 1.0,
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                type.toUpperCase(),
+                                style: AppTypography.monoSmall.copyWith(
+                                  fontSize: 12.0,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                  color: isSelected
+                                      ? AppColors.onyx
+                                      : AppColors.platinum,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 18),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 18),
 
-              // ── Default Rest Interval ─────────────────────────────────
-              _buildFieldLabel('DEFAULT REST INTERVAL'),
-              const SizedBox(height: 6),
-              Row(
-                children: [60, 90, 120, 180].map((secs) {
-                  final isSelected = _restSeconds == secs;
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3),
-                      child: InkWell(
-                        onTap: () => setState(() => _restSeconds = secs),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.pureWhite
-                                : AppColors.charcoal,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
+                // ── Default Rest Interval ─────────────────────────────────
+                _buildFieldLabel('DEFAULT REST INTERVAL'),
+                const SizedBox(height: 6),
+                Row(
+                  children: [60, 90, 120, 180].map((secs) {
+                    final isSelected = _restSeconds == secs;
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                        child: InkWell(
+                          onTap: () => setState(() => _restSeconds = secs),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
                               color: isSelected
                                   ? AppColors.pureWhite
-                                  : AppColors.steel,
-                              width: 1.0,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${secs}s',
-                              style: AppTypography.monoSmall.copyWith(
-                                fontSize: 12.0,
-                                fontWeight: isSelected
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
+                                  : AppColors.charcoal,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
                                 color: isSelected
-                                    ? AppColors.onyx
-                                    : AppColors.platinum,
+                                    ? AppColors.pureWhite
+                                    : AppColors.steel,
+                                width: 1.0,
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${secs}s',
+                                style: AppTypography.monoSmall.copyWith(
+                                  fontSize: 12.0,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                  color: isSelected
+                                      ? AppColors.onyx
+                                      : AppColors.platinum,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 18),
+
+                // ── Form & Coaching Cues ──────────────────────────────────
+                _buildFieldLabel('COACHING CUES / FORM NOTES'),
+                const SizedBox(height: 6),
+                TextFormField(
+                  controller: _cuesController,
+                  maxLines: 3,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.pureWhite,
+                    fontSize: 13,
+                  ),
+                  decoration: _inputDecoration(
+                    hintText:
+                        'e.g. Feet shoulder width, drive through heels, full depth.',
+                  ),
+                ),
+                const SizedBox(height: 30),
+
+                // ── Save CTA ──────────────────────────────────────────────
+                FilledButton(
+                  onPressed: _isSaving ? null : _saveExercise,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.pureWhite,
+                    foregroundColor: AppColors.onyx,
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 18),
-
-              // ── Form & Coaching Cues ──────────────────────────────────
-              _buildFieldLabel('COACHING CUES / FORM NOTES'),
-              const SizedBox(height: 6),
-              TextFormField(
-                controller: _cuesController,
-                maxLines: 3,
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.pureWhite,
-                  fontSize: 13,
-                ),
-                decoration: _inputDecoration(
-                  hintText:
-                      'e.g. Feet shoulder width, drive through heels, full depth.',
-                ),
-              ),
-              const SizedBox(height: 30),
-
-              // ── Save CTA ──────────────────────────────────────────────
-              FilledButton(
-                onPressed: _saveExercise,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.pureWhite,
-                  foregroundColor: AppColors.onyx,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'SAVE CUSTOM EXERCISE',
+                    style: AppTypography.labelSmall.copyWith(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.1,
+                      color: AppColors.onyx,
+                    ),
                   ),
                 ),
-                child: Text(
-                  'SAVE CUSTOM EXERCISE',
-                  style: AppTypography.labelSmall.copyWith(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.1,
-                    color: AppColors.onyx,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

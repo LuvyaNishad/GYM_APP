@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../models/exercise_library_item.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../../services/hive_service.dart';
 
 final _searchWhitespace = RegExp(r'\s+');
 String _normalize(String value) => value.trim().toLowerCase();
@@ -51,7 +53,20 @@ List<_IndexedExercise> _decodeCatalog(String source) {
 class ExerciseRepository {
   ExerciseRepository({
     this.catalogAssetPath = 'assets/data/exercise_catalog.json',
-  });
+    HiveService? hive,
+  }) : _hive = hive ?? const HiveService() {
+    _customExercises.addAll(
+      _hive
+          .readAll(
+            AppConstants.hiveBoxCustomExercises,
+            ExerciseLibraryItem.fromJson,
+          )
+          .map((item) => _IndexedExercise(item.copyWith(isCustom: true))),
+    );
+    _rebuildViews();
+  }
+
+  final HiveService _hive;
 
   final String catalogAssetPath;
   List<_IndexedExercise> _catalog = const [];
@@ -106,10 +121,54 @@ class ExerciseRepository {
     _rebuildViews();
   }
 
-  void addCustomExercise(ExerciseLibraryItem item) {
-    _customExercises.insert(0, _IndexedExercise(item.copyWith(isCustom: true)));
-    _rebuildViews();
+  Future<void> _changes = Future.value();
+
+  Future<void> _change(Future<void> Function() action) {
+    final result = _changes.catchError((Object _) {}).then((_) => action());
+    _changes = result;
+    return result;
   }
+
+  Future<void> addCustomExercise(ExerciseLibraryItem item) => _change(() async {
+    if (_byId.containsKey(item.id)) {
+      throw StateError('An exercise with this ID already exists.');
+    }
+    final custom = item.copyWith(isCustom: true);
+    await _hive.put(
+      AppConstants.hiveBoxCustomExercises,
+      custom.id,
+      custom.toJson(),
+    );
+    _customExercises.insert(0, _IndexedExercise(custom));
+    _rebuildViews();
+  });
+
+  Future<void> updateCustomExercise(ExerciseLibraryItem item) =>
+      _change(() async {
+        final index = _customExercises.indexWhere(
+          (entry) => entry.exercise.id == item.id,
+        );
+        if (index < 0) throw StateError('Custom exercise no longer exists.');
+        final custom = item.copyWith(isCustom: true);
+        await _hive.put(
+          AppConstants.hiveBoxCustomExercises,
+          custom.id,
+          custom.toJson(),
+        );
+        _customExercises[index] = _IndexedExercise(custom);
+        _rebuildViews();
+      });
+
+  /// Only the library definition is removed. Routines/history keep their saved
+  /// exercise snapshots, IDs, targets and sets; active sessions remain usable.
+  Future<void> deleteCustomExercise(String id) => _change(() async {
+    if (!_customExercises.any((entry) => entry.exercise.id == id)) {
+      throw StateError('Only custom exercises can be removed.');
+    }
+    await _hive.delete(AppConstants.hiveBoxCustomExercises, id);
+    _customExercises.removeWhere((entry) => entry.exercise.id == id);
+    _rebuildViews();
+  });
 
   ExerciseLibraryItem? getById(String id) => _byId[id];
 

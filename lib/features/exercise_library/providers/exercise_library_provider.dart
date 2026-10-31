@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../services/hive_service.dart';
 import '../models/exercise_library_item.dart';
 import '../repositories/exercise_repository.dart';
 
@@ -86,7 +87,7 @@ class ExerciseLibraryState {
 
 /// Exercise repository singleton provider
 final exerciseRepositoryProvider = Provider<ExerciseRepository>((ref) {
-  return ExerciseRepository();
+  return ExerciseRepository(hive: ref.watch(hiveServiceProvider));
 });
 
 /// Riverpod notifier managing the Exercise Library catalog and filtering
@@ -218,8 +219,23 @@ class ExerciseLibraryNotifier extends Notifier<ExerciseLibraryState> {
     _applyFilter(const ExerciseFilterState());
   }
 
-  void addCustomExercise(ExerciseLibraryItem item) {
-    _repository.addCustomExercise(item);
+  Future<void> addCustomExercise(ExerciseLibraryItem item) async {
+    await _repository.addCustomExercise(item);
+    _refreshCustomExercises();
+  }
+
+  Future<void> updateCustomExercise(ExerciseLibraryItem item) async {
+    await _repository.updateCustomExercise(item);
+    _refreshCustomExercises();
+  }
+
+  Future<void> deleteCustomExercise(String id) async {
+    await _repository.deleteCustomExercise(id);
+    _refreshCustomExercises();
+  }
+
+  void _refreshCustomExercises() {
+    if (!ref.mounted) return;
     final all = _repository.allExercises;
     state = state.copyWith(allExercises: all);
     _applyFilter(state.filter);
