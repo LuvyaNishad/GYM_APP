@@ -1,266 +1,237 @@
-/// Export Workout & Profile Data Modal Sheet for LEON.
-library;
-
-import 'dart:convert';
+import '../../../services/pedometer_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
+import '../../../shared/widgets/glass_card.dart';
+import '../../../services/backup_service.dart';
+import '../../../services/export_file_service.dart';
+import '../../../services/hive_service.dart';
+import '../../../models/workout_model.dart';
 import '../models/account_profile_model.dart';
+import '../services/training_report_data.dart';
 
-/// Shows the Data Export modal sheet.
-void showExportDataSheet(BuildContext context, AccountProfile profile) {
-  HapticFeedback.lightImpact();
+void showExportDataSheet(BuildContext context, [AccountProfile? profile]) {
   showModalBottomSheet<void>(
     context: context,
     useRootNavigator: true,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (ctx) => _ExportDataSheet(profile: profile),
+    backgroundColor: AppColors.surface,
+    builder: (_) => const _ExportDataSheet(),
   );
 }
 
-class _ExportDataSheet extends StatefulWidget {
-  const _ExportDataSheet({required this.profile});
-
-  final AccountProfile profile;
-
+class _ExportDataSheet extends ConsumerStatefulWidget {
+  const _ExportDataSheet();
   @override
-  State<_ExportDataSheet> createState() => _ExportDataSheetState();
+  ConsumerState<_ExportDataSheet> createState() => _ExportDataSheetState();
 }
 
-class _ExportDataSheetState extends State<_ExportDataSheet> {
-  String _format = 'JSON';
-
-  String _generateData() {
-    final p = widget.profile;
-    if (_format == 'JSON') {
-      final map = <String, dynamic>{
-        'athlete': {
-          'id': p.id,
-          'display_name': p.displayName,
-          'email': p.email,
-          'member_since': p.memberSince.toIso8601String(),
-        },
-        'biometrics': {
-          'height_cm': p.heightCm,
-          'current_weight_kg': p.currentWeightKg,
-          'target_weight_kg': p.targetWeightKg,
-          'bmi': double.parse((p.bmi ?? 0).toStringAsFixed(1)),
-          'bmi_category': p.bmiCategory,
-          'bmr_estimate_kcal': p.bmrEstimate,
-          'maintenance_tdee_kcal': p.maintenanceCaloriesEstimate,
-        },
-        'training_summary': {
-          'preferred_split': p.preferredSplit,
-          'experience_level': p.experienceLevel,
-          'default_rest_seconds': p.defaultRestSeconds,
-          'total_workouts_logged': p.totalWorkouts,
-          'total_volume_lifted_kg': p.totalVolumeKg,
-        },
-        'recent_prs': [
-          {'exercise': 'Barbell Bench Press', 'weight_kg': 100.0, 'reps': 5},
-          {'exercise': 'Barbell Back Squat', 'weight_kg': 140.0, 'reps': 5},
-          {'exercise': 'Conventional Deadlift', 'weight_kg': 180.0, 'reps': 3},
-          {'exercise': 'Overhead Press', 'weight_kg': 65.0, 'reps': 6},
-        ],
-      };
-      return const JsonEncoder.withIndent('  ').convert(map);
-    } else {
-      // CSV format
-      return '''date,category,metric,value,unit
-${DateTime.now().toIso8601String().substring(0, 10)},Biometrics,Height,${p.heightCm},cm
-${DateTime.now().toIso8601String().substring(0, 10)},Biometrics,CurrentWeight,${p.currentWeightKg},kg
-${DateTime.now().toIso8601String().substring(0, 10)},Biometrics,TargetWeight,${p.targetWeightKg},kg
-${DateTime.now().toIso8601String().substring(0, 10)},Biometrics,BMI,${(p.bmi ?? 0).toStringAsFixed(1)},pts
-${DateTime.now().toIso8601String().substring(0, 10)},Training,TotalWorkouts,${p.totalWorkouts},sessions
-${DateTime.now().toIso8601String().substring(0, 10)},Training,TotalVolume,${p.totalVolumeKg},kg
-${DateTime.now().toIso8601String().substring(0, 10)},PR,BenchPress,100,kg
-${DateTime.now().toIso8601String().substring(0, 10)},PR,Squat,140,kg
-${DateTime.now().toIso8601String().substring(0, 10)},PR,Deadlift,180,kg''';
+class _ExportDataSheetState extends ConsumerState<_ExportDataSheet> {
+  bool busy = false;
+  String? message;
+  BackupPreview? preview;
+  RestoreMode mode = RestoreMode.keepExisting;
+  Future<void> run(Future<void> Function() action) async {
+    setState(() {
+      busy = true;
+      message = null;
+    });
+    try {
+      await action();
+    } catch (e) {
+      if (mounted) {
+        setState(() => message = 'Could not complete this action: $e');
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
     }
   }
 
-  void _copy() {
-    Clipboard.setData(ClipboardData(text: _generateData()));
-    HapticFeedback.lightImpact();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AppColors.charcoal,
-        content: Text(
-          '$_format data copied to clipboard!',
-          style: const TextStyle(
-            fontFamily: AppTypography.fontBody,
-            fontSize: 13.0,
-            color: AppColors.pureWhite,
-          ),
-        ),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
+  Future<void> export(bool share, {bool csv = false}) => run(() async {
+    final files = ref.read(exportFileServiceProvider);
+    final bytes = csv
+        ? TrainingReportData.workoutsCsv(
+            (((await ref
+                            .read(hiveServiceProvider)
+                            .flushedSnapshot())['documents']
+                        as Map)['workouts']
+                    as Map)
+                .values
+                .map(
+                  (j) => WorkoutModel.fromJson(
+                    Map<String, dynamic>.from(j as Map),
+                  ),
+                )
+                .toList(),
+          )
+        : await ref.read(backupServiceProvider).export();
+    final name =
+        'AEON-${DateTime.now().toUtc().toIso8601String().replaceAll(':', '-')}.${csv ? 'csv' : 'json'}';
+    final mime = csv ? 'text/csv' : 'application/json';
+    final result = share
+        ? (await files.share(name, mime, bytes)
+              ? 'Share sheet opened.'
+              : 'Sharing cancelled.')
+        : ((await files.save(name, mime, bytes)) == null
+              ? 'Save cancelled.'
+              : 'File saved to your selected destination.');
+    if (mounted) setState(() => message = result);
+  });
+  Future<void> pick() => run(() async {
+    final bytes = await ref.read(exportFileServiceProvider).pickBackup();
+    if (bytes == null) return;
+    final value = await ref.read(backupServiceProvider).preview(bytes);
+    if (mounted) {
+      setState(() {
+        preview = value;
+        mode = RestoreMode.keepExisting;
+      });
+    }
+  });
+  Future<void> restore() => run(() async {
+    await ref.read(backupServiceProvider).restore(preview!, mode);
+    // Rebuild every storage-dependent provider from the restored store.
+    ref.invalidate(hiveServiceProvider);
+    ref.invalidate(pedometerServiceProvider);
+    if (mounted) {
+      setState(() {
+        preview = null;
+        message = 'Backup restored on this device.';
+      });
+    }
+  });
   @override
-  Widget build(BuildContext context) {
-    final data = _generateData();
-
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      padding: EdgeInsets.fromLTRB(
-        20,
-        12,
-        20,
-        MediaQuery.of(context).viewInsets.bottom + 28,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Drag handle
-          Center(
-            child: Container(
-              width: 38,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget build(BuildContext context) => PopScope(
+    canPop: !busy,
+    child: SafeArea(
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * .86,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
                 children: [
-                  const Text('💾', style: TextStyle(fontSize: 18)),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Export Workout Data',
-                    style: TextStyle(
-                      fontFamily: AppTypography.fontDisplay,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.pureWhite,
-                      letterSpacing: 0.2,
+                  const Expanded(
+                    child: Text(
+                      'BACKUP & EXPORT',
+                      style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
+                      ),
                     ),
+                  ),
+                  IconButton(
+                    onPressed: busy ? null : () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
                   ),
                 ],
               ),
-              IconButton(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(
-                  Icons.close_rounded,
-                  color: AppColors.platinum,
-                  size: 20,
-                ),
+              const Text(
+                'Backups include workouts, routines, pauses, measurements, habits, steps and preferences. They contain personal data; choose where to save or share them.',
               ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // Format toggle
-          Row(
-            children: ['JSON', 'CSV'].map((fmt) {
-              final isSel = _format == fmt;
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: InkWell(
-                    onTap: () => setState(() => _format = fmt),
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 9),
-                      decoration: BoxDecoration(
-                        color: isSel
-                            ? AppColors.primary.withValues(alpha: 0.2)
-                            : AppColors.charcoal,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isSel
-                              ? AppColors.primary
-                              : AppColors.steel.withValues(alpha: 0.4),
+              const SizedBox(height: 12),
+              const Text(
+                'Active workout drafts, sign-in credentials and phone sensor baselines stay on this installation.',
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: busy ? null : () => export(false),
+                child: const Text('Save backup JSON'),
+              ),
+              OutlinedButton(
+                onPressed: busy ? null : () => export(true),
+                child: const Text('Share backup JSON'),
+              ),
+              OutlinedButton(
+                onPressed: busy ? null : () => export(false, csv: true),
+                child: const Text('Save logged sets CSV'),
+              ),
+              OutlinedButton(
+                onPressed: busy ? null : pick,
+                child: const Text('Choose backup to restore'),
+              ),
+              if (preview != null) ...[
+                const SizedBox(height: 16),
+                GlassCard(
+                  blur: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'RESTORE PREVIEW',
+                        style: const TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 16,
+                          letterSpacing: 1.5,
                         ),
                       ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        fmt,
-                        style: TextStyle(
-                          fontFamily: AppTypography.fontMono,
-                          fontSize: 12.0,
-                          fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
-                          color: isSel
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
+                      Text('Created ${preview!.createdAt.toLocal()}'),
+                      for (final change in preview!.changes)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(change),
+                        ),
+                      const SizedBox(height: 12),
+                      DropdownButton<RestoreMode>(
+                        isExpanded: true,
+                        value: mode,
+                        onChanged: busy
+                            ? null
+                            : (v) => setState(() => mode = v!),
+                        items: const [
+                          DropdownMenuItem(
+                            value: RestoreMode.keepExisting,
+                            child: Text('Merge: keep device conflicts'),
+                          ),
+                          DropdownMenuItem(
+                            value: RestoreMode.useBackup,
+                            child: Text('Merge: use backup conflicts'),
+                          ),
+                          DropdownMenuItem(
+                            value: RestoreMode.replaceAll,
+                            child: Text('Replace all backed-up data'),
+                          ),
+                        ],
+                      ),
+                      Text(switch (mode) {
+                        RestoreMode.keepExisting =>
+                          'Adds missing IDs. Identical records are not duplicated. Existing records and preferences win conflicts.',
+                        RestoreMode.useBackup =>
+                          'Adds missing IDs and replaces conflicting IDs/preferences from the backup. Other device records remain.',
+                        RestoreMode.replaceAll =>
+                          'Removes all current workouts, routines, measurements, habits and backed-up preferences and replaces them with this backup.',
+                      }),
+                      const SizedBox(height: 12),
+                      FilledButton(
+                        onPressed: busy ? null : restore,
+                        child: Text(
+                          mode == RestoreMode.replaceAll
+                              ? 'Replace data with this backup'
+                              : 'Restore with selected merge',
                         ),
                       ),
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 14),
-
-          // Data preview box
-          Container(
-            height: 160,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.charcoal,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.steel.withValues(alpha: 0.5)),
-            ),
-            child: SingleChildScrollView(
-              child: Text(
-                data,
-                style: const TextStyle(
-                  fontFamily: AppTypography.fontMono,
-                  fontSize: 11.5,
-                  color: AppColors.platinum,
-                  height: 1.4,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
-
-          // Copy button
-          ElevatedButton(
-            onPressed: _copy,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.pureWhite,
-              foregroundColor: AppColors.background,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.copy_rounded, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  'Copy $_format to Clipboard',
-                  style: const TextStyle(
-                    fontFamily: AppTypography.fontDisplay,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.2,
+                    ],
                   ),
                 ),
               ],
-            ),
+              if (busy)
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              if (message != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(message!),
+                ),
+            ],
           ),
-        ],
+        ),
       ),
-    );
-  }
+    ),
+  );
 }
