@@ -20,6 +20,7 @@ import '../../features/workout_builder/screens/routine_library_screen.dart';
 import '../../features/health_tracking/screens/health_tracking_screen.dart';
 import '../../features/onboarding/providers/onboarding_provider.dart';
 import '../../shared/widgets/app_shell.dart';
+import '../../shared/widgets/deferred_tab.dart';
 import '../constants/app_constants.dart';
 
 /// The app's [GoRouter], with its start location resolved from persisted state.
@@ -53,6 +54,8 @@ final class AppRouter {
         // ── Main tabs ───────────────────────────────────────────────────────
         // Wrapped in the shell so the floating nav pill persists across tab
         // switches instead of being rebuilt per screen.
+        // Secondary navigators preload only DeferredTab wrappers. Their
+        // expensive screen trees warm individually after Home's first frame.
         StatefulShellRoute.indexedStack(
           builder:
               (
@@ -78,7 +81,10 @@ final class AppRouter {
                   path: AppConstants.routeWorkoutBuilder,
                   name: 'workout-builder',
                   builder: (BuildContext context, GoRouterState state) =>
-                      const WorkoutBuilderScreen(),
+                      const DeferredTab(
+                        index: 1,
+                        child: WorkoutBuilderScreen(),
+                      ),
                 ),
               ],
             ),
@@ -89,7 +95,10 @@ final class AppRouter {
                   path: AppConstants.routeExerciseLibrary,
                   name: 'exercise-library',
                   builder: (BuildContext context, GoRouterState state) =>
-                      const ExerciseLibraryScreen(),
+                      const DeferredTab(
+                        index: 2,
+                        child: ExerciseLibraryScreen(),
+                      ),
                 ),
               ],
             ),
@@ -100,7 +109,7 @@ final class AppRouter {
                   path: AppConstants.routeAnalytics,
                   name: 'analytics',
                   builder: (BuildContext context, GoRouterState state) =>
-                      const HistoryScreen(),
+                      const DeferredTab(index: 3, child: HistoryScreen()),
                 ),
               ],
             ),
@@ -111,7 +120,7 @@ final class AppRouter {
                   path: AppConstants.routeProfile,
                   name: 'profile',
                   builder: (BuildContext context, GoRouterState state) =>
-                      const ProfileScreen(),
+                      const DeferredTab(index: 4, child: ProfileScreen()),
                 ),
               ],
             ),

@@ -1,9 +1,14 @@
+import 'features/workout_session/services/native_rest_service.dart';
+import 'features/workout_session/services/workout_cue_service.dart';
+import 'features/workout_session/providers/tempo_pacer_provider.dart';
 import 'package:flutter/material.dart';
+import 'features/health_tracking/providers/health_tracking_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/app_colors.dart';
 import 'core/providers/local_date_provider.dart';
 import 'core/theme/app_theme.dart';
+import 'core/widgets/app_startup.dart';
 import 'core/router/app_router.dart';
 import 'features/workout_session/providers/active_session_provider.dart';
 import 'features/workout_session/providers/rest_timer_provider.dart';
@@ -14,31 +19,24 @@ import 'state/app_providers.dart';
 /// LEON — Operational Fitness OS
 /// Entry point.
 ///
-/// Bootstrap runs **before** `runApp` so that every Hive box is open by the
-/// first frame — [HiveService] exposes synchronous reads, and screens would
-/// otherwise race the box opening. Supabase stays deferred; LEON is
-/// local-first and nothing needs the network to boot.
+/// The launch logo draws immediately. Data-dependent screens mount only after
+/// storage and interrupted-restore recovery finish; no network is needed.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final container = ProviderContainer();
 
-  try {
-    await HiveService.init();
-  } catch (error, stackTrace) {
-    // Local storage is not optional — without it the app can't read or write
-    // anything, so fail loudly instead of booting into a broken dashboard.
-    debugPrint('LEON bootstrap failed: $error\n$stackTrace');
-    container.dispose();
-    runApp(BootstrapFailureApp(error: error));
-    return;
-  }
-
-  container.read(appBootstrappedProvider.notifier).markReady();
-
   runApp(
-    // The pre-warmed container carries the bootstrap result into the tree.
-    UncontrolledProviderScope(container: container, child: const LeonApp()),
+    UncontrolledProviderScope(
+      container: container,
+      child: AppStartup(
+        initialize: HiveService.init,
+        onReady: () =>
+            container.read(appBootstrappedProvider.notifier).markReady(),
+        failureBuilder: (error) => BootstrapFailureApp(error: error),
+        child: const LeonApp(),
+      ),
+    ),
   );
 }
 
@@ -48,9 +46,7 @@ class LeonApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // `main` marks bootstrap ready before the first frame, so this only
-    // guards scopes built without it (widget tests, and any future async
-    // bootstrap step that lands after `runApp`).
+    // AppStartup mounts the router only once local storage is ready.
     final ready = ref.watch(appBootstrappedProvider);
 
     return MaterialApp.router(
@@ -90,6 +86,11 @@ class _WorkoutLifecycleObserverState
         WidgetsBinding.instance.lifecycleState ?? AppLifecycleState.resumed,
       );
       notifications.requestPermissions();
+      ref.read(restTimerProvider);
+      ref
+          .read(nativeRestServiceProvider)
+          .visible(true)
+          .catchError((Object _) {});
     });
   }
 
@@ -104,6 +105,14 @@ class _WorkoutLifecycleObserverState
     super.didChangeAppLifecycleState(state);
     final notifs = ref.read(workoutNotificationServiceProvider);
     notifs.updateAppLifecycleState(state);
+    ref
+        .read(nativeRestServiceProvider)
+        .visible(!notifs.isAppInBackground)
+        .catchError((Object _) {});
+    if (notifs.isAppInBackground) {
+      ref.read(tempoPacerProvider.notifier).pauseForInterruption();
+      ref.read(workoutCueServiceProvider).stop();
+    }
 
     if (notifs.isAppInBackground) {
       final session = ref.read(activeSessionProvider);
@@ -141,6 +150,7 @@ class _WorkoutLifecycleObserverState
     } else if (state == AppLifecycleState.resumed) {
       // Refresh date-dependent screens after crossing midnight while suspended.
       ref.invalidate(localDateProvider);
+      ref.read(healthImportProvider.notifier).refresh();
     }
   }
 

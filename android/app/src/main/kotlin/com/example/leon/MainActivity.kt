@@ -9,7 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.net.Uri
 import android.util.Log
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.text.SimpleDateFormat
@@ -17,7 +17,10 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.Executors
 
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
+    private val healthReader = HealthReader(this)
+    private lateinit var exportFiles: ExportFiles
+    private var cues: WorkoutCues? = null
     private val stepReader = Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
     companion object {
@@ -27,6 +30,36 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "leon/health")
+            .setMethodCallHandler(healthReader::handle)
+        exportFiles = ExportFiles(this)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "leon/files")
+            .setMethodCallHandler(exportFiles::handle)
+        val restChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "leon/rest")
+        RestAlarm.changed = {mainHandler.post {restChannel.invokeMethod("changed",null)}}
+        restChannel.setMethodCallHandler { call, result ->
+            try {
+                when(call.method) {
+                    "schedule" -> {RestAlarm.schedule(this,org.json.JSONObject(call.arguments as Map<*,*>));result.success(null)}
+                    "read" -> result.success(RestAlarm.read(this)?.let { j -> j.keys().asSequence().associateWith {j.get(it)} })
+                    "visible" -> {RestAlarm.visibility(this,call.arguments == true);result.success(null)}
+                    "complete" -> result.success(RestAlarm.complete(this,call.argument<String>("timerId")!!,call.argument<Boolean>("background") == true))
+                    "cancel" -> {RestAlarm.cancel(this,call.arguments as? String);result.success(null)}
+                    "exactAvailable" -> result.success(RestAlarm.exactAvailable(this))
+                    "requestExact" -> {
+                        if (android.os.Build.VERSION.SDK_INT >= 31 && !RestAlarm.exactAvailable(this)) {
+                            startActivity(android.content.Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                                Uri.parse("package:$packageName")))
+                        }
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            } catch(e:Exception) {result.error("rest_error",e.message,null)}
+        }
+        val cueChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger,"leon/cues")
+        cues = WorkoutCues(this) {mainHandler.post {cueChannel.invokeMethod("interrupted",null)}}
+        cueChannel.setMethodCallHandler {call,result -> cues?.handle(call,result)}
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PEDOMETER_CHANNEL)
             .setMethodCallHandler { call, result ->
@@ -51,6 +84,11 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+        if (::exportFiles.isInitialized && exportFiles.onResult(requestCode, resultCode, data)) return
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     // Shelf reads this same exported provider. day_step is a cumulative sensor
@@ -94,9 +132,16 @@ class MainActivity : FlutterActivity() {
     }
 
     override fun onDestroy() {
+        healthReader.close()
+        RestAlarm.changed = null
+        RestAlarm.visibility(this,false)
+        cues?.close()
         stepReader.shutdown()
         super.onDestroy()
     }
+
+    override fun onResume() {super.onResume();RestAlarm.visibility(this,true)}
+    override fun onPause() {RestAlarm.visibility(this,false);cues?.stop();super.onPause()}
 
     private fun queryImmediateHardwareSteps(result: MethodChannel.Result) {
         val sensorManager = getSystemService(Context.SENSOR_SERVICE) as? SensorManager

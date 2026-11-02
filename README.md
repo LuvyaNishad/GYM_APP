@@ -10,11 +10,12 @@ A Flutter fitness tracker with local workout storage, editable training routines
 - Active workout logging with warmups, RPE, unilateral sets, draft recovery, rest timers, and a plate calculator.
 - Workout history, estimated one-rep-max trends, PRs, and muscle coverage charts.
 - Manual water, sleep, and active-calorie logs.
+- Optional read-only Health Connect / Apple Health imports for steps, heart rate, sleep and active calories; manual logs take precedence and overlapping sources are not added.
 - Daily phone steps, including Realme/OPlus daily totals/history on supported phones and a sensor fallback.
 
 ## Development
 
-Install Flutter/Dart compatible with `pubspec.yaml`, the Android SDK for Android builds, and Python 3 for the repository guard. On Windows, enable Developer Mode for plugin symlinks. iOS builds require macOS and Xcode.
+Install Flutter/Dart compatible with `pubspec.yaml`, the Android SDK for Android builds, and Python 3 for the repository guard. Android builds require Android 8.0 or later; Health Connect requires a supported Android 9+ device and an available Health Connect provider. Apple Health requires the Runner HealthKit entitlement and a matching signing profile; validate iOS builds on macOS. On Windows, enable Developer Mode for plugin symlinks. iOS builds require macOS and Xcode.
 
 From the project directory:
 

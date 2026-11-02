@@ -1,4 +1,4 @@
-/// LEON / AEON main-tab shell with instant, zero-peeking persistent tab branches.
+/// LEON / AEON main-tab shell with retained branches and a short incoming reveal.
 ///
 /// Features:
 /// - Instant tab switching between the 5 main sections using [IndexedStack]:
@@ -23,6 +23,7 @@ import '../../features/history/screens/history_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/workout_builder/screens/workout_builder_screen.dart';
 import 'glass_nav_pill.dart';
+import 'tab_reveal.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({required this.location, this.child, super.key})
@@ -184,23 +185,26 @@ class _AppShellState extends State<AppShell> {
                           onHorizontalDragCancel: () {
                             _horizontalDragDelta = 0.0;
                           },
-                          child:
-                              navigationShell ??
-                              IndexedStack(
-                                index: currentIndex,
-                                children: [
-                                  for (int i = 0; i < _tabScreens.length; i++)
-                                    TickerMode(
-                                      enabled: i == currentIndex,
-                                      child: KeyedSubtree(
-                                        key: PageStorageKey<String>('tab_$i'),
-                                        child: _visited.contains(i)
-                                            ? _tabScreens[i]
-                                            : const SizedBox.shrink(),
+                          child: TabReveal(
+                            index: currentIndex,
+                            child:
+                                navigationShell ??
+                                IndexedStack(
+                                  index: currentIndex,
+                                  children: [
+                                    for (int i = 0; i < _tabScreens.length; i++)
+                                      TickerMode(
+                                        enabled: i == currentIndex,
+                                        child: KeyedSubtree(
+                                          key: PageStorageKey<String>('tab_$i'),
+                                          child: _visited.contains(i)
+                                              ? _tabScreens[i]
+                                              : const SizedBox.shrink(),
+                                        ),
                                       ),
-                                    ),
-                                ],
-                              ),
+                                  ],
+                                ),
+                          ),
                         )
                       : (widget.child ?? const SizedBox.shrink()),
                 ),

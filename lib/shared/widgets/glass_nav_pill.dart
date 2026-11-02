@@ -93,6 +93,7 @@ class GlassNavPill extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final validActive = activeIndex.clamp(0, kNavPillTabs.length - 1);
+    final reducedMotion = MediaQuery.disableAnimationsOf(context);
 
     return SizedBox(
       height: height,
@@ -120,7 +121,9 @@ class GlassNavPill extends ConsumerWidget {
             // ── 1. Animated Sliding White-Blue Luminous Spotlight ───────────
             RepaintBoundary(
               child: AnimatedAlign(
-                duration: const Duration(milliseconds: 180),
+                duration: reducedMotion
+                    ? Duration.zero
+                    : const Duration(milliseconds: 180),
                 curve: Curves.easeOutCubic,
                 alignment: Alignment(
                   -1.0 + (validActive * 2.0 / (kNavPillTabs.length - 1)),
@@ -191,7 +194,9 @@ class GlassNavPill extends ConsumerWidget {
                               children: [
                                 AnimatedScale(
                                   scale: i == validActive ? 1.15 : 1.0,
-                                  duration: const Duration(milliseconds: 160),
+                                  duration: reducedMotion
+                                      ? Duration.zero
+                                      : const Duration(milliseconds: 160),
                                   curve: Curves.easeOutCubic,
                                   child: Icon(
                                     i == validActive
