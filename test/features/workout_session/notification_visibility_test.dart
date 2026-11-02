@@ -27,7 +27,17 @@ void main() {
           }
           return null;
         });
-    service = WorkoutNotificationService();
+    final plugin = FlutterLocalNotificationsPlugin();
+    service = WorkoutNotificationService(
+      plugin: plugin,
+      initialize: () async =>
+          await plugin.initialize(
+            const InitializationSettings(
+              android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+            ),
+          ) ??
+          false,
+    );
   });
 
   tearDown(() async {

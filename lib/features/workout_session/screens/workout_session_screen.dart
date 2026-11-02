@@ -1,3 +1,4 @@
+import '../providers/rest_timer_provider.dart';
 import '../../../state/app_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,16 +25,18 @@ class _DraftSaveStatus extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final error = ref.watch(
-      activeSessionProvider.select((s) => s.persistenceError),
-    );
+    final error =
+        ref.watch(activeSessionProvider.select((s) => s.persistenceError)) ??
+        ref.watch(restTimerProvider.select((s) => s.alertError));
     if (error == null) return const SizedBox.shrink();
     return MaterialBanner(
       content: Text(error),
       actions: [
         TextButton(
-          onPressed: () =>
-              ref.read(activeSessionProvider.notifier).persistInBackground(),
+          onPressed: () {
+            ref.read(activeSessionProvider.notifier).persistInBackground();
+            ref.read(restTimerProvider.notifier).retryAlerts();
+          },
           child: const Text('Retry'),
         ),
       ],

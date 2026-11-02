@@ -22,7 +22,7 @@ struct LeonLiveActivityWidget: Widget {
                     .padding(.leading, 8)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text(timerInterval: Date()...context.state.targetEndTime, countsDown: true)
+                    Text(timerInterval: Date()...max(Date(),context.state.targetEndTime), countsDown: true)
                         .font(.system(size: 14, weight: .bold, design: .monospaced))
                         .foregroundColor(Color(red: 0.0, green: 0.898, blue: 1.0))
                         .padding(.trailing, 8)
@@ -33,7 +33,7 @@ struct LeonLiveActivityWidget: Widget {
                             .font(.system(size: 13, weight: .heavy))
                             .foregroundColor(.white)
                         HStack {
-                            Text("\(String(format: "%.1f", context.state.targetWeightKg)) KG × \(context.state.targetReps) REPS")
+                            Text("\(String(format: "%.1f", (context.state.weightUnit == "kg" ? context.state.targetWeightKg : context.state.targetWeightKg * 2.2046226218))) \(context.state.weightUnit.uppercased()) × \(context.state.targetReps) REPS")
                                 .font(.system(size: 11, weight: .medium, design: .monospaced))
                                 .foregroundColor(Color(red: 0.72, green: 0.74, blue: 0.77))
                             Spacer()
@@ -51,10 +51,10 @@ struct LeonLiveActivityWidget: Widget {
                 HStack(spacing: 2) {
                     Image(systemName: "dumbbell.fill")
                         .foregroundColor(Color(red: 0.0, green: 0.898, blue: 1.0))
-                        .font(.system(size: 10))
+                        .font(.system(size: 11))
                 }
             } compactTrailing: {
-                Text(timerInterval: Date()...context.state.targetEndTime, countsDown: true)
+                Text(timerInterval: Date()...max(Date(),context.state.targetEndTime), countsDown: true)
                     .font(.system(size: 12, weight: .bold, design: .monospaced))
                     .foregroundColor(Color(red: 0.0, green: 0.898, blue: 1.0))
             } minimal: {
@@ -87,7 +87,7 @@ struct LockScreenLiveActivityView: View {
                         Image(systemName: "timer")
                             .foregroundColor(Color(red: 0.0, green: 0.898, blue: 1.0))
                             .font(.system(size: 12))
-                        Text(timerInterval: Date()...context.state.targetEndTime, countsDown: true)
+                        Text(timerInterval: Date()...max(Date(),context.state.targetEndTime), countsDown: true)
                             .font(.system(size: 16, weight: .bold, design: .monospaced))
                             .foregroundColor(Color(red: 0.0, green: 0.898, blue: 1.0))
                     }
@@ -98,7 +98,7 @@ struct LockScreenLiveActivityView: View {
                         Text(context.state.exerciseName)
                             .font(.system(size: 15, weight: .heavy))
                             .foregroundColor(.white)
-                        Text("Set \(context.state.setNumber) of \(context.state.totalSets) • \(String(format: "%.1f", context.state.targetWeightKg)) kg × \(context.state.targetReps) reps")
+                        Text("Set \(context.state.setNumber) of \(context.state.totalSets) • \(String(format: "%.1f", (context.state.weightUnit == "kg" ? context.state.targetWeightKg : context.state.targetWeightKg * 2.2046226218))) \(context.state.weightUnit) × \(context.state.targetReps) reps")
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(Color(red: 0.72, green: 0.74, blue: 0.77))
                     }
@@ -106,7 +106,7 @@ struct LockScreenLiveActivityView: View {
                     if !context.state.plateBreakdown.isEmpty {
                         VStack(alignment: .trailing, spacing: 2) {
                             Text("PLATES PER SLEEVE")
-                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
                                 .foregroundColor(Color(red: 0.58, green: 0.64, blue: 0.72))
                             Text(context.state.plateBreakdown)
                                 .font(.system(size: 12, weight: .bold, design: .monospaced))

@@ -1,3 +1,4 @@
+import '../services/workout_cue_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -600,7 +601,7 @@ class ExerciseSetTable extends ConsumerWidget {
 }
 
 /// Bilateral Set Row with direct numeric typing & subtle previous baselines.
-class _BilateralSetRowWidget extends StatefulWidget {
+class _BilateralSetRowWidget extends ConsumerStatefulWidget {
   const _BilateralSetRowWidget({
     super.key,
     required this.exerciseId,
@@ -619,10 +620,12 @@ class _BilateralSetRowWidget extends StatefulWidget {
   final MeasurementUnits units;
 
   @override
-  State<_BilateralSetRowWidget> createState() => _BilateralSetRowWidgetState();
+  ConsumerState<_BilateralSetRowWidget> createState() =>
+      _BilateralSetRowWidgetState();
 }
 
-class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
+class _BilateralSetRowWidgetState
+    extends ConsumerState<_BilateralSetRowWidget> {
   late TextEditingController _weightController;
   late TextEditingController _repsController;
   late FocusNode _weightFocusNode;
@@ -986,7 +989,9 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
               child: IconButton(
                 onPressed: () {
                   try {
-                    HapticFeedback.mediumImpact();
+                    ref
+                        .read(workoutFeedbackProvider)
+                        .play(WorkoutCue.metronome, sound: false);
                   } catch (_) {}
                   widget.notifier.logSet(
                     exerciseId: widget.exerciseId,
@@ -1016,7 +1021,7 @@ class _BilateralSetRowWidgetState extends State<_BilateralSetRowWidget> {
 }
 
 /// Unilateral Set Row with side sub-rows (L & R), direct numeric typing, and 1-tap L->R sync.
-class _UnilateralSetRowWidget extends StatefulWidget {
+class _UnilateralSetRowWidget extends ConsumerStatefulWidget {
   const _UnilateralSetRowWidget({
     super.key,
     required this.exerciseId,
@@ -1035,11 +1040,12 @@ class _UnilateralSetRowWidget extends StatefulWidget {
   final MeasurementUnits units;
 
   @override
-  State<_UnilateralSetRowWidget> createState() =>
+  ConsumerState<_UnilateralSetRowWidget> createState() =>
       _UnilateralSetRowWidgetState();
 }
 
-class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
+class _UnilateralSetRowWidgetState
+    extends ConsumerState<_UnilateralSetRowWidget> {
   late TextEditingController _leftWeightController;
   late TextEditingController _leftRepsController;
   late TextEditingController _rightWeightController;
@@ -1159,7 +1165,9 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
 
   void _syncLeftToRight() {
     try {
-      HapticFeedback.selectionClick();
+      ref
+          .read(workoutFeedbackProvider)
+          .play(WorkoutCue.metronome, sound: false);
     } catch (_) {}
     _rightWeightController.text = _leftWeightController.text;
     _rightRepsController.text = _leftRepsController.text;
@@ -1454,7 +1462,9 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                         child: IconButton(
                           onPressed: () {
                             try {
-                              HapticFeedback.mediumImpact();
+                              ref
+                                  .read(workoutFeedbackProvider)
+                                  .play(WorkoutCue.metronome, sound: false);
                             } catch (_) {}
                             widget.notifier.logSetSide(
                               exerciseId: widget.exerciseId,
@@ -1709,7 +1719,9 @@ class _UnilateralSetRowWidgetState extends State<_UnilateralSetRowWidget> {
                         child: IconButton(
                           onPressed: () {
                             try {
-                              HapticFeedback.mediumImpact();
+                              ref
+                                  .read(workoutFeedbackProvider)
+                                  .play(WorkoutCue.metronome, sound: false);
                             } catch (_) {}
                             widget.notifier.logSetSide(
                               exerciseId: widget.exerciseId,

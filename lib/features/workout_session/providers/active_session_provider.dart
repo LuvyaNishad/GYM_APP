@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/services.dart';
+import '../services/workout_cue_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../models/workout_model.dart';
@@ -63,6 +63,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   }
 
   void _persistActiveSession() {
+    ref.read(restTimerProvider.notifier).refreshForSession();
     _saveDebounce?.cancel();
     _saveDebounce = Timer(const Duration(milliseconds: 350), () {
       persistInBackground();
@@ -357,7 +358,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
     if (targetCompleted) {
       try {
-        HapticFeedback.lightImpact();
+        playWorkoutCue(ref, WorkoutCue.metronome, sound: false);
       } catch (_) {}
 
       _startRestAfterSet(exercise, nextExerciseId, restDurationToUse);
@@ -434,7 +435,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
 
     if (bothCompleted && !currentSet.isCompleted) {
       try {
-        HapticFeedback.mediumImpact();
+        playWorkoutCue(ref, WorkoutCue.metronome, sound: false);
       } catch (_) {}
 
       final partner = exercise.supersetGroupId == null
@@ -459,7 +460,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       );
     } else if (targetCompleted && !bothCompleted) {
       try {
-        HapticFeedback.lightImpact();
+        playWorkoutCue(ref, WorkoutCue.metronome, sound: false);
       } catch (_) {}
     } else if (!bothCompleted && currentSet.isCompleted) {
       final restState = ref.read(restTimerProvider);
@@ -511,7 +512,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     state = state.copyWith(exercises: updatedExercises);
     _persistActiveSession();
     try {
-      HapticFeedback.selectionClick();
+      playWorkoutCue(ref, WorkoutCue.metronome, sound: false);
     } catch (_) {}
   }
 

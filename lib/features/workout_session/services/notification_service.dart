@@ -3,7 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../state/app_providers.dart';
 
 /// Notification identifiers.
 abstract class WorkoutNotificationIds {
@@ -14,12 +15,19 @@ abstract class WorkoutNotificationIds {
 
 /// Service managing Android Persistent Foreground Notifications and background alerts.
 class WorkoutNotificationService {
-  WorkoutNotificationService() {
-    _initialization = _initPlugin();
+  WorkoutNotificationService({
+    FlutterLocalNotificationsPlugin? plugin,
+    Future<bool> Function()? initialize,
+  }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin() {
+    _initialization = initialize == null
+        ? _initPlugin()
+        : initialize().then((value) {
+            _isInitialized = value;
+          });
   }
+  bool soundEnabled = true, vibrationEnabled = true;
 
-  final FlutterLocalNotificationsPlugin _plugin =
-      FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _plugin;
   bool _isInitialized = false;
   late final Future<void> _initialization;
   Future<void> _pending = Future<void>.value();
@@ -67,7 +75,9 @@ class WorkoutNotificationService {
   void Function(String actionId)? onActionTapped;
 
   Future<void> _initPlugin() async {
-    if (kIsWeb) return;
+    if (kIsWeb || !(Platform.isAndroid || Platform.isIOS)) {
+      return;
+    }
 
     const androidSettings = AndroidInitializationSettings(
       '@mipmap/ic_launcher',
@@ -105,6 +115,7 @@ class WorkoutNotificationService {
   Future<bool> requestPermissions() async {
     if (kIsWeb) return false;
     await _initialization;
+    if (!_isInitialized) return false;
 
     if (Platform.isAndroid) {
       final androidImplementation = _plugin
@@ -221,21 +232,26 @@ class WorkoutNotificationService {
     if (!_isAppInBackground || revision != _visibilityRevision) return;
 
     final androidDetails = AndroidNotificationDetails(
-      'leon_rest_alerts',
+      'leon_rest_alerts_v2_${soundEnabled}_$vibrationEnabled',
       'Rest Interval Alerts',
       channelDescription: 'Vibration and alert when rest interval completes',
       importance: Importance.high,
       priority: Priority.high,
       color: AppColors.primary,
-      enableVibration: true,
+      enableVibration: vibrationEnabled,
+      playSound: soundEnabled,
+      sound: soundEnabled
+          ? const RawResourceAndroidNotificationSound('complete')
+          : null,
       vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
       category: AndroidNotificationCategory.alarm,
     );
 
-    const darwinDetails = DarwinNotificationDetails(
+    final darwinDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
-      presentSound: true,
+      presentSound: soundEnabled,
+      sound: soundEnabled ? 'complete.wav' : null,
     );
 
     final notificationDetails = NotificationDetails(
@@ -373,6 +389,14 @@ class WorkoutNotificationService {
 final workoutNotificationServiceProvider = Provider<WorkoutNotificationService>(
   (ref) {
     final service = WorkoutNotificationService();
+    void update() {
+      final user = ref.read(userProfileProvider);
+      service.soundEnabled = user?.audioCuesEnabled ?? true;
+      service.vibrationEnabled = user?.hapticFeedbackEnabled ?? true;
+    }
+
+    update();
+    ref.listen(userProfileProvider, (_, __) => update());
     return service;
   },
 );

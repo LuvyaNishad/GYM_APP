@@ -9,6 +9,7 @@ import 'package:leon/features/workout_session/services/live_activity_service.dar
 import 'package:leon/features/workout_session/services/notification_service.dart';
 
 class _FakeWorkoutNotificationService extends WorkoutNotificationService {
+  _FakeWorkoutNotificationService() : super(initialize: () async => false);
   String? lastExerciseName;
   int? lastSetNumber;
   int? lastRemainingSeconds;

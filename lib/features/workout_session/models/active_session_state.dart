@@ -572,6 +572,7 @@ class RestTimerState {
     this.exerciseId,
     this.sourceExerciseId,
     this.targetEndTime,
+    this.alertError,
   });
 
   final int totalDurationSeconds;
@@ -585,6 +586,7 @@ class RestTimerState {
   final String? exerciseId;
   final String? sourceExerciseId;
   final DateTime? targetEndTime;
+  final String? alertError;
 
   bool get isFinished => remainingSeconds == 0 && isRunning;
 
@@ -612,8 +614,11 @@ class RestTimerState {
     String? sourceExerciseId,
     DateTime? targetEndTime,
     bool clearTargetEndTime = false,
+    String? alertError,
+    bool clearAlertError = false,
   }) {
     return RestTimerState(
+      alertError: clearAlertError ? null : alertError ?? this.alertError,
       totalDurationSeconds: totalDurationSeconds ?? this.totalDurationSeconds,
       remainingSeconds: remainingSeconds ?? this.remainingSeconds,
       isRunning: isRunning ?? this.isRunning,

@@ -3,29 +3,58 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Service managing native iOS ActivityKit Live Activities & Dynamic Island widgets.
 class LiveActivityService {
-  LiveActivityService();
-
-  static const MethodChannel _channel = MethodChannel('leon/live_activity');
-  String? _currentActivityId;
-
-  /// Current active iOS Live Activity ID, if running.
+  LiveActivityService({
+    this.channel = const MethodChannel('leon/live_activity'),
+    bool? supported,
+  }) : supported = supported ?? (!kIsWeb && Platform.isIOS);
+  final MethodChannel channel;
+  final bool supported;
+  String? _currentActivityId, _workoutId;
+  DateTime? _deadline;
+  String _weightUnit = 'kg';
+  int _revision = 0;
+  Future<void> _pending = Future.value();
   String? get currentActivityId => _currentActivityId;
-
-  /// Returns true if the device is iOS 16.1+ and Live Activities are permitted by the user.
-  Future<bool> areActivitiesEnabled() async {
-    if (kIsWeb || !Platform.isIOS) return false;
-    try {
-      final enabled = await _channel.invokeMethod<bool>('areActivitiesEnabled');
-      return enabled ?? false;
-    } on PlatformException catch (e) {
-      debugPrint('[LiveActivityService] Error checking status: $e');
-      return false;
+  void configureIdentity(
+    String? workoutId,
+    DateTime? deadline, [
+    String weightUnit = 'kg',
+  ]) {
+    if (_workoutId != workoutId) {
+      _revision++;
+      _currentActivityId = null;
     }
+    _workoutId = workoutId;
+    _deadline = deadline;
+    _weightUnit = weightUnit;
   }
 
-  /// Starts a Live Activity on the Lock Screen and Dynamic Island.
+  Future<T?> _call<T>(String method, Object? args, {int? revision}) =>
+      _enqueue(() => channel.invokeMethod<T>(method, args), revision: revision);
+
+  Future<T?> _enqueue<T>(Future<T?> Function() action, {int? revision}) {
+    if (!supported) return Future.value();
+    final result = _pending.then<T?>((_) async {
+      if (revision != null && revision != _revision) return null;
+      try {
+        return await action();
+      } on MissingPluginException {
+        return null;
+      } on PlatformException {
+        return null;
+      }
+    });
+    _pending = result.then<void>((_) {}, onError: (Object _, StackTrace __) {});
+    return result;
+  }
+
+  Future<bool> areActivitiesEnabled() async =>
+      await _call<bool>('areActivitiesEnabled', null) ?? false;
+  Future<void> cleanupStaleActivities(String? validWorkoutId) async {
+    await _call('cleanupStaleActivities', {'workoutId': validWorkoutId});
+  }
+
   Future<void> startLiveActivity({
     required String workoutTitle,
     required String exerciseName,
@@ -33,77 +62,84 @@ class LiveActivityService {
     required int totalSets,
     required int remainingSeconds,
     required int totalDurationSeconds,
-    double targetWeightKg = 0.0,
+    double targetWeightKg = 0,
     int targetReps = 0,
     String plateBreakdown = '',
     bool isResting = true,
   }) async {
-    if (kIsWeb || !Platform.isIOS) return;
-
-    try {
-      final activityId = await _channel
-          .invokeMethod<String>('startLiveActivity', {
-            'workoutTitle': workoutTitle,
-            'exerciseName': exerciseName,
-            'setNumber': setNumber,
-            'totalSets': totalSets,
-            'remainingSeconds': remainingSeconds,
-            'totalDurationSeconds': totalDurationSeconds,
-            'targetWeightKg': targetWeightKg,
-            'targetReps': targetReps,
-            'plateBreakdown': plateBreakdown,
-            'isResting': isResting,
-          });
-      _currentActivityId = activityId;
-    } on PlatformException catch (e) {
-      debugPrint('[LiveActivityService] Failed to start Live Activity: $e');
+    final revision = _revision;
+    if (!supported ||
+        _workoutId == null ||
+        _deadline == null ||
+        !_deadline!.isAfter(DateTime.now())) {
+      return;
+    }
+    final workoutId = _workoutId;
+    final payload = <String, Object?>{
+      'workoutTitle': workoutTitle,
+      'workoutId': workoutId,
+      'targetEndTime': _deadline?.millisecondsSinceEpoch,
+      'exerciseName': exerciseName,
+      'setNumber': setNumber,
+      'totalSets': totalSets,
+      'remainingSeconds': remainingSeconds,
+      'totalDurationSeconds': totalDurationSeconds,
+      'targetWeightKg': targetWeightKg,
+      'weightUnit': _weightUnit == 'kg' ? 'kg' : 'lb',
+      'targetReps': targetReps,
+      'plateBreakdown': plateBreakdown,
+      'isResting': isResting,
+    };
+    final id = await _enqueue<String>(() async {
+      if (await channel.invokeMethod<bool>('areActivitiesEnabled') != true ||
+          revision != _revision) {
+        return null;
+      }
+      return channel.invokeMethod<String>('startLiveActivity', payload);
+    }, revision: revision);
+    if (revision == _revision) {
+      _currentActivityId = id;
+    } else if (id != null) {
+      await _call('stopLiveActivity', {'activityId': id});
     }
   }
 
-  /// Updates the running Live Activity and Dynamic Island with current countdown.
   Future<void> updateLiveActivity({
     required int remainingSeconds,
     required int totalDurationSeconds,
     required String exerciseName,
     required int setNumber,
     required int totalSets,
-    double targetWeightKg = 0.0,
+    double targetWeightKg = 0,
     int targetReps = 0,
     String plateBreakdown = '',
     bool isResting = true,
   }) async {
-    if (kIsWeb || !Platform.isIOS) return;
-
-    try {
-      await _channel.invokeMethod('updateLiveActivity', {
-        'remainingSeconds': remainingSeconds,
-        'totalDurationSeconds': totalDurationSeconds,
-        'exerciseName': exerciseName,
-        'setNumber': setNumber,
-        'totalSets': totalSets,
-        'targetWeightKg': targetWeightKg,
-        'targetReps': targetReps,
-        'plateBreakdown': plateBreakdown,
-        'isResting': isResting,
-      });
-    } on PlatformException catch (e) {
-      debugPrint('[LiveActivityService] Failed to update Live Activity: $e');
-    }
+    await _call('updateLiveActivity', {
+      'activityId': _currentActivityId,
+      'workoutId': _workoutId,
+      'targetEndTime': _deadline?.millisecondsSinceEpoch,
+      'remainingSeconds': remainingSeconds,
+      'totalDurationSeconds': totalDurationSeconds,
+      'exerciseName': exerciseName,
+      'setNumber': setNumber,
+      'totalSets': totalSets,
+      'targetWeightKg': targetWeightKg,
+      'weightUnit': _weightUnit == 'kg' ? 'kg' : 'lb',
+      'targetReps': targetReps,
+      'plateBreakdown': plateBreakdown,
+      'isResting': isResting,
+    }, revision: _revision);
   }
 
-  /// Terminates and dismisses the Live Activity immediately.
   Future<void> stopLiveActivity() async {
-    if (kIsWeb || !Platform.isIOS) return;
-
-    try {
-      await _channel.invokeMethod('stopLiveActivity');
-      _currentActivityId = null;
-    } on PlatformException catch (e) {
-      debugPrint('[LiveActivityService] Failed to stop Live Activity: $e');
-    }
+    final revision = ++_revision;
+    await _call('stopLiveActivity', {
+      'activityId': _currentActivityId,
+      'workoutId': _workoutId,
+    });
+    if (revision == _revision) _currentActivityId = null;
   }
 }
 
-final liveActivityServiceProvider = Provider<LiveActivityService>((ref) {
-  return LiveActivityService();
-});
+final liveActivityServiceProvider = Provider((ref) => LiveActivityService());

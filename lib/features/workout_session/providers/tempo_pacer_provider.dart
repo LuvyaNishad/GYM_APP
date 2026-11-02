@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/services.dart';
+import '../services/workout_cue_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/tempo_pacer_state.dart';
 import 'active_session_provider.dart';
@@ -31,7 +31,11 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
 
   @override
   TempoPacerState build() {
+    final cues = ref.read(workoutCueServiceProvider);
+    cues.onInterrupted = pauseForInterruption;
     ref.onDispose(() {
+      cues.onInterrupted = null;
+      cues.stop();
       _ticker?.cancel();
       _completionTimer?.cancel();
       _phaseStopwatch.stop();
@@ -472,6 +476,12 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
     if (!state.isPaused && state.phase != TempoPhase.completed) togglePause();
   }
 
+  void pauseForInterruption() {
+    _phaseStopwatch.stop();
+    if (state.isActive) state = state.copyWith(isPaused: true);
+    ref.read(workoutCueServiceProvider).stop();
+  }
+
   void togglePause() {
     if (!state.isActive) return;
     if (state.isPaused) {
@@ -481,14 +491,14 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
     }
     state = state.copyWith(isPaused: !state.isPaused);
     try {
-      HapticFeedback.selectionClick();
+      playWorkoutCue(ref, WorkoutCue.metronome, sound: false);
     } catch (_) {}
   }
 
   void setPreset(TempoPreset preset) {
     state = state.copyWith(preset: preset);
     try {
-      HapticFeedback.selectionClick();
+      playWorkoutCue(ref, WorkoutCue.metronome, sound: false);
     } catch (_) {}
   }
 
@@ -496,123 +506,53 @@ class TempoPacerNotifier extends Notifier<TempoPacerState> {
     final newTarget = (state.targetReps + delta).clamp(1, 99);
     state = state.copyWith(targetReps: newTarget);
     try {
-      HapticFeedback.selectionClick();
+      playWorkoutCue(ref, WorkoutCue.metronome, sound: false);
     } catch (_) {}
   }
 
   void toggleSound() {
     state = state.copyWith(soundEnabled: !state.soundEnabled);
     try {
-      HapticFeedback.selectionClick();
+      playWorkoutCue(ref, WorkoutCue.metronome, sound: false);
     } catch (_) {}
   }
 
   void toggleHaptics() {
     state = state.copyWith(hapticsEnabled: !state.hapticsEnabled);
     try {
-      HapticFeedback.selectionClick();
+      playWorkoutCue(ref, WorkoutCue.metronome, sound: false);
     } catch (_) {}
   }
 
   void cancel() {
+    ref.read(workoutCueServiceProvider).stop();
     _ticker?.cancel();
     _completionTimer?.cancel();
     _generation++;
     _phaseStopwatch.stop();
     state = state.copyWith(isActive: false);
     try {
-      HapticFeedback.mediumImpact();
+      playWorkoutCue(ref, WorkoutCue.metronome, sound: false);
     } catch (_) {}
   }
 
-  // ── Tactile Haptics & Non-Interfering System Sound Cues ────────────────────
-
-  void _playCountdownTick(int remaining) {
-    if (state.hapticsEnabled) {
-      try {
-        if (remaining == 0) {
-          HapticFeedback.heavyImpact();
-        } else {
-          HapticFeedback.selectionClick();
-        }
-      } catch (_) {}
-    }
-    if (state.soundEnabled) {
-      try {
-        SystemSound.play(SystemSoundType.click);
-      } catch (_) {}
-    }
-  }
-
-  void _playMetronomeTick() {
-    if (state.hapticsEnabled) {
-      try {
-        HapticFeedback.lightImpact();
-      } catch (_) {}
-    }
-    if (state.soundEnabled) {
-      try {
-        SystemSound.play(SystemSoundType.click);
-      } catch (_) {}
-    }
-  }
-
-  void _playTurnaroundSnap() {
-    if (state.hapticsEnabled) {
-      try {
-        HapticFeedback.heavyImpact();
-      } catch (_) {}
-    }
-    if (state.soundEnabled) {
-      try {
-        SystemSound.play(SystemSoundType.click);
-      } catch (_) {}
-    }
-  }
-
-  void _playDrivePulse() {
-    if (state.hapticsEnabled) {
-      try {
-        HapticFeedback.mediumImpact();
-      } catch (_) {}
-    }
-    if (state.soundEnabled) {
-      try {
-        SystemSound.play(SystemSoundType.click);
-      } catch (_) {}
-    }
-  }
-
-  void _playNextRepChime() {
-    if (state.hapticsEnabled) {
-      try {
-        HapticFeedback.selectionClick();
-      } catch (_) {}
-    }
-  }
-
-  void _playCompletionFanfare() {
-    if (state.hapticsEnabled) {
-      try {
-        HapticFeedback.vibrate();
-      } catch (_) {}
-    }
-    if (state.soundEnabled) {
-      try {
-        SystemSound.play(SystemSoundType.alert);
-      } catch (_) {}
-    }
-  }
-
-  void _playCue({bool isPrep = false, bool isPhaseStart = false}) {
-    if (state.hapticsEnabled) {
-      try {
-        if (isPrep) {
-          HapticFeedback.mediumImpact();
-        } else if (isPhaseStart) {
-          HapticFeedback.heavyImpact();
-        }
-      } catch (_) {}
-    }
-  }
+  void _cue(WorkoutCue cue, {bool sound = true, bool vibrate = true}) =>
+      playWorkoutCue(
+        ref,
+        cue,
+        sound: sound && state.soundEnabled,
+        vibrate: vibrate && state.hapticsEnabled,
+      );
+  void _playCountdownTick(int remaining) =>
+      _cue(remaining == 0 ? WorkoutCue.bell : WorkoutCue.countdown);
+  void _playMetronomeTick() => _cue(WorkoutCue.metronome);
+  void _playTurnaroundSnap() => _cue(WorkoutCue.metronome);
+  void _playDrivePulse() => _cue(WorkoutCue.metronome);
+  void _playNextRepChime() => _cue(WorkoutCue.metronome, sound: false);
+  void _playCompletionFanfare() => _cue(WorkoutCue.complete);
+  void _playCue({bool isPrep = false, bool isPhaseStart = false}) => _cue(
+    WorkoutCue.bell,
+    sound: isPhaseStart,
+    vibrate: isPrep || isPhaseStart,
+  );
 }

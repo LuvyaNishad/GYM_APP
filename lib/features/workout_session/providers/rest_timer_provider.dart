@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../state/app_providers.dart';
+import '../services/native_rest_service.dart';
+import '../services/workout_cue_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/active_session_state.dart';
 import '../services/live_activity_service.dart';
@@ -14,6 +16,101 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
   Timer? _ticker;
   AppLifecycleListener? _lifecycleListener;
   String? _workoutId;
+  String? _timerId;
+  Future<void> _nativeWrites = Future.value();
+  NativeRestService get _native => ref.read(nativeRestServiceProvider);
+  void _nativeTask(Future<void> Function() task) {
+    if (!_native.supported) return;
+    _nativeWrites = _nativeWrites.then((_) => task()).catchError((Object e) {
+      if (ref.mounted) {
+        state = state.copyWith(
+          alertError: 'Background rest alerts unavailable: $e',
+        );
+      }
+    });
+  }
+
+  void _scheduleNative() {
+    if (!_native.supported || !state.isRunning || state.targetEndTime == null) {
+      return;
+    }
+    final profile = ref.read(userProfileProvider);
+    final id = _timerId;
+    final snapshot = <String, dynamic>{
+      'timerId': id,
+      'workoutId': _workoutId ?? id,
+      'deadline': state.targetEndTime!.millisecondsSinceEpoch,
+      'total': state.totalDurationSeconds,
+      'exerciseName': state.exerciseName ?? 'Exercise',
+      'exerciseId': state.exerciseId ?? '',
+      'setNumber': state.setNumber ?? 1,
+      'totalSets': state.totalSets,
+      'isWarmup': state.isWarmup,
+      'sound': profile?.audioCuesEnabled ?? true,
+      'vibrate': profile?.hapticFeedbackEnabled ?? true,
+    };
+    _nativeTask(() async {
+      await ref.read(activeSessionProvider.notifier).flushPendingChanges();
+      if (_timerId != id || !state.isRunning) return;
+      await _native.schedule(snapshot);
+      if (ref.mounted) state = state.copyWith(clearAlertError: true);
+    });
+  }
+
+  void _syncNative() {
+    final requestedId = _timerId;
+    _nativeTask(() async {
+      final data = await _native.read();
+      if (!ref.mounted || requestedId != _timerId) return;
+      if (data == null) {
+        await _liveActivity.cleanupStaleActivities(null);
+        if (_timerId != null && state.isRunning) {
+          _ticker?.cancel();
+          state = state.copyWith(
+            remainingSeconds: 0,
+            isRunning: false,
+            clearTargetEndTime: true,
+          );
+        }
+        return;
+      }
+      final session = ref.read(activeSessionProvider);
+      if (!session.isActive ||
+          data['workoutId'] != session.workoutId ||
+          session.nextPendingSet() == null) {
+        await _native.cancel();
+        await _liveActivity.cleanupStaleActivities(null);
+        return;
+      }
+      _workoutId = session.workoutId;
+      _timerId = data['timerId'] as String;
+      final deadline = DateTime.fromMillisecondsSinceEpoch(
+        (data['deadline'] as num).toInt(),
+      );
+      final running = data['phase'] == 'running';
+      state = RestTimerState(
+        autoStart: state.autoStart,
+        totalDurationSeconds: (data['total'] as num).toInt(),
+        remainingSeconds: running ? _computeRemainingSeconds(deadline) : 0,
+        isRunning: running,
+        targetEndTime: running ? deadline : null,
+        exerciseName: data['exerciseName'] as String?,
+        exerciseId: data['exerciseId'] as String?,
+        setNumber: (data['setNumber'] as num?)?.toInt(),
+        totalSets: (data['totalSets'] as num?)?.toInt() ?? 0,
+        isWarmup: data['isWarmup'] as bool? ?? false,
+      );
+      await _liveActivity.cleanupStaleActivities(
+        running ? session.workoutId : null,
+      );
+      if (running && _refreshTarget()) {
+        _startLiveActivity();
+        _resyncDart();
+        _startTicker();
+      }
+    });
+  }
+
   double _targetWeightKg = 0;
   int _targetReps = 0;
   String _plateBreakdown = '';
@@ -36,6 +133,14 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
     ref.onDispose(() {
       _ticker?.cancel();
       _lifecycleListener?.dispose();
+    });
+
+    _native.onChanged = _syncNative;
+    Future.microtask(() {
+      if (ref.mounted && _timerId == null) _syncNative();
+    });
+    ref.listen(userProfileProvider, (_, __) {
+      if (state.isRunning) _scheduleNative();
     });
 
     // Wire up interactive action buttons from Android notification (+30s, Skip Rest)
@@ -70,6 +175,7 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
     String? sourceExerciseId,
   }) {
     _ticker?.cancel();
+    _timerId = DateTime.now().microsecondsSinceEpoch.toString();
     if (durationSeconds <= 0) {
       skip();
       return;
@@ -115,6 +221,11 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
 
   void _startLiveActivity() {
     if (state.setNumber == null) return;
+    _liveActivity.configureIdentity(
+      _workoutId ?? _timerId,
+      state.targetEndTime,
+      ref.read(userProfileProvider)?.weightUnit ?? 'kg',
+    );
     _liveActivity.startLiveActivity(
       workoutTitle: "TODAY'S WORKOUT",
       exerciseName: state.exerciseName ?? 'Exercise',
@@ -130,6 +241,13 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
   }
 
   void _showCountdown() {
+    _scheduleNative();
+    _liveActivity.configureIdentity(
+      _workoutId ?? _timerId,
+      state.targetEndTime,
+      ref.read(userProfileProvider)?.weightUnit ?? 'kg',
+    );
+    if (_native.supported) return;
     _notifications.showRestTimerNotification(
       exerciseName: state.exerciseName,
       setNumber: state.setNumber,
@@ -141,6 +259,10 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
   }
 
   // Revalidate after edits/removals and before delivering a completion alert.
+  void refreshForSession() {
+    if (state.isRunning) _refreshTarget();
+  }
+
   bool _refreshTarget() {
     if (_workoutId == null) return true;
     final session = ref.read(activeSessionProvider);
@@ -222,23 +344,45 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
     );
 
     _notifications.cancelRestNotification();
-    _notifications.showRestCompletedNotification(
-      exerciseName: state.exerciseName,
-      nextSetNumber: state.setNumber,
-      isWarmup: state.isWarmup,
-    );
+    if (!_native.supported) {
+      _notifications.showRestCompletedNotification(
+        exerciseName: state.exerciseName,
+        nextSetNumber: state.setNumber,
+        isWarmup: state.isWarmup,
+      );
+    }
 
     _liveActivity.stopLiveActivity();
 
-    try {
-      HapticFeedback.heavyImpact();
-      SystemSound.play(SystemSoundType.alert);
-    } catch (_) {}
+    final id = _timerId;
+    if (_native.supported && id != null) {
+      _nativeTask(() async {
+        final claimed = await _native.complete(
+          id,
+          background: _notifications.isAppInBackground,
+        );
+        if (claimed && !_notifications.isAppInBackground) {
+          await playWorkoutCue(ref, WorkoutCue.complete);
+        } else if (!claimed) {
+          _syncNative();
+        }
+      });
+    } else {
+      playWorkoutCue(ref, WorkoutCue.complete);
+    }
   }
 
   /// Synchronizes remaining seconds with the actual real-world wall clock.
   /// Called immediately when the application resumes from background.
   void resyncWithWallClock() {
+    if (_native.supported) {
+      _syncNative();
+      return;
+    }
+    _resyncDart();
+  }
+
+  void _resyncDart() {
     if (!_refreshTarget()) return;
     if (state.isRunning && state.targetEndTime != null) {
       final remaining = _computeRemainingSeconds(state.targetEndTime!);
@@ -246,13 +390,15 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
         _completeRest();
       } else {
         state = state.copyWith(remainingSeconds: remaining);
-        _showCountdown();
+        if (!_native.supported) _showCountdown();
       }
     }
   }
 
   /// Pauses the current countdown and freezes remaining seconds.
   void pause() {
+    final id = _timerId;
+    _nativeTask(() => _native.cancel(id));
     _ticker?.cancel();
     int currentRemaining = state.remainingSeconds;
     if (state.targetEndTime != null) {
@@ -291,7 +437,7 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
       final newTarget = state.targetEndTime!.add(Duration(seconds: seconds));
       final remaining = _computeRemainingSeconds(newTarget);
       if (remaining <= 0) {
-        _completeRest();
+        skip();
         return;
       }
       final newTotal = state.totalDurationSeconds < remaining
@@ -336,6 +482,9 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
 
   /// Skips the rest timer immediately (dismisses / finishes).
   void skip() {
+    final id = _timerId;
+    _timerId = null;
+    _nativeTask(() => _native.cancel(id));
     _ticker?.cancel();
     state = state.copyWith(
       remainingSeconds: 0,
@@ -345,6 +494,18 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
     _notifications.cancelRestNotification();
     _notifications.cancelRestCompletedNotification();
     _liveActivity.stopLiveActivity();
+  }
+
+  Future<void> flushNativeChanges() async {
+    Future<void> previous;
+    do {
+      previous = _nativeWrites;
+      await previous;
+    } while (previous != _nativeWrites);
+  }
+
+  void retryAlerts() {
+    if (state.isRunning) _scheduleNative();
   }
 
   /// Toggles whether completing a set automatically begins the rest timer.
