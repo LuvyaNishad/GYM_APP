@@ -16,16 +16,16 @@ abstract class HealthSnapshot with _$HealthSnapshot {
 
   @JsonSerializable(fieldRename: FieldRename.snake)
   const factory HealthSnapshot({
-    /// When this snapshot was recorded / last synced.
+    /// When the displayed snapshot was assembled. Imported sample times are tracked separately.
     required DateTime recordedAt,
 
     /// Total step count for the current day.
     int? steps,
 
-    /// Most recent resting/active heart rate in BPM.
+    /// Latest readable heart-rate sample today in BPM; not a resting baseline.
     int? heartRateBpm,
 
-    /// Hours of sleep for the most recent sleep session.
+    /// Manual sleep or merged asleep intervals from yesterday noon to today noon (or now).
     double? sleepHours,
 
     /// Active (exercise) calories burned today.

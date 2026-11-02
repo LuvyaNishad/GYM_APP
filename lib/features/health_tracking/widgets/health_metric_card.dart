@@ -14,6 +14,7 @@ class HealthMetricCard extends StatelessWidget {
     required this.unit,
     required this.icon,
     required this.accentColor,
+    this.caption,
   });
 
   final String label;
@@ -24,6 +25,7 @@ class HealthMetricCard extends StatelessWidget {
   final String unit;
   final IconData icon;
   final Color accentColor;
+  final String? caption;
 
   @override
   Widget build(BuildContext context) {
@@ -44,17 +46,22 @@ class HealthMetricCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      fontFamily: AppTypography.fontMono,
-                      fontSize: 11,
-                      color: AppColors.textMuted,
-                      letterSpacing: 1.5,
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: const TextStyle(
+                        fontFamily: AppTypography.fontMono,
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                        letterSpacing: 1.5,
+                      ),
                     ),
                   ),
-                  Icon(icon,
-                      size: 14, color: accentColor.withValues(alpha: 0.7)),
+                  Icon(
+                    icon,
+                    size: 14,
+                    color: accentColor.withValues(alpha: 0.7),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -73,9 +80,19 @@ class HealthMetricCard extends StatelessWidget {
                 style: const TextStyle(
                   fontFamily: AppTypography.fontMono,
                   fontSize: 11,
-                  color: AppColors.textMuted,
+                  color: AppColors.textSecondary,
                 ),
               ),
+              if (caption != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  caption!,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ],
           ),
         ),

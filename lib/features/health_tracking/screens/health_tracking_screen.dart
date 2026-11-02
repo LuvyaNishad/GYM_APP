@@ -20,6 +20,9 @@ import '../providers/body_measurements_provider.dart';
 import '../../../shared/widgets/persistence_feedback.dart';
 import '../providers/health_tracking_provider.dart';
 import '../widgets/health_metric_card.dart';
+import '../widgets/health_connection_card.dart';
+import '../../dashboard/models/daily_telemetry_model.dart';
+import '../models/health_import.dart';
 import '../widgets/log_measurement_sheet.dart';
 
 class HealthTrackingScreen extends ConsumerStatefulWidget {
@@ -35,7 +38,9 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final snapshotAsync = ref.watch(healthTrackingProvider);
+    final snapshot = ref.watch(healthTrackingProvider);
+    final metrics = ref.watch(dailyTelemetryProvider);
+    final imported = ref.watch(currentHealthImportProvider);
     final recomposition = ref.watch(recompositionSummaryProvider);
     final measurements = ref.watch(bodyMeasurementsProvider);
 
@@ -48,7 +53,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
           style: AppTypography.headlineSmall.copyWith(
             fontSize: 16.0,
             fontWeight: FontWeight.w700,
-            letterSpacing: 1.0,
+            letterSpacing: 1.5,
             color: AppColors.pureWhite,
           ),
         ),
@@ -61,10 +66,10 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded, color: Color(0xFF00E5FF)),
-            tooltip: 'Sync wearable data',
+            tooltip: 'Refresh health data',
             onPressed: () {
               HapticFeedback.lightImpact();
-              ref.read(healthTrackingProvider.notifier).refresh();
+              ref.read(healthImportProvider.notifier).refresh();
             },
           ),
         ],
@@ -156,87 +161,87 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
           // ── Tab Content ──────────────────────────────────────────────────
           Expanded(
             child: _selectedTabIndex == 0
-                ? snapshotAsync.when(
-                    data: (snapshot) => ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                      physics: const BouncingScrollPhysics(),
-                      children: [
-                        _SectionHeader(
-                          label: 'TODAY',
-                          timestamp: snapshot.recordedAt,
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: HealthMetricCard(
-                                label: 'STEPS',
-                                value: snapshot.steps != null
-                                    ? '${snapshot.steps}'
-                                    : '--',
-                                unit: 'steps',
-                                icon: Icons.directions_walk_outlined,
-                                accentColor: const Color(0xFF00E5FF),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: HealthMetricCard(
-                                label: 'HEART RATE',
-                                value: snapshot.heartRateBpm != null
-                                    ? '${snapshot.heartRateBpm}'
-                                    : '--',
-                                unit: 'bpm',
-                                icon: Icons.favorite_border_outlined,
-                                accentColor: AppColors.warning,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: HealthMetricCard(
-                                label: 'SLEEP',
-                                value: snapshot.sleepHours != null
-                                    ? snapshot.sleepHours!.toStringAsFixed(1)
-                                    : '--',
-                                unit: 'hrs',
-                                icon: Icons.bedtime_outlined,
-                                accentColor: const Color(0xFF7B61FF),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: HealthMetricCard(
-                                label: 'CALORIES',
-                                value: snapshot.activeCalories != null
-                                    ? '${snapshot.activeCalories}'
-                                    : '--',
-                                unit: 'kcal',
-                                icon: Icons.local_fire_department_outlined,
-                                accentColor: const Color(0xFFFFB300),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    loading: () => const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF00E5FF),
+                ? ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                    physics: const BouncingScrollPhysics(),
+                    children: [
+                      const HealthConnectionCard(),
+                      const SizedBox(height: 16),
+                      _SectionHeader(
+                        label: 'DAILY TOTALS',
+                        timestamp: imported?.refreshedAt,
                       ),
-                    ),
-                    error: (err, _) => Center(
-                      child: Text(
-                        'Error syncing health data: $err',
-                        style: const TextStyle(
-                          color: AppColors.danger,
-                          fontSize: 12.0,
-                        ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: HealthMetricCard(
+                              label: 'STEPS',
+                              caption: metrics.stepsSource ?? 'Phone tracker',
+                              value: snapshot.steps != null
+                                  ? '${snapshot.steps}'
+                                  : '--',
+                              unit: 'steps',
+                              icon: Icons.directions_walk_outlined,
+                              accentColor: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: HealthMetricCard(
+                              label: 'HEART RATE',
+                              caption:
+                                  imported
+                                          ?.reading(HealthMetric.heartRate)
+                                          .value !=
+                                      null
+                                  ? imported!
+                                        .reading(HealthMetric.heartRate)
+                                        .platform
+                                  : 'No readable sample today',
+                              value: snapshot.heartRateBpm != null
+                                  ? '${snapshot.heartRateBpm}'
+                                  : '--',
+                              unit: 'bpm',
+                              icon: Icons.favorite_border_outlined,
+                              accentColor: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: HealthMetricCard(
+                              label: 'SLEEP',
+                              caption: metrics.sleepSource ?? 'No sleep logged',
+                              value: snapshot.sleepHours != null
+                                  ? snapshot.sleepHours!.toStringAsFixed(1)
+                                  : '--',
+                              unit: 'hrs',
+                              icon: Icons.bedtime_outlined,
+                              accentColor: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: HealthMetricCard(
+                              label: 'CALORIES',
+                              caption:
+                                  metrics.caloriesSource ??
+                                  'No active burn logged',
+                              value: snapshot.activeCalories != null
+                                  ? '${snapshot.activeCalories}'
+                                  : '--',
+                              unit: 'active kcal',
+                              icon: Icons.local_fire_department_outlined,
+                              accentColor: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   )
                 : _buildRecompositionView(context, recomposition, measurements),
           ),
@@ -700,8 +705,9 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Wrap(
+      spacing: 16,
+      runSpacing: 8,
       children: [
         Text(
           label,
@@ -714,12 +720,12 @@ class _SectionHeader extends StatelessWidget {
         ),
         if (timestamp != null)
           Text(
-            'SYNCED ${_formatTime(timestamp!)}',
+            'CHECKED ${_formatTime(timestamp!)}',
             style: const TextStyle(
               fontFamily: AppTypography.fontMono,
               fontSize: 11.0,
               color: AppColors.textSecondary,
-              letterSpacing: 1.0,
+              letterSpacing: 1.5,
             ),
           ),
       ],
