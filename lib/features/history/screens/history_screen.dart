@@ -18,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_shell.dart';
+import '../../../shared/widgets/tab_reveal.dart';
 import '../providers/history_provider.dart';
 import '../widgets/history_segment_bar.dart';
 import '../widgets/leon_monthly_calendar.dart';
@@ -60,12 +61,7 @@ class HistoryScreen extends ConsumerWidget {
 
           // ── 2. Content Area Below Calendar ────────────────────────────────
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(
-              16,
-              14,
-              16,
-              AppShell.bottomPadding(context, extra: 24),
-            ),
+            padding: EdgeInsets.fromLTRB(16, 14, 16, 0),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,22 +148,30 @@ class HistoryScreen extends ConsumerWidget {
                   const SizedBox(height: 14),
 
                   // ── Active Segment Content ───────────────────────────────
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 220),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.easeInCubic,
-                    child: KeyedSubtree(
-                      key: ValueKey<int>(activeSegment),
-                      child: switch (activeSegment) {
-                        0 => const SessionsTabView(),
-                        1 => const OverloadTabView(),
-                        2 => const MuscleRadarTabView(),
-                        _ => const SessionsTabView(),
-                      },
-                    ),
-                  ),
                 ],
               ),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+              16,
+              0,
+              16,
+              AppShell.bottomPadding(context, extra: 24),
+            ),
+            sliver: TabReveal(
+              index: activeSegment,
+              sliver: true,
+              child: activeSegment == 0
+                  ? const SessionsTabView(sliver: true)
+                  : SliverToBoxAdapter(
+                      child: KeyedSubtree(
+                        key: ValueKey(activeSegment),
+                        child: activeSegment == 1
+                            ? const OverloadTabView()
+                            : const MuscleRadarTabView(),
+                      ),
+                    ),
             ),
           ),
         ],

@@ -13,7 +13,8 @@ import '../providers/history_provider.dart';
 import 'workout_history_card.dart';
 
 class SessionsTabView extends ConsumerStatefulWidget {
-  const SessionsTabView({super.key});
+  const SessionsTabView({this.sliver = false, super.key});
+  final bool sliver;
 
   @override
   ConsumerState<SessionsTabView> createState() => _SessionsTabViewState();
@@ -62,7 +63,7 @@ class _SessionsTabViewState extends ConsumerState<SessionsTabView> {
           );
     }).toList();
 
-    return Column(
+    final header = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (selectedDate != null)
@@ -172,9 +173,35 @@ class _SessionsTabViewState extends ConsumerState<SessionsTabView> {
               ],
             ),
           )
-        else
+        else if (!widget.sliver)
           for (final workout in filteredWorkouts)
             WorkoutHistoryCard(key: ValueKey(workout.id), workout: workout),
+      ],
+    );
+    if (!widget.sliver) return header;
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverToBoxAdapter(child: header),
+        if (filteredWorkouts.isNotEmpty)
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final workout = filteredWorkouts[index];
+                return WorkoutHistoryCard(
+                  key: ValueKey(workout.id),
+                  workout: workout,
+                );
+              },
+              childCount: filteredWorkouts.length,
+              findChildIndexCallback: (key) {
+                if (key is! ValueKey<String>) return null;
+                final index = filteredWorkouts.indexWhere(
+                  (w) => w.id == key.value,
+                );
+                return index < 0 ? null : index;
+              },
+            ),
+          ),
       ],
     );
   }

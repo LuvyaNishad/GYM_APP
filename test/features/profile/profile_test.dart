@@ -1,3 +1,4 @@
+import 'package:leon/features/profile/services/training_report_data.dart';
 import 'package:leon/services/hive_service.dart';
 import '../../helpers/memory_hive_service.dart';
 import 'dart:convert';
@@ -109,16 +110,12 @@ void main() {
 
   group('PDF Athletic Report Generation Tests', () {
     test('Generates valid non-empty PDF document bytes', () async {
-      final profile = AccountProfile(
-        displayName: 'Leon Kennedy',
-        email: 'leon@fitness.os',
-        memberSince: DateTime(2026, 1, 1),
-        heightCm: 180.0,
-        currentWeightKg: 82.5,
-        targetWeightKg: 80.0,
+      final report = TrainingReportData(
+        month: DateTime(2026, 1),
+        history: [],
+        measurements: [],
       );
-
-      final bytes = await PdfReportService.generateMonthlyReportPdf(profile);
+      final bytes = await PdfReportService.generateMonthlyReportPdf(report);
       expect(bytes, isNotEmpty);
       // PDF documents start with '%PDF-'
       final header = utf8.decode(bytes.sublist(0, 5), allowMalformed: true);

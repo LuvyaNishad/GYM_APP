@@ -344,6 +344,12 @@ class AccountProfileNotifier extends Notifier<AccountProfile> {
       _change((current) => current.copyWith(primaryGoal: goal));
   Future<void> toggleCycleTracking(bool value) =>
       _change((current) => current.copyWith(cycleTrackingEnabled: value));
+  Future<void> setAlertMode(bool sound, bool vibrate) => _change(
+    (current) => current.copyWith(
+      audioCuesEnabled: sound,
+      hapticFeedbackEnabled: vibrate,
+    ),
+  );
   Future<void> toggleAudioCues(bool value) =>
       _change((current) => current.copyWith(audioCuesEnabled: value));
   Future<void> toggleHapticFeedback(bool value) =>

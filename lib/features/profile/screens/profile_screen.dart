@@ -1,4 +1,9 @@
+import '../../workout_session/services/workout_cue_service.dart';
+import '../../workout_session/services/native_rest_service.dart';
+import '../../workout_session/services/notification_service.dart';
 import '../../workout_builder/providers/splits_provider.dart';
+import '../../dashboard/widgets/training_pause_sheet.dart';
+import '../../dashboard/providers/workout_rotation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +21,8 @@ import '../models/account_profile_model.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/edit_biometrics_dialog.dart';
 import '../widgets/edit_profile_dialog.dart';
+import '../widgets/export_data_dialog.dart';
+import '../widgets/report_preview_dialog.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -60,9 +67,60 @@ class ProfileScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     _BiometricsCard(profile: profile),
                     const SizedBox(height: 16),
+                    _GlassSectionContainer(
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: const Icon(Icons.monitor_heart_outlined),
+                            title: const Text('Health & Measurements'),
+                            onTap: () =>
+                                context.push(AppConstants.routeHealthTracking),
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.bedtime_outlined),
+                            title: const Text('Recovery check-in'),
+                            onTap: () =>
+                                context.push(AppConstants.routeRecovery),
+                          ),
+                          ListTile(
+                            leading: const Icon(
+                              Icons.pause_circle_outline_rounded,
+                            ),
+                            title: Text(
+                              ref.watch(
+                                    workoutRotationProvider.select(
+                                      (state) => state.isTrainingPaused,
+                                    ),
+                                  )
+                                  ? 'Manage training pause'
+                                  : 'Pause training',
+                            ),
+                            onTap: () => showTrainingPauseSheet(context),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     _TrainingPreferencesCard(profile: profile),
                     const SizedBox(height: 16),
                     _AppSettingsCard(profile: profile),
+                    const SizedBox(height: 16),
+                    _GlassSectionContainer(
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: const Icon(Icons.save_alt),
+                            title: const Text('Backup & export'),
+                            onTap: () => showExportDataSheet(context),
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.picture_as_pdf_outlined),
+                            title: const Text('Monthly training report'),
+                            onTap: () => showReportPreviewSheet(context),
+                          ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     _AccountActionsCard(),
                   ]),
@@ -378,8 +436,8 @@ class _AppSettingsCard extends ConsumerWidget {
           _PreferenceTile(
             title: 'Units of Measurement',
             subtitle: profile.weightUnit == 'kg'
-                ? 'Weight: kg ? Height: ${profile.heightUnit == 'cm' ? 'cm' : 'ft/in'}'
-                : 'Weight: lbs ? Height: ${profile.heightUnit == 'cm' ? 'cm' : 'ft/in'}',
+                ? 'Weight: kg · Height: ${profile.heightUnit == 'cm' ? 'cm' : 'ft/in'}'
+                : 'Weight: lbs · Height: ${profile.heightUnit == 'cm' ? 'cm' : 'ft/in'}',
             trailing: TextButton(
               onPressed: () async {
                 final success = await persistWithFeedback(
@@ -394,29 +452,39 @@ class _AppSettingsCard extends ConsumerWidget {
             ),
           ),
           const Divider(height: 24),
-          _PreferenceTile(
-            title: 'Audio Cues & Rest Beeps',
-            subtitle: 'Play a chime when your rest timer ends',
-            trailing: Switch(
-              value: profile.audioCuesEnabled,
-              onChanged: (value) => persistWithFeedback(
-                context,
-                () => notifier.toggleAudioCues(value),
+          const Text('Workout alerts', style: TextStyle(fontSize: 14)),
+          DropdownButton<WorkoutAlertMode>(
+            isExpanded: true,
+            value: ref.watch(workoutAlertModeProvider),
+            items: const [
+              DropdownMenuItem(
+                value: WorkoutAlertMode.soundAndVibrate,
+                child: Text('Sound + Vibrate'),
               ),
-            ),
-          ),
-          const Divider(height: 24),
-          _PreferenceTile(
-            title: 'Haptic Vibrations',
-            subtitle: 'Vibrate when sets and exercises are checked',
-            trailing: Switch(
-              value: profile.hapticFeedbackEnabled,
-              onChanged: (value) => persistWithFeedback(
-                context,
-                () => notifier.toggleHapticFeedback(value),
+              DropdownMenuItem(
+                value: WorkoutAlertMode.vibrateOnly,
+                child: Text('Vibrate Only'),
               ),
-            ),
+              DropdownMenuItem(
+                value: WorkoutAlertMode.silent,
+                child: Text('Silent'),
+              ),
+            ],
+            onChanged: (mode) {
+              if (mode == null) return;
+              persistWithFeedback(
+                context,
+                () => notifier.setAlertMode(
+                  mode == WorkoutAlertMode.soundAndVibrate,
+                  mode != WorkoutAlertMode.silent,
+                ),
+              );
+            },
           ),
+          const Text(
+            'Applies to sets, countdowns, tempo cues and rest alerts. System volume, notification permissions and Do Not Disturb still apply.',
+          ),
+          const _AlertPermissions(),
         ],
       ),
     );
@@ -729,4 +797,59 @@ class _PreferenceTile extends StatelessWidget {
       ],
     );
   }
+}
+
+class _AlertPermissions extends ConsumerStatefulWidget {
+  const _AlertPermissions();
+  @override
+  ConsumerState<_AlertPermissions> createState() => _AlertPermissionsState();
+}
+
+class _AlertPermissionsState extends ConsumerState<_AlertPermissions> {
+  String? message;
+  Future<void> request(bool exact) async {
+    try {
+      if (exact) {
+        await ref.read(nativeRestServiceProvider).requestExactAlarms();
+        if (mounted) {
+          setState(
+            () => message =
+                'Precise alarms use your system permission. Without it Android may delay rest alerts.',
+          );
+        }
+      } else {
+        final allowed = await ref
+            .read(workoutNotificationServiceProvider)
+            .requestPermissions();
+        if (mounted) {
+          setState(
+            () => message = allowed
+                ? 'Workout notifications allowed.'
+                : 'Notifications are unavailable or denied. Foreground cues still follow your preferences.',
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => message = 'Could not change alert permission: $e');
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      TextButton(
+        onPressed: () => request(false),
+        child: const Text('Enable workout notifications'),
+      ),
+      if (Theme.of(context).platform == TargetPlatform.android)
+        TextButton(
+          onPressed: () => request(true),
+          child: const Text('Allow precise rest alarms'),
+        ),
+      if (message != null) Text(message!),
+    ],
+  );
 }

@@ -4,10 +4,13 @@ import '../../dashboard/providers/habit_log_provider.dart';
 import '../../history/providers/history_provider.dart';
 import '../../workout_builder/models/training_schedule.dart';
 import '../models/recovery_factor.dart';
+import '../../health_tracking/providers/health_tracking_provider.dart';
+import '../../health_tracking/models/health_import.dart';
 
 class RecoverySummary {
   const RecoverySummary({
     required this.score,
+    this.sleepSource,
     required this.habits,
     required this.recentVolumeKg,
     required this.recentSessions,
@@ -16,6 +19,7 @@ class RecoverySummary {
     required this.missingInputs,
   });
   final RecoveryScore? score;
+  final String? sleepSource;
   final DayHabits habits;
   final double recentVolumeKg;
   final int recentSessions;
@@ -27,7 +31,18 @@ class RecoverySummary {
 final recoverySummaryProvider = Provider<RecoverySummary>((ref) {
   final today = ref.watch(localDateProvider);
   final habitsLog = ref.watch(habitLogProvider);
-  final habits = habitsLog.day(today);
+  final manual = habitsLog.day(today);
+  final sleep = ref
+      .watch(currentHealthImportProvider)
+      ?.reading(HealthMetric.sleep);
+  final habits = !manual.sleepLogged && sleep?.value != null
+      ? manual.copyWith(sleepHours: sleep!.value!.toDouble(), sleepLogged: true)
+      : manual;
+  final sleepSource = manual.sleepLogged
+      ? 'Manual log'
+      : sleep?.value != null
+      ? sleep!.platform
+      : null;
   final workouts = ref
       .watch(historyWorkoutsProvider)
       .where((w) => !scheduleDate(w.date).isAfter(today))
@@ -75,7 +90,7 @@ final recoverySummaryProvider = Provider<RecoverySummary>((ref) {
       ManualRecoveryFactor(
         'SLEEP',
         -((habitsLog.sleepGoalHours - habits.sleepHours).clamp(0.0, 8.0)) * 5,
-        '${habits.sleepHours.toStringAsFixed(1)} h logged; your target is ${habitsLog.sleepGoalHours.toStringAsFixed(1)} h.',
+        '${habits.sleepHours.toStringAsFixed(1)} h from $sleepSource; your target is ${habitsLog.sleepGoalHours.toStringAsFixed(1)} h.',
       ),
     if (habits.water.isNotEmpty)
       ManualRecoveryFactor(
@@ -91,6 +106,7 @@ final recoverySummaryProvider = Provider<RecoverySummary>((ref) {
       ),
   ];
   return RecoverySummary(
+    sleepSource: sleepSource,
     score: missing.isEmpty ? RecoveryScore(factors: factors) : null,
     habits: habits,
     recentVolumeKg: volume,

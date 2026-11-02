@@ -1,5 +1,7 @@
 library;
 
+import 'workout_recap_sheet.dart';
+
 import '../../../state/app_providers.dart';
 
 import '../../../core/utils/measurement_units.dart';
@@ -32,13 +34,17 @@ class WorkoutHistoryCard extends ConsumerStatefulWidget {
   ConsumerState<WorkoutHistoryCard> createState() => _WorkoutHistoryCardState();
 }
 
-class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
+class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard>
+    with AutomaticKeepAliveClientMixin {
   late bool _isExpanded;
 
   @override
+  bool get wantKeepAlive => _isExpanded;
+
+  @override
   void initState() {
-    super.initState();
     _isExpanded = widget.initiallyExpanded;
+    super.initState();
   }
 
   String _formatDate(DateTime dt) {
@@ -254,6 +260,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final w = widget.workout;
     final prCount = w.exercises.fold<int>(
       0,
@@ -281,6 +288,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
           onTap: () {
             HapticFeedback.selectionClick();
             setState(() => _isExpanded = !_isExpanded);
+            updateKeepAlive();
           },
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -520,6 +528,11 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard> {
                       ),
                       const SizedBox(width: 8),
 
+                      IconButton(
+                        onPressed: () => showWorkoutRecapSheet(context, w),
+                        tooltip: 'Share workout image',
+                        icon: const Icon(Icons.image_outlined),
+                      ),
                       // 2. SHARE Summary (Secondary)
                       OutlinedButton.icon(
                         onPressed: () => _shareWorkoutSummary(context),

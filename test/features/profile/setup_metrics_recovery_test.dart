@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
@@ -621,6 +622,107 @@ void main() {
   );
 
   testWidgets(
+    'Recovery overview adapts real missing and complete inputs to large text and explains the score on demand',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.runAsync(() async {
+        for (final family in ['Outfit', 'JetBrainsMono']) {
+          final loader = FontLoader(family);
+          for (final weight in ['Regular', 'Medium', 'Bold']) {
+            loader.addFont(rootBundle.load('assets/fonts/$family-$weight.ttf'));
+          }
+          await loader.load();
+        }
+      });
+      for (final mode in ['empty', 'partial', 'complete']) {
+        final hive = MemoryHiveService();
+        final container = containerFor(hive);
+        if (mode != 'empty') {
+          await container
+              .read(habitLogProvider.notifier)
+              .saveRecoveryCheckIn(
+                date: today,
+                hours: 8,
+                waterToAdd: 2500,
+                soreness: mode == 'complete' ? 0 : null,
+              );
+          await WorkoutService(hive).saveWorkout(
+            workout('last', today.subtract(const Duration(days: 1))),
+          );
+          container.read(historyWorkoutsProvider.notifier).refresh();
+        }
+        for (final size in [const Size(390, 844), const Size(720, 1024)]) {
+          tester.view.physicalSize = size;
+          for (final scale in [1.0, 1.5, 2.0]) {
+            await tester.pumpWidget(
+              UncontrolledProviderScope(
+                container: container,
+                child: MaterialApp(
+                  theme: AppTheme.dark,
+                  builder: (context, child) => MediaQuery(
+                    data: MediaQuery.of(context).copyWith(
+                      textScaler: TextScaler.linear(scale),
+                      highContrast: scale == 2,
+                    ),
+                    child: child!,
+                  ),
+                  home: const RecoveryScreen(),
+                ),
+              ),
+            );
+            await tester.pump();
+            expect(
+              tester.takeException(),
+              isNull,
+              reason: '$mode at $size, $scale text',
+            );
+            final action = find.byKey(
+              const ValueKey('recovery-check-in-action'),
+            );
+            await tester.ensureVisible(action);
+            await tester.pump();
+            expect(tester.getSize(action).height, greaterThanOrEqualTo(44));
+            expect(find.text('More input needed'), findsNothing);
+            expect(find.text('THE SCORE'), findsNothing);
+            for (final title in ['Sleep', 'Hydration', 'Soreness']) {
+              final value = find.byKey(ValueKey('recovery-input-value-$title'));
+              await tester.ensureVisible(value);
+              await tester.pump();
+              expect(
+                tester
+                    .getRect(find.text(title))
+                    .overlaps(tester.getRect(value)),
+                isFalse,
+                reason: '$title stays separate from its value at $scale',
+              );
+            }
+            expect(
+              tester.takeException(),
+              isNull,
+              reason: '$mode input rows at $scale',
+            );
+            await tester.tap(find.byTooltip('How recovery is estimated'));
+            await tester.pumpAndSettle();
+            expect(find.text('THE SCORE'), findsOneWidget);
+            expect(find.text('YOUR INPUTS'), findsOneWidget);
+            expect(
+              tester.takeException(),
+              isNull,
+              reason: 'Explanation at $scale',
+            );
+            await tester.tap(find.byTooltip('Close'));
+            await tester.pumpAndSettle();
+          }
+        }
+        await tester.pumpWidget(const SizedBox.shrink());
+        container.dispose();
+      }
+    },
+  );
+
+  testWidgets(
     'Recovery input retains failed save and fits phone keyboard at large text',
     (tester) async {
       tester.view.physicalSize = const Size(390, 844);
@@ -649,7 +751,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.text('LOG RECOVERY CHECK-IN'));
+      await tester.tap(find.byKey(const ValueKey('recovery-check-in-action')));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).at(0), '8');
       await tester.enterText(find.byType(TextField).at(1), '1000');
