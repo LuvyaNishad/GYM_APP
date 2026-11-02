@@ -10,16 +10,24 @@ class CaloriesBentoCard extends ConsumerWidget {
   final VoidCallback? onTap;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final calories =
-        telemetry?.calories ??
-        ref.watch(dailyTelemetryProvider.select((t) => t.calories));
+    final metrics = telemetry != null
+        ? (
+            telemetry!.calories,
+            telemetry!.caloriesRecorded,
+            telemetry!.caloriesSource,
+          )
+        : ref.watch(
+            dailyTelemetryProvider.select(
+              (t) => (t.calories, t.caloriesRecorded, t.caloriesSource),
+            ),
+          );
     return ActivityMetricCard(
       title: 'Calories',
       icon: Icons.local_fire_department_outlined,
-      value: calories == 0 ? '—' : '$calories kcal',
-      caption: calories == 0
-          ? 'No active burn logged'
-          : 'Active burn · manual log',
+      value: metrics.$2 ? '${metrics.$1} kcal' : '—',
+      caption: metrics.$2
+          ? 'Active burn · ${metrics.$3 ?? 'Manual log'}'
+          : 'No active burn logged',
       onTap:
           onTap ??
           () => showCaloriesDetailSheet(

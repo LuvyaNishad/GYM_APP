@@ -32,6 +32,7 @@ class DayHabits {
     this.wakeTime,
     this.feeling,
     this.calories = 0,
+    this.caloriesLogged = false,
   });
   final List<WaterEntry> water;
   final double sleepHours;
@@ -41,6 +42,7 @@ class DayHabits {
   final DateTime? wakeTime;
   final String? feeling;
   final int calories;
+  final bool caloriesLogged;
   int get waterMl => water.fold(0, (sum, e) => sum + e.ml);
   DayHabits copyWith({
     List<WaterEntry>? water,
@@ -52,6 +54,7 @@ class DayHabits {
     DateTime? wakeTime,
     String? feeling,
     int? calories,
+    bool? caloriesLogged,
     bool clearTimes = false,
     bool clearFeeling = false,
   }) => DayHabits(
@@ -63,6 +66,7 @@ class DayHabits {
     wakeTime: clearTimes ? null : wakeTime ?? this.wakeTime,
     feeling: clearFeeling ? null : feeling ?? this.feeling,
     calories: calories ?? this.calories,
+    caloriesLogged: caloriesLogged ?? this.caloriesLogged,
   );
   Map<String, dynamic> toJson() => {
     'water': water.map((e) => e.toJson()).toList(),
@@ -73,6 +77,7 @@ class DayHabits {
     'wakeTime': wakeTime?.toIso8601String(),
     'feeling': feeling,
     'calories': calories,
+    'caloriesLogged': caloriesLogged,
   };
   factory DayHabits.fromJson(Map<String, dynamic> json) => DayHabits(
     water: (json['water'] as List? ?? [])
@@ -86,6 +91,9 @@ class DayHabits {
     wakeTime: DateTime.tryParse(json['wakeTime'] as String? ?? ''),
     feeling: json['feeling'] as String?,
     calories: (json['calories'] as num?)?.toInt() ?? 0,
+    caloriesLogged:
+        json['caloriesLogged'] as bool? ??
+        ((json['calories'] as num?) ?? 0) > 0,
   );
 }
 
@@ -209,7 +217,10 @@ class HabitLogNotifier extends Notifier<HabitLog> {
 
   Future<void> addCalories(int calories) => _day(
     DateTime.now(),
-    (day) => day.copyWith(calories: (day.calories + calories).clamp(0, 50000)),
+    (day) => day.copyWith(
+      calories: (day.calories + calories).clamp(0, 50000),
+      caloriesLogged: true,
+    ),
   );
 
   Future<void> saveRecoveryCheckIn({

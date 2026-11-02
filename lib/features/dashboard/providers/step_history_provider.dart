@@ -95,7 +95,11 @@ final stepHistoryProvider = Provider.autoDispose
       ref.onDispose(timer.cancel);
       final totals = ref.watch(
         dailyTelemetryProvider.select(
-          (data) => (steps: data.steps, history: data.historicalDays),
+          (data) => (
+            steps: data.steps,
+            history: data.historicalDays,
+            imported: data.importedSteps,
+          ),
         ),
       );
       final status = ref.watch(stepTrackingStatusProvider);
@@ -107,9 +111,10 @@ final stepHistoryProvider = Provider.autoDispose
         ),
       );
       final unavailable =
-          status == StepTrackingStatus.permissionDenied ||
-          status == StepTrackingStatus.sensorUnavailable ||
-          (status == StepTrackingStatus.syncFailed && !hasSavedToday);
+          !totals.imported &&
+          (status == StepTrackingStatus.permissionDenied ||
+              status == StepTrackingStatus.sensorUnavailable ||
+              (status == StepTrackingStatus.syncFailed && !hasSavedToday));
       return StepHistory.fromTotals(
         steps: totals.steps,
         history: totals.history,

@@ -6,13 +6,12 @@ import '../../../shared/widgets/sync_status_indicator.dart';
 
 enum DayStatus { workedOut, missed, rest, future }
 
-/// Unified Tactical Week Header for the LEON Dashboard.
+/// Compact week header for the LEON Dashboard.
 ///
 /// Features:
 /// - Clean corner-to-corner greeting & branding header.
 /// - Integrated Sync Status and Date Picker actions (account icon removed; accessible via bottom nav pill).
 /// - Permanent, high-contrast 7-day capsule strip with instant date selection.
-/// - Weekly consistency progress indicator (e.g. `THIS WEEK · 3 OF 4 DAYS`).
 /// - Amber highlight for active day selection (Apple HIG 2-accent system).
 /// - Apple HIG compliant typography (>= 11.0 pt floor) and high contrast ratios.
 class RetractableCalendarHeader extends StatefulWidget {
@@ -26,8 +25,6 @@ class RetractableCalendarHeader extends StatefulWidget {
     this.loggedWorkoutDates = const {},
     this.scheduledWorkoutDates = const {},
     this.pausedWorkoutDates = const {},
-    this.completedSessions,
-    this.targetSessions,
   });
 
   final String userName;
@@ -38,8 +35,6 @@ class RetractableCalendarHeader extends StatefulWidget {
   final Set<DateTime> loggedWorkoutDates;
   final Set<DateTime> scheduledWorkoutDates;
   final Set<DateTime> pausedWorkoutDates;
-  final int? completedSessions;
-  final int? targetSessions;
 
   @override
   State<RetractableCalendarHeader> createState() =>
@@ -58,20 +53,6 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
     ).subtract(Duration(days: selected.weekday - 1));
     final local = MaterialLocalizations.of(context);
 
-    // Compute weekly completed sessions if not explicitly supplied
-    int completed = widget.completedSessions ?? 0;
-    if (widget.completedSessions == null) {
-      for (int i = 0; i < 7; i++) {
-        final d = monday.add(Duration(days: i));
-        if (widget.loggedWorkoutDates.any(
-          (logged) => DateUtils.isSameDay(logged, d),
-        )) {
-          completed++;
-        }
-      }
-    }
-    final target = widget.targetSessions ?? 4;
-
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.onyx,
@@ -82,7 +63,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -170,41 +151,6 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
                 ],
               ),
               const SizedBox(height: 12),
-
-              // ── Sub-row: Weekly Consistency Target & Formatted Date ────────
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'THIS WEEK · $completed OF $target DAYS',
-                      maxLines: 2,
-                      style: AppTypography.monoSmall.copyWith(
-                        color: AppColors.platinum,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Flexible(
-                    child: Text(
-                      local.formatMediumDate(selected),
-                      maxLines: 2,
-                      textAlign: TextAlign.end,
-                      style: AppTypography.monoSmall.copyWith(
-                        color: isSelectedToday
-                            ? AppColors.primary
-                            : AppColors.warning,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
 
               // ── 7-Day Capsule Strip (Permanently Visible) ───────────────────
               Row(

@@ -6,6 +6,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/app_sheet.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../providers/calorie_history_provider.dart';
+import '../models/daily_telemetry_model.dart';
 import '../providers/habit_log_provider.dart';
 import '../../../shared/widgets/daily_activity_chart.dart';
 
@@ -89,7 +90,11 @@ class _CaloriesDetailSheetState extends ConsumerState<CaloriesDetailSheet> {
         Text(
           value == null
               ? 'No active calories logged'
-              : 'Active calories · manual log',
+              : 'Active calories · ${today ? ref.watch(dailyTelemetryProvider).caloriesSource ?? 'Manual log' : 'Manual log'}',
+          style: AppTypography.bodySmall,
+        ),
+        Text(
+          'Today includes the selected health source when no manual entry exists. Earlier days show saved manual entries.',
           style: AppTypography.bodySmall,
         ),
         const SizedBox(height: 24),

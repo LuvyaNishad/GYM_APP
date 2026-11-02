@@ -15,19 +15,27 @@ class StepsBentoCard extends ConsumerWidget {
     final updatedAt = ref.watch(
       stepSyncInfoProvider.select((s) => s.updatedAt),
     );
+    final metrics = telemetry != null
+        ? (telemetry!.steps, telemetry!.importedSteps, telemetry!.stepsSource)
+        : ref.watch(
+            dailyTelemetryProvider.select(
+              (t) => (t.steps, t.importedSteps, t.stepsSource),
+            ),
+          );
     final unavailable =
-        status == StepTrackingStatus.permissionDenied ||
-        status == StepTrackingStatus.sensorUnavailable ||
-        (status == StepTrackingStatus.syncFailed &&
-            !DateUtils.isSameDay(updatedAt?.toLocal(), DateTime.now()));
-    final steps =
-        telemetry?.steps ??
-        ref.watch(dailyTelemetryProvider.select((t) => t.steps));
+        !metrics.$2 &&
+        (status == StepTrackingStatus.permissionDenied ||
+            status == StepTrackingStatus.sensorUnavailable ||
+            (status == StepTrackingStatus.syncFailed &&
+                !DateUtils.isSameDay(updatedAt?.toLocal(), DateTime.now())));
+    final steps = metrics.$1;
     return ActivityMetricCard(
       title: 'Steps',
       icon: Icons.directions_walk_rounded,
       value: unavailable ? '—' : '$steps',
-      caption: unavailable
+      caption: metrics.$2
+          ? '${metrics.$3} · today'
+          : unavailable
           ? (status == StepTrackingStatus.permissionDenied
                 ? 'Permission needed'
                 : 'Steps unavailable')

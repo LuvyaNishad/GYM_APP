@@ -8,6 +8,7 @@ import '../../../shared/widgets/app_sheet.dart';
 import '../../../shared/widgets/daily_activity_chart.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../models/daily_telemetry_model.dart';
+import '../../health_tracking/providers/health_tracking_provider.dart';
 import '../providers/habit_log_provider.dart';
 import '../providers/step_history_provider.dart';
 
@@ -30,7 +31,12 @@ class _StepsDetailSheetState extends ConsumerState<StepsDetailSheet> {
   Future<void> _refresh() async {
     setState(() => _refreshing = true);
     try {
-      await ref.read(pedometerServiceProvider).syncWithInbuiltPedometer();
+      if (ref.read(dailyTelemetryProvider).importedSteps) {
+        ref.read(healthImportProvider.notifier).refresh();
+        await ref.read(healthImportProvider.future);
+      } else {
+        await ref.read(pedometerServiceProvider).syncWithInbuiltPedometer();
+      }
     } finally {
       if (mounted) setState(() => _refreshing = false);
     }
@@ -72,7 +78,9 @@ class _StepsDetailSheetState extends ConsumerState<StepsDetailSheet> {
     final today = DateUtils.isSameDay(date, DateTime.now());
     final first = series.start;
     final last = series.dateAt(series.values.length - 1);
-    final denied = status == StepTrackingStatus.permissionDenied;
+    final data = ref.watch(dailyTelemetryProvider);
+    final denied =
+        !data.importedSteps && status == StepTrackingStatus.permissionDenied;
 
     void select(int index) {
       if (selected != index) setState(() => _selection = index);
@@ -299,9 +307,10 @@ class _StepsDetailSheetState extends ConsumerState<StepsDetailSheet> {
                 : 'REFRESH STEPS',
           ),
         ),
-        if (denied ||
-            status == StepTrackingStatus.sensorUnavailable ||
-            status == StepTrackingStatus.syncFailed)
+        if (!data.importedSteps &&
+            (denied ||
+                status == StepTrackingStatus.sensorUnavailable ||
+                status == StepTrackingStatus.syncFailed))
           Padding(
             padding: const EdgeInsets.only(top: 12),
             child: Text(
@@ -327,7 +336,11 @@ class _StepsDetailSheetState extends ConsumerState<StepsDetailSheet> {
             ),
           ),
         Text(
-          '${sync.source ?? 'Phone step tracker'}${sync.updatedAt == null ? '' : ' · Updated ${local.formatTimeOfDay(TimeOfDay.fromDateTime(sync.updatedAt!.toLocal()))}'}',
+          'Today uses the selected source; earlier days show saved phone totals. Sources are never added.',
+          style: AppTypography.bodySmall,
+        ),
+        Text(
+          '${data.importedSteps ? data.stepsSource : sync.source ?? 'Phone step tracker'}${data.importedSteps || sync.updatedAt == null ? '' : ' · Updated ${local.formatTimeOfDay(TimeOfDay.fromDateTime(sync.updatedAt!.toLocal()))}'}',
           textAlign: TextAlign.center,
           style: AppTypography.bodySmall,
         ),

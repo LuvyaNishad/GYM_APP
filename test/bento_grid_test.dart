@@ -17,7 +17,7 @@ import 'package:leon/shared/widgets/glass_card.dart';
 void main() {
   group('Dashboard Bento Grid & Retractable Header', () {
     testWidgets(
-      'RetractableCalendarHeader renders greeting, consistency tracker, and date actions',
+      'RetractableCalendarHeader renders greeting and date actions without a weekly summary row',
       (WidgetTester tester) async {
         DateTime? selectedDate;
         await tester.pumpWidget(
@@ -41,8 +41,8 @@ void main() {
         expect(find.byIcon(Icons.account_circle_outlined), findsNothing);
         expect(find.byIcon(Icons.calendar_month_outlined), findsOneWidget);
 
-        // Verify consistency tracker and week days are permanently rendered
-        expect(find.textContaining('THIS WEEK'), findsOneWidget);
+        // Keep the day picker visible without the weekly summary row.
+        expect(find.textContaining('THIS WEEK'), findsNothing);
         expect(find.text('M'), findsWidgets);
 
         // Tap a day capsule to select date
@@ -248,13 +248,13 @@ void main() {
 
         expect(find.text('Calories'), findsOneWidget);
         expect(find.text('2390 kcal'), findsOneWidget);
-        expect(find.text('Active burn · manual log'), findsOneWidget);
+        expect(find.text('Active burn · Manual log'), findsOneWidget);
         expect(find.text('Water'), findsOneWidget);
         expect(find.text('2750 ml'), findsOneWidget);
         expect(find.text('of 3500 ml today'), findsOneWidget);
         expect(find.text('Sleep'), findsOneWidget);
         expect(find.text('7.5 h'), findsOneWidget);
-        expect(find.textContaining('8.0 h goal'), findsOneWidget);
+        expect(find.text('Manual log · last night'), findsOneWidget);
 
         await tester.tap(find.text('Calories'));
         await tester.pumpAndSettle();

@@ -12,12 +12,17 @@ import '../../../core/constants/app_constants.dart';
 import '../../../services/hive_service.dart';
 import '../../../services/daily_steps_platform.dart';
 import '../providers/habit_log_provider.dart';
+import '../../health_tracking/providers/health_tracking_provider.dart';
+import '../../health_tracking/models/health_import.dart';
 
 /// Daily telemetry data points for the dashboard bento grid.
 
 class DailyTelemetry {
   const DailyTelemetry({
     this.steps = 0,
+    this.stepsSource,
+    this.sleepSource,
+    this.caloriesSource,
     this.stepsGoal = 8000,
     this.distanceKm = 0.0,
     this.calories = 0,
@@ -35,6 +40,10 @@ class DailyTelemetry {
 
   /// Total steps taken today.
   final int steps;
+  final String? stepsSource, sleepSource, caloriesSource;
+  bool get importedSteps => stepsSource != null;
+  bool get sleepRecorded => sleepSource != null || sleepHours > 0;
+  bool get caloriesRecorded => caloriesSource != null || calories > 0;
 
   /// Daily step target.
   final int stepsGoal;
@@ -105,6 +114,9 @@ class DailyTelemetry {
   }) {
     return DailyTelemetry(
       steps: steps ?? this.steps,
+      stepsSource: stepsSource,
+      sleepSource: sleepSource,
+      caloriesSource: caloriesSource,
       stepsGoal: stepsGoal ?? this.stepsGoal,
       distanceKm: distanceKm ?? this.distanceKm,
       calories: calories ?? this.calories,
@@ -130,6 +142,10 @@ class DailyTelemetryNotifier extends Notifier<DailyTelemetry> {
     final now = DateTime.now();
     final habits = ref.watch(habitLogProvider);
     final today = habits.day(now);
+    final imported = ref.watch(currentHealthImportProvider);
+    final importedSteps = imported?.reading(HealthMetric.steps);
+    final importedSleep = imported?.reading(HealthMetric.sleep);
+    final importedCalories = imported?.reading(HealthMetric.activeCalories);
     final rollover = Timer(
       DateTime(now.year, now.month, now.day + 1).difference(now),
       ref.invalidateSelf,
@@ -232,15 +248,35 @@ class DailyTelemetryNotifier extends Notifier<DailyTelemetry> {
       }
     }
 
+    final hasImportedSteps = importedSteps?.state == HealthReadState.data;
+    if (hasImportedSteps) {
+      todaySteps = importedSteps!.value!.round();
+      hourlySteps = [];
+    }
     final distanceKm = double.parse((todaySteps * 0.000708).toStringAsFixed(2));
     final recordKm = double.parse((recordSteps * 0.000708).toStringAsFixed(2));
 
     return DailyTelemetry(
       waterMl: today.waterMl,
       waterGoalMl: habits.waterGoalMl,
-      sleepHours: today.sleepHours,
+      sleepHours: today.sleepLogged
+          ? today.sleepHours
+          : importedSleep?.value?.toDouble() ?? 0,
+      sleepSource: today.sleepLogged
+          ? 'Manual log'
+          : importedSleep?.value != null
+          ? importedSleep!.platform
+          : null,
+      caloriesSource: (today.caloriesLogged || today.calories > 0)
+          ? 'Manual log'
+          : importedCalories?.value != null
+          ? importedCalories!.platform
+          : null,
+      stepsSource: hasImportedSteps ? importedSteps!.platform : null,
       sleepGoalHours: habits.sleepGoalHours,
-      calories: today.calories,
+      calories: (today.caloriesLogged || today.calories > 0)
+          ? today.calories
+          : importedCalories?.value?.round() ?? 0,
       stepsGoal: habits.stepsGoal,
       steps: todaySteps,
       distanceKm: distanceKm,
@@ -262,9 +298,9 @@ class DailyTelemetryNotifier extends Notifier<DailyTelemetry> {
     required String recordDate,
   }) {
     state = state.copyWith(
-      steps: steps,
-      distanceKm: distanceKm,
-      hourlySteps: hourlySteps,
+      steps: state.importedSteps ? state.steps : steps,
+      distanceKm: state.importedSteps ? state.distanceKm : distanceKm,
+      hourlySteps: state.importedSteps ? [] : hourlySteps,
       historicalDays: historicalDays,
       recordSingleDaySteps: recordSingleDaySteps,
       recordSingleDayKm: recordSingleDayKm,
@@ -273,7 +309,9 @@ class DailyTelemetryNotifier extends Notifier<DailyTelemetry> {
   }
 
   void updateSteps(int steps, double distanceKm) {
-    state = state.copyWith(steps: steps, distanceKm: distanceKm);
+    if (!state.importedSteps) {
+      state = state.copyWith(steps: steps, distanceKm: distanceKm);
+    }
   }
 
   Future<void> logWater(int additionalMl) => additionalMl < 0

@@ -10,27 +10,36 @@ class SleepBentoCard extends ConsumerWidget {
   final VoidCallback? onTap;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final data = telemetry;
-    final metrics = data != null
-        ? (data.sleepHours, data.sleepGoalHours)
+    final metrics = telemetry != null
+        ? (
+            telemetry!.sleepHours,
+            telemetry!.sleepRecorded,
+            telemetry!.sleepSource,
+            telemetry!.sleepProgress,
+          )
         : ref.watch(
             dailyTelemetryProvider.select(
-              (t) => (t.sleepHours, t.sleepGoalHours),
+              (t) => (
+                t.sleepHours,
+                t.sleepRecorded,
+                t.sleepSource,
+                t.sleepProgress,
+              ),
             ),
           );
     return ActivityMetricCard(
       title: 'Sleep',
       icon: Icons.bedtime_outlined,
-      value: metrics.$1 == 0 ? '—' : '${metrics.$1.toStringAsFixed(1)} h',
-      caption: metrics.$1 == 0
-          ? 'No sleep logged'
-          : 'Last night · ${metrics.$2.toStringAsFixed(1)} h goal',
-      progress: metrics.$1 > 0 ? metrics.$1 / metrics.$2 : null,
+      value: metrics.$2 ? '${metrics.$1.toStringAsFixed(1)} h' : '—',
+      caption: metrics.$2
+          ? '${metrics.$3 ?? 'Manual log'} · last night'
+          : 'No sleep logged',
+      progress: metrics.$2 ? metrics.$4 : null,
       onTap:
           onTap ??
           () => showSleepDetailSheet(
             context,
-            data ?? ref.read(dailyTelemetryProvider),
+            telemetry ?? ref.read(dailyTelemetryProvider),
           ),
     );
   }

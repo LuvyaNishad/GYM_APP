@@ -21,10 +21,12 @@ class ActivityMetricCard extends StatelessWidget {
   Widget build(BuildContext context) => GlassCard(
     onTap: onTap,
     border: true,
-    blur: false,
-    padding: const EdgeInsets.all(13),
+    blur: true,
+    sharedBackdrop: true,
+    repaintBoundary: true,
+    padding: const EdgeInsets.all(12),
     child: ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 102),
+      constraints: const BoxConstraints(minHeight: 80),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -49,7 +51,7 @@ class ActivityMetricCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
             value,
             style: AppTypography.monoMedium.copyWith(

@@ -8,6 +8,9 @@ import 'package:leon/features/dashboard/widgets/sleep_bento_card.dart';
 import 'package:leon/features/dashboard/widgets/steps_bento_card.dart';
 import 'package:leon/features/dashboard/widgets/water_bento_card.dart';
 import 'package:leon/features/exercise_library/providers/exercise_library_provider.dart';
+import 'package:leon/features/dashboard/widgets/activity_metric_card.dart';
+import 'package:leon/services/hive_service.dart';
+import '../../helpers/memory_hive_service.dart';
 
 class _TestTelemetryNotifier extends DailyTelemetryNotifier {
   _TestTelemetryNotifier(this._initial);
@@ -67,6 +70,18 @@ void main() {
         expect(find.text('2500 ml'), findsOneWidget);
         expect(find.text('7.5 h'), findsOneWidget);
 
+        final caloriesCard = tester.widget<ActivityMetricCard>(
+          find.descendant(
+            of: find.byType(CaloriesBentoCard),
+            matching: find.byType(ActivityMetricCard),
+          ),
+        );
+        final sleepCard = tester.widget<ActivityMetricCard>(
+          find.descendant(
+            of: find.byType(SleepBentoCard),
+            matching: find.byType(ActivityMetricCard),
+          ),
+        );
         // Mutate only steps in the provider
         notifier.setSteps(8888);
         await tester.pump();
@@ -76,6 +91,24 @@ void main() {
         expect(find.text('650 kcal'), findsOneWidget);
         expect(find.text('2500 ml'), findsOneWidget);
         expect(find.text('7.5 h'), findsOneWidget);
+        expect(
+          tester.widget<ActivityMetricCard>(
+            find.descendant(
+              of: find.byType(CaloriesBentoCard),
+              matching: find.byType(ActivityMetricCard),
+            ),
+          ),
+          same(caloriesCard),
+        );
+        expect(
+          tester.widget<ActivityMetricCard>(
+            find.descendant(
+              of: find.byType(SleepBentoCard),
+              matching: find.byType(ActivityMetricCard),
+            ),
+          ),
+          same(sleepCard),
+        );
       },
     );
 
@@ -119,7 +152,11 @@ void main() {
     testWidgets(
       'debounceSearchQuery updates state after 150ms debounce window',
       (tester) async {
-        final container = ProviderContainer();
+        final container = ProviderContainer(
+          overrides: [
+            hiveServiceProvider.overrideWithValue(MemoryHiveService()),
+          ],
+        );
         addTearDown(container.dispose);
 
         final notifier = container.read(exerciseLibraryProvider.notifier);

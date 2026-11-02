@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'habit_log_provider.dart';
+import '../models/daily_telemetry_model.dart';
 
 /// A daily active-calorie series. An absent entry is not a measured zero.
 @immutable
@@ -17,8 +18,10 @@ class CalorieHistory {
       start: start,
       values: List.generate(days, (index) {
         final day = DateTime(start.year, start.month, start.day + index);
-        final calories = log.days[habitDateKey(day)]?.calories;
-        return calories != null && calories > 0 ? calories : null;
+        final habit = log.days[habitDateKey(day)];
+        return habit != null && (habit.caloriesLogged || habit.calories > 0)
+            ? habit.calories
+            : null;
       }),
     );
   }
@@ -50,8 +53,16 @@ final calorieHistoryProvider = Provider.autoDispose.family<CalorieHistory, int>(
       ref.invalidateSelf,
     );
     ref.onDispose(midnight.cancel);
-    return ref.watch(
+    final manual = ref.watch(
       habitLogProvider.select((log) => CalorieHistory.fromLog(log, now, days)),
+    );
+    final today = ref.watch(dailyTelemetryProvider);
+    return CalorieHistory(
+      start: manual.start,
+      values: [
+        ...manual.values.take(days - 1),
+        today.caloriesRecorded ? today.calories : null,
+      ],
     );
   },
 );

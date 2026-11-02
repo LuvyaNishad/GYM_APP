@@ -53,7 +53,7 @@ void main() {
 
         final summary = container.read(recompositionSummaryProvider);
         expect(summary.latestWeight, 0.0);
-        expect(summary.weightDelta30d, 0.0);
+        expect(summary.weightDelta30d, isNull);
 
         // Add new measurement
         final newEntry = BodyMeasurementEntry(
@@ -129,20 +129,20 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('SAVED'), findsOneWidget);
+        expect(find.text('LOCAL'), findsOneWidget);
 
         await tester.tap(find.byType(SyncStatusIndicator));
         await tester.pumpAndSettle();
 
-        expect(find.text('OFFLINE-FIRST DATA SAFETY'), findsOneWidget);
+        expect(find.text('Local storage'), findsOneWidget);
         expect(
-          find.textContaining('saved locally first via Hive storage'),
+          find.textContaining('Cloud sync is unavailable'),
           findsOneWidget,
         );
 
-        await tester.tap(find.text('UNDERSTOOD'));
+        await tester.tap(find.text('CLOSE'));
         await tester.pumpAndSettle();
-        expect(find.text('OFFLINE-FIRST DATA SAFETY'), findsNothing);
+        expect(find.text('Local storage'), findsNothing);
       },
     );
 

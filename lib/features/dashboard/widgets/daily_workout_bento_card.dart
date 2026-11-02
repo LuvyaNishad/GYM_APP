@@ -25,6 +25,7 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
     this.onStartWorkout,
     this.onTap,
     this.useCalendarDate = true,
+    this.compact = false,
   });
   final SplitModel? activeSplit;
   final List<String> muscleGroups;
@@ -34,6 +35,7 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
   final VoidCallback? onStartWorkout;
   final VoidCallback? onTap;
   final bool useCalendarDate;
+  final bool compact;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final view = ref.watch(homeWorkoutViewProvider);
@@ -49,8 +51,10 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
     final paused = useCalendarDate ? view.isPaused : rotation.isTrainingPaused;
     if (paused && !showActive && view.logged.isEmpty) {
       return GlassCard(
+        sharedBackdrop: true,
+        repaintBoundary: true,
         blur: true,
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(compact ? 12 : 16),
         onTap: () => showTrainingPauseSheet(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -77,26 +81,32 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: compact ? 6 : 12),
             Text(
               'Training paused',
               style: AppTypography.headlineSmall.copyWith(
-                fontSize: 22,
+                fontSize: compact ? 20 : 22,
                 letterSpacing: 1.5,
+                height: 1.2,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: compact ? 4 : 8),
             Text(
               past
                   ? 'Training was paused on this date. This day does not count as a missed workout.'
+                  : compact
+                  ? (rotation.resumeOn == null
+                        ? 'Your next workout stays queued.'
+                        : 'Return: ${MaterialLocalizations.of(context).formatMediumDate(rotation.resumeOn!)}')
                   : rotation.resumeOn == null
                   ? 'Take the time you need. Your next workout stays queued until you resume.'
                   : 'Return date: ${MaterialLocalizations.of(context).formatFullDate(rotation.resumeOn!)}. You can extend your break or resume earlier.',
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.platinum,
+                fontSize: compact ? 12 : 14,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: compact ? 10 : 16),
             FilledButton.icon(
               onPressed: past
                   ? () =>
@@ -174,7 +184,9 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
     }
 
     return GlassCard(
-      padding: const EdgeInsets.all(16),
+      sharedBackdrop: true,
+      repaintBoundary: true,
+      padding: EdgeInsets.all(compact ? 12 : 16),
       border: true,
       blur: true,
       glowColor: showActive ? AppColors.primary.withValues(alpha: 0.15) : null,
@@ -205,6 +217,7 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
                       : dateLabel.toUpperCase(),
                   style: AppTypography.monoSmall.copyWith(
                     color: AppColors.platinum,
+                    fontSize: compact ? 11 : 13,
                   ),
                 ),
               ),
@@ -214,16 +227,18 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: compact ? 6 : 10),
           Text(
             title,
+            maxLines: compact ? 1 : null,
+            overflow: compact ? TextOverflow.ellipsis : null,
             style: AppTypography.headlineSmall.copyWith(
-              fontSize: 22,
+              fontSize: compact ? 20 : 22,
               letterSpacing: 1.5,
               height: 1.2,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: compact ? 4 : 6),
           Text(
             showActive
                 ? '${active.$3} of ${active.$4} sets logged'
@@ -236,9 +251,15 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
                 : day == null || day.isRestDay
                 ? 'Take time to recover, or choose another workout.'
                 : '${day.exercises.length} exercises · ${day.totalSets} sets · ~${day.estimatedDurationMinutes} min',
-            style: AppTypography.bodyMedium.copyWith(color: AppColors.platinum),
+            maxLines: compact ? 2 : null,
+            overflow: compact ? TextOverflow.ellipsis : null,
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.platinum,
+              fontSize: compact ? 12 : 14,
+            ),
           ),
-          if (!past &&
+          if (!compact &&
+              !past &&
               !showActive &&
               day != null &&
               day.exercises.isNotEmpty) ...[
@@ -260,7 +281,7 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
               style: AppTypography.bodySmall.copyWith(color: AppColors.warning),
             ),
           ],
-          const SizedBox(height: 14),
+          SizedBox(height: compact ? 10 : 14),
           if (!past)
             FilledButton.icon(
               onPressed: start,
@@ -288,7 +309,7 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
               onPressed: details,
               child: const Text('VIEW WORKOUTS'),
             ),
-          if ((!useCalendarDate || view.isToday) && !showActive)
+          if (!compact && (!useCalendarDate || view.isToday) && !showActive)
             TextButton.icon(
               onPressed: () => showTrainingPauseSheet(context),
               icon: const Icon(Icons.pause_rounded, size: 18),
