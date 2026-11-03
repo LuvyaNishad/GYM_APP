@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Production AEON Acrylic Brand Mark.
+/// Production LEON Acrylic Brand Mark.
 ///
 /// Implements the physical acrylic solid aesthetic in the Noguchi / Cyber-Slate
 /// luxury palette:
@@ -16,7 +16,7 @@ class AeonLogo extends StatelessWidget {
     this.size = 96.0,
     this.showGlow = true,
     this.heroTag,
-    this.semanticLabel = 'AEON logo',
+    this.semanticLabel = 'LEON logo',
   });
 
   /// Size of the square bounding box in logical pixels.

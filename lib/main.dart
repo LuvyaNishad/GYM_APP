@@ -50,7 +50,7 @@ class LeonApp extends ConsumerWidget {
     final ready = ref.watch(appBootstrappedProvider);
 
     return MaterialApp.router(
-      title: 'AEON',
+      title: 'LEON',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       routerConfig: ref.watch(routerProvider),
@@ -192,7 +192,7 @@ class BootstrapFailureApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'AEON',
+      title: 'LEON',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       home: Scaffold(

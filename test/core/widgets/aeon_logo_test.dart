@@ -19,7 +19,7 @@ void main() {
     );
 
     expect(find.byType(AeonLogo), findsOneWidget);
-    expect(find.bySemanticsLabel('AEON logo'), findsOneWidget);
+    expect(find.bySemanticsLabel('LEON logo'), findsOneWidget);
 
     final container = tester.widget<Container>(
       find.descendant(

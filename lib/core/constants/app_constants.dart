@@ -3,7 +3,7 @@ abstract final class AppConstants {
   AppConstants._();
 
   // ── App Meta ──────────────────────────────────────────────────────────────
-  static const String appName = 'AEON';
+  static const String appName = 'LEON';
   static const String appVersion = '1.0.0';
 
   // ── Route names (mirrors AppRouter path constants) ────────────────────────

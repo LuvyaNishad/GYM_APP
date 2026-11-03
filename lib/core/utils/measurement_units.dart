@@ -12,6 +12,10 @@ class MeasurementUnits {
   double weightFromKg(double kg) => imperialWeight ? kg * 2.2046226218 : kg;
   double weightToKg(double value) =>
       imperialWeight ? value / 2.2046226218 : value;
+  String weightInput(double kg) => weightFromKg(
+    kg,
+  ).toStringAsFixed(3).replaceFirst(RegExp(r'(?<=\.\d)0+$'), '');
+  String preciseWeight(double kg) => '${weightInput(kg)} $weightLabel';
   double heightFromCm(double cm) => heightUnit == 'ft' ? cm / 2.54 : cm;
   double heightToCm(double value) => heightUnit == 'ft' ? value * 2.54 : value;
   String length(double? cm) => cm == null

@@ -65,11 +65,11 @@ void main() {
   });
 
   testWidgets(
-    'Login footer actions fit and remain reachable with enlarged text',
+    'Unconfigured account entry keeps its guest action reachable with enlarged text',
     (tester) async {
       for (final scale in [1.0, 2.0]) {
         await mount(tester, const LoginScreen(), scale: scale);
-        for (final label in ['CONTINUE AS GUEST', 'GET STARTED']) {
+        for (final label in ['CONTINUE AS GUEST']) {
           final control = find.text(label);
           await tester.ensureVisible(control);
           await tester.pump();
@@ -81,28 +81,25 @@ void main() {
     },
   );
 
-  testWidgets('Auth controls remain reachable above the keyboard at 2x text', (
-    tester,
-  ) async {
-    for (final screen in [const LoginScreen(), const SignupScreen()]) {
-      await mount(tester, screen, scale: 2, keyboard: 300);
-      final fields = find.byType(TextFormField);
-      await tester.ensureVisible(fields.last);
-      await tester.pump();
-      await tester.enterText(fields.last, 'unchanged-input-2.5');
-      await tester.pump();
-      expect(
-        tester.widget<TextFormField>(fields.last).controller!.text,
-        'unchanged-input-2.5',
-      );
-      final action = find.byType(LeonButton);
-      await tester.ensureVisible(action);
-      await tester.pump();
-      expectWithinViewport(tester, action, keyboard: 300);
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox.shrink());
-    }
-  });
+  testWidgets(
+    'Unconfigured account entry stays truthful and reachable at 2x text with keyboard',
+    (tester) async {
+      for (final screen in [const LoginScreen(), const SignupScreen()]) {
+        await mount(tester, screen, scale: 2, keyboard: 300);
+        expect(find.byType(TextFormField), findsNothing);
+        expect(
+          find.textContaining('Sign-in and cloud sync are not available'),
+          findsOneWidget,
+        );
+        final action = find.byType(LeonButton);
+        await tester.ensureVisible(action);
+        await tester.pump();
+        expectWithinViewport(tester, action, keyboard: 300);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+      }
+    },
+  );
 
   testWidgets('Auth forms keep a centered content measure on wide layouts', (
     tester,
