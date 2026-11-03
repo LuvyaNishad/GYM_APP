@@ -340,16 +340,21 @@ void main() {
     });
 
     testWidgets(
-      'RecoveryStatusWidget info icon opens RECOVERY READINESS dialog',
+      'RecoveryStatusWidget info icon opens the shared recovery explanation',
       (tester) async {
         tester.view.physicalSize = const Size(800, 1400);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
 
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: SingleChildScrollView(child: RecoveryStatusWidget()),
+          ProviderScope(
+            overrides: [
+              hiveServiceProvider.overrideWithValue(MemoryHiveService()),
+            ],
+            child: const MaterialApp(
+              home: Scaffold(
+                body: SingleChildScrollView(child: RecoveryStatusWidget()),
+              ),
             ),
           ),
         );
@@ -361,14 +366,17 @@ void main() {
         await tester.tap(infoIconFinder);
         await tester.pumpAndSettle();
 
-        expect(find.text('RECOVERY READINESS'), findsWidgets);
+        expect(find.text('How recovery is estimated'), findsOneWidget);
+        expect(find.text('YOUR INPUTS'), findsOneWidget);
+        expect(find.text('THE SCORE'), findsOneWidget);
         expect(
-          find.textContaining('All three manual inputs are required'),
+          find.textContaining('Missing inputs never count as good recovery'),
           findsOneWidget,
         );
 
-        await tester.tap(find.text('UNDERSTOOD'));
+        await tester.tap(find.byTooltip('Close'));
         await tester.pumpAndSettle();
+        expect(find.text('How recovery is estimated'), findsNothing);
       },
     );
   });

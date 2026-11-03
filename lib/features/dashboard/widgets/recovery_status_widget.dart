@@ -50,19 +50,7 @@ class RecoveryStatusWidget extends StatelessWidget {
         IconButton(
           tooltip: 'Recovery information',
           icon: const Icon(Icons.info_outline_rounded),
-          onPressed: () => showDialog<void>(
-            context: context,
-            builder: (dialog) => AlertDialog(
-              title: const Text('RECOVERY READINESS'),
-              content: const Text(recoveryExplanation),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialog).pop(),
-                  child: const Text('UNDERSTOOD'),
-                ),
-              ],
-            ),
-          ),
+          onPressed: () => showRecoveryExplanation(context),
         ),
       ],
     ),

@@ -14,6 +14,19 @@ import '../providers/recovery_provider.dart';
 const recoveryExplanation =
     'A self-check estimate, not a medical evaluation or a test that an illness has resolved. Sleep, hydration and soreness are required. Authorized sleep imports can fill missing sleep; your manual sleep entry takes precedence. Hydration and soreness are logged manually. The score starts at 100: sleep deducts 5 points per hour below your target (up to 40), hydration deducts up to 15 below your target, and soreness deducts 3 per rating point. A workout today deducts 25, yesterday deducts 5; longer rest adds up to 10. Volume above your previous three-week average deducts up to 30 and needs four weeks of history. The result is limited to 0–100; missing inputs are never treated as good recovery.';
 
+Future<void> showRecoveryExplanation(BuildContext context) =>
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Consumer(
+        builder: (context, ref, child) =>
+            _RecoveryExplanation(summary: ref.watch(recoverySummaryProvider)),
+      ),
+    );
+
 class RecoveryScreen extends ConsumerWidget {
   const RecoveryScreen({super.key});
 
@@ -30,6 +43,9 @@ class RecoveryScreen extends ConsumerWidget {
     void checkIn() => showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      // The route's drag handler sits outside the form's pending-write guards.
+      // Use Close/back so a failed save always keeps the entered check-in here.
+      enableDrag: false,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _RecoveryCheckIn(date: today),
@@ -46,13 +62,7 @@ class RecoveryScreen extends ConsumerWidget {
               Icons.info_outline_rounded,
               color: AppColors.platinum,
             ),
-            onPressed: () => showModalBottomSheet<void>(
-              context: context,
-              isScrollControlled: true,
-              useSafeArea: true,
-              backgroundColor: Colors.transparent,
-              builder: (_) => _RecoveryExplanation(summary: summary),
-            ),
+            onPressed: () => showRecoveryExplanation(context),
           ),
           const SizedBox(width: 8),
         ],
@@ -492,11 +502,13 @@ class _RecoveryExplanation extends StatelessWidget {
         children: [
           _EstimateRule(
             title: 'Three inputs, one check-in',
-            detail: 'Log sleep, hydration and soreness to see an estimate. Missing inputs never count as good recovery.',
+            detail:
+                'Log sleep, hydration and soreness to see an estimate. Missing inputs never count as good recovery.',
           ),
           _EstimateRule(
             title: 'Your sleep entry comes first',
-            detail: 'Authorized sleep imports can fill missing sleep. A manual entry takes precedence.',
+            detail:
+                'Authorized sleep imports can fill missing sleep. A manual entry takes precedence.',
           ),
         ],
       ),
@@ -508,53 +520,58 @@ class _RecoveryExplanation extends StatelessWidget {
         style: AppTypography.bodyMedium,
       ),
       const SizedBox(height: 12),
-      const _ExplanationGroup(children: [
-        _EstimateRule(
-        title: 'Sleep',
-        detail:
-            '5 points deducted per hour below your sleep goal, up to 40 points.',
+      const _ExplanationGroup(
+        children: [
+          _EstimateRule(
+            title: 'Sleep',
+            detail:
+                '5 points deducted per hour below your sleep goal, up to 40 points.',
+          ),
+          _EstimateRule(
+            title: 'Hydration',
+            detail:
+                'Up to 15 points deducted when your logged water is below your goal.',
+          ),
+          _EstimateRule(
+            title: 'Soreness',
+            detail: '3 points deducted per point on your 0–10 soreness rating.',
+          ),
+          _EstimateRule(
+            title: 'Recent workouts',
+            detail:
+                'A workout today deducts 25 points; yesterday deducts 5. Two days off adds 5; longer rest adds 10.',
+          ),
+          _EstimateRule(
+            title: 'Training volume',
+            detail:
+                'Up to 30 points deducted above your previous three-week average. This comparison needs four weeks of history.',
+          ),
+        ],
       ),
-        _EstimateRule(
-        title: 'Hydration',
-        detail:
-            'Up to 15 points deducted when your logged water is below your goal.',
-      ),
-        _EstimateRule(
-        title: 'Soreness',
-        detail: '3 points deducted per point on your 0–10 soreness rating.',
-      ),
-        _EstimateRule(
-        title: 'Recent workouts',
-        detail:
-            'A workout today deducts 25 points; yesterday deducts 5. Two days off adds 5; longer rest adds 10.',
-      ),
-        _EstimateRule(
-        title: 'Training volume',
-        detail:
-            'Up to 30 points deducted above your previous three-week average. This comparison needs four weeks of history.',
-        ),
-      ]),
       if (summary.score != null) ...[
         const SizedBox(height: 24),
         const _RecoverySectionTitle("TODAY'S CONTRIBUTIONS"),
         const SizedBox(height: 12),
-        _ExplanationGroup(children: [
-          for (final factor in summary.score!.factors)
-            _EstimateRule(
-              title: switch (factor.label) {
-                'REST DAYS' => 'Rest days',
-                'VOLUME LOAD' => 'Training volume',
-                'SLEEP' => 'Sleep',
-                'HYDRATION' => 'Hydration',
-                'SORENESS' => 'Soreness',
-                _ => factor.label,
-              },
-              // Half-point contributions remain visible, so displayed factors
-              // do not misleadingly add up to a different score.
-              value: '${factor.delta() > 0 ? '+' : ''}${factor.delta().toStringAsFixed(factor.delta() == factor.delta().roundToDouble() ? 0 : 1)} pts',
-              detail: factor.insight ?? 'Included in today’s estimate.',
-            ),
-        ]),
+        _ExplanationGroup(
+          children: [
+            for (final factor in summary.score!.factors)
+              _EstimateRule(
+                title: switch (factor.label) {
+                  'REST DAYS' => 'Rest days',
+                  'VOLUME LOAD' => 'Training volume',
+                  'SLEEP' => 'Sleep',
+                  'HYDRATION' => 'Hydration',
+                  'SORENESS' => 'Soreness',
+                  _ => factor.label,
+                },
+                // Half-point contributions remain visible, so displayed factors
+                // do not misleadingly add up to a different score.
+                value:
+                    '${factor.delta() > 0 ? '+' : ''}${factor.delta().toStringAsFixed(factor.delta() == factor.delta().roundToDouble() ? 0 : 1)} pts',
+                detail: factor.insight ?? 'Included in today’s estimate.',
+              ),
+          ],
+        ),
       ],
     ],
   );
@@ -601,7 +618,12 @@ class _EstimateRule extends StatelessWidget {
           spacing: 12,
           runSpacing: 6,
           children: [
-            Text(title, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w500)),
+            Text(
+              title,
+              style: AppTypography.bodyLarge.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             if (value != null) Text(value!, style: AppTypography.monoSmall),
           ],
         ),
@@ -620,10 +642,13 @@ class _RecoveryCheckIn extends ConsumerStatefulWidget {
 }
 
 class _RecoveryCheckInState extends ConsumerState<_RecoveryCheckIn> {
+  final _form = GlobalKey<FormState>();
   late final TextEditingController _sleep;
   final _water = TextEditingController();
   late int? _soreness;
   bool _pending = false;
+  String? _saveError;
+
   @override
   void initState() {
     super.initState();
@@ -642,36 +667,34 @@ class _RecoveryCheckInState extends ConsumerState<_RecoveryCheckIn> {
   }
 
   Future<void> _save() async {
-    if (_pending) return;
-    setState(() => _pending = true);
-    final success = await persistWithFeedback(
-      context,
-      () async {
-        final sleep = _sleep.text.trim().isEmpty
-            ? null
-            : double.tryParse(_sleep.text);
-        final water = _water.text.trim().isEmpty
-            ? null
-            : int.tryParse(_water.text);
-        if ((_sleep.text.isNotEmpty && sleep == null) ||
-            (_water.text.isNotEmpty && water == null)) {
-          throw const FormatException();
-        }
-        await ref
-            .read(habitLogProvider.notifier)
-            .saveRecoveryCheckIn(
-              date: widget.date,
-              hours: sleep,
-              waterToAdd: water,
-              soreness: _soreness,
-            );
-      },
-      message:
-          'Could not save. Check your values and try again. Your input is still here.',
-    );
-    if (!mounted) return;
-    setState(() => _pending = false);
-    if (success) Navigator.of(context).pop();
+    if (_pending || !_form.currentState!.validate()) return;
+    setState(() {
+      _pending = true;
+      _saveError = null;
+    });
+    try {
+      await ref
+          .read(habitLogProvider.notifier)
+          .saveRecoveryCheckIn(
+            date: widget.date,
+            hours: _sleep.text.trim().isEmpty
+                ? null
+                : double.parse(_sleep.text.trim()),
+            waterToAdd: _water.text.trim().isEmpty
+                ? null
+                : int.parse(_water.text.trim()),
+            soreness: _soreness,
+          );
+      if (!mounted) return;
+      setState(() => _pending = false);
+      Navigator.of(context).pop();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _pending = false;
+        _saveError = 'Could not save. Try again. Your input is still here.';
+      });
+    }
   }
 
   @override
@@ -681,85 +704,151 @@ class _RecoveryCheckInState extends ConsumerState<_RecoveryCheckIn> {
     );
     return PersistenceForm(
       pending: _pending,
-      child: AppSheet(
-        title: 'Recovery check-in',
-        busy: _pending,
-        children: [
-          Text(
-            MaterialLocalizations.of(context).formatMediumDate(widget.date),
-            style: AppTypography.bodySmall,
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _sleep,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: AppTypography.monoMedium.copyWith(fontSize: 18),
-            decoration: const InputDecoration(
-              labelText: 'Sleep',
-              suffixText: 'h',
-              helperText:
-                  "Last night's total. Leave blank to keep saved sleep.",
-              helperMaxLines: 2,
+      child: Form(
+        key: _form,
+        child: AppSheet(
+          title: 'Recovery check-in',
+          busy: _pending,
+          children: [
+            Text(
+              MaterialLocalizations.of(context).formatMediumDate(widget.date),
+              style: AppTypography.bodySmall,
             ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _water,
-            keyboardType: TextInputType.number,
-            style: AppTypography.monoMedium.copyWith(fontSize: 18),
-            decoration: InputDecoration(
-              labelText: 'Add hydration',
-              suffixText: 'ml',
-              helperText: 'Today: $waterToday ml. Adds to your logged water.',
-              helperMaxLines: 2,
+            const SizedBox(height: 20),
+            _CheckInField(
+              title: 'Sleep',
+              detail: "Last night's total. Leave blank to keep saved sleep.",
+              child: TextFormField(
+                enabled: !_pending,
+                controller: _sleep,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                textInputAction: TextInputAction.next,
+                style: AppTypography.monoMedium.copyWith(fontSize: 18),
+                validator: (text) {
+                  final input = text?.trim() ?? '';
+                  if (input.isEmpty) return null;
+                  final hours = double.tryParse(input);
+                  return hours == null ||
+                          !hours.isFinite ||
+                          hours < 0 ||
+                          hours > 24
+                      ? 'Enter sleep between 0 and 24 hours.'
+                      : null;
+                },
+                decoration: const InputDecoration(
+                  hintText: 'e.g. 8.0',
+                  suffixText: 'h',
+                  errorMaxLines: 3,
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<int>(
-            isExpanded: true,
-            initialValue: _soreness,
-            decoration: const InputDecoration(labelText: 'Soreness (0–10)'),
-            items: [
-              const DropdownMenuItem(value: null, child: Text('Not logged')),
-              for (var i = 0; i <= 10; i++)
-                DropdownMenuItem(
-                  value: i,
-                  child: Text(
-                    '$i${i == 0
-                        ? ' · None'
-                        : i == 10
-                        ? ' · Severe'
-                        : ''}',
+            const SizedBox(height: 24),
+            _CheckInField(
+              title: 'Add hydration',
+              detail:
+                  'Today: ${MaterialLocalizations.of(context).formatDecimal(waterToday)} ml. Adds to your logged water; leave blank to keep it.',
+              child: TextFormField(
+                enabled: !_pending,
+                controller: _water,
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.done,
+                style: AppTypography.monoMedium.copyWith(fontSize: 18),
+                validator: (text) {
+                  final input = text?.trim() ?? '';
+                  if (input.isEmpty) return null;
+                  final water = int.tryParse(input);
+                  return water == null || water < 0 || water > 10000
+                      ? 'Enter water between 0 and 10,000 ml.'
+                      : null;
+                },
+                decoration: const InputDecoration(
+                  hintText: 'e.g. 250',
+                  suffixText: 'ml',
+                  errorMaxLines: 3,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            _CheckInField(
+              title: 'Soreness (0–10)',
+              detail:
+                  'How your muscles feel today. 0 means no soreness; 10 means severe.',
+              child: DropdownButtonFormField<int>(
+                isExpanded: true,
+                isDense: false,
+                itemHeight: null,
+                style: AppTypography.bodyLarge,
+                initialValue: _soreness,
+                decoration: const InputDecoration(),
+                items: [
+                  const DropdownMenuItem(
+                    value: null,
+                    child: Text('Not logged'),
+                  ),
+                  for (var i = 0; i <= 10; i++)
+                    DropdownMenuItem(
+                      value: i,
+                      child: Text(
+                        '$i${i == 0
+                            ? ' · None'
+                            : i == 10
+                            ? ' · Severe'
+                            : ''}',
+                      ),
+                    ),
+                ],
+                onChanged: _pending
+                    ? null
+                    : (value) => setState(() => _soreness = value),
+              ),
+            ),
+            const SizedBox(height: 24),
+            LeonButton(
+              label: 'SAVE CHECK-IN',
+              isLoading: _pending,
+              onPressed: _save,
+            ),
+            if (_saveError != null) ...[
+              const SizedBox(height: 12),
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  _saveError!,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.danger,
                   ),
                 ),
-            ],
-            onChanged: _pending
-                ? null
-                : (value) => setState(() => _soreness = value),
-          ),
-          const SizedBox(height: 16),
-          ImmediatePressFeedback(
-            enabled: !_pending,
-            builder: (context, statesController) => FilledButton(
-              statesController: statesController,
-              onPressed: _pending ? null : _save,
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.onPrimary,
               ),
-              child: Text(_pending ? 'SAVING...' : 'SAVE CHECK-IN'),
-            ),
-          ),
-        ],
+            ],
+          ],
+        ),
       ),
     );
   }
+}
+
+class _CheckInField extends StatelessWidget {
+  const _CheckInField({
+    required this.title,
+    required this.detail,
+    required this.child,
+  });
+  final String title, detail;
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text(
+        title,
+        style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w500),
+      ),
+      const SizedBox(height: 4),
+      Text(detail, style: AppTypography.bodyMedium.copyWith(fontSize: 13)),
+      const SizedBox(height: 10),
+      Semantics(label: title, child: child),
+    ],
+  );
 }

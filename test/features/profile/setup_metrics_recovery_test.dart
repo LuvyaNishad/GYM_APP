@@ -668,7 +668,7 @@ void main() {
                     ),
                     child: child!,
                   ),
-                  home: const RecoveryScreen(),
+                  home: RecoveryScreen(key: ValueKey('$mode-$size-$scale')),
                 ),
               ),
             );
