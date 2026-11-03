@@ -100,6 +100,7 @@ void main() {
         expect(tester.takeException(), isNull);
         await tester.tap(find.text('Cancel'));
         await tester.pumpAndSettle();
+        await reveal(tester, 'Redo setup');
         await tester.tap(find.text('Redo setup'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Cancel'));

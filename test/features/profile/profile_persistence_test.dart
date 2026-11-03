@@ -95,6 +95,12 @@ void main() {
           isNull,
         );
         expect(container.read(accountProfileProvider), original);
+        await tester.dragFrom(const Offset(195, 100), const Offset(0, 650));
+        await tester.pump(const Duration(seconds: 1));
+        await tester.binding.handlePopRoute();
+        await tester.tapAt(const Offset(5, 5));
+        await tester.pump();
+        expect(find.widgetWithText(ElevatedButton, saveLabel), findsOneWidget);
         hive.failDocuments = true;
         hive.documentGate!.complete();
         await tester.pumpAndSettle();

@@ -11,6 +11,7 @@ import '../../../core/utils/measurement_units.dart';
 import '../models/body_measurement_model.dart';
 import '../providers/body_measurements_provider.dart';
 import '../../../shared/widgets/persistence_feedback.dart';
+import '../../../shared/widgets/app_sheet.dart';
 
 class LogMeasurementSheet extends ConsumerStatefulWidget {
   const LogMeasurementSheet({super.key});
@@ -18,7 +19,9 @@ class LogMeasurementSheet extends ConsumerStatefulWidget {
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
+      enableDrag: false,
       backgroundColor: Colors.transparent,
       builder: (ctx) => const LogMeasurementSheet(),
     );
@@ -112,8 +115,9 @@ class _LogMeasurementSheetState extends ConsumerState<LogMeasurementSheet> {
     setState(() => _isSaving = false);
     if (!success) return;
     HapticFeedback.mediumImpact();
+    final messenger = ScaffoldMessenger.of(context);
     Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
+    messenger.showSnackBar(
       const SnackBar(
         content: Text(
           'Body measurements recorded.',
@@ -132,203 +136,86 @@ class _LogMeasurementSheetState extends ConsumerState<LogMeasurementSheet> {
   @override
   Widget build(BuildContext context) {
     final units = ref.watch(measurementUnitsProvider);
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-
     return PersistenceForm(
       pending: _isSaving,
-      child: Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.85,
-        ),
-        decoration: const BoxDecoration(
-          color: AppColors.onyx,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(top: BorderSide(color: AppColors.steel, width: 1.0)),
-        ),
-        padding: EdgeInsets.fromLTRB(16, 12, 16, bottomInset + 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Drag handle
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.steel.withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+      child: AppSheet(
+        title: 'RECORD MEASUREMENTS',
+        busy: _isSaving,
+        children: [
+          _pair(
+            _buildInputField(
+              label: 'WEIGHT',
+              suffix: units.weightLabel.toUpperCase(),
+              controller: _weightController,
             ),
-            const SizedBox(height: 12),
-
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.straighten_rounded,
-                      color: AppColors.primary,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'RECORD MEASUREMENTS',
-                      style: AppTypography.headlineSmall.copyWith(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
-                        color: AppColors.pureWhite,
-                      ),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.close_rounded,
-                    color: AppColors.textSecondary,
-                    size: 20,
-                  ),
-                  onPressed: _isSaving
-                      ? null
-                      : () => Navigator.of(context).pop(),
-                  visualDensity: VisualDensity.compact,
-                ),
-              ],
+            _buildInputField(
+              label: 'BODY FAT',
+              suffix: '%',
+              controller: _bodyFatController,
             ),
-
-            const SizedBox(height: 12),
-
-            Flexible(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildInputField(
-                            label: 'WEIGHT',
-                            suffix: units.weightLabel.toUpperCase(),
-                            controller: _weightController,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildInputField(
-                            label: 'BODY FAT',
-                            suffix: '%',
-                            controller: _bodyFatController,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildInputField(
-                            label: 'WAIST',
-                            suffix: units.heightInputLabel.toUpperCase(),
-                            controller: _waistController,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildInputField(
-                            label: 'CHEST',
-                            suffix: units.heightInputLabel.toUpperCase(),
-                            controller: _chestController,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildInputField(
-                            label: 'ARMS (FLEXED)',
-                            suffix: units.heightInputLabel.toUpperCase(),
-                            controller: _armsController,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildInputField(
-                            label: 'THIGHS',
-                            suffix: units.heightInputLabel.toUpperCase(),
-                            controller: _thighsController,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _notesController,
-                      style: const TextStyle(
-                        fontFamily: AppTypography.fontBody,
-                        fontSize: 12.5,
-                        color: AppColors.pureWhite,
-                      ),
-                      decoration: InputDecoration(
-                        labelText: 'CHECK-IN NOTES (OPTIONAL)',
-                        labelStyle: const TextStyle(
-                          fontFamily: AppTypography.fontMono,
-                          fontSize: 11.0,
-                          color: AppColors.textSecondary,
-                          letterSpacing: 0.5,
-                        ),
-                        filled: true,
-                        fillColor: AppColors.charcoal,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppColors.steel),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+          ),
+          const SizedBox(height: 12),
+          _pair(
+            _buildInputField(
+              label: 'WAIST',
+              suffix: units.heightInputLabel.toUpperCase(),
+              controller: _waistController,
             ),
-
-            const SizedBox(height: 16),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isSaving ? null : _save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.onyx,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 13),
-                ),
-                child: const Text(
-                  'SAVE MEASUREMENTS',
-                  style: TextStyle(
-                    fontFamily: AppTypography.fontBody,
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
+            _buildInputField(
+              label: 'CHEST',
+              suffix: units.heightInputLabel.toUpperCase(),
+              controller: _chestController,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 12),
+          _pair(
+            _buildInputField(
+              label: 'ARMS (FLEXED)',
+              suffix: units.heightInputLabel.toUpperCase(),
+              controller: _armsController,
+            ),
+            _buildInputField(
+              label: 'THIGHS',
+              suffix: units.heightInputLabel.toUpperCase(),
+              controller: _thighsController,
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _notesController,
+            minLines: 1,
+            maxLines: 3,
+            decoration: const InputDecoration(labelText: 'Notes (optional)'),
+          ),
+          const SizedBox(height: 16),
+          if (_isSaving) const Text('Saving measurements…'),
+          ElevatedButton(
+            onPressed: _isSaving ? null : _save,
+            child: const Text('SAVE MEASUREMENTS'),
+          ),
+        ],
       ),
     );
   }
+
+  Widget _pair(Widget first, Widget second) => LayoutBuilder(
+    builder: (context, constraints) {
+      if (constraints.maxWidth < 340 ||
+          MediaQuery.textScalerOf(context).scale(13) > 18) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [first, const SizedBox(height: 12), second],
+        );
+      }
+      return Row(
+        children: [
+          Expanded(child: first),
+          const SizedBox(width: 12),
+          Expanded(child: second),
+        ],
+      );
+    },
+  );
 
   Widget _buildInputField({
     required String label,

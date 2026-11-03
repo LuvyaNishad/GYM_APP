@@ -22,6 +22,7 @@ void showEditProfileSheet(BuildContext context, AccountProfile profile) {
     context: context,
     useRootNavigator: true,
     isScrollControlled: true,
+    enableDrag: false,
     backgroundColor: Colors.transparent,
     builder: (ctx) => _EditProfileSheet(profile: profile),
   );

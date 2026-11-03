@@ -12,6 +12,7 @@ void showEditBiometricsSheet(BuildContext context, AccountProfile profile) =>
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      enableDrag: false,
       useRootNavigator: true,
       builder: (_) => _BiometricsEditor(profile: profile),
     );

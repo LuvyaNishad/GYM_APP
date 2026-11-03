@@ -58,6 +58,16 @@ void main() {
         isNull,
       );
       expect(container.read(bodyMeasurementsProvider), isEmpty);
+      await tester.dragFrom(
+        tester.getCenter(find.text('RECORD MEASUREMENTS')),
+        const Offset(0, 650),
+      );
+      await tester.pump(const Duration(seconds: 1));
+      await tester.binding.handlePopRoute();
+      await tester.pump();
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pump();
+      expect(find.byType(LogMeasurementSheet), findsOneWidget);
       hive.failDocuments = true;
       hive.documentGate!.complete();
       await tester.pumpAndSettle();
