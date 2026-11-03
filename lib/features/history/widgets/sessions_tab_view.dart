@@ -6,6 +6,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/glass_card.dart';
+import '../../../shared/widgets/immediate_press_feedback.dart';
 import '../../dashboard/providers/workout_rotation_provider.dart';
 import '../../workout_builder/providers/splits_provider.dart';
 import '../../workout_session/providers/active_session_provider.dart';
@@ -146,16 +147,19 @@ class _SessionsTabViewState extends ConsumerState<SessionsTabView> {
                 ),
                 const SizedBox(height: 20),
                 if (workouts.isEmpty) ...[
-                  FilledButton.icon(
-                    onPressed: _startWorkout,
-                    icon: const Icon(Icons.play_arrow_rounded),
-                    label: Text(
-                      hasActiveSession ? 'Resume workout' : 'Start workout',
-                    ),
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(48),
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.onPrimary,
+                  ImmediatePressFeedback(
+                    builder: (context, statesController) => FilledButton.icon(
+                      statesController: statesController,
+                      onPressed: _startWorkout,
+                      icon: const Icon(Icons.play_arrow_rounded),
+                      label: Text(
+                        hasActiveSession ? 'Resume workout' : 'Start workout',
+                      ),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.onPrimary,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 4),

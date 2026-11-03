@@ -329,7 +329,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                   children: [
                     const Icon(
                       Icons.edit_note_rounded,
-                      color: Color(0xFF00E5FF),
+                      color: AppColors.primary,
                       size: 22,
                     ),
                     const SizedBox(width: 8),
@@ -395,7 +395,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Color(0xFF00E5FF)),
+                  borderSide: const BorderSide(color: AppColors.primary),
                 ),
               ),
             ),
@@ -728,7 +728,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                             icon: const Icon(
                               Icons.add,
                               size: 14,
-                              color: Color(0xFF00E5FF),
+                              color: AppColors.primary,
                             ),
                             label: const Text(
                               'ADD SET',
@@ -736,7 +736,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                                 fontFamily: AppTypography.fontBody,
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF00E5FF),
+                                color: AppColors.primary,
                               ),
                             ),
                             style: TextButton.styleFrom(
@@ -787,7 +787,7 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                   child: ElevatedButton(
                     onPressed: _isSaving ? null : _saveChanges,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00E5FF),
+                      backgroundColor: AppColors.primary,
                       foregroundColor: AppColors.onyx,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

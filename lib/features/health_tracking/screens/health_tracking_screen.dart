@@ -65,7 +65,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF00E5FF)),
+            icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
             tooltip: 'Refresh health data',
             onPressed: () {
               HapticFeedback.lightImpact();
@@ -101,7 +101,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         decoration: BoxDecoration(
                           color: _selectedTabIndex == 0
-                              ? const Color(0xFF00E5FF)
+                              ? AppColors.primary
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -132,7 +132,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         decoration: BoxDecoration(
                           color: _selectedTabIndex == 1
-                              ? const Color(0xFF00E5FF)
+                              ? AppColors.primary
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -307,7 +307,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                       LogMeasurementSheet.show(context);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00E5FF),
+                      backgroundColor: AppColors.primary,
                       foregroundColor: AppColors.onyx,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -614,7 +614,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
               fontFamily: AppTypography.fontMono,
               fontSize: 11.0,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF00E5FF),
+              color: AppColors.primary,
             ),
           ),
         ],
@@ -650,7 +650,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
                   color: AppColors.textSecondary,
                 ),
               ),
-              Icon(icon, size: 16, color: const Color(0xFF00E5FF)),
+              Icon(icon, size: 16, color: AppColors.primary),
             ],
           ),
           const SizedBox(height: 8),
@@ -670,7 +670,7 @@ class _HealthTrackingScreenState extends ConsumerState<HealthTrackingScreen> {
               style: const TextStyle(
                 fontFamily: AppTypography.fontMono,
                 fontSize: 11.0,
-                color: Color(0xFF00E5FF),
+                color: AppColors.primary,
               ),
             ),
           ],

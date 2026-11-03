@@ -5,6 +5,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/measurement_units.dart';
 import '../../../models/workout_model.dart';
 import '../../../services/workout_service.dart';
+import '../../../core/theme/app_colors.dart';
 
 class WorkoutRecapService {
   static Future<void>? _fonts;
@@ -58,7 +59,7 @@ class WorkoutRecapService {
       painter.paint(canvas, Offset(72, y));
     }
 
-    text(AppConstants.appName, 80, size: 54, color: const Color(0xff00e5ff));
+    text(AppConstants.appName, 80, size: 54, color: AppColors.primary);
     text('WORKOUT COMPLETE', 190, size: 62);
     if (includeDetails) {
       text(workout.name, 300, size: 44);

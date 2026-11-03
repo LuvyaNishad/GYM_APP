@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/measurement_units.dart';
 import '../../../shared/widgets/glass_card.dart';
+import '../../../shared/widgets/leon_button.dart';
 import '../../../shared/widgets/app_sheet.dart';
 import '../../../shared/widgets/persistence_feedback.dart';
 import '../../dashboard/providers/habit_log_provider.dart';
@@ -61,10 +62,10 @@ class RecoveryScreen extends ConsumerWidget {
         child: Align(
           alignment: Alignment.topCenter,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
+            constraints: const BoxConstraints(maxWidth: 640),
             child: BackdropGroup(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                 children: [
                   Text(
                     'TODAY · ${MaterialLocalizations.of(context).formatMediumDate(today).toUpperCase()}',
@@ -153,8 +154,9 @@ class _RecoveryCard extends StatelessWidget {
   Widget build(BuildContext context) => GlassCard(
     blur: true,
     sharedBackdrop: true,
-    borderColor: AppColors.steel,
-    borderWidth: .6,
+    repaintBoundary: true,
+    border: false,
+    boxShadow: const [],
     borderRadius: 20,
     padding: padding,
     gradient: MediaQuery.highContrastOf(context)
@@ -176,7 +178,8 @@ class _RecoverySectionTitle extends StatelessWidget {
     child: Text(
       title,
       style: AppTypography.headlineSmall.copyWith(
-        fontSize: 11,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
         color: AppColors.platinum,
       ),
     ),
@@ -214,9 +217,7 @@ class _CheckInSummary extends StatelessWidget {
                 ),
               ),
               Icon(
-                score == null
-                    ? Icons.bedtime_outlined
-                    : Icons.check_circle_outline_rounded,
+                Icons.insights_outlined,
                 size: 20,
                 color: AppColors.platinum,
               ),
@@ -254,21 +255,19 @@ class _CheckInSummary extends StatelessWidget {
                 : "Based on today's sleep, hydration and soreness.",
             style: AppTypography.bodyMedium,
           ),
+          if (score == null) ...[
+            const SizedBox(height: 8),
+            Text(
+              '${3 - summary.missingInputs.length} of 3 inputs logged',
+              style: AppTypography.bodySmall,
+            ),
+          ],
           const SizedBox(height: 16),
-          FilledButton.icon(
+          LeonButton(
             key: const ValueKey('recovery-check-in-action'),
             onPressed: onCheckIn,
-            icon: const Icon(Icons.edit_outlined, size: 18),
-            label: Text(score == null ? 'LOG CHECK-IN' : 'UPDATE CHECK-IN'),
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(48),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.onPrimary,
-            ),
+            icon: Icons.edit_outlined,
+            label: score == null ? 'LOG CHECK-IN' : 'UPDATE CHECK-IN',
           ),
         ],
       ),
@@ -330,9 +329,8 @@ class _RecoveryInputRow extends StatelessWidget {
                     if (stacked) ...[
                       Text(
                         title,
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w600,
+                        style: AppTypography.bodyLarge.copyWith(
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -344,9 +342,8 @@ class _RecoveryInputRow extends StatelessWidget {
                           Expanded(
                             child: Text(
                               title,
-                              style: AppTypography.bodyMedium.copyWith(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.w600,
+                              style: AppTypography.bodyLarge.copyWith(
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
@@ -358,6 +355,7 @@ class _RecoveryInputRow extends StatelessWidget {
                     Text(
                       detail,
                       style: AppTypography.bodySmall.copyWith(
+                        fontSize: 13,
                         color: AppColors.platinum,
                       ),
                     ),
@@ -490,9 +488,17 @@ class _RecoveryExplanation extends StatelessWidget {
       const SizedBox(height: 20),
       const _RecoverySectionTitle('YOUR INPUTS'),
       const SizedBox(height: 8),
-      const Text(
-        'Sleep, hydration and soreness are required. Missing inputs never count as good recovery. Authorized sleep imports can fill missing sleep; a manual sleep entry takes precedence.',
-        style: AppTypography.bodyMedium,
+      const _ExplanationGroup(
+        children: [
+          _EstimateRule(
+            title: 'Three inputs, one check-in',
+            detail: 'Log sleep, hydration and soreness to see an estimate. Missing inputs never count as good recovery.',
+          ),
+          _EstimateRule(
+            title: 'Your sleep entry comes first',
+            detail: 'Authorized sleep imports can fill missing sleep. A manual entry takes precedence.',
+          ),
+        ],
       ),
       const SizedBox(height: 20),
       const _RecoverySectionTitle('THE SCORE'),
@@ -501,65 +507,106 @@ class _RecoveryExplanation extends StatelessWidget {
         'The estimate starts at 100 and stays between 0 and 100.',
         style: AppTypography.bodyMedium,
       ),
-      const SizedBox(height: 16),
-      const _EstimateRule(
+      const SizedBox(height: 12),
+      const _ExplanationGroup(children: [
+        _EstimateRule(
         title: 'Sleep',
         detail:
             '5 points deducted per hour below your sleep goal, up to 40 points.',
       ),
-      const _EstimateRule(
+        _EstimateRule(
         title: 'Hydration',
         detail:
             'Up to 15 points deducted when your logged water is below your goal.',
       ),
-      const _EstimateRule(
+        _EstimateRule(
         title: 'Soreness',
         detail: '3 points deducted per point on your 0–10 soreness rating.',
       ),
-      const _EstimateRule(
+        _EstimateRule(
         title: 'Recent workouts',
         detail:
             'A workout today deducts 25 points; yesterday deducts 5. Two days off adds 5; longer rest adds 10.',
       ),
-      const _EstimateRule(
+        _EstimateRule(
         title: 'Training volume',
         detail:
             'Up to 30 points deducted above your previous three-week average. This comparison needs four weeks of history.',
-      ),
+        ),
+      ]),
       if (summary.score != null) ...[
-        const SizedBox(height: 8),
+        const SizedBox(height: 24),
         const _RecoverySectionTitle("TODAY'S CONTRIBUTIONS"),
         const SizedBox(height: 12),
-        for (final factor in summary.score!.factors)
-          _EstimateRule(
-            title:
-                '${factor.label} · ${factor.delta() > 0 ? '+' : ''}${factor.delta().toStringAsFixed(0)}',
-            detail: factor.insight ?? 'Included in today’s estimate.',
-          ),
+        _ExplanationGroup(children: [
+          for (final factor in summary.score!.factors)
+            _EstimateRule(
+              title: switch (factor.label) {
+                'REST DAYS' => 'Rest days',
+                'VOLUME LOAD' => 'Training volume',
+                'SLEEP' => 'Sleep',
+                'HYDRATION' => 'Hydration',
+                'SORENESS' => 'Soreness',
+                _ => factor.label,
+              },
+              // Half-point contributions remain visible, so displayed factors
+              // do not misleadingly add up to a different score.
+              value: '${factor.delta() > 0 ? '+' : ''}${factor.delta().toStringAsFixed(factor.delta() == factor.delta().roundToDouble() ? 0 : 1)} pts',
+              detail: factor.insight ?? 'Included in today’s estimate.',
+            ),
+        ]),
       ],
     ],
   );
 }
 
+class _ExplanationGroup extends StatelessWidget {
+  const _ExplanationGroup({required this.children});
+  final List<Widget> children;
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      color: AppColors.cardBackground,
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var i = 0; i < children.length; i++) ...[
+            if (i > 0) const Divider(height: 1, color: AppColors.subtleBorder),
+            children[i],
+          ],
+        ],
+      ),
+    ),
+  );
+}
+
 class _EstimateRule extends StatelessWidget {
-  const _EstimateRule({required this.title, required this.detail});
+  const _EstimateRule({required this.title, required this.detail, this.value});
   final String title, detail;
+  final String? value;
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 16),
+    padding: const EdgeInsets.symmetric(vertical: 14),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: AppTypography.bodyMedium.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 12,
+          runSpacing: 6,
+          children: [
+            Text(title, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w500)),
+            if (value != null) Text(value!, style: AppTypography.monoSmall),
+          ],
         ),
         const SizedBox(height: 4),
-        Text(detail, style: AppTypography.bodySmall),
+        Text(detail, style: AppTypography.bodyMedium.copyWith(fontSize: 13)),
       ],
     ),
   );
@@ -691,18 +738,25 @@ class _RecoveryCheckInState extends ConsumerState<_RecoveryCheckIn> {
                 : (value) => setState(() => _soreness = value),
           ),
           const SizedBox(height: 16),
-          FilledButton(
-            onPressed: _pending ? null : _save,
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(48),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+          ImmediatePressFeedback(
+            enabled: !_pending,
+            builder: (context, statesController) => FilledButton(
+              statesController: statesController,
+              onPressed: _pending ? null : _save,
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
               ),
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.onPrimary,
+              child: Text(_pending ? 'SAVING...' : 'SAVE CHECK-IN'),
             ),
-            child: Text(_pending ? 'SAVING...' : 'SAVE CHECK-IN'),
           ),
         ],
       ),

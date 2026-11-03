@@ -76,7 +76,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
               child: const Icon(
                 Icons.trending_up_rounded,
                 size: 26,
-                color: Color(0xFF00E5FF),
+                color: AppColors.primary,
               ),
             ),
             const SizedBox(height: 16),
@@ -235,10 +235,10 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                      color: AppColors.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: const Color(0xFF00E5FF).withValues(alpha: 0.5),
+                        color: AppColors.primary.withValues(alpha: 0.5),
                         width: 1.0,
                       ),
                     ),
@@ -248,7 +248,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                         const Icon(
                           Icons.trending_up_rounded,
                           size: 16,
-                          color: Color(0xFF00E5FF),
+                          color: AppColors.primary,
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -257,7 +257,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                             fontFamily: AppTypography.fontMono,
                             fontSize: 12.0,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF00E5FF),
+                            color: AppColors.primary,
                           ),
                         ),
                       ],
@@ -298,12 +298,12 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                             ),
                             decoration: BoxDecoration(
                               color: _selectedRange == range
-                                  ? const Color(0xFF00E5FF)
+                                  ? AppColors.primary
                                   : AppColors.onyx,
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
                                 color: _selectedRange == range
-                                    ? const Color(0xFF00E5FF)
+                                    ? AppColors.primary
                                     : AppColors.steel.withValues(alpha: 0.4),
                                 width: 1.0,
                               ),
@@ -345,7 +345,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                       const Icon(
                         Icons.info_outline_rounded,
                         size: 13,
-                        color: Color(0xFF00E5FF),
+                        color: AppColors.primary,
                       ),
                       const SizedBox(width: 5),
                       Flexible(
@@ -506,7 +506,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                                   fontFamily: AppTypography.fontMono,
                                   fontSize: 11.0,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF00E676),
+                                  color: AppColors.personalRecord,
                                 ),
                               ),
                             ],
@@ -627,7 +627,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
             spots: spots,
             isCurved: true,
             curveSmoothness: 0.35,
-            color: const Color(0xFF00E5FF),
+            color: AppColors.primary,
             barWidth: 2.5,
             isStrokeCapRound: true,
             dotData: FlDotData(
@@ -637,7 +637,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                     radius: 4.0,
                     color: AppColors.pureWhite,
                     strokeWidth: 2,
-                    strokeColor: const Color(0xFF00E5FF),
+                    strokeColor: AppColors.primary,
                   ),
             ),
             belowBarData: BarAreaData(
@@ -646,8 +646,8 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  const Color(0xFF00E5FF).withValues(alpha: 0.25),
-                  const Color(0xFF00E5FF).withValues(alpha: 0.0),
+                  AppColors.primary.withValues(alpha: 0.25),
+                  AppColors.primary.withValues(alpha: 0.0),
                 ],
               ),
             ),
@@ -672,7 +672,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
           children: [
             const Icon(
               Icons.calculate_outlined,
-              color: Color(0xFF00E5FF),
+              color: AppColors.primary,
               size: 20,
             ),
             const SizedBox(width: 8),
@@ -710,7 +710,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                         fontFamily: AppTypography.fontBody,
                         fontSize: 11.0,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF00E5FF),
+                        color: AppColors.primary,
                       ),
                     ),
                     SizedBox(height: 4),
@@ -814,7 +814,7 @@ class _OverloadTabViewState extends ConsumerState<OverloadTabView> {
                 fontFamily: AppTypography.fontBody,
                 fontSize: 12.0,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF00E5FF),
+                color: AppColors.primary,
               ),
             ),
           ),

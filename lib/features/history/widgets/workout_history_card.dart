@@ -321,12 +321,12 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard>
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(
-                                0xFF00E676,
-                              ).withValues(alpha: 0.15),
+                              color: AppColors.personalRecord.withValues(
+                                alpha: 0.15,
+                              ),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: const Color(0xFF00E676),
+                                color: AppColors.personalRecord,
                                 width: 1.0,
                               ),
                             ),
@@ -343,7 +343,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard>
                                     fontFamily: AppTypography.fontMono,
                                     fontSize: 11.0,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFF00E676),
+                                    color: AppColors.personalRecord,
                                   ),
                                 ),
                               ],
@@ -462,16 +462,16 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard>
                                   ),
                                   decoration: BoxDecoration(
                                     color: ex.sets[i].isPr
-                                        ? const Color(
-                                            0xFF00E676,
-                                          ).withValues(alpha: 0.15)
+                                        ? AppColors.personalRecord.withValues(
+                                            alpha: 0.15,
+                                          )
                                         : AppColors.steel.withValues(
                                             alpha: 0.3,
                                           ),
                                     borderRadius: BorderRadius.circular(6),
                                     border: ex.sets[i].isPr
                                         ? Border.all(
-                                            color: const Color(0xFF00E676),
+                                            color: AppColors.personalRecord,
                                             width: 0.8,
                                           )
                                         : null,
@@ -483,7 +483,7 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard>
                                       fontSize: 11.0,
                                       fontWeight: FontWeight.w600,
                                       color: ex.sets[i].isPr
-                                          ? const Color(0xFF00E676)
+                                          ? AppColors.personalRecord
                                           : AppColors.platinum,
                                     ),
                                   ),

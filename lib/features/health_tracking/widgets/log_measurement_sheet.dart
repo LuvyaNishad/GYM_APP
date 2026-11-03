@@ -171,7 +171,7 @@ class _LogMeasurementSheetState extends ConsumerState<LogMeasurementSheet> {
                   children: [
                     const Icon(
                       Icons.straighten_rounded,
-                      color: Color(0xFF00E5FF),
+                      color: AppColors.primary,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -306,7 +306,7 @@ class _LogMeasurementSheetState extends ConsumerState<LogMeasurementSheet> {
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _save,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00E5FF),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.onyx,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -356,7 +356,7 @@ class _LogMeasurementSheetState extends ConsumerState<LogMeasurementSheet> {
         suffixStyle: const TextStyle(
           fontFamily: AppTypography.fontMono,
           fontSize: 11.0,
-          color: Color(0xFF00E5FF),
+          color: AppColors.primary,
         ),
         filled: true,
         fillColor: AppColors.charcoal,
@@ -374,7 +374,7 @@ class _LogMeasurementSheetState extends ConsumerState<LogMeasurementSheet> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF00E5FF)),
+          borderSide: const BorderSide(color: AppColors.primary),
         ),
       ),
     );
