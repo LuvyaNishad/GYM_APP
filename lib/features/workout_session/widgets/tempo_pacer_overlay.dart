@@ -60,7 +60,7 @@ class TempoPacerOverlay extends ConsumerWidget {
       return const Scaffold(
         backgroundColor: Colors.black,
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF00E5FF)),
+          child: CircularProgressIndicator(color: AppColors.primary),
         ),
       );
     }
@@ -221,7 +221,7 @@ class TempoPacerOverlay extends ConsumerWidget {
                 color: AppColors.charcoal,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: const Color(0xFF00E5FF).withValues(alpha: 0.50),
+                  color: AppColors.primary.withValues(alpha: 0.50),
                   width: 1.2,
                 ),
               ),
@@ -231,7 +231,7 @@ class TempoPacerOverlay extends ConsumerWidget {
                   const Icon(
                     Icons.speed_rounded,
                     size: 15,
-                    color: Color(0xFF00E5FF),
+                    color: AppColors.primary,
                   ),
                   const SizedBox(width: 8),
                   Column(
@@ -244,7 +244,7 @@ class TempoPacerOverlay extends ConsumerWidget {
                           fontFamily: AppTypography.fontMono,
                           fontSize: 11.0,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF00E5FF),
+                          color: AppColors.primary,
                           letterSpacing: 0.6,
                           height: 1.15,
                         ),
@@ -266,7 +266,7 @@ class TempoPacerOverlay extends ConsumerWidget {
                   const Icon(
                     Icons.arrow_drop_down,
                     size: 18,
-                    color: Color(0xFF00E5FF),
+                    color: AppColors.primary,
                   ),
                 ],
               ),
@@ -293,13 +293,13 @@ class TempoPacerOverlay extends ConsumerWidget {
               color: AppColors.charcoal,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0xFF00E5FF).withValues(alpha: 0.35),
+                color: AppColors.primary.withValues(alpha: 0.35),
               ),
             ),
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.bolt, size: 14, color: Color(0xFF00E5FF)),
+                Icon(Icons.bolt, size: 14, color: AppColors.primary),
                 SizedBox(width: 6),
                 Text(
                   'HANDS-FREE PREPARATION',
@@ -327,7 +327,7 @@ class TempoPacerOverlay extends ConsumerWidget {
                   value: (state.countdownRemaining / 5.0).clamp(0.0, 1.0),
                   strokeWidth: 6,
                   backgroundColor: AppColors.steel.withValues(alpha: 0.35),
-                  color: const Color(0xFF00E5FF),
+                  color: AppColors.primary,
                 ),
                 Text(
                   '${state.countdownRemaining}',
@@ -380,7 +380,7 @@ class TempoPacerOverlay extends ConsumerWidget {
             },
             icon: const Icon(
               Icons.play_arrow,
-              color: Color(0xFF00E5FF),
+              color: AppColors.primary,
               size: 18,
             ),
             label: const Text(
@@ -389,7 +389,7 @@ class TempoPacerOverlay extends ConsumerWidget {
                 fontFamily: AppTypography.fontMono,
                 fontSize: 12.0,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF00E5FF),
+                color: AppColors.primary,
                 letterSpacing: 0.5,
               ),
             ),
@@ -498,7 +498,7 @@ class TempoPacerOverlay extends ConsumerWidget {
             style: TextStyle(
               fontFamily: AppTypography.fontBody,
               fontSize: 12.5,
-              color: Color(0xFF00E5FF),
+              color: AppColors.primary,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.5,
             ),
@@ -533,7 +533,7 @@ class TempoPacerOverlay extends ConsumerWidget {
               const Icon(
                 Icons.hourglass_bottom,
                 size: 14,
-                color: Color(0xFF00E5FF),
+                color: AppColors.primary,
               ),
               const SizedBox(width: 6),
               Text(
@@ -814,14 +814,12 @@ class TempoPacerOverlay extends ConsumerWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? const Color(
-                                        0xFF00E5FF,
-                                      ).withValues(alpha: 0.12)
+                                    ? AppColors.primary.withValues(alpha: 0.12)
                                     : AppColors.charcoal,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: isSelected
-                                      ? const Color(0xFF00E5FF)
+                                      ? AppColors.primary
                                       : AppColors.steel,
                                   width: isSelected ? 1.5 : 1.0,
                                 ),
@@ -851,7 +849,7 @@ class TempoPacerOverlay extends ConsumerWidget {
                                             fontFamily: AppTypography.fontMono,
                                             fontSize: 11.5,
                                             color: isSelected
-                                                ? const Color(0xFF00E5FF)
+                                                ? AppColors.primary
                                                 : AppColors.textMuted,
                                           ),
                                         ),
@@ -861,7 +859,7 @@ class TempoPacerOverlay extends ConsumerWidget {
                                   if (isSelected)
                                     const Icon(
                                       Icons.check_circle_rounded,
-                                      color: Color(0xFF00E5FF),
+                                      color: AppColors.primary,
                                       size: 20,
                                     ),
                                 ],
@@ -989,7 +987,7 @@ class _PerimeterPulsePainter extends CustomPainter {
 
     // Progressive transition from Electric Cyan (rep 1) to Pure White (final rep)
     final cyanToWhite = Color.lerp(
-      const Color(0xFF00E5FF),
+      AppColors.primary,
       AppColors.pureWhite,
       repProgress,
     )!;
@@ -1004,7 +1002,7 @@ class _PerimeterPulsePainter extends CustomPainter {
 
     switch (phase) {
       case TempoPhase.countdown:
-        baseColor = const Color(0xFF00E5FF);
+        baseColor = AppColors.primary;
         baseOpacity = 0.15 + (pulseValue * 0.15);
         maxBorderWidth = 3.0 + (pulseValue * 2.0);
         break;

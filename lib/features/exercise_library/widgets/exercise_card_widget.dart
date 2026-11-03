@@ -99,7 +99,7 @@ class ExerciseCardWidget extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
@@ -109,7 +109,7 @@ class ExerciseCardWidget extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: AppTypography.fontBody,
                       fontSize: 11,
-                      color: Color(0xFF00E5FF),
+                      color: AppColors.primary,
                       letterSpacing: 1,
                     ),
                   ),
@@ -119,7 +119,7 @@ class ExerciseCardWidget extends StatelessWidget {
                       fontFamily: AppTypography.fontMono,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF00E5FF),
+                      color: AppColors.primary,
                     ),
                   ),
                 ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../shared/widgets/immediate_press_feedback.dart';
 import '../models/split_model.dart';
 
 /// Card displaying a single workout day inside an expanded split.
@@ -266,31 +267,34 @@ class _SplitDayWorkoutCardState extends State<SplitDayWorkoutCard> {
             child: SizedBox(
               width: double.infinity,
               height: 44,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  HapticFeedback.heavyImpact();
-                  widget.onStartWorkout();
-                },
-                icon: const Icon(
-                  Icons.play_arrow_rounded,
-                  size: 20,
-                  color: AppColors.onyx,
-                ),
-                label: Text(
-                  'START WORKOUT',
-                  style: AppTypography.bodySmall.copyWith(
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.0,
+              child: ImmediatePressFeedback(
+                builder: (context, statesController) => ElevatedButton.icon(
+                  statesController: statesController,
+                  onPressed: () {
+                    HapticFeedback.heavyImpact();
+                    widget.onStartWorkout();
+                  },
+                  icon: const Icon(
+                    Icons.play_arrow_rounded,
+                    size: 20,
                     color: AppColors.onyx,
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.pureWhite,
-                  foregroundColor: AppColors.onyx,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                  label: Text(
+                    'START WORKOUT',
+                    style: AppTypography.bodySmall.copyWith(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.0,
+                      color: AppColors.onyx,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.pureWhite,
+                    foregroundColor: AppColors.onyx,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
               ),

@@ -303,15 +303,15 @@ class _BiomechanicalWavePainter extends CustomPainter {
   Color _getPhaseColor() {
     switch (phase) {
       case TempoPhase.eccentric:
-        return const Color(0xFF00E5FF); // Electric Cyan
+        return AppColors.primary; // Electric Cyan
       case TempoPhase.bottomHold:
         return const Color(0xFFFFB300); // Radiant Amber tension
       case TempoPhase.concentric:
-        return const Color(0xFF00E5FF); // Bright Cyan / White drive
+        return AppColors.primary; // Bright Cyan / White drive
       case TempoPhase.topHold:
-        return const Color(0xFF00E5FF);
+        return AppColors.primary;
       case TempoPhase.countdown:
-        return const Color(0xFF00E5FF);
+        return AppColors.primary;
       case TempoPhase.completed:
         return const Color(0xFF10B981);
     }
@@ -354,7 +354,7 @@ class _BiomechanicalWavePainter extends CustomPainter {
 
     // Precision corner reticle calipers
     final caliperPaint = Paint()
-      ..color = const Color(0xFF00E5FF).withValues(alpha: 0.40)
+      ..color = AppColors.primary.withValues(alpha: 0.40)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
@@ -501,7 +501,7 @@ class _BiomechanicalWavePainter extends CustomPainter {
 
     if (upcomingStarted) {
       final blueprintPaint = Paint()
-        ..color = const Color(0xFF00E5FF).withValues(alpha: 0.30)
+        ..color = AppColors.primary.withValues(alpha: 0.30)
         ..strokeWidth = 2.0
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round;

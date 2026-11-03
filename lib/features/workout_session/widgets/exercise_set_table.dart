@@ -382,7 +382,7 @@ class ExerciseSetTable extends ConsumerWidget {
                 const SizedBox(height: 14),
                 const Divider(height: 1, color: AppColors.steel),
                 ListTile(
-                  leading: const Icon(Icons.speed, color: Color(0xFF00E5FF)),
+                  leading: const Icon(Icons.speed, color: AppColors.primary),
                   title: Text(
                     'Start Tempo Pacer for Set ${set.setNumber}',
                     style: AppTypography.bodyMedium.copyWith(
@@ -747,7 +747,7 @@ class _BilateralSetRowWidgetState
                     color: set.setType == ActiveSetType.failure
                         ? AppColors.pureWhite
                         : (set.setType == ActiveSetType.dropSet
-                              ? const Color(0xFF00E5FF)
+                              ? AppColors.primary
                               : (set.isWarmup
                                     ? AppColors.platinum
                                     : AppColors.steel)),
@@ -771,7 +771,7 @@ class _BilateralSetRowWidgetState
                     fontSize: 12.0,
                     fontWeight: FontWeight.w800,
                     color: set.setType == ActiveSetType.dropSet
-                        ? const Color(0xFF00E5FF)
+                        ? AppColors.primary
                         : (set.isWarmup
                               ? AppColors.platinum
                               : AppColors.pureWhite),
@@ -795,7 +795,7 @@ class _BilateralSetRowWidgetState
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: _weightFocusNode.hasFocus
-                          ? const Color(0xFF00E5FF)
+                          ? AppColors.primary
                           : (isCompleted
                                 ? AppColors.pureWhite.withValues(alpha: 0.4)
                                 : AppColors.steel),
@@ -897,7 +897,7 @@ class _BilateralSetRowWidgetState
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: _repsFocusNode.hasFocus
-                          ? const Color(0xFF00E5FF)
+                          ? AppColors.primary
                           : (isCompleted
                                 ? AppColors.pureWhite.withValues(alpha: 0.4)
                                 : AppColors.steel),
@@ -1220,7 +1220,7 @@ class _UnilateralSetRowWidgetState
                     color: set.setType == ActiveSetType.failure
                         ? AppColors.pureWhite
                         : (set.setType == ActiveSetType.dropSet
-                              ? const Color(0xFF00E5FF)
+                              ? AppColors.primary
                               : (set.isWarmup
                                     ? AppColors.platinum
                                     : AppColors.steel)),
@@ -1244,7 +1244,7 @@ class _UnilateralSetRowWidgetState
                     fontSize: 12.0,
                     fontWeight: FontWeight.w800,
                     color: set.setType == ActiveSetType.dropSet
-                        ? const Color(0xFF00E5FF)
+                        ? AppColors.primary
                         : (set.isWarmup
                               ? AppColors.platinum
                               : AppColors.pureWhite),
@@ -1270,12 +1270,12 @@ class _UnilateralSetRowWidgetState
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: set.isLeftCompleted
-                            ? const Color(0xFF00E5FF).withValues(alpha: 0.18)
+                            ? AppColors.primary.withValues(alpha: 0.18)
                             : AppColors.charcoal,
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
                           color: set.isLeftCompleted
-                              ? const Color(0xFF00E5FF)
+                              ? AppColors.primary
                               : AppColors.steel,
                         ),
                       ),
@@ -1285,7 +1285,7 @@ class _UnilateralSetRowWidgetState
                           fontSize: 12.0,
                           fontWeight: FontWeight.w800,
                           color: set.isLeftCompleted
-                              ? const Color(0xFF00E5FF)
+                              ? AppColors.primary
                               : AppColors.pureWhite,
                         ),
                       ),
@@ -1305,11 +1305,11 @@ class _UnilateralSetRowWidgetState
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: _leftWeightFocus.hasFocus
-                                    ? const Color(0xFF00E5FF)
+                                    ? AppColors.primary
                                     : (set.isLeftCompleted
-                                          ? const Color(
-                                              0xFF00E5FF,
-                                            ).withValues(alpha: 0.4)
+                                          ? AppColors.primary.withValues(
+                                              alpha: 0.4,
+                                            )
                                           : AppColors.steel),
                                 width: _leftWeightFocus.hasFocus ? 1.5 : 1.0,
                               ),
@@ -1389,11 +1389,11 @@ class _UnilateralSetRowWidgetState
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: _leftRepsFocus.hasFocus
-                                    ? const Color(0xFF00E5FF)
+                                    ? AppColors.primary
                                     : (set.isLeftCompleted
-                                          ? const Color(
-                                              0xFF00E5FF,
-                                            ).withValues(alpha: 0.4)
+                                          ? AppColors.primary.withValues(
+                                              alpha: 0.4,
+                                            )
                                           : AppColors.steel),
                                 width: _leftRepsFocus.hasFocus ? 1.5 : 1.0,
                               ),
@@ -1481,7 +1481,7 @@ class _UnilateralSetRowWidgetState
                                   ? Icons.check_circle
                                   : Icons.circle_outlined,
                               color: set.isLeftCompleted
-                                  ? const Color(0xFF00E5FF)
+                                  ? AppColors.primary
                                   : AppColors.platinum,
                               size: 26,
                             ),
@@ -1514,12 +1514,12 @@ class _UnilateralSetRowWidgetState
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: set.isRightCompleted
-                              ? const Color(0xFF00E5FF).withValues(alpha: 0.18)
+                              ? AppColors.primary.withValues(alpha: 0.18)
                               : AppColors.charcoal,
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
                             color: set.isRightCompleted
-                                ? const Color(0xFF00E5FF)
+                                ? AppColors.primary
                                 : AppColors.steel,
                           ),
                         ),
@@ -1532,14 +1532,14 @@ class _UnilateralSetRowWidgetState
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w800,
                                 color: set.isRightCompleted
-                                    ? const Color(0xFF00E5FF)
+                                    ? AppColors.primary
                                     : AppColors.pureWhite,
                               ),
                             ),
                             const Icon(
                               Icons.sync_rounded,
                               size: 11,
-                              color: Color(0xFF00E5FF),
+                              color: AppColors.primary,
                             ),
                           ],
                         ),
@@ -1560,11 +1560,11 @@ class _UnilateralSetRowWidgetState
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: _rightWeightFocus.hasFocus
-                                    ? const Color(0xFF00E5FF)
+                                    ? AppColors.primary
                                     : (set.isRightCompleted
-                                          ? const Color(
-                                              0xFF00E5FF,
-                                            ).withValues(alpha: 0.4)
+                                          ? AppColors.primary.withValues(
+                                              alpha: 0.4,
+                                            )
                                           : AppColors.steel),
                                 width: _rightWeightFocus.hasFocus ? 1.5 : 1.0,
                               ),
@@ -1645,11 +1645,11 @@ class _UnilateralSetRowWidgetState
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: _rightRepsFocus.hasFocus
-                                    ? const Color(0xFF00E5FF)
+                                    ? AppColors.primary
                                     : (set.isRightCompleted
-                                          ? const Color(
-                                              0xFF00E5FF,
-                                            ).withValues(alpha: 0.4)
+                                          ? AppColors.primary.withValues(
+                                              alpha: 0.4,
+                                            )
                                           : AppColors.steel),
                                 width: _rightRepsFocus.hasFocus ? 1.5 : 1.0,
                               ),
@@ -1738,7 +1738,7 @@ class _UnilateralSetRowWidgetState
                                   ? Icons.check_circle
                                   : Icons.circle_outlined,
                               color: set.isRightCompleted
-                                  ? const Color(0xFF00E5FF)
+                                  ? AppColors.primary
                                   : AppColors.platinum,
                               size: 26,
                             ),
