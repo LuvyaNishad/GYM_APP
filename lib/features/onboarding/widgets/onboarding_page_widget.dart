@@ -30,17 +30,13 @@ class OnboardingPageWidget extends StatelessWidget {
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
+                color: AppColors.primary.withValues(alpha: 0.4),
               ),
             ),
-            child: Icon(
-              iconData,
-              size: 36,
-              color: const Color(0xFF00E5FF),
-            ),
+            child: Icon(iconData, size: 36, color: AppColors.primary),
           ),
 
           const SizedBox(height: 40),
