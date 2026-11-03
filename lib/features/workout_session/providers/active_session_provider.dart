@@ -175,7 +175,10 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     persistInBackground();
   }
 
-  List<ActiveExerciseState> _withHistory(List<ActiveExerciseState> exercises) {
+  List<ActiveExerciseState> _withHistory(
+    List<ActiveExerciseState> exercises, {
+    bool usePreviousLoads = true,
+  }) {
     final history = ref.read(historyWorkoutsProvider);
     return exercises.map((exercise) {
       WorkoutExercise? previous;
@@ -213,11 +216,15 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
             'previousRepsRight': exercise.isUnilateral
                 ? prior?.repsRight
                 : null,
-            if (prior != null) 'weightKg': prior.weightKg,
-            if (prior != null) 'reps': prior.reps,
-            if (exercise.isUnilateral && prior?.weightKgRight != null)
+            if (usePreviousLoads && prior != null) 'weightKg': prior.weightKg,
+            if (usePreviousLoads && prior != null) 'reps': prior.reps,
+            if (usePreviousLoads &&
+                exercise.isUnilateral &&
+                prior?.weightKgRight != null)
               'weightKgRight': prior!.weightKgRight,
-            if (exercise.isUnilateral && prior?.repsRight != null)
+            if (usePreviousLoads &&
+                exercise.isUnilateral &&
+                prior?.repsRight != null)
               'repsRight': prior!.repsRight,
           });
         }),
@@ -737,8 +744,13 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
   }
 
   /// Adds a new exercise to the sequence.
-  void addExercise(ActiveExerciseState exercise) {
-    exercise = _withHistory([exercise]).first;
+  void addExercise(
+    ActiveExerciseState exercise, {
+    bool usePreviousLoads = true,
+  }) {
+    exercise = _withHistory([
+      exercise,
+    ], usePreviousLoads: usePreviousLoads).first;
     if (state.exercises.any((e) => e.exerciseId == exercise.exerciseId)) {
       exercise = exercise.copyWith(
         exerciseId:

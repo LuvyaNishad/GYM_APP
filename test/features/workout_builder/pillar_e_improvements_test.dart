@@ -5,6 +5,7 @@ import 'package:leon/core/theme/app_theme.dart';
 import 'package:leon/features/workout_builder/providers/splits_provider.dart';
 import 'package:leon/features/workout_builder/widgets/create_routine_sheet.dart';
 import 'package:leon/services/hive_service.dart';
+import 'package:leon/core/providers/local_date_provider.dart';
 
 class FakeHiveService extends HiveService {
   final Map<String, dynamic> settings = {};
@@ -35,7 +36,7 @@ class FakeHiveService extends HiveService {
   }
 
   @override
-  Future<void> putSetting(String key, Object? value) async {
+  Future<void> putSettingChecked(String key, Object? value) async {
     settings[key] = value;
   }
 
@@ -52,7 +53,10 @@ void main() {
   setUp(() {
     hive = FakeHiveService();
     container = ProviderContainer(
-      overrides: [hiveServiceProvider.overrideWithValue(hive)],
+      overrides: [
+        hiveServiceProvider.overrideWithValue(hive),
+        localDateProvider.overrideWith((ref) => DateTime(2026, 11, 4)),
+      ],
     );
   });
   tearDown(() => container.dispose());

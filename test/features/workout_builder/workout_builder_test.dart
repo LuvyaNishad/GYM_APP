@@ -1,3 +1,5 @@
+import 'package:leon/services/hive_service.dart';
+import '../../helpers/memory_hive_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,8 +44,12 @@ void main() {
 
     test(
       'SplitsNotifier switches active split and auto-fixes lagging muscle',
-      () {
-        final container = ProviderContainer();
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            hiveServiceProvider.overrideWithValue(MemoryHiveService()),
+          ],
+        );
         addTearDown(container.dispose);
 
         final initial = container.read(splitsProvider);
@@ -51,7 +57,7 @@ void main() {
         expect(initial.loggedVolume['Hamstrings'], isNull);
 
         // Switch to Upper/Lower
-        container
+        await container
             .read(splitsProvider.notifier)
             .switchActiveSplit('split_upper_lower');
         expect(

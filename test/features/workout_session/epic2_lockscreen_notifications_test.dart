@@ -204,7 +204,11 @@ void main() {
       rest.addSeconds(-9999);
       expect(fakeNotifications.lastExerciseName, 'Pulldown');
       expect(fakeNotifications.lastSetNumber, 1);
-      expect(fakeNotifications.isAlertTriggered, isTrue);
+      expect(
+        fakeNotifications.isAlertTriggered,
+        isFalse,
+        reason: 'Subtracting past zero skips rest without a completion alert',
+      );
     });
 
     test('finishing every set clears an earlier countdown and its alerts', () {

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/app_sheet.dart';
+import '../../../shared/widgets/persistence_feedback.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../workout_session/widgets/exercise_picker_modal.dart';
 import '../models/split_model.dart';
@@ -58,6 +59,7 @@ class _CreateRoutineSheetState extends ConsumerState<CreateRoutineSheet> {
   }
 
   Future<void> _save() async {
+    if (_saving) return;
     if (_name.text.trim().isEmpty) {
       setState(() => _error = 'Give your routine a name.');
       return;
@@ -79,13 +81,24 @@ class _CreateRoutineSheetState extends ConsumerState<CreateRoutineSheet> {
       if (!mounted) return;
       final notifier = ref.read(splitsProvider.notifier);
       final messenger = ScaffoldMessenger.of(context);
+      var activating = false;
       Navigator.pop(context);
       messenger.showSnackBar(
         SnackBar(
           content: Text('Saved ${split.name}'),
           action: SnackBarAction(
             label: 'Make active',
-            onPressed: () => notifier.switchActiveSplit(split.id),
+            onPressed: () async {
+              if (activating) return;
+              activating = true;
+              await persistWithFeedback(
+                messenger.context,
+                () => notifier.switchActiveSplit(split.id),
+                message:
+                    'Could not activate the routine. It is saved in your library; try again from Workouts.',
+              );
+              activating = false;
+            },
           ),
         ),
       );

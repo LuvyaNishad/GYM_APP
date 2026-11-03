@@ -131,7 +131,7 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
         ? widget.initialTotalWeightKg.clamp(0, 1500)
         : 20;
     _targetController = TextEditingController(
-      text: _units.weightFromKg(_target).toStringAsFixed(1),
+      text: _units.weightInput(_target),
     );
   }
 
@@ -182,7 +182,7 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
             for (final plate in kOlympicPlates)
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(_units.weight(plate)),
+                title: Text(_units.preciseWeight(plate)),
                 value: available.contains(plate),
                 onChanged: saving
                     ? null
@@ -347,7 +347,7 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
                                 child: RotatedBox(
                                   quarterTurns: 3,
                                   child: Text(
-                                    _units.weight(kg),
+                                    _units.preciseWeight(kg),
                                     style: AppTypography.monoSmall,
                                   ),
                                 ),
@@ -363,7 +363,10 @@ class _PlateCalculatorModalState extends ConsumerState<PlateCalculatorModal> {
                   breakdown.isEmpty
                       ? 'Empty bar'
                       : breakdown.entries
-                            .map((e) => '${e.value} × ${_units.weight(e.key)}')
+                            .map(
+                              (e) =>
+                                  '${e.value} × ${_units.preciseWeight(e.key)}',
+                            )
                             .join('  +  '),
                   style: AppTypography.monoSmall,
                   textAlign: TextAlign.center,

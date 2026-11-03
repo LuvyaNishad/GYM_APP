@@ -37,7 +37,7 @@ class FakeHiveService extends HiveService {
   }
 
   @override
-  Future<void> putSetting(String key, Object? value) async {
+  Future<void> putSettingChecked(String key, Object? value) async {
     settings[key] = value;
   }
 
@@ -82,7 +82,7 @@ void main() {
         );
 
         // Switch active split
-        notifier.switchActiveSplit(duplicated.id);
+        await notifier.switchActiveSplit(duplicated.id);
         expect(
           container.read(splitsProvider).activeSplitId,
           equals(duplicated.id),
@@ -200,7 +200,7 @@ void main() {
 
     test(
       'Push Pull Legs (Machine Focus) preset includes all 4 machine exercises and can be activated',
-      () {
+      () async {
         final fakeHive = FakeHiveService();
         final container = ProviderContainer(
           overrides: [hiveServiceProvider.overrideWithValue(fakeHive)],
@@ -235,7 +235,7 @@ void main() {
         expect(pullExNames, contains('Machine Rear Delt Fly'));
 
         // Switch active split to PPL Machine Focus
-        container
+        await container
             .read(splitsProvider.notifier)
             .switchActiveSplit(pplMachine.id);
         expect(
