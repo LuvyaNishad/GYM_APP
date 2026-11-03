@@ -9,6 +9,7 @@ import 'package:leon/features/profile/models/account_profile_model.dart';
 import 'package:leon/features/profile/providers/profile_provider.dart';
 import 'package:leon/features/profile/services/pdf_report_service.dart';
 import 'package:leon/features/profile/screens/profile_screen.dart';
+import 'package:leon/core/theme/app_theme.dart';
 
 void main() {
   group('AccountProfile Model & Biometrics Computation Tests', () {
@@ -135,14 +136,19 @@ void main() {
       });
 
       await tester.pumpWidget(
-        const ProviderScope(child: MaterialApp(home: ProfileScreen())),
+        ProviderScope(
+          overrides: [
+            hiveServiceProvider.overrideWithValue(MemoryHiveService()),
+          ],
+          child: MaterialApp(theme: AppTheme.dark, home: const ProfileScreen()),
+        ),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
       // Verify Account Header & Identity
       expect(find.text('ACCOUNT'), findsOneWidget);
-      expect(find.text('Personal Profile & Settings'), findsOneWidget);
+      expect(find.text('Personal profile & settings'), findsOneWidget);
       expect(find.text('Guest'), findsOneWidget);
       expect(find.text('leon@fitness.os'), findsNothing);
 
@@ -153,8 +159,12 @@ void main() {
       expect(find.text('GOAL'), findsOneWidget);
 
       // Verify Training Preferences
-      expect(find.text('TRAINING PREFERENCES'), findsOneWidget);
-      expect(find.text('Default Rest Timer'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Default rest timer'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Default rest timer'), findsOneWidget);
 
       // Verify Export actions
       expect(find.text('REPORTS & DATA EXPORT'), findsNothing);

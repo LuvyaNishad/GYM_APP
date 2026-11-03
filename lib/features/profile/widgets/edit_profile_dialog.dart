@@ -12,6 +12,8 @@ import '../providers/profile_provider.dart';
 import '../../workout_builder/providers/splits_provider.dart';
 import '../../workout_builder/models/programme_configuration.dart';
 import '../../../shared/widgets/persistence_feedback.dart';
+import '../../../shared/widgets/app_sheet.dart';
+import 'account_section.dart';
 
 /// Shows the Edit Profile modal sheet.
 void showEditProfileSheet(BuildContext context, AccountProfile profile) {
@@ -123,288 +125,81 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
     ];
     return PersistenceForm(
       pending: _isSaving,
-      child: SingleChildScrollView(
-        child: Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      child: AppSheet(
+        title: 'Edit Profile',
+        busy: _isSaving,
+        children: [
+          TextField(
+            controller: _nameController,
+            style: AccountType.row,
+            textCapitalization: TextCapitalization.words,
+            textInputAction: TextInputAction.next,
+            decoration: const InputDecoration(
+              labelText: 'Full name',
+              hintText: 'Enter name',
+            ),
           ),
-          padding: EdgeInsets.fromLTRB(
-            20,
-            12,
-            20,
-            MediaQuery.of(context).viewInsets.bottom + 28,
+          const SizedBox(height: 16),
+          TextField(
+            controller: _emailController,
+            style: AccountType.row,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.done,
+            decoration: const InputDecoration(
+              labelText: 'Email address',
+              hintText: 'Optional',
+            ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Drag handle
-              Center(
-                child: Container(
-                  width: 38,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(2),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            initialValue: _selectedSplit,
+            isExpanded: true,
+            isDense: false,
+            itemHeight: null,
+            style: AccountType.row,
+            decoration: const InputDecoration(labelText: 'Training split'),
+            items: [
+              for (final split in availableSplits)
+                DropdownMenuItem(
+                  value: split,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(splitNames[split] ?? 'Saved split ($split)'),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'Edit Profile',
-                      style: TextStyle(
-                        fontFamily: AppTypography.fontDisplay,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.pureWhite,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: _isSaving
-                        ? null
-                        : () => Navigator.of(context).pop(),
-                    icon: const Icon(
-                      Icons.close_rounded,
-                      color: AppColors.platinum,
-                      size: 20,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Display Name
-              const Text(
-                'FULL NAME',
-                style: TextStyle(
-                  fontFamily: AppTypography.fontDisplay,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textSecondary,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              const SizedBox(height: 6),
-              TextField(
-                controller: _nameController,
-                style: const TextStyle(
-                  fontFamily: AppTypography.fontBody,
-                  fontSize: 14.5,
-                  color: AppColors.pureWhite,
-                ),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: AppColors.charcoal,
-                  hintText: 'Enter name',
-                  hintStyle: const TextStyle(color: AppColors.textMuted),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: AppColors.steel.withValues(alpha: 0.5),
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: AppColors.steel.withValues(alpha: 0.5),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.primary),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // Email
-              const Text(
-                'EMAIL ADDRESS',
-                style: TextStyle(
-                  fontFamily: AppTypography.fontDisplay,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textSecondary,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              const SizedBox(height: 6),
-              TextField(
-                controller: _emailController,
-                style: const TextStyle(
-                  fontFamily: AppTypography.fontBody,
-                  fontSize: 14.5,
-                  color: AppColors.pureWhite,
-                ),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: AppColors.charcoal,
-                  hintText: 'Enter email',
-                  hintStyle: const TextStyle(color: AppColors.textMuted),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: AppColors.steel.withValues(alpha: 0.5),
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: AppColors.steel.withValues(alpha: 0.5),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.primary),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // Training Split selector
-              const Text(
-                'PREFERRED TRAINING SPLIT',
-                style: TextStyle(
-                  fontFamily: AppTypography.fontDisplay,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textSecondary,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  color: AppColors.charcoal,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.steel.withValues(alpha: 0.5),
-                  ),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedSplit,
-                    dropdownColor: AppColors.charcoal,
-                    isExpanded: true,
-                    style: const TextStyle(
-                      fontFamily: AppTypography.fontBody,
-                      fontSize: 14,
-                      color: AppColors.pureWhite,
-                    ),
-                    items: availableSplits
-                        .map(
-                          (s) => DropdownMenuItem(
-                            value: s,
-                            child: Text(splitNames[s] ?? 'Saved split ($s)'),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (val) {
-                      if (val != null) setState(() => _selectedSplit = val);
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // Experience level
-              const Text(
-                'EXPERIENCE LEVEL',
-                style: TextStyle(
-                  fontFamily: AppTypography.fontDisplay,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textSecondary,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: _levels.map((lvl) {
-                  final isSel = lvl == _selectedLevel;
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3),
-                      child: InkWell(
-                        onTap: () => setState(() => _selectedLevel = lvl),
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            color: isSel
-                                ? AppColors.primary.withValues(alpha: 0.15)
-                                : AppColors.charcoal,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: isSel
-                                  ? AppColors.primary
-                                  : AppColors.steel.withValues(alpha: 0.5),
-                            ),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            lvl,
-                            style: TextStyle(
-                              fontFamily: AppTypography.fontBody,
-                              fontSize: 12.0,
-                              fontWeight: isSel
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                              color: isSel
-                                  ? AppColors.primary
-                                  : AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 22),
-
-              // Save Button
-              ElevatedButton(
-                onPressed: _isSaving ? null : _save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.pureWhite,
-                  foregroundColor: AppColors.background,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: const Text(
-                  'Save Changes',
-                  style: TextStyle(
-                    fontFamily: AppTypography.fontDisplay,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
             ],
+            onChanged: (value) {
+              if (value != null) setState(() => _selectedSplit = value);
+            },
           ),
-        ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            initialValue: _selectedLevel,
+            isExpanded: true,
+            isDense: false,
+            itemHeight: null,
+            style: AccountType.row,
+            decoration: const InputDecoration(labelText: 'Experience level'),
+            items: [
+              for (final level in _levels)
+                DropdownMenuItem(
+                  value: level,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(level),
+                  ),
+                ),
+            ],
+            onChanged: (value) {
+              if (value != null) setState(() => _selectedLevel = value);
+            },
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: _isSaving ? null : _save,
+            child: const Text('Save Changes'),
+          ),
+        ],
       ),
     );
   }

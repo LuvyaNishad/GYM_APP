@@ -6,6 +6,7 @@ import '../../../shared/widgets/app_sheet.dart';
 import '../../../shared/widgets/persistence_feedback.dart';
 import '../models/account_profile_model.dart';
 import '../providers/profile_provider.dart';
+import 'account_section.dart';
 
 void showEditBiometricsSheet(BuildContext context, AccountProfile profile) =>
     showModalBottomSheet<void>(
@@ -120,10 +121,10 @@ class _BiometricsEditorState extends ConsumerState<_BiometricsEditor> {
   }
 
   Widget _input(TextEditingController field, String label) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.only(bottom: 16),
     child: TextField(
       controller: field,
-      style: AppTypography.monoMedium,
+      style: AppTypography.monoMedium.copyWith(fontSize: 18),
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(labelText: label),
     ),
@@ -133,10 +134,11 @@ class _BiometricsEditorState extends ConsumerState<_BiometricsEditor> {
     pending: _pending,
     child: AppSheet(
       title: 'Update Biometrics',
+      busy: _pending,
       children: [
-        const Text(
+        Text(
           'Personal values are optional. Empty fields stay unset.',
-          style: AppTypography.bodySmall,
+          style: AccountType.detail,
         ),
         const SizedBox(height: 12),
         SegmentedButton<String>(
@@ -173,6 +175,10 @@ class _BiometricsEditorState extends ConsumerState<_BiometricsEditor> {
         _input(_age, 'Age'),
         DropdownButtonFormField<String>(
           initialValue: _sex,
+          isExpanded: true,
+          isDense: false,
+          itemHeight: null,
+          style: AccountType.row,
           decoration: const InputDecoration(
             labelText: 'Sex (for calorie estimate)',
           ),

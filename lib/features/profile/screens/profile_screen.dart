@@ -1,24 +1,24 @@
-import '../../workout_session/services/workout_cue_service.dart';
-import '../../workout_session/services/native_rest_service.dart';
-import '../../workout_session/services/notification_service.dart';
-import '../../workout_builder/providers/splits_provider.dart';
-import '../../dashboard/widgets/training_pause_sheet.dart';
-import '../../dashboard/providers/workout_rotation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../shared/widgets/persistence_feedback.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/app_shell.dart';
-import '../../../shared/widgets/glass_card.dart';
+import '../../../shared/widgets/persistence_feedback.dart';
+import '../../dashboard/providers/workout_rotation_provider.dart';
+import '../../dashboard/widgets/training_pause_sheet.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import '../../onboarding/widgets/goal_selector_sheet.dart';
+import '../../workout_builder/providers/splits_provider.dart';
+import '../../workout_session/services/native_rest_service.dart';
+import '../../workout_session/services/notification_service.dart';
+import '../../workout_session/services/workout_cue_service.dart';
 import '../models/account_profile_model.dart';
 import '../providers/profile_provider.dart';
+import '../widgets/account_section.dart';
 import '../widgets/edit_biometrics_dialog.dart';
 import '../widgets/edit_profile_dialog.dart';
 import '../widgets/export_data_dialog.dart';
@@ -34,100 +34,75 @@ class ProfileScreen extends ConsumerWidget {
       backgroundColor: AppColors.background,
       body: SafeArea(
         bottom: false,
-        child: BackdropGroup(
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(20, 20, 20, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('ACCOUNT', style: AppTypography.screenTitle),
-                      SizedBox(height: 4),
-                      Text(
-                        'Personal Profile & Settings',
-                        style: AppTypography.bodySmall,
-                      ),
-                    ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final inset = constraints.maxWidth > 672
+                ? (constraints.maxWidth - 640) / 2
+                : 16.0;
+            return BackdropGroup(
+              child: CustomScrollView(
+                key: const PageStorageKey('account-scroll'),
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      inset,
+                      20,
+                      inset,
+                      AppShell.bottomPadding(context, extra: 24),
+                    ),
+                    sliver: SliverList.list(
+                      children: [
+                        Semantics(
+                          header: true,
+                          child: const Text(
+                            'ACCOUNT',
+                            style: AppTypography.screenTitle,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Personal profile & settings',
+                          style: AccountType.detail,
+                        ),
+                        const SizedBox(height: 24),
+                        _IdentityCard(profile: profile),
+                        const SizedBox(height: 24),
+                        _BiometricsCard(profile: profile),
+                        const SizedBox(height: 24),
+                        const _HealthCard(),
+                        const SizedBox(height: 24),
+                        _TrainingPreferencesCard(profile: profile),
+                        const SizedBox(height: 24),
+                        _AppSettingsCard(profile: profile),
+                        const SizedBox(height: 24),
+                        AccountSection(
+                          title: 'DATA & REPORTS',
+                          children: [
+                            AccountRow(
+                              icon: Icons.save_alt_rounded,
+                              title: 'Backup & export',
+                              subtitle: 'Save, share or restore your data',
+                              onTap: () => showExportDataSheet(context),
+                            ),
+                            AccountRow(
+                              icon: Icons.picture_as_pdf_outlined,
+                              title: 'Monthly training report',
+                              subtitle:
+                                  'Workouts, progress and personal records',
+                              onTap: () => showReportPreviewSheet(context),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        const _AccountActionsCard(),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
-              SliverPadding(
-                padding: EdgeInsets.fromLTRB(
-                  16,
-                  0,
-                  16,
-                  AppShell.bottomPadding(context, extra: 32),
-                ),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    _IdentityCard(profile: profile),
-                    const SizedBox(height: 16),
-                    _BiometricsCard(profile: profile),
-                    const SizedBox(height: 16),
-                    _GlassSectionContainer(
-                      child: Column(
-                        children: [
-                          ListTile(
-                            leading: const Icon(Icons.monitor_heart_outlined),
-                            title: const Text('Health & Measurements'),
-                            onTap: () =>
-                                context.push(AppConstants.routeHealthTracking),
-                          ),
-                          ListTile(
-                            leading: const Icon(Icons.bedtime_outlined),
-                            title: const Text('Recovery check-in'),
-                            onTap: () =>
-                                context.push(AppConstants.routeRecovery),
-                          ),
-                          ListTile(
-                            leading: const Icon(
-                              Icons.pause_circle_outline_rounded,
-                            ),
-                            title: Text(
-                              ref.watch(
-                                    workoutRotationProvider.select(
-                                      (state) => state.isTrainingPaused,
-                                    ),
-                                  )
-                                  ? 'Manage training pause'
-                                  : 'Pause training',
-                            ),
-                            onTap: () => showTrainingPauseSheet(context),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _TrainingPreferencesCard(profile: profile),
-                    const SizedBox(height: 16),
-                    _AppSettingsCard(profile: profile),
-                    const SizedBox(height: 16),
-                    _GlassSectionContainer(
-                      child: Column(
-                        children: [
-                          ListTile(
-                            leading: const Icon(Icons.save_alt),
-                            title: const Text('Backup & export'),
-                            onTap: () => showExportDataSheet(context),
-                          ),
-                          ListTile(
-                            leading: const Icon(Icons.picture_as_pdf_outlined),
-                            title: const Text('Monthly training report'),
-                            onTap: () => showReportPreviewSheet(context),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _AccountActionsCard(),
-                  ]),
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -140,47 +115,77 @@ class _IdentityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initials = profile.displayName.isNotEmpty
-        ? profile.displayName.characters.first.toUpperCase()
-        : 'L';
+    final name = profile.displayName.isEmpty ? 'Guest' : profile.displayName;
     final joined = MaterialLocalizations.of(
       context,
     ).formatMonthYear(profile.memberSince);
-    return _GlassSectionContainer(
-      child: Row(
+    final avatar = ExcludeSemantics(
+      child: CircleAvatar(
+        radius: 24,
+        backgroundColor: AppColors.surfaceSecondary,
+        child: Text(
+          name.characters.first.toUpperCase(),
+          style: AppTypography.headlineMedium,
+        ),
+      ),
+    );
+    final edit = IconButton(
+      tooltip: 'Edit profile',
+      constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+      onPressed: () => showEditProfileSheet(context, profile),
+      icon: Icon(
+        Icons.edit_outlined,
+        size: 20,
+        color: Theme.of(context).colorScheme.primary,
+      ),
+    );
+    final details = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(name, style: AppTypography.headlineLarge),
+        const SizedBox(height: 4),
+        Text(
+          profile.email.isEmpty ? 'Local profile' : profile.email,
+          style: AccountType.detail,
+        ),
+        const SizedBox(height: 4),
+        Text('Profile since $joined', style: AccountType.detail),
+      ],
+    );
+    return AccountSurface(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: AppColors.surfaceSecondary,
-            child: Text(initials, style: AppTypography.headlineMedium),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: MediaQuery.textScalerOf(context).scale(20) > 28
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(children: [avatar, const Spacer(), edit]),
+                      const SizedBox(height: 12),
+                      details,
+                    ],
+                  )
+                : Row(
+                    children: [
+                      avatar,
+                      const SizedBox(width: 12),
+                      Expanded(child: details),
+                      edit,
+                    ],
+                  ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  profile.displayName.isEmpty ? 'Guest' : profile.displayName,
-                  style: AppTypography.headlineSmall,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  profile.email.isEmpty ? 'Local profile' : profile.email,
-                  style: AppTypography.bodySmall,
-                ),
-                const SizedBox(height: 4),
-                Text('Profile since $joined', style: AppTypography.bodySmall),
-                Text(
-                  '${profile.totalWorkouts} workouts ? ${profile.formatWeight(profile.totalVolumeKg)} volume',
-                  style: AppTypography.bodySmall,
-                ),
+          const AccountDivider(),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: _MetricGrid(
+              minimumWidth: 140,
+              metrics: [
+                ('WORKOUTS', '${profile.totalWorkouts}'),
+                ('TOTAL VOLUME', profile.formatWeight(profile.totalVolumeKg)),
               ],
             ),
-          ),
-          IconButton(
-            tooltip: 'Edit profile',
-            onPressed: () => showEditProfileSheet(context, profile),
-            icon: const Icon(Icons.edit_outlined, size: 20),
           ),
         ],
       ),
@@ -193,102 +198,153 @@ class _BiometricsCard extends StatelessWidget {
   final AccountProfile profile;
 
   @override
-  Widget build(BuildContext context) {
-    return _GlassSectionContainer(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Expanded(
-                child: _SectionHeader(
-                  title: 'BIOMETRICS & GOALS',
-                  icon: Icons.monitor_weight_outlined,
-                ),
-              ),
-              TextButton(
-                onPressed: () => showEditBiometricsSheet(context, profile),
-                child: const Text('Update'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final columns =
-                  constraints.maxWidth /
-                          MediaQuery.textScalerOf(context).scale(1) <
-                      300
-                  ? 2
-                  : 3;
-              final width =
-                  (constraints.maxWidth - (columns - 1) * 16) / columns;
-              return Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                children: [
-                  for (final metric in [
-                    ('HEIGHT', profile.formattedHeight),
-                    ('CURRENT', profile.formatWeight(profile.currentWeightKg)),
-                    ('GOAL', profile.formatWeight(profile.targetWeightKg)),
-                  ])
-                    SizedBox(
-                      width: width,
-                      child: _MetricBlock(label: metric.$1, value: metric.$2),
-                    ),
-                ],
-              );
-            },
-          ),
-          const Divider(height: 28),
-          _ValueRow(
-            label: 'BMI · ${profile.bmiCategory}',
-            value: profile.formattedBmi,
-          ),
-          const SizedBox(height: 12),
-          _ValueRow(
-            label: 'Est. maintenance',
-            value: profile.maintenanceCaloriesEstimate == null
-                ? 'Not enough input'
-                : '${profile.maintenanceCaloriesEstimate} kcal/day',
-          ),
-          Text(profile.calorieAssumptions, style: AppTypography.bodySmall),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  profile.weightDeltaKg == null
-                      ? 'Set a current and goal weight'
-                      : profile.weightDeltaKg == 0
-                      ? 'At your goal weight'
-                      : '${profile.isCutting ? 'Lose' : 'Gain'} ${profile.formatWeight(profile.weightDeltaKg)} to reach your goal',
-                  style: AppTypography.bodySmall,
-                ),
-              ),
-              const SizedBox(width: 12),
+  Widget build(BuildContext context) => AccountSection(
+    title: 'BIOMETRICS & GOALS',
+    action: TextButton(
+      style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
+      onPressed: () => showEditBiometricsSheet(context, profile),
+      child: const Text('Update'),
+    ),
+    children: [
+      Padding(
+        padding: const EdgeInsets.all(16),
+        child: _MetricGrid(
+          minimumWidth: 98,
+          metrics: [
+            ('HEIGHT', profile.formattedHeight),
+            ('CURRENT', profile.formatWeight(profile.currentWeightKg)),
+            ('GOAL', profile.formatWeight(profile.targetWeightKg)),
+          ],
+        ),
+      ),
+      AccountRow(
+        title: 'BMI',
+        subtitle: profile.bmiCategory,
+        value: profile.formattedBmi,
+        numeric: profile.bmi != null,
+      ),
+      AccountRow(
+        title: 'Estimated maintenance',
+        value: profile.maintenanceCaloriesEstimate == null
+            ? 'Not enough input'
+            : '${profile.maintenanceCaloriesEstimate} kcal/day',
+        numeric: profile.maintenanceCaloriesEstimate != null,
+        subtitle: profile.calorieAssumptions,
+      ),
+      Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Weight goal', style: AccountType.row),
+            const SizedBox(height: 4),
+            Text(
+              profile.weightDeltaKg == null
+                  ? 'Set a current and goal weight to track progress.'
+                  : profile.weightDeltaKg == 0
+                  ? 'At your goal weight'
+                  : '${profile.isCutting ? 'Lose' : 'Gain'} ${profile.formatWeight(profile.weightDeltaKg)} to reach your goal',
+              style: AccountType.detail,
+            ),
+            if (profile.goalProgress != null) ...[
+              const SizedBox(height: 12),
               Text(
-                profile.goalProgress == null
-                    ? 'Not set'
-                    : '${(profile.goalProgress! * 100).toInt()}%',
-                style: AppTypography.dataLabel,
+                '${(profile.goalProgress! * 100).toInt()}% of goal',
+                style: AccountType.value,
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: profile.goalProgress!.clamp(0.0, 1.0),
+                  minHeight: 4,
+                  color: AppColors.platinum,
+                  backgroundColor: AppColors.steel,
+                  semanticsLabel: 'Weight goal progress',
+                ),
               ),
             ],
-          ),
-          const SizedBox(height: 8),
-          if (profile.goalProgress != null)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: (profile.goalProgress ?? 0).clamp(0.0, 1.0),
-                minHeight: 4,
-                color: AppColors.platinum,
-                backgroundColor: AppColors.steel,
-                semanticsLabel: 'Weight goal progress',
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+class _MetricGrid extends StatelessWidget {
+  const _MetricGrid({required this.metrics, required this.minimumWidth});
+  final List<(String, String)> metrics;
+  final double minimumWidth;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final scale = MediaQuery.textScalerOf(context).scale(18) / 18;
+      final columns =
+          ((constraints.maxWidth + 16) / (minimumWidth * scale + 16))
+              .floor()
+              .clamp(1, metrics.length);
+      final width = (constraints.maxWidth - (columns - 1) * 16) / columns;
+      return Wrap(
+        spacing: 16,
+        runSpacing: 16,
+        children: [
+          for (final metric in metrics)
+            SizedBox(
+              width: width,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    metric.$1,
+                    style: AccountType.detail.copyWith(
+                      fontSize: 12,
+                      letterSpacing: .5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    metric.$2,
+                    style: AppTypography.monoMedium.copyWith(fontSize: 18),
+                  ),
+                ],
               ),
             ),
         ],
-      ),
+      );
+    },
+  );
+}
+
+class _HealthCard extends ConsumerWidget {
+  const _HealthCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final paused = ref.watch(
+      workoutRotationProvider.select((state) => state.isTrainingPaused),
+    );
+    return AccountSection(
+      title: 'HEALTH & RECOVERY',
+      children: [
+        AccountRow(
+          icon: Icons.monitor_heart_outlined,
+          title: 'Health & measurements',
+          onTap: () => context.push(AppConstants.routeHealthTracking),
+        ),
+        AccountRow(
+          icon: Icons.bedtime_outlined,
+          title: 'Recovery check-in',
+          onTap: () => context.push(AppConstants.routeRecovery),
+        ),
+        AccountRow(
+          icon: Icons.pause_circle_outline_rounded,
+          title: paused ? 'Manage training pause' : 'Pause training',
+          subtitle: paused ? 'Your training plan is paused' : null,
+          onTap: () => showTrainingPauseSheet(context),
+        ),
+      ],
     );
   }
 }
@@ -299,126 +355,155 @@ class _TrainingPreferencesCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final goalConfig = ref.watch(trainingGoalConfigProvider);
+    final goal = ref.watch(trainingGoalConfigProvider);
     final notifier = ref.read(accountProfileProvider.notifier);
-    return _GlassSectionContainer(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _SectionHeader(
-            title: 'TRAINING PREFERENCES',
-            icon: Icons.fitness_center_rounded,
-          ),
-          const SizedBox(height: 16),
-          _PreferenceTile(
-            title: 'Primary Goal',
-            subtitle: '${goalConfig.displayName} · ${goalConfig.subtitle}',
-            trailing: TextButton(
-              onPressed: () => showGoalSelectorSheet(context, ref),
-              child: const Text('Change'),
+    final split =
+        ref
+            .watch(splitsProvider)
+            .splits
+            .where((s) => s.id == profile.preferredSplit)
+            .firstOrNull
+            ?.name ??
+        'Choose a split';
+    return AccountSection(
+      title: 'TRAINING PREFERENCES',
+      children: [
+        AccountRow(
+          icon: Icons.flag_outlined,
+          title: 'Primary goal',
+          subtitle: '${goal.displayName} · ${goal.subtitle}',
+          onTap: () => showGoalSelectorSheet(context, ref),
+        ),
+        AccountRow(
+          icon: Icons.calendar_view_week_outlined,
+          title: 'Training split',
+          subtitle: split,
+          onTap: () => showEditProfileSheet(context, profile),
+        ),
+        AccountChoiceRow<int>(
+          icon: Icons.timer_outlined,
+          title: 'Default rest timer',
+          subtitle: 'Used when an exercise has no custom rest time',
+          value: profile.defaultRestSeconds,
+          label: '${profile.defaultRestSeconds} s',
+          numeric: true,
+          choices: const {
+            60: '60 seconds',
+            90: '90 seconds',
+            120: '120 seconds',
+            180: '180 seconds',
+          },
+          onSelected: (seconds) async {
+            final success = await persistWithFeedback(
+              context,
+              () => notifier.updatePreferences(defaultRestSeconds: seconds),
+            );
+            if (success) HapticFeedback.lightImpact();
+          },
+        ),
+        AccountChoiceRow<double>(
+          icon: Icons.fitness_center_rounded,
+          title: 'Barbell weight',
+          subtitle: 'Base weight for plate calculations',
+          value: profile.barbellTareKg,
+          label: profile.formatWeight(profile.barbellTareKg),
+          numeric: true,
+          choices: {20: profile.formatWeight(20), 15: profile.formatWeight(15)},
+          onSelected: (kg) async {
+            final success = await persistWithFeedback(
+              context,
+              () => notifier.updatePreferences(barbellTareKg: kg),
+            );
+            if (success) HapticFeedback.lightImpact();
+          },
+        ),
+        Theme(
+          data: Theme.of(context).copyWith(
+            dividerColor: Colors.transparent,
+            listTileTheme: Theme.of(context).listTileTheme.copyWith(
+              minLeadingWidth: 20,
+              horizontalTitleGap: 12,
             ),
           ),
-          const Divider(height: 24),
-          _PreferenceTile(
-            title: 'Training Split',
-            subtitle:
-                ref
-                    .watch(splitsProvider)
-                    .splits
-                    .where((s) => s.id == profile.preferredSplit)
-                    .firstOrNull
-                    ?.name ??
-                'Choose a split',
-            trailing: TextButton(
-              onPressed: () => showEditProfileSheet(context, profile),
-              child: const Text('Change'),
+          child: ExpansionTile(
+            key: const PageStorageKey('account-training-details'),
+            expansionAnimationStyle: MediaQuery.disableAnimationsOf(context)
+                ? AnimationStyle.noAnimation
+                : null,
+            tilePadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
             ),
-          ),
-          const Divider(height: 24),
-          _ValueRow(
-            label: 'Experience',
-            value: profile.experienceLevel,
-            numeric: false,
-          ),
-          const Divider(height: 24),
-          Text(
-            'Weekly frequency: ${profile.trainingDaysPerWeek ?? 'Not set'}',
-            style: AppTypography.bodyMedium,
-          ),
-          Text(
-            'Equipment: ${profile.trainingDaysPerWeek == null
-                ? 'Not configured'
-                : profile.equipment.isEmpty
-                ? 'Bodyweight'
-                : profile.equipment.join(', ')}',
-            style: AppTypography.bodySmall,
-          ),
-          Text(
-            'Injury notes: ${profile.injuries.isEmpty ? 'None entered' : profile.injuries.join(', ')}. Review your routine; these notes do not screen exercises.',
-            style: AppTypography.bodySmall,
-          ),
-          const Divider(height: 24),
-          const Text('Default Rest Timer', style: AppTypography.bodyLarge),
-          const SizedBox(height: 4),
-          const Text(
-            'Used when an exercise has no custom rest time',
-            style: AppTypography.bodySmall,
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
+            childrenPadding: const EdgeInsets.fromLTRB(48, 0, 16, 16),
+            expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+            leading: const Icon(
+              Icons.info_outline_rounded,
+              size: 20,
+              color: AppColors.textSecondary,
+            ),
+            minTileHeight: 56,
+            iconColor: AppColors.textMuted,
+            collapsedIconColor: AppColors.textMuted,
+            title: Text('Training details', style: AccountType.row),
+            subtitle: Text(
+              'Experience, frequency, equipment & injury notes',
+              style: AccountType.detail,
+            ),
             children: [
-              for (final seconds in [60, 90, 120, 180])
-                ChoiceChip(
-                  label: Text('${seconds}s'),
-                  selected: profile.defaultRestSeconds == seconds,
-                  onSelected: (_) async {
-                    final success = await persistWithFeedback(
-                      context,
-                      () => notifier.updatePreferences(
-                        defaultRestSeconds: seconds,
-                      ),
-                    );
-                    if (success) HapticFeedback.lightImpact();
-                  },
-                  side: BorderSide.none,
-                  selectedColor: AppColors.primary.withValues(alpha: 0.16),
-                  checkmarkColor: AppColors.primary,
-                  labelStyle: AppTypography.dataLabel.copyWith(
-                    color: profile.defaultRestSeconds == seconds
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
-                  ),
-                  materialTapTargetSize: MaterialTapTargetSize.padded,
-                ),
+              _TrainingDetail(
+                label: 'Experience',
+                value: profile.experienceLevel,
+              ),
+              const SizedBox(height: 12),
+              _TrainingDetail(
+                label: 'Weekly frequency',
+                value: profile.trainingDaysPerWeek == null
+                    ? 'Not set'
+                    : '${profile.trainingDaysPerWeek} days',
+              ),
+              const SizedBox(height: 12),
+              _TrainingDetail(
+                label: 'Equipment',
+                value: profile.trainingDaysPerWeek == null
+                    ? 'Not configured'
+                    : profile.equipment.isEmpty
+                    ? 'Bodyweight'
+                    : profile.equipment.join(', '),
+              ),
+              const SizedBox(height: 12),
+              _TrainingDetail(
+                label: 'Injury notes',
+                value: profile.injuries.isEmpty
+                    ? 'None entered'
+                    : profile.injuries.join(', '),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Review your routine; these notes do not screen exercises.',
+                style: AccountType.detail,
+              ),
             ],
           ),
-          const Divider(height: 24),
-          _PreferenceTile(
-            title: 'Barbell weight',
-            subtitle: 'Base weight for plate calculations',
-            trailing: TextButton(
-              onPressed: () async {
-                final success = await persistWithFeedback(
-                  context,
-                  () => notifier.updatePreferences(
-                    barbellTareKg: profile.barbellTareKg == 20.0 ? 15.0 : 20.0,
-                  ),
-                );
-                if (success) HapticFeedback.lightImpact();
-              },
-              child: Text(
-                profile.formatWeight(profile.barbellTareKg),
-                style: AppTypography.dataLabel.copyWith(
-                  color: AppColors.primary,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
+}
+
+class _TrainingDetail extends StatelessWidget {
+  const _TrainingDetail({required this.label, required this.value});
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(label, style: AccountType.detail),
+      const SizedBox(height: 4),
+      Text(value, style: AccountType.row),
+    ],
+  );
 }
 
 class _AppSettingsCard extends ConsumerWidget {
@@ -428,372 +513,57 @@ class _AppSettingsCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(accountProfileProvider.notifier);
-    return _GlassSectionContainer(
-      child: Column(
-        children: [
-          const _SectionHeader(title: 'APP SETTINGS', icon: Icons.tune_rounded),
-          const SizedBox(height: 16),
-          _PreferenceTile(
-            title: 'Units of Measurement',
-            subtitle: profile.weightUnit == 'kg'
-                ? 'Weight: kg · Height: ${profile.heightUnit == 'cm' ? 'cm' : 'ft/in'}'
-                : 'Weight: lbs · Height: ${profile.heightUnit == 'cm' ? 'cm' : 'ft/in'}',
-            trailing: TextButton(
-              onPressed: () async {
-                final success = await persistWithFeedback(
-                  context,
-                  () => notifier.updateBiometrics(
-                    weightUnit: profile.weightUnit == 'kg' ? 'lbs' : 'kg',
-                  ),
-                );
-                if (success) HapticFeedback.lightImpact();
-              },
-              child: Text(profile.weightUnit.toUpperCase()),
-            ),
-          ),
-          const Divider(height: 24),
-          const Text('Workout alerts', style: TextStyle(fontSize: 14)),
-          DropdownButton<WorkoutAlertMode>(
-            isExpanded: true,
-            value: ref.watch(workoutAlertModeProvider),
-            items: const [
-              DropdownMenuItem(
-                value: WorkoutAlertMode.soundAndVibrate,
-                child: Text('Sound + Vibrate'),
-              ),
-              DropdownMenuItem(
-                value: WorkoutAlertMode.vibrateOnly,
-                child: Text('Vibrate Only'),
-              ),
-              DropdownMenuItem(
-                value: WorkoutAlertMode.silent,
-                child: Text('Silent'),
-              ),
-            ],
-            onChanged: (mode) {
-              if (mode == null) return;
-              persistWithFeedback(
-                context,
-                () => notifier.setAlertMode(
-                  mode == WorkoutAlertMode.soundAndVibrate,
-                  mode != WorkoutAlertMode.silent,
-                ),
-              );
-            },
-          ),
-          const Text(
-            'Applies to sets, countdowns, tempo cues and rest alerts. System volume, notification permissions and Do Not Disturb still apply.',
-          ),
-          const _AlertPermissions(),
-        ],
-      ),
-    );
-  }
-}
-
-class _AccountActionsCard extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return _GlassSectionContainer(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _SectionHeader(
-            title: 'ACCOUNT ACTIONS',
-            icon: Icons.shield_outlined,
-          ),
-          const SizedBox(height: 12),
-
-          // Replay Onboarding Survey
-          InkWell(
-            onTap: () {
-              _showConfirmDialog(
-                context,
-                title: 'Replay Onboarding',
-                content:
-                    'This will restart the onboarding survey from the very beginning so you can retake the setup questions.',
-                onConfirm: () async {
-                  final saved = await persistWithFeedback(
-                    context,
-                    () => ref.read(onboardingProvider.notifier).reset(),
-                  );
-                  if (!saved) return;
-                  if (context.mounted) {
-                    context.go(AppConstants.routeOnboarding);
-                  }
-                },
-              );
-            },
-            borderRadius: BorderRadius.circular(10),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.school_outlined,
-                    color: AppColors.primary,
-                    size: 20,
-                  ),
-                  SizedBox(width: 12),
-                  Text(
-                    'Replay Onboarding Survey',
-                    style: TextStyle(
-                      fontFamily: AppTypography.fontBody,
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const Divider(color: AppColors.steel, height: 16),
-
-          // Reset Profile Defaults
-          InkWell(
-            onTap: () {
-              _showConfirmDialog(
-                context,
-                title: 'Reset Profile Data',
-                content:
-                    'This resets units, rest, barbell, sound and haptic defaults. Your profile and workout data stay saved.',
-                onConfirm: () async {
-                  final success = await persistWithFeedback(
-                    context,
-                    () => ref
-                        .read(accountProfileProvider.notifier)
-                        .resetToDefaults(),
-                  );
-                  if (!success) return;
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        backgroundColor: AppColors.charcoal,
-                        content: Text(
-                          'Profile restored to default settings.',
-                          style: TextStyle(
-                            fontFamily: AppTypography.fontBody,
-                            fontSize: 13.0,
-                            color: AppColors.pureWhite,
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                },
-              );
-            },
-            borderRadius: BorderRadius.circular(10),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.restart_alt_rounded,
-                    color: AppColors.textSecondary,
-                    size: 20,
-                  ),
-                  SizedBox(width: 12),
-                  Text(
-                    'Reset Profile Defaults',
-                    style: TextStyle(
-                      fontFamily: AppTypography.fontBody,
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.pureWhite,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const Divider(color: AppColors.steel, height: 16),
-        ],
-      ),
-    );
-  }
-
-  void _showConfirmDialog(
-    BuildContext context, {
-    required String title,
-    required String content,
-    required VoidCallback onConfirm,
-  }) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontFamily: AppTypography.fontDisplay,
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            color: AppColors.pureWhite,
-          ),
-        ),
-        content: Text(
-          content,
-          style: const TextStyle(
-            fontFamily: AppTypography.fontBody,
-            fontSize: 13.5,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              onConfirm();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.background,
-            ),
-            child: const Text(
-              'Confirm',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _GlassSectionContainer extends StatelessWidget {
-  const _GlassSectionContainer({required this.child});
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassCard(
-      blur: true,
-      sharedBackdrop: true,
-      repaintBoundary: true,
-      border: false,
-      boxShadow: const [],
-      padding: const EdgeInsets.all(16),
-      child: child,
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.icon});
-  final String title;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
+    const modes = {
+      WorkoutAlertMode.soundAndVibrate: 'Sound + vibrate',
+      WorkoutAlertMode.vibrateOnly: 'Vibrate only',
+      WorkoutAlertMode.silent: 'Silent',
+    };
+    final mode = ref.watch(workoutAlertModeProvider);
+    return AccountSection(
+      title: 'APP SETTINGS',
       children: [
-        Icon(icon, size: 18, color: AppColors.textSecondary),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            title,
-            style: AppTypography.headlineSmall.copyWith(fontSize: 12),
+        AccountChoiceRow<String>(
+          icon: Icons.scale_outlined,
+          title: 'Weight unit',
+          value: profile.weightUnit,
+          label: profile.weightUnit,
+          choices: const {'kg': 'Kilograms (kg)', 'lbs': 'Pounds (lbs)'},
+          onSelected: (unit) => persistWithFeedback(
+            context,
+            () => notifier.updateBiometrics(weightUnit: unit),
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _MetricBlock extends StatelessWidget {
-  const _MetricBlock({required this.label, required this.value});
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTypography.labelSmall),
-        const SizedBox(height: 6),
-        Text(
-          value,
-          style: AppTypography.monoSmall.copyWith(
-            fontSize: 15,
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
+        AccountChoiceRow<String>(
+          icon: Icons.straighten_rounded,
+          title: 'Height unit',
+          value: profile.heightUnit,
+          label: profile.heightUnit == 'cm' ? 'cm' : 'ft / in',
+          choices: const {
+            'cm': 'Centimeters (cm)',
+            'ft': 'Feet & inches (ft / in)',
+          },
+          onSelected: (unit) => persistWithFeedback(
+            context,
+            () => notifier.updateBiometrics(heightUnit: unit),
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _ValueRow extends StatelessWidget {
-  const _ValueRow({
-    required this.label,
-    required this.value,
-    this.numeric = true,
-  });
-  final String label;
-  final String value;
-  final bool numeric;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: Text(label, style: AppTypography.bodySmall)),
-        const SizedBox(width: 16),
-        Flexible(
-          child: Text(
-            value,
-            textAlign: TextAlign.end,
-            style:
-                (numeric ? AppTypography.dataLabel : AppTypography.bodyMedium)
-                    .copyWith(color: AppColors.textPrimary),
+        AccountChoiceRow<WorkoutAlertMode>(
+          icon: Icons.volume_up_outlined,
+          title: 'Workout alerts',
+          subtitle:
+              'Sets, countdowns, tempo and rest. System volume and Do Not Disturb apply.',
+          value: mode,
+          label: modes[mode]!,
+          choices: modes,
+          onSelected: (next) => persistWithFeedback(
+            context,
+            () => notifier.setAlertMode(
+              next == WorkoutAlertMode.soundAndVibrate,
+              next != WorkoutAlertMode.silent,
+            ),
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _PreferenceTile extends StatelessWidget {
-  const _PreferenceTile({
-    required this.title,
-    required this.subtitle,
-    required this.trailing,
-  });
-  final String title;
-  final String subtitle;
-  final Widget trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: AppTypography.bodyLarge),
-              const SizedBox(height: 4),
-              Text(subtitle, style: AppTypography.bodySmall),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        trailing,
+        const _AlertPermissions(),
       ],
     );
   }
@@ -801,12 +571,14 @@ class _PreferenceTile extends StatelessWidget {
 
 class _AlertPermissions extends ConsumerStatefulWidget {
   const _AlertPermissions();
+
   @override
   ConsumerState<_AlertPermissions> createState() => _AlertPermissionsState();
 }
 
 class _AlertPermissionsState extends ConsumerState<_AlertPermissions> {
   String? message;
+
   Future<void> request(bool exact) async {
     try {
       if (exact) {
@@ -840,16 +612,122 @@ class _AlertPermissionsState extends ConsumerState<_AlertPermissions> {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      TextButton(
-        onPressed: () => request(false),
-        child: const Text('Enable workout notifications'),
+      AccountRow(
+        icon: Icons.notifications_outlined,
+        title: 'Workout notifications',
+        subtitle: 'Allow rest alerts outside the app',
+        onTap: () => request(false),
       ),
-      if (Theme.of(context).platform == TargetPlatform.android)
-        TextButton(
-          onPressed: () => request(true),
-          child: const Text('Allow precise rest alarms'),
+      if (Theme.of(context).platform == TargetPlatform.android) ...[
+        const AccountDivider(),
+        AccountRow(
+          icon: Icons.alarm_on_outlined,
+          title: 'Precise rest alarms',
+          subtitle: 'Manage Android permission for timely alerts',
+          onTap: () => request(true),
         ),
-      if (message != null) Text(message!),
+      ],
+      if (message != null)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Semantics(
+            liveRegion: true,
+            child: Text(message!, style: AccountType.detail),
+          ),
+        ),
     ],
   );
+}
+
+class _AccountActionsCard extends ConsumerWidget {
+  const _AccountActionsCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => AccountSection(
+    title: 'SETUP & PREFERENCES',
+    children: [
+      AccountRow(
+        icon: Icons.school_outlined,
+        title: 'Redo setup',
+        subtitle: 'Retake the training setup questions',
+        onTap: () async {
+          final confirmed = await _confirm(
+            context,
+            title: 'Redo setup?',
+            content:
+                'Retake the setup questions from the beginning. Your profile and saved workouts remain available.',
+            action: 'Redo setup',
+          );
+          if (!confirmed || !context.mounted) return;
+          final saved = await persistWithFeedback(
+            context,
+            () => ref.read(onboardingProvider.notifier).reset(),
+          );
+          if (saved && context.mounted) {
+            context.go(AppConstants.routeOnboarding);
+          }
+        },
+      ),
+      AccountRow(
+        icon: Icons.restart_alt_rounded,
+        title: 'Reset preferences',
+        subtitle: 'Restore units, timers and alert defaults',
+        onTap: () async {
+          final confirmed = await _confirm(
+            context,
+            title: 'Reset preferences?',
+            content:
+                'Reset units, rest time, barbell weight, sound and haptics to their defaults. Your profile and workout data stay saved.',
+            action: 'Reset preferences',
+          );
+          if (!confirmed || !context.mounted) return;
+          final success = await persistWithFeedback(
+            context,
+            () => ref.read(accountProfileProvider.notifier).resetToDefaults(),
+          );
+          if (success && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Preferences restored to defaults.',
+                  style: AccountType.detail,
+                ),
+              ),
+            );
+          }
+        },
+      ),
+    ],
+  );
+
+  Future<bool> _confirm(
+    BuildContext context, {
+    required String title,
+    required String content,
+    required String action,
+  }) async =>
+      await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(title, style: AppTypography.headlineLarge),
+          content: Text(content, style: AppTypography.bodyMedium),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(minimumSize: const Size(44, 44)),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(action),
+            ),
+          ],
+        ),
+      ) ??
+      false;
 }
