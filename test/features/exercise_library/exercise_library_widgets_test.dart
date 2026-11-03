@@ -11,6 +11,8 @@ import 'package:leon/features/exercise_library/widgets/add_to_routine_dialog.dar
 import 'package:leon/features/exercise_library/screens/exercise_library_screen.dart';
 import 'package:leon/features/exercise_library/screens/custom_exercise_creator_screen.dart';
 import 'package:leon/features/workout_session/providers/active_session_provider.dart';
+import 'package:leon/services/hive_service.dart';
+import '../../helpers/memory_hive_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -65,15 +67,16 @@ void main() {
     return ProviderScope(
       overrides: [
         exerciseRepositoryProvider.overrideWithValue(testRepo),
+        hiveServiceProvider.overrideWithValue(MemoryHiveService()),
       ],
-      child: MaterialApp(
-        home: Scaffold(body: child),
-      ),
+      child: MaterialApp(home: Scaffold(body: child)),
     );
   }
 
   group('ExerciseLibraryCard Tests', () {
-    testWidgets('renders compact metadata and keeps details and add separate', (tester) async {
+    testWidgets('renders compact metadata and keeps details and add separate', (
+      tester,
+    ) async {
       bool tapped = false;
       bool quickAddTapped = false;
 
@@ -124,7 +127,9 @@ void main() {
   });
 
   group('ExerciseDetailSheet Tests', () {
-    testWidgets('renders notch, instructions, and handles alternative swap', (tester) async {
+    testWidgets('renders notch, instructions, and handles alternative swap', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -185,9 +190,7 @@ void main() {
   group('AddToRoutineDialog Tests', () {
     testWidgets('renders configurator and handles set stepper', (tester) async {
       await tester.pumpWidget(
-        createTestWidget(
-          const AddToRoutineDialog(exercise: sampleExercise),
-        ),
+        createTestWidget(const AddToRoutineDialog(exercise: sampleExercise)),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
@@ -197,13 +200,17 @@ void main() {
       expect(find.text('3 SETS'), findsOneWidget);
 
       // Tap + on stepper
+      await tester.ensureVisible(find.byIcon(Icons.add_rounded).first);
+      await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.add_rounded).first);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
       expect(find.text('4 SETS'), findsOneWidget);
 
-      // Tap CONFIRM & ADD
-      await tester.tap(find.text('CONFIRM & ADD'));
+      // A new workout names its start action explicitly.
+      await tester.ensureVisible(find.text('START CUSTOM WORKOUT'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('START CUSTOM WORKOUT'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
@@ -215,15 +222,13 @@ void main() {
   });
 
   group('ExerciseLibraryScreen Tests', () {
-    testWidgets('renders search field, filter bar, and exercise items', (tester) async {
+    testWidgets('renders search field, filter bar, and exercise items', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            exerciseRepositoryProvider.overrideWithValue(testRepo),
-          ],
-          child: const MaterialApp(
-            home: ExerciseLibraryScreen(),
-          ),
+          overrides: [exerciseRepositoryProvider.overrideWithValue(testRepo)],
+          child: const MaterialApp(home: ExerciseLibraryScreen()),
         ),
       );
       await tester.pump();
@@ -246,7 +251,9 @@ void main() {
   });
 
   group('CustomExerciseCreatorScreen Tests', () {
-    testWidgets('renders form fields and validates required name', (tester) async {
+    testWidgets('renders form fields and validates required name', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(tester.view.resetPhysicalSize);

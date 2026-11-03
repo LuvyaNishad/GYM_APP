@@ -880,14 +880,16 @@ class _Exercise1RmCalculatorCardState
                 color: AppColors.primary,
               ),
               const SizedBox(width: 8),
-              Text(
-                'ESTIMATED 1RM CALCULATOR',
-                style: AppTypography.titleLarge.copyWith(
-                  fontFamily: AppTypography.fontDisplay,
-                  fontSize: 13.0,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.pureWhite,
-                  letterSpacing: 1.0,
+              Expanded(
+                child: Text(
+                  'ESTIMATED 1RM CALCULATOR',
+                  style: AppTypography.titleLarge.copyWith(
+                    fontFamily: AppTypography.fontDisplay,
+                    fontSize: 13.0,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.pureWhite,
+                    letterSpacing: 1.0,
+                  ),
                 ),
               ),
             ],
@@ -1017,8 +1019,8 @@ class _Exercise1RmCalculatorCardState
                 color: AppColors.primary.withValues(alpha: 0.35),
               ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'ESTIMATED 1RM:',
@@ -1030,6 +1032,7 @@ class _Exercise1RmCalculatorCardState
                     letterSpacing: 0.8,
                   ),
                 ),
+                const SizedBox(height: 6),
                 Text(
                   _calculated1Rm == null
                       ? 'Enter weight and 1–12 reps'
