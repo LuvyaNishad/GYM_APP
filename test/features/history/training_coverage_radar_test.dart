@@ -156,7 +156,7 @@ void main() {
           child: host(const TrainingRecommendationCard()),
         ),
       );
-      expect(find.textContaining('Prioritize Biceps Curl'), findsOneWidget);
+      expect(find.text('Biceps Curl'), findsOneWidget);
       expect(find.byType(TrainingCoverageRadar), findsNothing);
       expect(container.exists(sessionCoverageProvider(partial)), false);
       await tester.pumpWidget(

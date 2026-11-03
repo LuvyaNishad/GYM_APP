@@ -34,7 +34,7 @@ void main() {
         );
 
         // Verify branding and greeting
-        expect(find.text('AEON'), findsOneWidget);
+        expect(find.text('LEON'), findsOneWidget);
         expect(find.textContaining('Leon'), findsOneWidget);
 
         // Verify account circle is removed, calendar month button is present

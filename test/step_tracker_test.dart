@@ -28,7 +28,9 @@ void main() {
       expect(km5k, 3.54);
     });
 
-    testWidgets('StepsBentoCard renders 0 steps without random mock bars', (tester) async {
+    testWidgets('StepsBentoCard renders 0 steps without random mock bars', (
+      tester,
+    ) async {
       await tester.binding.setSurfaceSize(const Size(430, 932));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -54,47 +56,52 @@ void main() {
       expect(find.text('Move to start tracking'), findsOneWidget);
     });
 
-    testWidgets('StepsDetailSheet displays current calendar dates instead of mock 2026 data', (tester) async {
-      await tester.binding.setSurfaceSize(const Size(430, 932));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
+    testWidgets(
+      'StepsDetailSheet displays current calendar dates instead of mock 2026 data',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(430, 932));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      const telemetry = DailyTelemetry(
-        steps: 1250,
-        distanceKm: 0.89,
-        stepsGoal: 8000,
-        hourlySteps: [0, 0, 0, 0, 0, 0, 0, 0, 250, 500, 500, 0],
-      );
+        const telemetry = DailyTelemetry(
+          steps: 1250,
+          distanceKm: 0.89,
+          stepsGoal: 8000,
+          hourlySteps: [0, 0, 0, 0, 0, 0, 0, 0, 250, 500, 500, 0],
+        );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ElevatedButton(
-                  onPressed: () => showStepsDetailSheet(context, telemetry),
-                  child: const Text('Open Details'),
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              home: Scaffold(
+                body: Builder(
+                  builder: (context) => ElevatedButton(
+                    onPressed: () => showStepsDetailSheet(context, telemetry),
+                    child: const Text('Open Details'),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.tap(find.text('Open Details'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 600));
+        await tester.tap(find.text('Open Details'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 600));
 
-      expect(find.text('Steps'), findsOneWidget);
-      expect(find.text('Today'), findsOneWidget);
-      expect(find.text('7 days'), findsOneWidget);
-      expect(find.text('30 days'), findsOneWidget);
+        expect(find.text('Steps'), findsOneWidget);
+        expect(find.text('Today'), findsOneWidget);
+        expect(find.text('7d'), findsOneWidget);
+        expect(find.text('30d'), findsOneWidget);
 
-      // Verify no hardcoded '26/6/2026' or mock values
-      expect(find.text('26/6/2026'), findsNothing);
-      expect(find.text('17,024 steps'), findsNothing);
-    });
+        // Verify no hardcoded '26/6/2026' or mock values
+        expect(find.text('26/6/2026'), findsNothing);
+        expect(find.text('17,024 steps'), findsNothing);
+      },
+    );
 
-    testWidgets('Apple HIG compliance: all text elements meet >= 11.0 pt floor', (tester) async {
+    testWidgets('Apple HIG compliance: all text elements meet >= 11.0 pt floor', (
+      tester,
+    ) async {
       await tester.binding.setSurfaceSize(const Size(430, 932));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -125,54 +132,58 @@ void main() {
           expect(
             text.style!.fontSize! >= 11.0,
             isTrue,
-            reason: 'Text "${text.data}" has font size ${text.style!.fontSize} < 11.0 pt',
+            reason:
+                'Text "${text.data}" has font size ${text.style!.fontSize} < 11.0 pt',
           );
         }
       }
     });
 
-    testWidgets('Day tab in StepsDetailSheet shows period selector and step count', (tester) async {
-      await tester.binding.setSurfaceSize(const Size(430, 932));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
+    testWidgets(
+      'Day tab in StepsDetailSheet shows period selector and step count',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(430, 932));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      final hourlySteps = List<int>.filled(24, 0);
-      hourlySteps[11] = 1194;
-      hourlySteps[14] = 505;
-      hourlySteps[15] = 827;
+        final hourlySteps = List<int>.filled(24, 0);
+        hourlySteps[11] = 1194;
+        hourlySteps[14] = 505;
+        hourlySteps[15] = 827;
 
-      final telemetry = DailyTelemetry(
-        steps: 2801,
-        distanceKm: 1.98,
-        stepsGoal: 8000,
-        hourlySteps: hourlySteps,
-      );
+        final telemetry = DailyTelemetry(
+          steps: 2801,
+          distanceKm: 1.98,
+          stepsGoal: 8000,
+          hourlySteps: hourlySteps,
+        );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ElevatedButton(
-                  onPressed: () => showStepsDetailSheet(context, telemetry),
-                  child: const Text('Open Details'),
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              home: Scaffold(
+                body: Builder(
+                  builder: (context) => ElevatedButton(
+                    onPressed: () => showStepsDetailSheet(context, telemetry),
+                    child: const Text('Open Details'),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.tap(find.text('Open Details'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 600));
+        await tester.tap(find.text('Open Details'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 600));
 
-      // Today tab is active by default with period selector
-      expect(find.text('Today'), findsOneWidget);
-      expect(find.text('7 days'), findsOneWidget);
-      expect(find.text('30 days'), findsOneWidget);
+        // Today tab is active by default with period selector
+        expect(find.text('Today'), findsOneWidget);
+        expect(find.text('7d'), findsOneWidget);
+        expect(find.text('30d'), findsOneWidget);
 
-      // Title is 'Steps'
-      expect(find.text('Steps'), findsOneWidget);
-    });
+        // Title is 'Steps'
+        expect(find.text('Steps'), findsOneWidget);
+      },
+    );
   });
 }

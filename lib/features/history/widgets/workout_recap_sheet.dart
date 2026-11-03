@@ -50,10 +50,10 @@ class _RecapSheetState extends ConsumerState<_RecapSheet> {
       final bytes = await preview;
       final files = ref.read(exportFileServiceProvider);
       final result = share
-          ? (await files.share('AEON-workout.png', 'image/png', bytes)
+          ? (await files.share('LEON-workout.png', 'image/png', bytes)
                 ? 'Share sheet opened.'
                 : 'Sharing cancelled.')
-          : (await files.save('AEON-workout.png', 'image/png', bytes) == null
+          : (await files.save('LEON-workout.png', 'image/png', bytes) == null
                 ? 'Save cancelled.'
                 : 'Image saved.');
       if (mounted) setState(() => message = result);

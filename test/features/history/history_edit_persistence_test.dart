@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:leon/core/constants/app_constants.dart';
+import 'package:leon/core/theme/app_theme.dart';
 import 'package:leon/features/history/widgets/edit_workout_sheet.dart';
 import 'package:leon/features/history/providers/history_provider.dart';
 import 'package:leon/models/workout_model.dart';
@@ -45,6 +46,83 @@ final original = WorkoutModel(
 );
 
 void main() {
+  testWidgets(
+    'large-text keyboard editing saves both sides and keeps actions reachable',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final hive = MemoryHiveService();
+      await hive.put(
+        AppConstants.hiveBoxWorkouts,
+        original.id,
+        original.toJson(),
+      );
+      final container = ProviderContainer(
+        overrides: [hiveServiceProvider.overrideWithValue(hive)],
+      );
+      addTearDown(container.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: AppTheme.dark,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.linear(2),
+                viewInsets: const EdgeInsets.only(bottom: 300),
+              ),
+              child: child!,
+            ),
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => TextButton(
+                  onPressed: () => EditWorkoutSheet.show(context, original),
+                  child: const Text('Open editor'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open editor'));
+      await tester.pumpAndSettle();
+      final rightWeight = find.byWidgetPredicate(
+        (w) =>
+            w is TextField && double.tryParse(w.controller?.text ?? '') == 35,
+      );
+      await tester.ensureVisible(rightWeight);
+      await tester.pumpAndSettle();
+      expect(tester.getSize(rightWeight).width, greaterThan(200));
+      await tester.enterText(rightWeight, '36.25');
+      await tester.pumpAndSettle();
+      final rightReps = find.byWidgetPredicate(
+        (w) => w is TextField && w.controller?.text == '8',
+      );
+      await tester.ensureVisible(rightReps);
+      await tester.pumpAndSettle();
+      await tester.enterText(rightReps, '9');
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.widgetWithText(OutlinedButton, 'DELETE'));
+      await tester.pumpAndSettle();
+      expect(
+        find.widgetWithText(OutlinedButton, 'DELETE').hitTestable(),
+        findsOneWidget,
+      );
+      await tester.ensureVisible(find.text('SAVE CHANGES'));
+      await tester.pumpAndSettle();
+      expect(find.text('SAVE CHANGES').hitTestable(), findsOneWidget);
+      await tester.tap(find.text('SAVE CHANGES'));
+      await tester.pumpAndSettle();
+      final saved = container.read(historyWorkoutsProvider).single;
+      expect(saved.exercises.first.sets.single.weightKg, 40);
+      expect(saved.exercises.first.sets.single.weightKgRight, 36.25);
+      expect(saved.exercises.first.sets.single.repsRight, 9);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets(
     'failed save retains input; retry preserves metadata and separately edited right side',
     (tester) async {
@@ -103,6 +181,16 @@ void main() {
         isNull,
       );
       expect(container.read(historyWorkoutsProvider).single.name, 'Pull day');
+      await tester.dragFrom(
+        tester.getCenter(find.text('EDIT WORKOUT LOG')),
+        const Offset(0, 650),
+      );
+      await tester.pump(const Duration(seconds: 1));
+      await tester.binding.handlePopRoute();
+      await tester.pump();
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pump();
+      expect(find.byType(EditWorkoutSheet), findsOneWidget);
       hive.failDocuments = true;
       hive.documentGate!.complete();
       await tester.pumpAndSettle();
@@ -230,6 +318,8 @@ void main() {
     await tester.tap(find.text('Open editor'));
     await tester.pumpAndSettle();
     hive.failDelete = true;
+    await tester.ensureVisible(find.widgetWithText(OutlinedButton, 'DELETE'));
+    await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(OutlinedButton, 'DELETE'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(TextButton, 'DELETE'));

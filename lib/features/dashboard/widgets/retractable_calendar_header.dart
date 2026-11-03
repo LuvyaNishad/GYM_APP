@@ -57,7 +57,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'AEON',
+          'LEON',
           style: AppTypography.monoSmall.copyWith(
             color: AppColors.platinum,
             letterSpacing: 2.5,
