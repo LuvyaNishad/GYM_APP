@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Dark slate surfaces, neutral metrics, cyan actions, and amber warnings/dates.
+/// Dark slate surfaces, neutral metrics, sage actions, and amber warnings/dates.
 /// Foregrounds are opaque so captions remain readable over raised/glass cards.
 abstract final class AppColors {
   static const Color onyx = Color(0xFF0F131B);
@@ -29,10 +29,11 @@ abstract final class AppColors {
   static const Color glassWhiteStrong = Color(0x1AFFFFFF);
   static const Color glassBorder = Color(0x33383B42);
 
-  static const Color primary = Color(0xFF00E5FF);
+  static const Color primary = Color(0xFFB6C7B0);
   static const Color primaryDim = platinum;
   static const Color onPrimary = onyx;
   static const Color secondary = platinum;
+  static const Color personalRecord = platinum;
   static const Color purple = platinum;
   // Functional error state, bright enough for text on raised surfaces.
   static const Color danger = Color(0xFFFFB3B3);

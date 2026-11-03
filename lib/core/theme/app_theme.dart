@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
+import 'raised_button_surface.dart';
 
 /// LEON global [ThemeData].
 /// Pre-configured for Material 3 with the Cyber-Slate palette.
@@ -48,17 +49,21 @@ final class AppTheme {
 
       disabledColor: AppColors.textMuted,
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          disabledForegroundColor: AppColors.textMuted,
-          disabledBackgroundColor: AppColors.surfaceVariant,
-          textStyle: AppTypography.button,
+        style: withRaisedButtonSurface(
+          ElevatedButton.styleFrom(
+            disabledForegroundColor: AppColors.textMuted,
+            disabledBackgroundColor: AppColors.surfaceVariant,
+            textStyle: AppTypography.button,
+          ),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          disabledForegroundColor: AppColors.textMuted,
-          disabledBackgroundColor: AppColors.surfaceVariant,
-          textStyle: AppTypography.button,
+        style: withRaisedButtonSurface(
+          FilledButton.styleFrom(
+            disabledForegroundColor: AppColors.textMuted,
+            disabledBackgroundColor: AppColors.surfaceVariant,
+            textStyle: AppTypography.button,
+          ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(

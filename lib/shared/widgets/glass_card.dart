@@ -93,6 +93,7 @@ class GlassCard extends StatelessWidget {
     this.repaintBoundary = false,
     this.backgroundColor,
     this.gradient,
+    this.surfacePainter,
     this.borderColor,
     this.border = true,
     this.borderWidth = 1,
@@ -110,6 +111,9 @@ class GlassCard extends StatelessWidget {
   final bool repaintBoundary;
   final Color? backgroundColor;
   final Gradient? gradient;
+
+  /// Optional static light treatment above the surface tint, below content.
+  final CustomPainter? surfacePainter;
   final Color? borderColor;
   final bool border;
   final double borderWidth;
@@ -140,7 +144,6 @@ class GlassCard extends StatelessWidget {
           onTap: onTap,
           borderRadius: radius,
           child: Container(
-            padding: padding,
             decoration: BoxDecoration(
               borderRadius: radius,
               gradient:
@@ -160,7 +163,12 @@ class GlassCard extends StatelessWidget {
                     ],
                   ),
             ),
-            child: child,
+            child: surfacePainter == null
+                ? Padding(padding: padding, child: child)
+                : CustomPaint(
+                    painter: surfacePainter,
+                    child: Padding(padding: padding, child: child),
+                  ),
           ),
         ),
       ),

@@ -98,8 +98,8 @@ void main() {
       },
     );
 
-    test('3. Actions use cyan, warnings and calendar selection use amber', () {
-      expect(AppColors.primary.toARGB32(), 0xFF00E5FF);
+    test('3. Actions use sage, warnings and calendar selection use amber', () {
+      expect(AppColors.primary.toARGB32(), 0xFFB6C7B0);
       expect(AppColors.primaryButton, AppColors.primary);
       expect(AppColors.warning.toARGB32(), 0xFFFFB300);
       expect(AppColors.amber, AppColors.warning);
