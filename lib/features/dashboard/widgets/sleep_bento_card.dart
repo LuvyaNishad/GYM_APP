@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/daily_telemetry_model.dart';
 import 'activity_metric_card.dart';
+import 'bento_edge_glow.dart';
 import 'telemetry_detail_sheets.dart';
 
 class SleepBentoCard extends ConsumerWidget {
@@ -29,6 +30,7 @@ class SleepBentoCard extends ConsumerWidget {
           );
     return ActivityMetricCard(
       title: 'Sleep',
+      glowPlacement: BentoGlowPlacement.farRight,
       icon: Icons.bedtime_outlined,
       value: metrics.$2 ? '${metrics.$1.toStringAsFixed(1)} h' : '—',
       caption: metrics.$2

@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../models/split_model.dart';
 import '../../../shared/widgets/glass_card.dart';
+import '../../../shared/widgets/immediate_press_feedback.dart';
 import '../../workout_session/providers/active_session_provider.dart';
 import '../providers/home_workout_view_provider.dart';
 import '../providers/workout_rotation_provider.dart';
@@ -38,6 +39,7 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
   final bool compact;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = Theme.of(context).colorScheme;
     final view = ref.watch(homeWorkoutViewProvider);
     final rotation = ref.watch(workoutRotationProvider);
     final active = ref.watch(
@@ -107,17 +109,23 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
               ),
             ),
             SizedBox(height: compact ? 10 : 16),
-            FilledButton.icon(
-              onPressed: past
-                  ? () =>
-                        ref.read(selectedCalendarDateProvider.notifier).clear()
-                  : () => showTrainingPauseSheet(context),
-              icon: Icon(past ? Icons.today_rounded : Icons.play_arrow_rounded),
-              label: Text(past ? 'BACK TO TODAY' : 'RESUME TRAINING'),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.onPrimary,
+            ImmediatePressFeedback(
+              builder: (context, statesController) => FilledButton.icon(
+                statesController: statesController,
+                onPressed: past
+                    ? () => ref
+                          .read(selectedCalendarDateProvider.notifier)
+                          .clear()
+                    : () => showTrainingPauseSheet(context),
+                icon: Icon(
+                  past ? Icons.today_rounded : Icons.play_arrow_rounded,
+                ),
+                label: Text(past ? 'BACK TO TODAY' : 'RESUME TRAINING'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  backgroundColor: colors.primary,
+                  foregroundColor: colors.onPrimary,
+                ),
               ),
             ),
           ],
@@ -189,7 +197,7 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
       padding: EdgeInsets.all(compact ? 12 : 16),
       border: true,
       blur: true,
-      glowColor: showActive ? AppColors.primary.withValues(alpha: 0.15) : null,
+      glowColor: showActive ? colors.primary.withValues(alpha: 0.15) : null,
       onTap: details,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -203,7 +211,7 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
                     ? Icons.history_rounded
                     : Icons.fitness_center_rounded,
                 size: 18,
-                color: showActive ? AppColors.primary : AppColors.platinum,
+                color: showActive ? colors.primary : AppColors.platinum,
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -283,25 +291,28 @@ class DailyWorkoutBentoCard extends ConsumerWidget {
           ],
           SizedBox(height: compact ? 10 : 14),
           if (!past)
-            FilledButton.icon(
-              onPressed: start,
-              icon: Icon(
-                active.$1
-                    ? Icons.play_arrow_rounded
-                    : Icons.fitness_center_rounded,
-                size: 19,
-              ),
-              label: Text(
-                active.$1
-                    ? 'RESUME WORKOUT'
-                    : day?.isRestDay == true
-                    ? 'VIEW PLAN'
-                    : 'START WORKOUT',
-              ),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.onPrimary,
+            ImmediatePressFeedback(
+              builder: (context, statesController) => FilledButton.icon(
+                statesController: statesController,
+                onPressed: start,
+                icon: Icon(
+                  active.$1
+                      ? Icons.play_arrow_rounded
+                      : Icons.fitness_center_rounded,
+                  size: 19,
+                ),
+                label: Text(
+                  active.$1
+                      ? 'RESUME WORKOUT'
+                      : day?.isRestDay == true
+                      ? 'VIEW PLAN'
+                      : 'START WORKOUT',
+                ),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  backgroundColor: colors.primary,
+                  foregroundColor: colors.onPrimary,
+                ),
               ),
             )
           else if (view.logged.isNotEmpty)

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/daily_telemetry_model.dart';
 import 'activity_metric_card.dart';
+import 'bento_edge_glow.dart';
 import 'telemetry_detail_sheets.dart';
 
 class CaloriesBentoCard extends ConsumerWidget {
@@ -23,6 +24,7 @@ class CaloriesBentoCard extends ConsumerWidget {
           );
     return ActivityMetricCard(
       title: 'Calories',
+      glowPlacement: BentoGlowPlacement.nearRight,
       icon: Icons.local_fire_department_outlined,
       value: metrics.$2 ? '${metrics.$1} kcal' : '—',
       caption: metrics.$2

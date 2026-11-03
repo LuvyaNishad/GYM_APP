@@ -68,7 +68,7 @@ class RadarChartWidget extends StatelessWidget {
                       child: const Icon(
                         Icons.info_outline_rounded,
                         size: 15,
-                        color: Color(0xFF00E5FF),
+                        color: AppColors.primary,
                       ),
                     ),
                   ],
@@ -223,7 +223,7 @@ class RadarChartWidget extends StatelessWidget {
         ),
         title: Row(
           children: [
-            const Icon(Icons.hub_outlined, color: Color(0xFF00E5FF), size: 20),
+            const Icon(Icons.hub_outlined, color: AppColors.primary, size: 20),
             const SizedBox(width: 8),
             Text(
               'MUSCLE BALANCE SCIENCE',
@@ -254,7 +254,7 @@ class RadarChartWidget extends StatelessWidget {
                 fontFamily: AppTypography.fontBody,
                 fontSize: 12.0,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF00E5FF),
+                color: AppColors.primary,
               ),
             ),
           ),

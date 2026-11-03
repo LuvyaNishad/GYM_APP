@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/daily_telemetry_model.dart';
 import 'activity_metric_card.dart';
+import 'bento_edge_glow.dart';
 import 'telemetry_detail_sheets.dart';
 
 class WaterBentoCard extends ConsumerWidget {
@@ -18,6 +19,7 @@ class WaterBentoCard extends ConsumerWidget {
           );
     return ActivityMetricCard(
       title: 'Water',
+      glowPlacement: BentoGlowPlacement.farLeft,
       icon: Icons.water_drop_outlined,
       value: '${metrics.$1} ml',
       caption: metrics.$1 == 0

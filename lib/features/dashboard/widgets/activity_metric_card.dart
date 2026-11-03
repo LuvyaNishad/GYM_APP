@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/glass_card.dart';
+import 'bento_edge_glow.dart';
 
 class ActivityMetricCard extends StatelessWidget {
   const ActivityMetricCard({
@@ -12,11 +13,13 @@ class ActivityMetricCard extends StatelessWidget {
     required this.caption,
     required this.onTap,
     this.progress,
+    this.glowPlacement = BentoGlowPlacement.nearLeft,
   });
   final String title, value, caption;
   final IconData icon;
   final VoidCallback onTap;
   final double? progress;
+  final BentoGlowPlacement glowPlacement;
   @override
   Widget build(BuildContext context) => GlassCard(
     onTap: onTap,
@@ -24,6 +27,10 @@ class ActivityMetricCard extends StatelessWidget {
     blur: true,
     sharedBackdrop: true,
     repaintBoundary: true,
+    surfacePainter: BentoEdgeGlowPainter(
+      placement: glowPlacement,
+      color: Theme.of(context).colorScheme.primary,
+    ),
     padding: const EdgeInsets.all(12),
     child: ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 80),

@@ -105,6 +105,7 @@ class _DailyActivityChartState extends State<DailyActivityChart>
             values: widget.values,
             selected: widget.selected,
             reveal: _reveal,
+            accent: Theme.of(context).colorScheme.primary,
           ),
         ),
       ),
@@ -124,10 +125,12 @@ class ActivityBarPainter extends CustomPainter {
     required this.values,
     required this.selected,
     required this.reveal,
+    this.accent = AppColors.primary,
   }) : super(repaint: reveal);
   final List<int?> values;
   final int selected;
   final Animation<double> reveal;
+  final Color accent;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -149,11 +152,14 @@ class ActivityBarPainter extends CustomPainter {
         end: Alignment.bottomCenter,
         colors: [Color(0xFFF1F5F9), Color(0xFF94A3B8)],
       ).createShader(rect);
-    final cyan = Paint()
-      ..shader = const LinearGradient(
+    final selectedBar = Paint()
+      ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [Color(0xFFB5F7FF), AppColors.primary],
+        colors: [
+          Color.alphaBlend(Colors.white.withValues(alpha: .16), accent),
+          accent,
+        ],
       ).createShader(rect);
     final cap = Paint()..color = Colors.white.withValues(alpha: .45);
     final slot = size.width / values.length;
@@ -168,7 +174,7 @@ class ActivityBarPainter extends CustomPainter {
             Rect.fromLTWH(left, bottom - 2, width, 2),
             const Radius.circular(1),
           ),
-          i == selected ? cyan : silver,
+          i == selected ? selectedBar : silver,
         );
         continue;
       }
@@ -185,7 +191,7 @@ class ActivityBarPainter extends CustomPainter {
       final bar = Rect.fromLTWH(left, bottom - height, width, height);
       canvas.drawRRect(
         RRect.fromRectAndRadius(bar, Radius.circular(width / 2)),
-        i == selected ? cyan : silver,
+        i == selected ? selectedBar : silver,
       );
       if (height > width) {
         canvas.drawLine(
@@ -200,6 +206,7 @@ class ActivityBarPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant ActivityBarPainter old) =>
       selected != old.selected ||
+      accent != old.accent ||
       !listEquals(values, old.values) ||
       reveal != old.reveal;
 }

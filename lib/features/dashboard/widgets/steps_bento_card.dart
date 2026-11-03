@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/daily_telemetry_model.dart';
 import 'activity_metric_card.dart';
+import 'bento_edge_glow.dart';
 import 'telemetry_detail_sheets.dart';
 import '../../../services/pedometer_service.dart';
 
@@ -31,6 +32,7 @@ class StepsBentoCard extends ConsumerWidget {
     final steps = metrics.$1;
     return ActivityMetricCard(
       title: 'Steps',
+      glowPlacement: BentoGlowPlacement.nearLeft,
       icon: Icons.directions_walk_rounded,
       value: unavailable ? '—' : '$steps',
       caption: metrics.$2

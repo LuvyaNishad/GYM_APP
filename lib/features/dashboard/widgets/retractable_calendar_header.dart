@@ -52,6 +52,85 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
       selected,
     ).subtract(Duration(days: selected.weekday - 1));
     final local = MaterialLocalizations.of(context);
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+    final greeting = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'AEON',
+          style: AppTypography.monoSmall.copyWith(
+            color: AppColors.platinum,
+            letterSpacing: 2.5,
+            fontSize: 11,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          'Hi, ${widget.userName}',
+          softWrap: true,
+          style: AppTypography.headlineLarge.copyWith(
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+    final actions = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SyncStatusIndicator(),
+        if (!isSelectedToday) ...[
+          const SizedBox(width: 8),
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () => widget.onDateSelected?.call(today),
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppColors.charcoal,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: AppColors.warning.withValues(alpha: 0.5),
+                  width: 0.8,
+                ),
+              ),
+              child: Text(
+                'TODAY',
+                style: AppTypography.monoSmall.copyWith(
+                  color: AppColors.warning,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ),
+          ),
+        ],
+        const SizedBox(width: 4),
+        IconButton(
+          tooltip: 'Choose date',
+          padding: const EdgeInsets.all(8),
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+          onPressed: () async {
+            final date = await showLiquidGlassDatePicker(
+              context: context,
+              initialDate: selected,
+              firstDate: DateTime(2020),
+              lastDate: DateTime.now().add(const Duration(days: 365)),
+              loggedWorkoutDates: widget.loggedWorkoutDates,
+            );
+            if (date != null) widget.onDateSelected?.call(date);
+          },
+          icon: const Icon(
+            Icons.calendar_month_outlined,
+            size: 20,
+            color: AppColors.platinum,
+          ),
+        ),
+      ],
+    );
 
     return Container(
       decoration: const BoxDecoration(
@@ -68,88 +147,17 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Top Row: Branding, Greeting, Sync & Date Actions ───────────
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'AEON',
-                          style: AppTypography.monoSmall.copyWith(
-                            color: AppColors.platinum,
-                            letterSpacing: 2.5,
-                            fontSize: 11,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          'Hi, ${widget.userName}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTypography.headlineLarge.copyWith(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SyncStatusIndicator(),
-                  if (!isSelectedToday) ...[
-                    const SizedBox(width: 8),
-                    InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: () => widget.onDateSelected?.call(today),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 9,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.charcoal,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: AppColors.warning.withValues(alpha: 0.5),
-                            width: 0.8,
-                          ),
-                        ),
-                        child: Text(
-                          'TODAY',
-                          style: AppTypography.monoSmall.copyWith(
-                            color: AppColors.warning,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.8,
-                          ),
-                        ),
-                      ),
-                    ),
+              if (largeText) ...[
+                greeting,
+                const SizedBox(height: 8),
+                Align(alignment: Alignment.centerRight, child: actions),
+              ] else
+                Row(
+                  children: [
+                    Expanded(child: greeting),
+                    actions,
                   ],
-                  const SizedBox(width: 4),
-                  IconButton(
-                    tooltip: 'Choose date',
-                    padding: const EdgeInsets.all(8),
-                    constraints: const BoxConstraints(),
-                    onPressed: () async {
-                      final date = await showLiquidGlassDatePicker(
-                        context: context,
-                        initialDate: selected,
-                        firstDate: DateTime(2020),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                        loggedWorkoutDates: widget.loggedWorkoutDates,
-                      );
-                      if (date != null) widget.onDateSelected?.call(date);
-                    },
-                    icon: const Icon(
-                      Icons.calendar_month_outlined,
-                      size: 20,
-                      color: AppColors.platinum,
-                    ),
-                  ),
-                ],
-              ),
+                ),
               const SizedBox(height: 12),
 
               // ── 7-Day Capsule Strip (Permanently Visible) ───────────────────
