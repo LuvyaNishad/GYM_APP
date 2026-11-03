@@ -1,8 +1,8 @@
 name: leon
-description: "LEON — Operational Fitness OS. A premium, high-performance fitness tracker."
+description: "LEON — a fitness tracker with local workout storage."
 publish_to: "none"
 
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   # json_serializable 6.11+ requires ^3.8.0. Freezed 4.x / riverpod_generator

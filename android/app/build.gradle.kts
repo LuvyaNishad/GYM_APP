@@ -1,8 +1,15 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val releaseKeyFile = rootProject.file("../.local/release-signing.properties")
+val releaseKey = Properties().apply {
+    if (releaseKeyFile.exists()) releaseKeyFile.inputStream().use { load(it) }
 }
 
 android {
@@ -21,23 +28,38 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.leon"
+        applicationId = "app.leon.fitness"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        testInstrumentationRunner = "com.example.leon.RestDeviceInstrumentation"
+        testInstrumentationRunner = providers.gradleProperty("leon.instrumentationRunner")
+            .getOrElse("com.example.leon.RestDeviceInstrumentation")
+    }
+
+    signingConfigs {
+        if (releaseKeyFile.exists()) {
+            create("release") {
+                storeFile = rootProject.file(releaseKey.getProperty("storeFile"))
+                storePassword = releaseKey.getProperty("storePassword")
+                keyAlias = releaseKey.getProperty("keyAlias")
+                keyPassword = releaseKey.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release")
         }
+    }
+}
+
+gradle.taskGraph.whenReady {
+    if (allTasks.any { it.name.endsWith("Release") } && !releaseKeyFile.exists()) {
+        throw GradleException("Release signing is required. Configure .local/release-signing.properties as described in README.md.")
     }
 }
 

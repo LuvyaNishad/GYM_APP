@@ -36,12 +36,41 @@ flutter analyze --no-pub
 flutter test --no-pub --concurrency=1
 ```
 
+If the shared Flutter test runner reports incomplete files, run each file in an isolated process:
+
+```sh
+python tool/run_tests.py
+```
+
+The runner saves logs under `build/test_runs`, retries runner-only load failures once, and exits unsuccessfully for any failing file. Optional test-file paths restrict the run.
+
 For an Android build/install, select a device from `flutter devices`:
 
 ```sh
 flutter build apk --debug
 flutter install -d <device-id>
 ```
+
+## Android release builds
+
+Android uses the application ID `app.leon.fitness`. Release builds require a permanent signing key and never fall back to debug signing. Create a keystore with `keytool`, keep it and its passwords backed up securely, and configure `.local/release-signing.properties`:
+
+```properties
+storeFile=../.local/leon-release.jks
+storePassword=YOUR_STORE_PASSWORD
+keyAlias=leon
+keyPassword=YOUR_KEY_PASSWORD
+```
+
+Paths are relative to the `android` directory. Keystores and signing properties stay outside Git. Use the same application ID and signing key for every update, and increase the build number in `pubspec.yaml` for each distribution.
+
+```sh
+flutter build apk --release --no-pub
+```
+
+The APK is written to `build/app/outputs/flutter-apk/app-release.apk`. Install updates over the existing app; uninstalling clears local data. The earlier `com.example.leon` development install is a separate app: use LEON's JSON export/import to transfer its data to the release package.
+
+Account authentication and cloud sync are not connected yet. Current guest data is stored on the device; JSON backups provide recovery after uninstall or device loss. Connecting an account will require real authentication, owner isolation and sync before cloud recovery can be offered.
 
 ## Repository hygiene
 

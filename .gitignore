@@ -35,6 +35,9 @@ migrate_working_dir/
 # ── Secrets & Environment ─────────────────────────────────────────────────────
 .env
 *.env
+*.jks
+*.keystore
+/android/key.properties
 !.env.example
 .agents/
 .claude/
