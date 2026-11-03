@@ -309,7 +309,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
           // Titles
           Text(
-            'WELCOME TO AEON',
+            'WELCOME TO LEON',
             textAlign: TextAlign.center,
             style: AppTypography.headlineLarge.copyWith(
               color: AppColors.textPrimary,
