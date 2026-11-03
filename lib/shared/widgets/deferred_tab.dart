@@ -28,18 +28,24 @@ class _DeferredTabState extends State<DeferredTab> {
 
   void _scheduleWarmup() {
     if (_loaded || _warmup?.isActive == true) return;
-    _warmup = Timer(Duration(milliseconds: 500 + widget.index * 180), () {
-      SchedulerBinding.instance.scheduleTask(
-        () {
-          if (!mounted || _loaded) return;
-          final state = WidgetsBinding.instance.lifecycleState;
-          if (state != null && state != AppLifecycleState.resumed) return;
-          setState(() => _loaded = true);
-        },
-        Priority.idle,
-        debugLabel: 'Warm tab ${widget.index}',
-      );
-    });
+    _warmup = Timer(
+      Duration(milliseconds: 500 + widget.index * 180),
+      _warmWhenIdle,
+    );
+  }
+
+  void _warmWhenIdle() {
+    _warmup = null;
+    if (!mounted || _loaded) return;
+    final state = WidgetsBinding.instance.lifecycleState;
+    if (state != null && state != AppLifecycleState.resumed) return;
+    // An idle-priority scheduler task retries through zero-delay events while
+    // animations run. Use a bounded timer instead, so a busy frame can advance.
+    if (SchedulerBinding.instance.transientCallbackCount > 0) {
+      _warmup = Timer(const Duration(milliseconds: 100), _warmWhenIdle);
+      return;
+    }
+    setState(() => _loaded = true);
   }
 
   @override

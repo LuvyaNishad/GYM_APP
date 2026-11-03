@@ -21,6 +21,8 @@ import '../../features/health_tracking/screens/health_tracking_screen.dart';
 import '../../features/onboarding/providers/onboarding_provider.dart';
 import '../../shared/widgets/app_shell.dart';
 import '../../shared/widgets/deferred_tab.dart';
+import '../../shared/widgets/retained_swipe_tabs.dart';
+import '../../state/app_providers.dart';
 import '../constants/app_constants.dart';
 
 /// The app's [GoRouter], with its start location resolved from persisted state.
@@ -56,7 +58,19 @@ final class AppRouter {
         // switches instead of being rebuilt per screen.
         // Secondary navigators preload only DeferredTab wrappers. Their
         // expensive screen trees warm individually after Home's first frame.
-        StatefulShellRoute.indexedStack(
+        StatefulShellRoute(
+          navigatorContainerBuilder: (context, navigationShell, children) =>
+              Consumer(
+                builder: (context, ref, _) => RetainedSwipeTabs(
+                  currentIndex: navigationShell.currentIndex,
+                  selectionSignal: TabSelectionIntent.maybeOf(context),
+                  children: children,
+                  onSelected: (index) {
+                    ref.read(bottomNavIndexProvider.notifier).select(index);
+                    navigationShell.goBranch(index);
+                  },
+                ),
+              ),
           builder:
               (
                 BuildContext context,

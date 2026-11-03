@@ -1,19 +1,8 @@
-/// LEON / AEON main-tab shell with retained branches and a short incoming reveal.
-///
-/// Features:
-/// - Instant tab switching between the 5 main sections using [IndexedStack]:
-///   * Tab 0: Home / Dashboard
-///   * Tab 1: Workouts / Training Splits
-///   * Tab 2: Exercises / Movement Library
-///   * Tab 3: History / Analytics
-///   * Tab 4: Account / Profile
-/// - [PageStorageKey] preserves scroll positions and state for every tab independently.
-/// - [TickerMode] pauses tickers and animations on offscreen tabs, eliminating background CPU/GPU drain.
-/// - [GlassNavPill] integration with clear bottom padding calculation for all scrollable views.
+/// Main tabs with retained branches, direct swipes and stationary navigation.
 library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -22,10 +11,12 @@ import '../../features/exercise_library/screens/exercise_library_screen.dart';
 import '../../features/history/screens/history_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/workout_builder/screens/workout_builder_screen.dart';
+import '../../state/app_providers.dart';
+import 'deferred_tab.dart';
 import 'glass_nav_pill.dart';
-import 'tab_reveal.dart';
+import 'retained_swipe_tabs.dart';
 
-class AppShell extends StatefulWidget {
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({required this.location, this.child, super.key})
     : navigationShell = null;
 
@@ -36,7 +27,7 @@ class AppShell extends StatefulWidget {
   /// Current router location, used to decide which tab reads as active.
   final String? location;
 
-  /// Production navigation uses GoRouter's stateful indexed-stack shell so
+  /// Production navigation uses GoRouter's stateful shell so
   /// branch state, route history, ticker muting, and preloading are managed in
   /// one place instead of duplicated inside this widget.
   final StatefulNavigationShell? navigationShell;
@@ -55,17 +46,16 @@ class AppShell extends StatefulWidget {
   /// the floating [GlassNavPill] plus device system safe-area insets (e.g. gesture bar, 3-button bar).
   static double bottomPadding(BuildContext context, {double extra = 24.0}) {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
-    return reservedBottomSpace + bottomInset + extra;
+    return GlassNavPill.heightFor(context) + _margin * 2 + bottomInset + extra;
   }
 
   @override
-  State<AppShell> createState() => _AppShellState();
+  ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends ConsumerState<AppShell> {
   late int _currentIndex;
-  final Set<int> _visited = {};
-  double _horizontalDragDelta = 0.0;
+  final _tabSelectionSignal = ValueNotifier<int>(0);
 
   /// The 5 persistent tab screens in display order.
   static const List<Widget> _tabScreens = <Widget>[
@@ -85,7 +75,6 @@ class _AppShellState extends State<AppShell> {
     _currentIndex = (initialIndex >= 0 && initialIndex < kNavPillTabs.length)
         ? initialIndex
         : 0;
-    _visited.add(_currentIndex);
   }
 
   @override
@@ -99,15 +88,20 @@ class _AppShellState extends State<AppShell> {
           targetIndex != _currentIndex) {
         setState(() {
           _currentIndex = targetIndex;
-          _visited.add(targetIndex);
         });
       }
     }
   }
 
   void _onTabSelected(int index) {
+    _tabSelectionSignal.value++;
+    _selectBranch(index);
+  }
+
+  void _selectBranch(int index) {
     final activeIndex = widget.navigationShell?.currentIndex ?? _currentIndex;
     if (index == activeIndex) return;
+    ref.read(bottomNavIndexProvider.notifier).select(index);
 
     final navigationShell = widget.navigationShell;
     if (navigationShell != null) {
@@ -117,12 +111,17 @@ class _AppShellState extends State<AppShell> {
 
     setState(() {
       _currentIndex = index;
-      _visited.add(index);
     });
     final targetRoute = kNavPillTabs[index].route;
     if (widget.location != targetRoute) {
       GoRouter.maybeOf(context)?.go(targetRoute);
     }
+  }
+
+  @override
+  void dispose() {
+    _tabSelectionSignal.dispose();
+    super.dispose();
   }
 
   @override
@@ -141,7 +140,7 @@ class _AppShellState extends State<AppShell> {
       color: AppColors.background,
       child: Stack(
         children: [
-          // 1. Instant, zero-peeking persistent tab branches with fast swipe gesture
+          // 1. Retained branches follow the horizontal gesture.
           Positioned.fill(
             child: Align(
               alignment: Alignment.topCenter,
@@ -152,59 +151,27 @@ class _AppShellState extends State<AppShell> {
                 child: SizedBox.expand(
                   key: const ValueKey('app-shell-main-content'),
                   child: isKnownTab
-                      ? GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onHorizontalDragStart: (_) {
-                            _horizontalDragDelta = 0.0;
-                          },
-                          onHorizontalDragUpdate: (details) {
-                            _horizontalDragDelta += details.delta.dx;
-                          },
-                          onHorizontalDragEnd: (details) {
-                            final velocity = details.primaryVelocity ?? 0.0;
-                            const double kDistanceThreshold = 50.0;
-                            const double kVelocityThreshold = 250.0;
-
-                            final isSwipeNext =
-                                velocity < -kVelocityThreshold ||
-                                _horizontalDragDelta < -kDistanceThreshold;
-                            final isSwipePrev =
-                                velocity > kVelocityThreshold ||
-                                _horizontalDragDelta > kDistanceThreshold;
-
-                            if (isSwipeNext &&
-                                currentIndex < kNavPillTabs.length - 1) {
-                              HapticFeedback.lightImpact();
-                              _onTabSelected(currentIndex + 1);
-                            } else if (isSwipePrev && currentIndex > 0) {
-                              HapticFeedback.lightImpact();
-                              _onTabSelected(currentIndex - 1);
-                            }
-                            _horizontalDragDelta = 0.0;
-                          },
-                          onHorizontalDragCancel: () {
-                            _horizontalDragDelta = 0.0;
-                          },
-                          child: TabReveal(
-                            index: currentIndex,
-                            child:
-                                navigationShell ??
-                                IndexedStack(
-                                  index: currentIndex,
-                                  children: [
-                                    for (int i = 0; i < _tabScreens.length; i++)
-                                      TickerMode(
-                                        enabled: i == currentIndex,
-                                        child: KeyedSubtree(
-                                          key: PageStorageKey<String>('tab_$i'),
-                                          child: _visited.contains(i)
-                                              ? _tabScreens[i]
-                                              : const SizedBox.shrink(),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                          ),
+                      ? TabSelectionIntent(
+                          signal: _tabSelectionSignal,
+                          child:
+                              navigationShell ??
+                              RetainedSwipeTabs(
+                                currentIndex: currentIndex,
+                                selectionSignal: _tabSelectionSignal,
+                                onSelected: _selectBranch,
+                                children: [
+                                  for (var i = 0; i < _tabScreens.length; i++)
+                                    KeyedSubtree(
+                                      key: PageStorageKey<String>('tab_$i'),
+                                      child: i == 0
+                                          ? _tabScreens[i]
+                                          : DeferredTab(
+                                              index: i,
+                                              child: _tabScreens[i],
+                                            ),
+                                    ),
+                                ],
+                              ),
                         )
                       : (widget.child ?? const SizedBox.shrink()),
                 ),
@@ -212,7 +179,7 @@ class _AppShellState extends State<AppShell> {
             ),
           ),
 
-          // 2. Floating glass navigation pill with tubelight indicator
+          // 2. Floating navigation remains stationary while branches swipe.
           Positioned(
             left: 0,
             right: 0,
