@@ -1,37 +1,63 @@
-/// LEON Auth Service (placeholder)
-///
-/// Bridges Riverpod state with Supabase auth operations.
-/// Handles sign-in, sign-up, sign-out, and session persistence.
-library;
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'supabase_service.dart';
 
 /// Provider that exposes the AuthService singleton.
-final authServiceProvider = Provider<AuthService>((ref) => AuthService());
+final authServiceProvider = Provider<AuthService>((ref) {
+  final supabaseService = ref.watch(supabaseServiceProvider);
+  return AuthService(supabaseService);
+});
 
-/// Placeholder auth service.
+/// Bridges Riverpod state with Supabase auth operations.
 class AuthService {
-  AuthService();
+  const AuthService(this._supabaseService);
+
+  final SupabaseService _supabaseService;
+
+  SupabaseClient get _client => _supabaseService.client;
 
   /// Sign in with email and password.
-  Future<void> signInWithEmail(String email, String password) async {
-    // TODO(backend): await supabase.client.auth.signInWithPassword(...)
-    throw UnimplementedError('signInWithEmail not yet implemented.');
+  Future<AuthResponse> signInWithEmail(String email, String password) async {
+    return await _client.auth.signInWithPassword(
+      email: email.trim(),
+      password: password,
+    );
   }
 
   /// Register a new account.
-  Future<void> signUpWithEmail(String email, String password) async {
-    // TODO(backend): await supabase.client.auth.signUp(...)
-    throw UnimplementedError('signUpWithEmail not yet implemented.');
+  Future<AuthResponse> signUpWithEmail({
+    required String email,
+    required String password,
+    String? displayName,
+  }) async {
+    return await _client.auth.signUp(
+      email: email.trim(),
+      password: password,
+      data: displayName != null && displayName.isNotEmpty
+          ? {'full_name': displayName.trim()}
+          : null,
+    );
+  }
+
+  /// Sign in anonymously for guest users so they obtain a unique UUID.
+  Future<AuthResponse> signInAnonymously() async {
+    return await _client.auth.signInAnonymously();
   }
 
   /// Sign out the current user.
   Future<void> signOut() async {
-    // TODO(backend): await supabase.client.auth.signOut()
-    throw UnimplementedError('signOut not yet implemented.');
+    if (_supabaseService.isInitialized) {
+      await _client.auth.signOut();
+    }
   }
 
   /// Returns the current authenticated user id, or null.
-  String? get currentUserId =>
-      null; // TODO(backend): supabase.client.auth.currentUser?.id
+  String? get currentUserId => _supabaseService.currentUserId;
+
+  /// Returns the current authenticated user email, or null.
+  String? get currentUserEmail => _supabaseService.currentUser?.email;
+
+  /// Whether a user session is active.
+  bool get isAuthenticated => _supabaseService.currentUserId != null;
 }
