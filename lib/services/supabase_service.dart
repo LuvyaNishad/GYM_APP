@@ -1,29 +1,49 @@
-/// LEON Supabase Service (placeholder)
-///
-/// This file will hold all direct Supabase client interactions:
-/// - Initialization
-/// - Authentication helpers
-/// - Realtime subscriptions
-///
-/// Backend implementation is deferred. Wire up the Supabase client here
-/// when the backend phase begins.
-library;
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Provider that exposes the SupabaseService singleton.
-/// Replace the placeholder with a real implementation when Supabase is wired.
-final supabaseServiceProvider = Provider<SupabaseService>(
-  (ref) => SupabaseService(),
-);
+import '../core/config/supabase_config.dart';
 
-/// Placeholder Supabase service.
+/// Provider exposing the SupabaseService singleton.
+final supabaseServiceProvider = Provider<SupabaseService>((ref) {
+  return SupabaseService();
+});
+
+/// Direct Supabase client interactions and lifecycle management.
 class SupabaseService {
   SupabaseService();
 
-  // TODO(backend): Initialize supabase_flutter client.
-  // await Supabase.initialize(url: Env.supabaseUrl, anonKey: Env.supabaseAnonKey);
+  static bool _initialized = false;
 
-  // TODO(backend): Expose the client via a getter:
-  // SupabaseClient get client => Supabase.instance.client;
+  /// Initializes the Supabase client with AEON configuration.
+  /// Fails gracefully if offline or storage unavailable.
+  static Future<void> init() async {
+    if (_initialized) return;
+    try {
+      await Supabase.initialize(
+        url: SupabaseConfig.url,
+        publishableKey: SupabaseConfig.publishableKey,
+        debug: kDebugMode,
+      );
+      _initialized = true;
+      debugPrint('[SupabaseService] AEON connected successfully.');
+    } catch (e, stack) {
+      debugPrint('[SupabaseService] Initialization failed: $e\n$stack');
+    }
+  }
+
+  /// Whether Supabase client has been successfully initialized.
+  bool get isInitialized => _initialized;
+
+  /// The active Supabase client instance.
+  SupabaseClient get client => Supabase.instance.client;
+
+  /// Currently authenticated user, or null if unauthenticated.
+  User? get currentUser => _initialized ? client.auth.currentUser : null;
+
+  /// Current user ID, or null if unauthenticated.
+  String? get currentUserId => currentUser?.id;
+
+  /// Stream of Supabase auth state transitions.
+  Stream<AuthState> get authStateChanges => client.auth.onAuthStateChange;
 }
