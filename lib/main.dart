@@ -14,6 +14,7 @@ import 'features/workout_session/providers/active_session_provider.dart';
 import 'features/workout_session/providers/rest_timer_provider.dart';
 import 'features/workout_session/services/notification_service.dart';
 import 'services/hive_service.dart';
+import 'services/supabase_service.dart';
 import 'state/app_providers.dart';
 
 /// LEON — Operational Fitness OS
@@ -30,7 +31,10 @@ Future<void> main() async {
     UncontrolledProviderScope(
       container: container,
       child: AppStartup(
-        initialize: HiveService.init,
+        initialize: () async {
+          await HiveService.init();
+          await SupabaseService.init();
+        },
         onReady: () =>
             container.read(appBootstrappedProvider.notifier).markReady(),
         failureBuilder: (error) => BootstrapFailureApp(error: error),
