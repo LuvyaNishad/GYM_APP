@@ -23,6 +23,9 @@ import '../widgets/edit_biometrics_dialog.dart';
 import '../widgets/edit_profile_dialog.dart';
 import '../widgets/export_data_dialog.dart';
 import '../widgets/report_preview_dialog.dart';
+import '../../authentication/providers/auth_provider.dart';
+import '../../../services/sync_service.dart';
+import '../../../shared/widgets/sync_status_indicator.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -94,6 +97,8 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 24),
+                        const _CloudAccountCard(),
                         const SizedBox(height: 24),
                         const _AccountActionsCard(),
                       ],
@@ -637,6 +642,62 @@ class _AlertPermissionsState extends ConsumerState<_AlertPermissions> {
         ),
     ],
   );
+}
+
+class _CloudAccountCard extends ConsumerWidget {
+  const _CloudAccountCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final isAuthenticated = authState.status == AuthStatus.authenticated &&
+        authState.email != null &&
+        authState.email != 'Guest';
+
+    return AccountSection(
+      title: 'CLOUD & SYNC',
+      action: const SyncStatusIndicator(showLabel: true),
+      children: [
+        if (isAuthenticated) ...[
+          AccountRow(
+            icon: Icons.cloud_done_outlined,
+            title: 'Account',
+            subtitle: authState.email,
+            accessory: TextButton(
+              onPressed: () async {
+                await ref.read(authProvider.notifier).signOut();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Signed out successfully.')),
+                  );
+                }
+              },
+              child: const Text('Sign out'),
+            ),
+          ),
+          AccountRow(
+            icon: Icons.sync_rounded,
+            title: 'Sync now',
+            subtitle: 'Upload local workouts to Supabase',
+            onTap: () => ref.read(syncServiceProvider.notifier).syncAll(),
+          ),
+        ] else ...[
+          AccountRow(
+            icon: Icons.cloud_upload_outlined,
+            title: 'Sign in to Cloud',
+            subtitle: 'Back up workouts and sync across devices',
+            onTap: () => context.push(AppConstants.routeLogin),
+          ),
+          AccountRow(
+            icon: Icons.sync_rounded,
+            title: 'Sync now',
+            subtitle: 'Synchronize workouts as guest',
+            onTap: () => ref.read(syncServiceProvider.notifier).syncAll(),
+          ),
+        ],
+      ],
+    );
+  }
 }
 
 class _AccountActionsCard extends ConsumerWidget {
