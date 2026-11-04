@@ -5,6 +5,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../models/workout_model.dart';
 import '../../../services/hive_service.dart';
 import '../../../services/workout_service.dart';
+import '../../../services/sync_service.dart';
 import '../../history/providers/history_provider.dart';
 import '../../history/providers/training_coverage_provider.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
@@ -1009,6 +1010,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         .saveWorkout(date == null ? snapshot : snapshot.copyWith(date: date));
     await discardSession();
     ref.invalidate(historyWorkoutsProvider);
+    unawaited(ref.read(syncServiceProvider.notifier).syncAll());
   }
 
   /// Legacy synchronous finish used by callers that explicitly manage storage.
