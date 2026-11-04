@@ -13,6 +13,7 @@
 /// Callers should never touch Hive directly — go through this service.
 library;
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,10 +22,99 @@ import 'package:hive_ce_flutter/hive_flutter.dart';
 import '../core/constants/app_constants.dart';
 
 /// Provider that exposes the HiveService singleton.
-final hiveServiceProvider = Provider<HiveService>((ref) => HiveService());
+final hiveServiceProvider = Provider<HiveService>(
+  (ref) => HiveService(workspaceId: HiveService.activeWorkspaceId),
+);
 
 class HiveService {
-  const HiveService();
+  const HiveService({this.workspaceId = guestWorkspaceId});
+
+  /// A service keeps its owner for its entire lifetime, including queued writes.
+  /// The original boxes remain the first guest's workspace after upgrading.
+  final String workspaceId;
+  static const guestWorkspaceId = 'guest';
+  static const _workspaceRegistryName = 'leon_workspaces_v1';
+  static String _activeWorkspaceId = guestWorkspaceId;
+  static String get activeWorkspaceId => _activeWorkspaceId;
+  static final _workspaceEvents = StreamController<String>.broadcast();
+  static Stream<String> get workspaceChanges => _workspaceEvents.stream;
+  static final _dataEvents = StreamController<String>.broadcast();
+  static Stream<String> get dataChanges => _dataEvents.stream;
+
+  static String? get pendingGuestSource =>
+      Hive.box<String>(_workspaceRegistryName).get('pending_guest_source');
+
+  static Future<void> stageGuestSource(String id) async {
+    _validateWorkspace(id);
+    final registry = Hive.box<String>(_workspaceRegistryName);
+    await registry.put('pending_guest_source', id);
+    await registry.flush();
+  }
+
+  static Future<void> clearGuestSource() async {
+    final registry = Hive.box<String>(_workspaceRegistryName);
+    await registry.delete('pending_guest_source');
+    await registry.flush();
+  }
+
+  void _changed() => _dataEvents.add(workspaceId);
+
+  String? get ownerUserId => workspaceId.startsWith('account_')
+      ? workspaceId.substring('account_'.length)
+      : null;
+
+  static String accountWorkspaceId(String userId) {
+    if (!RegExp(
+      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+    ).hasMatch(userId)) {
+      throw ArgumentError('Invalid account identifier.');
+    }
+    return 'account_${userId.toLowerCase()}';
+  }
+
+  static void _validateWorkspace(String id) {
+    if (id != guestWorkspaceId &&
+        !RegExp(r'^guest_[a-z0-9]+$').hasMatch(id) &&
+        !(id.startsWith('account_') &&
+            accountWorkspaceId(id.substring(8)) == id)) {
+      throw ArgumentError('Invalid local workspace.');
+    }
+  }
+
+  String _boxName(String name) =>
+      workspaceId == guestWorkspaceId ? name : '${workspaceId}__$name';
+
+  /// Opens an isolated workspace without selecting it or changing any records.
+  static Future<HiveService> openWorkspace(String id) async {
+    _validateWorkspace(id);
+    final service = HiveService(workspaceId: id);
+    await Future.wait([
+      for (final name in documentBoxes)
+        Hive.openBox<String>(service._boxName(name)),
+      Hive.openBox<dynamic>(service._boxName(AppConstants.hiveBoxSettings)),
+    ]);
+    final journal = service._settings.get('_restore_journal');
+    if (journal != null) {
+      await service._applySnapshot(
+        Map<String, dynamic>.from(jsonDecode(journal as String) as Map),
+      );
+      await service._settings.delete('_restore_journal');
+      await service._settings.flush();
+    }
+    return service;
+  }
+
+  /// Switch only after the caller has settled forms, drafts and account auth.
+  /// Old services continue to address their old workspace; no records are moved.
+  static Future<void> selectWorkspace(String id) =>
+      const HiveService()._write(() async {
+        await openWorkspace(id);
+        final registry = Hive.box<String>(_workspaceRegistryName);
+        await registry.put('active_workspace', id);
+        await registry.flush();
+        _activeWorkspaceId = id;
+        _workspaceEvents.add(id);
+      });
 
   /// Boxes that hold JSON documents, keyed by model id.
   static const List<String> documentBoxes = <String>[
@@ -46,31 +136,23 @@ class HiveService {
     } else {
       Hive.init(storagePath);
     }
-    // These files are independent. Wait for every open (including failures)
-    // before running restore recovery or letting providers read synchronously.
-    await Future.wait([
-      for (final name in documentBoxes) Hive.openBox<String>(name),
-      Hive.openBox<dynamic>(AppConstants.hiveBoxSettings),
-    ]);
-    final journal = Hive.box<dynamic>(
-      AppConstants.hiveBoxSettings,
-    ).get('_restore_journal');
-    if (journal != null) {
-      await const HiveService()._applySnapshot(
-        Map<String, dynamic>.from(jsonDecode(journal as String) as Map),
-      );
-      await Hive.box<dynamic>(
-        AppConstants.hiveBoxSettings,
-      ).delete('_restore_journal');
-    }
+    final registry = await Hive.openBox<String>(_workspaceRegistryName);
+    final selected = registry.get('active_workspace') ?? guestWorkspaceId;
+    await openWorkspace(selected);
+    _activeWorkspaceId = selected;
   }
 
   /// Flush and close all boxes. Mainly useful in tests.
-  static Future<void> close() => Hive.close();
+  static Future<void> close() async {
+    await _writes;
+    await Hive.close();
+    _activeWorkspaceId = guestWorkspaceId;
+  }
 
-  Box<String> _documents(String boxName) => Hive.box<String>(boxName);
+  Box<String> _documents(String boxName) => Hive.box<String>(_boxName(boxName));
 
-  Box<dynamic> get _settings => Hive.box<dynamic>(AppConstants.hiveBoxSettings);
+  Box<dynamic> get _settings =>
+      Hive.box<dynamic>(_boxName(AppConstants.hiveBoxSettings));
 
   static Future<void> _writes = Future.value();
   Future<T> _write<T>(Future<T> Function() action) {
@@ -123,11 +205,15 @@ class HiveService {
     await _settings.flush();
     try {
       await _applySnapshot(
-        reconcile?.call(before) ?? replacement,
+        reconcile?.call(
+              Map<String, dynamic>.from(jsonDecode(jsonEncode(before)) as Map),
+            ) ??
+            replacement,
         beforeBoxWrite: beforeBoxWrite,
       );
       await _settings.delete('_restore_journal');
       await _settings.flush();
+      _changed();
     } catch (_) {
       await _applySnapshot(before);
       await _settings.delete('_restore_journal');
@@ -144,10 +230,14 @@ class HiveService {
     for (final name in documentBoxes) {
       await beforeBoxWrite?.call(name);
       final entries = documents[name] as Map;
-      await _documents(name).clear();
-      await _documents(name).putAll({
+      final box = _documents(name);
+      await box.deleteAll(
+        box.keys.where((key) => !entries.containsKey(key)).toList(),
+      );
+      await box.putAll({
         for (final key in entries.keys)
-          key.toString(): jsonEncode(entries[key]),
+          if (box.get(key) != jsonEncode(entries[key]))
+            key.toString(): jsonEncode(entries[key]),
       });
       await _documents(name).flush();
     }
@@ -159,7 +249,11 @@ class HiveService {
           )
           .toList(),
     );
-    await _settings.putAll(settings);
+    await _settings.putAll({
+      for (final entry in settings.entries)
+        if (jsonEncode(_settings.get(entry.key)) != jsonEncode(entry.value))
+          entry.key: entry.value,
+    });
     await _settings.flush();
   }
 
@@ -167,7 +261,10 @@ class HiveService {
 
   /// Write a single model, replacing any record with the same [key].
   Future<void> put(String boxName, String key, Map<String, dynamic> json) =>
-      _write(() => _documents(boxName).put(key, jsonEncode(json)));
+      _write(() async {
+        await _documents(boxName).put(key, jsonEncode(json));
+        _changed();
+      });
 
   /// Write many models at once, keyed by [keyOf].
   Future<void> putAll<T>(
@@ -175,11 +272,12 @@ class HiveService {
     Iterable<T> models, {
     required String Function(T model) keyOf,
     required Map<String, dynamic> Function(T model) toJson,
-  }) => _write(
-    () => _documents(boxName).putAll(<String, String>{
+  }) => _write(() async {
+    await _documents(boxName).putAll(<String, String>{
       for (final model in models) keyOf(model): jsonEncode(toJson(model)),
-    }),
-  );
+    });
+    _changed();
+  });
 
   /// Read one model, or null when absent.
   ///
@@ -225,25 +323,45 @@ class HiveService {
   bool contains(String boxName, String key) =>
       _documents(boxName).containsKey(key);
 
-  Future<void> delete(String boxName, String key) =>
-      _write(() => _documents(boxName).delete(key));
+  Future<void> delete(String boxName, String key) => _write(() async {
+    await _documents(boxName).delete(key);
+    _changed();
+  });
 
-  Future<int> clearBox(String boxName) =>
-      _write(() => _documents(boxName).clear());
+  Future<int> clearBox(String boxName) => _write(() async {
+    final count = await _documents(boxName).clear();
+    _changed();
+    return count;
+  });
 
   // ── Settings ────────────────────────────────────────────────────────────────
 
   /// Persist user-entered data without hiding write failures from its UI.
-  Future<void> putSettingChecked(String key, Object? value) =>
-      _write(() => _settings.put(key, value));
+  Future<void> putSettingChecked(String key, Object? value) => _write(() async {
+    await _settings.put(key, value);
+    if (key != 'cloud_sync_state_v1') _changed();
+  });
 
-  Future<void> deleteSettingChecked(String key) =>
-      _write(() => _settings.delete(key));
+  Future<void> deleteSettingChecked(String key) => _write(() async {
+    await _settings.delete(key);
+    if (key != 'cloud_sync_state_v1') _changed();
+  });
+
+  /// Atomically reconcile a cloud response against the latest local values.
+  /// The existing restore journal protects every box and the sync metadata.
+  Future<void> changeSnapshot(
+    Map<String, dynamic> Function(Map<String, dynamic>) change,
+  ) => restoreSnapshot(
+    const {},
+    expectedSnapshot: '',
+    fingerprint: (_) => '',
+    reconcile: change,
+  );
 
   /// Store a primitive setting. Keys live on [AppConstants].
   Future<void> putSetting(String key, Object? value) async {
     try {
-      if (!Hive.isBoxOpen(AppConstants.hiveBoxSettings)) return;
+      if (!Hive.isBoxOpen(_boxName(AppConstants.hiveBoxSettings))) return;
       await putSettingChecked(key, value);
     } catch (_) {}
   }
@@ -251,7 +369,9 @@ class HiveService {
   /// Read a primitive setting, falling back to [fallback] when unset.
   T? getSetting<T>(String key, {T? fallback}) {
     try {
-      if (!Hive.isBoxOpen(AppConstants.hiveBoxSettings)) return fallback;
+      if (!Hive.isBoxOpen(_boxName(AppConstants.hiveBoxSettings))) {
+        return fallback;
+      }
       return _settings.get(key, defaultValue: fallback) as T?;
     } catch (_) {
       return fallback;
@@ -260,7 +380,7 @@ class HiveService {
 
   Future<void> deleteSetting(String key) async {
     try {
-      if (!Hive.isBoxOpen(AppConstants.hiveBoxSettings)) return;
+      if (!Hive.isBoxOpen(_boxName(AppConstants.hiveBoxSettings))) return;
       await deleteSettingChecked(key);
     } catch (_) {}
   }

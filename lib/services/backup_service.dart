@@ -93,6 +93,19 @@ class BackupService {
   final HiveService hive;
   static const version = 2;
   static const maxBytes = 50 * 1024 * 1024;
+
+  /// Reuse backup validation before accepting downloaded authored data.
+  static void validatePortableSnapshot(Map<String, dynamic> snapshot) {
+    final settings = snapshot['settings'] as Map;
+    _validate({
+      'documents': snapshot['documents'],
+      'settings': {
+        for (final key in settingsKeys)
+          if (settings.containsKey(key)) key: settings[key],
+      },
+    });
+  }
+
   // Portable user data only. Hardware step baselines, auth, active timers and
   // caches cannot safely be moved between installations.
   static const settingsKeys = {
