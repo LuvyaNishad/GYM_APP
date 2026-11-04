@@ -16,6 +16,8 @@ import 'features/workout_session/services/notification_service.dart';
 import 'services/hive_service.dart';
 import 'services/supabase_service.dart';
 import 'state/app_providers.dart';
+import 'core/widgets/workspace_app.dart';
+import 'services/sync_service.dart';
 
 /// LEON — Operational Fitness OS
 /// Entry point.
@@ -38,7 +40,7 @@ Future<void> main() async {
         onReady: () =>
             container.read(appBootstrappedProvider.notifier).markReady(),
         failureBuilder: (error) => BootstrapFailureApp(error: error),
-        child: const LeonApp(),
+        child: const WorkspaceApp(child: LeonApp()),
       ),
     ),
   );
@@ -85,6 +87,7 @@ class _WorkoutLifecycleObserverState
     // Request notification permissions for Android 13+ and iOS on startup
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      ref.read(syncServiceProvider.notifier).start();
       final notifications = ref.read(workoutNotificationServiceProvider);
       notifications.updateAppLifecycleState(
         WidgetsBinding.instance.lifecycleState ?? AppLifecycleState.resumed,
@@ -152,6 +155,7 @@ class _WorkoutLifecycleObserverState
         notifs.cancelAll();
       }
     } else if (state == AppLifecycleState.resumed) {
+      ref.read(syncServiceProvider.notifier).syncAll();
       // Refresh date-dependent screens after crossing midnight while suspended.
       ref.invalidate(localDateProvider);
       ref.read(healthImportProvider.notifier).refresh();

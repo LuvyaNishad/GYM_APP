@@ -23,10 +23,12 @@ class SupabaseService {
       await Supabase.initialize(
         url: SupabaseConfig.url,
         publishableKey: SupabaseConfig.publishableKey,
-        debug: kDebugMode,
+        debug: false,
       );
       _initialized = true;
-      debugPrint('[SupabaseService] AEON connected successfully.');
+      debugPrint(
+        '[SupabaseService] Client initialized; cloud saves are verified separately.',
+      );
     } catch (e, stack) {
       debugPrint('[SupabaseService] Initialization failed: $e\n$stack');
     }

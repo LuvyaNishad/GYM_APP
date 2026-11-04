@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../services/sync_service.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/leon_button.dart';
 import '../providers/auth_provider.dart';
@@ -37,21 +36,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _localError = null);
 
     try {
-      await ref.read(authProvider.notifier).signIn(
-            _emailController.text,
-            _passwordController.text,
-          );
+      await ref
+          .read(authProvider.notifier)
+          .signIn(_emailController.text, _passwordController.text);
 
       if (!mounted) return;
 
-      // Restore user cloud data into local storage
-      await ref.read(syncServiceProvider.notifier).restoreFromCloud();
-
-      if (!mounted) return;
-      context.go(AppConstants.routeDashboard);
+      // WorkspaceApp restores the authenticated owner's separate store.
     } catch (e) {
       if (mounted) {
-        setState(() => _localError = ref.read(authProvider).error ?? e.toString());
+        setState(
+          () => _localError = ref.read(authProvider).error ?? e.toString(),
+        );
       }
     }
   }
@@ -65,6 +61,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    ref.listen(authProvider, (previous, next) {
+      if (previous?.isAnonymous == true &&
+          !next.isAnonymous &&
+          next.status == AuthStatus.authenticated &&
+          previous?.userId == next.userId &&
+          mounted) {
+        context.go(AppConstants.routeDashboard);
+      }
+    });
+    final visibleError = _localError ?? authState.error;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -92,6 +98,57 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      LeonButton(
+                        label: 'CONTINUE WITH GOOGLE',
+                        onPressed: authState.isLoading
+                            ? null
+                            : () async {
+                                try {
+                                  await ref
+                                      .read(authProvider.notifier)
+                                      .signInWithGoogle();
+                                } catch (_) {
+                                  if (mounted) {
+                                    setState(
+                                      () => _localError = ref
+                                          .read(authProvider)
+                                          .error,
+                                    );
+                                  }
+                                }
+                              },
+                      ),
+                      if (authState.isAnonymous)
+                        TextButton(
+                          onPressed: authState.isLoading
+                              ? null
+                              : () async {
+                                  try {
+                                    await ref
+                                        .read(authProvider.notifier)
+                                        .signInWithGoogle(
+                                          useExistingAccount: true,
+                                        );
+                                  } catch (_) {
+                                    if (mounted) {
+                                      setState(
+                                        () => _localError = ref
+                                            .read(authProvider)
+                                            .error,
+                                      );
+                                    }
+                                  }
+                                },
+                          child: const Text(
+                            'Sign in to an existing Google account',
+                          ),
+                        ),
+                      if (authState.message != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Text(authState.message!),
+                        ),
+                      const SizedBox(height: 20),
                       Text(
                         'WELCOME BACK',
                         style: AppTypography.headlineLarge,
@@ -106,7 +163,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
-                      if (_localError != null) ...[
+                      if (visibleError != null) ...[
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
@@ -117,7 +174,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                           child: Text(
-                            _localError!,
+                            visibleError,
                             style: AppTypography.bodySmall.copyWith(
                               color: AppColors.danger,
                               fontSize: 12,
@@ -145,11 +202,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           fillColor: AppColors.surfaceSecondary,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.subtleBorder),
+                            borderSide: const BorderSide(
+                              color: AppColors.subtleBorder,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.subtleBorder),
+                            borderSide: const BorderSide(
+                              color: AppColors.subtleBorder,
+                            ),
                           ),
                         ),
                         validator: (value) {
@@ -194,11 +255,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           fillColor: AppColors.surfaceSecondary,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.subtleBorder),
+                            borderSide: const BorderSide(
+                              color: AppColors.subtleBorder,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.subtleBorder),
+                            borderSide: const BorderSide(
+                              color: AppColors.subtleBorder,
+                            ),
                           ),
                         ),
                         validator: (value) {
@@ -210,21 +275,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       const SizedBox(height: 24),
                       LeonButton(
-                        label: authState.isLoading ? 'SIGNING IN...' : 'SIGN IN',
+                        label: authState.isLoading
+                            ? 'SIGNING IN...'
+                            : 'SIGN IN',
                         onPressed: authState.isLoading ? null : _handleSignIn,
                       ),
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          const Expanded(child: Divider(color: AppColors.subtleBorder)),
+                          const Expanded(
+                            child: Divider(color: AppColors.subtleBorder),
+                          ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Text(
                               'OR',
-                              style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted),
+                              style: AppTypography.labelSmall.copyWith(
+                                color: AppColors.textMuted,
+                              ),
                             ),
                           ),
-                          const Expanded(child: Divider(color: AppColors.subtleBorder)),
+                          const Expanded(
+                            child: Divider(color: AppColors.subtleBorder),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),

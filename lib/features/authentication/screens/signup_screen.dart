@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../services/sync_service.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/leon_button.dart';
 import '../providers/auth_provider.dart';
@@ -41,7 +40,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     setState(() => _localError = null);
 
     try {
-      await ref.read(authProvider.notifier).signUp(
+      await ref
+          .read(authProvider.notifier)
+          .signUp(
             _emailController.text,
             _passwordController.text,
             _nameController.text,
@@ -49,14 +50,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
       if (!mounted) return;
 
-      // Sync local profile up to cloud
-      await ref.read(syncServiceProvider.notifier).syncAll();
-
-      if (!mounted) return;
-      context.go(AppConstants.routeDashboard);
+      // Email confirmation may be required. A user object alone is not a session.
     } catch (e) {
       if (mounted) {
-        setState(() => _localError = ref.read(authProvider).error ?? e.toString());
+        setState(
+          () => _localError = ref.read(authProvider).error ?? e.toString(),
+        );
       }
     }
   }
@@ -97,6 +96,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      if (authState.message != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Text(authState.message!),
+                        ),
                       Text(
                         'NEW ATHLETE',
                         style: AppTypography.headlineLarge,
@@ -149,11 +153,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           fillColor: AppColors.surfaceSecondary,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.subtleBorder),
+                            borderSide: const BorderSide(
+                              color: AppColors.subtleBorder,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.subtleBorder),
+                            borderSide: const BorderSide(
+                              color: AppColors.subtleBorder,
+                            ),
                           ),
                         ),
                         validator: (value) {
@@ -183,11 +191,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           fillColor: AppColors.surfaceSecondary,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.subtleBorder),
+                            borderSide: const BorderSide(
+                              color: AppColors.subtleBorder,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.subtleBorder),
+                            borderSide: const BorderSide(
+                              color: AppColors.subtleBorder,
+                            ),
                           ),
                         ),
                         validator: (value) {
@@ -232,11 +244,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           fillColor: AppColors.surfaceSecondary,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.subtleBorder),
+                            borderSide: const BorderSide(
+                              color: AppColors.subtleBorder,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.subtleBorder),
+                            borderSide: const BorderSide(
+                              color: AppColors.subtleBorder,
+                            ),
                           ),
                         ),
                         validator: (value) {
@@ -265,11 +281,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           fillColor: AppColors.surfaceSecondary,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.subtleBorder),
+                            borderSide: const BorderSide(
+                              color: AppColors.subtleBorder,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.subtleBorder),
+                            borderSide: const BorderSide(
+                              color: AppColors.subtleBorder,
+                            ),
                           ),
                         ),
                         validator: (value) {
@@ -281,21 +301,29 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       ),
                       const SizedBox(height: 24),
                       LeonButton(
-                        label: authState.isLoading ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT',
+                        label: authState.isLoading
+                            ? 'CREATING ACCOUNT...'
+                            : 'CREATE ACCOUNT',
                         onPressed: authState.isLoading ? null : _handleSignUp,
                       ),
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          const Expanded(child: Divider(color: AppColors.subtleBorder)),
+                          const Expanded(
+                            child: Divider(color: AppColors.subtleBorder),
+                          ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Text(
                               'OR',
-                              style: AppTypography.labelSmall.copyWith(color: AppColors.textMuted),
+                              style: AppTypography.labelSmall.copyWith(
+                                color: AppColors.textMuted,
+                              ),
                             ),
                           ),
-                          const Expanded(child: Divider(color: AppColors.subtleBorder)),
+                          const Expanded(
+                            child: Divider(color: AppColors.subtleBorder),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),

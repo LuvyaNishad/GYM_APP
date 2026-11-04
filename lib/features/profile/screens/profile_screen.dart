@@ -26,6 +26,7 @@ import '../widgets/report_preview_dialog.dart';
 import '../../authentication/providers/auth_provider.dart';
 import '../../../services/sync_service.dart';
 import '../../../shared/widgets/sync_status_indicator.dart';
+import '../../authentication/screens/sync_conflicts_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -650,9 +651,9 @@ class _CloudAccountCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
-    final isAuthenticated = authState.status == AuthStatus.authenticated &&
-        authState.email != null &&
-        authState.email != 'Guest';
+    final isAuthenticated =
+        authState.status == AuthStatus.authenticated && !authState.isAnonymous;
+    final sync = ref.watch(syncServiceProvider);
 
     return AccountSection(
       title: 'CLOUD & SYNC',
@@ -665,12 +666,18 @@ class _CloudAccountCard extends ConsumerWidget {
             subtitle: authState.email,
             accessory: TextButton(
               onPressed: () async {
-                await ref.read(authProvider.notifier).signOut();
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Signed out successfully.')),
-                  );
-                }
+                final confirmed = await const _AccountActionsCard()._confirm(
+                  context,
+                  title: 'Sign out?',
+                  content:
+                      '${sync.pendingCount} changes are waiting for cloud sync. Your account data and unsynced changes stay in this account’s local workspace. Sign in again to access them.',
+                  action: 'Sign out',
+                );
+                if (!confirmed || !context.mounted) return;
+                await persistWithFeedback(
+                  context,
+                  () => ref.read(authProvider.notifier).signOut(),
+                );
               },
               child: const Text('Sign out'),
             ),
@@ -678,23 +685,40 @@ class _CloudAccountCard extends ConsumerWidget {
           AccountRow(
             icon: Icons.sync_rounded,
             title: 'Sync now',
-            subtitle: 'Upload local workouts to Supabase',
+            subtitle:
+                sync.errorMessage ??
+                '${sync.pendingCount} pending changes · uploads and downloads',
             onTap: () => ref.read(syncServiceProvider.notifier).syncAll(),
           ),
         ] else ...[
           AccountRow(
             icon: Icons.cloud_upload_outlined,
-            title: 'Sign in to Cloud',
+            title: authState.isAnonymous
+                ? 'Link an account'
+                : 'Sign in to Cloud',
             subtitle: 'Back up workouts and sync across devices',
             onTap: () => context.push(AppConstants.routeLogin),
           ),
           AccountRow(
             icon: Icons.sync_rounded,
             title: 'Sync now',
-            subtitle: 'Synchronize workouts as guest',
+            subtitle: authState.isAnonymous
+                ? 'Guest cloud saves need a linked account for recovery after reinstall'
+                : 'Guest data is saved on this device until connected',
             onTap: () => ref.read(syncServiceProvider.notifier).syncAll(),
           ),
         ],
+        if (sync.conflicts.isNotEmpty)
+          AccountRow(
+            icon: Icons.compare_arrows_rounded,
+            title: 'Review ${sync.conflicts.length} sync conflicts',
+            subtitle: 'Both versions are retained until you choose',
+            onTap: () => Navigator.of(context, rootNavigator: true).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const SyncConflictsScreen(),
+              ),
+            ),
+          ),
       ],
     );
   }

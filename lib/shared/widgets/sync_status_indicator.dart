@@ -20,6 +20,7 @@ class SyncStatusIndicator extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final syncState = ref.watch(syncServiceProvider);
+    final localSyncTime = syncState.lastSyncedAt?.toLocal();
 
     IconData icon;
     Color color;
@@ -27,6 +28,24 @@ class SyncStatusIndicator extends ConsumerWidget {
     String tooltip;
 
     switch (syncState.status) {
+      case SyncStatus.local:
+        icon = Icons.phone_android_rounded;
+        color = AppColors.textSecondary;
+        label = 'LOCAL';
+        tooltip = 'Saved on this device. Sign in to enable cloud sync.';
+        break;
+      case SyncStatus.pending:
+        icon = Icons.cloud_upload_outlined;
+        color = AppColors.textSecondary;
+        label = 'PENDING';
+        tooltip = '${syncState.pendingCount} changes waiting for cloud save';
+        break;
+      case SyncStatus.conflict:
+        icon = Icons.compare_arrows_rounded;
+        color = AppColors.textSecondary;
+        label = 'REVIEW';
+        tooltip = 'Choose which version to keep in Account → Cloud & Sync.';
+        break;
       case SyncStatus.syncing:
         icon = Icons.sync_rounded;
         color = AppColors.activeCyan;
@@ -37,8 +56,8 @@ class SyncStatusIndicator extends ConsumerWidget {
         icon = Icons.cloud_done_rounded;
         color = AppColors.gymGreen;
         label = 'SYNCED';
-        tooltip = syncState.lastSyncedAt != null
-            ? 'Synced at ${syncState.lastSyncedAt!.hour.toString().padLeft(2, '0')}:${syncState.lastSyncedAt!.minute.toString().padLeft(2, '0')}'
+        tooltip = localSyncTime != null
+            ? 'Synced at ${localSyncTime.hour.toString().padLeft(2, '0')}:${localSyncTime.minute.toString().padLeft(2, '0')}'
             : 'Synced with cloud';
         break;
       case SyncStatus.offline:

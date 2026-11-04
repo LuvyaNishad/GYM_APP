@@ -1,8 +1,8 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../services/auth_service.dart';
+import '../../workout_session/providers/active_session_provider.dart';
 
-/// Auth status for the authentication feature.
 enum AuthStatus { unknown, authenticated, unauthenticated }
 
 class AuthState {
@@ -11,153 +11,151 @@ class AuthState {
     this.userId,
     this.email,
     this.error,
+    this.message,
     this.isLoading = false,
+    this.isAnonymous = false,
   });
-
   final AuthStatus status;
-  final String? userId;
-  final String? email;
-  final String? error;
-  final bool isLoading;
-
+  final String? userId, email, error, message;
+  final bool isLoading, isAnonymous;
   AuthState copyWith({
     AuthStatus? status,
     String? userId,
     String? email,
     String? error,
+    String? message,
     bool? isLoading,
-  }) =>
-      AuthState(
-        status: status ?? this.status,
-        userId: userId ?? this.userId,
-        email: email ?? this.email,
-        error: error,
-        isLoading: isLoading ?? this.isLoading,
-      );
+    bool? isAnonymous,
+  }) => AuthState(
+    status: status ?? this.status,
+    userId: userId ?? this.userId,
+    email: email ?? this.email,
+    error: error,
+    message: message,
+    isLoading: isLoading ?? this.isLoading,
+    isAnonymous: isAnonymous ?? this.isAnonymous,
+  );
 }
 
-/// Authentication notifier bridging UI with Supabase AuthService.
 class AuthNotifier extends Notifier<AuthState> {
+  AuthService get _auth => ref.read(authServiceProvider);
+  AuthState _current() => AuthState(
+    status: _auth.isAuthenticated
+        ? AuthStatus.authenticated
+        : AuthStatus.unauthenticated,
+    userId: _auth.currentUserId,
+    email: _auth.currentUserEmail,
+    isAnonymous: _auth.isAnonymous,
+  );
   @override
   AuthState build() {
-    ref.keepAlive();
-    final authService = ref.watch(authServiceProvider);
-    if (authService.isAuthenticated) {
-      return AuthState(
-        status: AuthStatus.authenticated,
-        userId: authService.currentUserId,
-        email: authService.currentUserEmail,
-      );
-    }
-    return const AuthState(status: AuthStatus.unauthenticated);
+    final service = ref.watch(authServiceProvider);
+    final subscription = service.changes.listen(
+      (_) {
+        if (ref.mounted) state = _current();
+      },
+      onError: (Object _) {
+        if (ref.mounted) {
+          state = state.copyWith(
+            isLoading: false,
+            error:
+                'Sign-in did not finish. Retry, or use the existing-account option if Google is already linked.',
+          );
+        }
+      },
+    );
+    ref.onDispose(() => unawaited(subscription.cancel()));
+    return _current();
   }
 
-  AuthService get _authService => ref.read(authServiceProvider);
-
-  /// Sign in with email and password.
-  Future<void> signIn(String email, String password) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final response = await _authService.signInWithEmail(email, password);
-      if (response.user != null) {
-        state = AuthState(
-          status: AuthStatus.authenticated,
-          userId: response.user!.id,
-          email: response.user!.email,
-          isLoading: false,
-        );
-      } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Sign in failed. Please check your credentials.',
-        );
-      }
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: _formatAuthError(e),
-      );
-      rethrow;
-    }
-  }
-
-  /// Register a new account.
-  Future<void> signUp(String email, String password, String name) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final response = await _authService.signUpWithEmail(
-        email: email,
-        password: password,
-        displayName: name,
-      );
-      if (response.user != null) {
-        state = AuthState(
-          status: AuthStatus.authenticated,
-          userId: response.user!.id,
-          email: response.user!.email,
-          isLoading: false,
-        );
-      } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Account creation failed.',
-        );
-      }
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: _formatAuthError(e),
-      );
-      rethrow;
-    }
-  }
-
-  /// Sign in anonymously for guest sessions.
-  Future<void> signInAsGuest() async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final response = await _authService.signInAnonymously();
-      state = AuthState(
-        status: AuthStatus.authenticated,
-        userId: response.user?.id,
-        email: 'Guest',
-        isLoading: false,
-      );
-    } catch (e) {
-      state = const AuthState(
-        status: AuthStatus.unauthenticated,
-        isLoading: false,
+  Future<void> _settleDraft() async {
+    final session = ref.read(activeSessionProvider);
+    if (session.isActive) {
+      throw StateError(
+        'Finish your active workout before changing accounts. Your draft remains on this device.',
       );
     }
+    await ref.read(activeSessionProvider.notifier).flushPendingChanges();
   }
 
-  /// Sign out current user.
-  Future<void> signOut() async {
+  Future<void> _run(Future<void> Function() action) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true);
     try {
-      await _authService.signOut();
-      state = const AuthState(status: AuthStatus.unauthenticated);
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      await _settleDraft();
+      await action();
+      if (ref.mounted) {
+        state = state.copyWith(isLoading: false, message: state.message);
+      }
+    } catch (error) {
+      if (ref.mounted) {
+        state = state.copyWith(isLoading: false, error: _format(error));
+      }
+      rethrow;
     }
   }
 
-  String _formatAuthError(Object error) {
-    final str = error.toString();
-    if (str.contains('Invalid login credentials')) {
+  Future<void> signIn(String email, String password) => _run(() async {
+    final response = await _auth.signInWithEmail(email, password);
+    if (response.session == null) {
+      throw StateError('Sign in did not create a session.');
+    }
+    if (ref.mounted) state = _current();
+  });
+  Future<void> signUp(
+    String email,
+    String password,
+    String name,
+  ) => _run(() async {
+    final response = await _auth.signUpWithEmail(
+      email: email,
+      password: password,
+      displayName: name,
+    );
+    if (!ref.mounted) return;
+    state = response.session == null
+        ? const AuthState(
+            status: AuthStatus.unauthenticated,
+            message:
+                'Check your email to confirm your account, then sign in. No cloud save has happened yet.',
+          )
+        : _current();
+  });
+  Future<void> signInWithGoogle({
+    bool useExistingAccount = false,
+  }) => _run(() async {
+    final launched = await _auth.signInWithGoogle(
+      useExistingAccount: useExistingAccount,
+    );
+    if (!launched) throw StateError('Could not open Google sign-in.');
+    if (ref.mounted) {
+      state = state.copyWith(
+        message:
+            'Finish signing in in your browser. You can retry if you cancelled.',
+      );
+    }
+  });
+
+  /// Guest navigation works immediately offline. Provisioning happens separately.
+  Future<void> signInAsGuest() async {}
+  Future<void> signOut() => _run(() async => _auth.signOut());
+
+  String _format(Object error) {
+    if (error is StateError) return error.message;
+    final text = error.toString();
+    if (text.contains('Invalid login credentials')) {
       return 'Incorrect email or password.';
     }
-    if (str.contains('User already registered')) {
-      return 'An account with this email already exists.';
+    if (text.contains('Email not confirmed')) {
+      return 'Confirm your email before signing in.';
     }
-    if (str.contains('Password should be at least 6 characters')) {
-      return 'Password must be at least 6 characters.';
+    if (text.contains('identity_already_exists')) {
+      return 'Google is already linked to another account. Choose Sign in to an existing account.';
     }
-    if (str.contains('SocketException') || str.contains('Failed host lookup')) {
-      return 'No internet connection. Please check your network.';
-    }
-    return 'Authentication error: $str';
+    return 'Sign-in could not finish. Check your connection and try again.';
   }
 }
 
-final authProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
+final authProvider = NotifierProvider<AuthNotifier, AuthState>(
+  AuthNotifier.new,
+);

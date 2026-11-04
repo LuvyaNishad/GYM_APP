@@ -32,11 +32,13 @@ import '../constants/app_constants.dart';
 final routerProvider = Provider<GoRouter>((ref) {
   ref.keepAlive();
   final isComplete = ref.watch(onboardingCompleteProvider);
-  return AppRouter.build(
+  final router = AppRouter.build(
     initialLocation: isComplete
         ? AppConstants.routeDashboard
         : AppConstants.routeOnboarding,
   );
+  ref.onDispose(router.dispose);
+  return router;
 });
 
 /// Central [GoRouter] configuration for LEON.

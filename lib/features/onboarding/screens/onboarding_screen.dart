@@ -291,64 +291,73 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   // ── SCREEN 1: WELCOME (MATCHED BUTTONS) ────────────────────────────────────
   Widget _buildWelcome(BuildContext context, OnboardingNotifier notifier) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Column(
-        children: [
-          // Top minimal accent bar
-          Container(
-            height: 2,
-            width: double.infinity,
-            color: const Color(0xFF1E2537),
-          ),
-          const Spacer(),
-
-          // Radar Graphic
-          const TacticalRadarWidget(size: 200),
-          const SizedBox(height: 32),
-
-          // Titles
-          Text(
-            'WELCOME TO LEON',
-            textAlign: TextAlign.center,
-            style: AppTypography.headlineLarge.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 2.0,
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Column(
+          children: [
+            // Top minimal accent bar
+            Container(
+              height: 2,
+              width: double.infinity,
+              color: const Color(0xFF1E2537),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Your intelligent fitness tracker.\nBuilt for performance & seamless workout logging.',
-            textAlign: TextAlign.center,
-            style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.5,
+            const SizedBox(height: 20),
+
+            // Radar Graphic
+            const TacticalRadarWidget(size: 200),
+            const SizedBox(height: 32),
+
+            // Titles
+            Text(
+              'WELCOME TO LEON',
+              textAlign: TextAlign.center,
+              style: AppTypography.headlineLarge.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 2.0,
+              ),
             ),
-          ),
-          const Spacer(),
+            const SizedBox(height: 12),
+            Text(
+              'Your intelligent fitness tracker.\nBuilt for performance & seamless workout logging.',
+              textAlign: TextAlign.center,
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 24),
 
-          // Primary CTA: Guided setup (Matched pill shape & 52 height)
-          LeonButton(
-            label: 'CUSTOMIZE SETUP (2 MIN)',
-            icon: Icons.tune_rounded,
-            onPressed: _nextPage,
-            width: double.infinity,
-          ),
-          const SizedBox(height: 14),
+            // Primary CTA: Guided setup (Matched pill shape & 52 height)
+            LeonButton(
+              label: 'GOOGLE OR EMAIL SIGN-IN',
+              icon: Icons.person_outline_rounded,
+              onPressed: () => context.push(AppConstants.routeLogin),
+              width: double.infinity,
+            ),
+            const SizedBox(height: 14),
+            LeonButton(
+              label: 'CUSTOMIZE SETUP (2 MIN)',
+              icon: Icons.tune_rounded,
+              onPressed: _nextPage,
+              width: double.infinity,
+            ),
+            const SizedBox(height: 14),
 
-          // Secondary CTA: Instant Guest Bypass (Exact same 52 height, padding & pill radius)
-          LeonButton(
-            label: 'CONTINUE AS GUEST',
-            icon: Icons.bolt_rounded,
-            isOutlined: true,
-            onPressed: _completeAndNavigate,
-            width: double.infinity,
-          ),
-          const SizedBox(height: 16),
+            // Secondary CTA: Instant Guest Bypass (Exact same 52 height, padding & pill radius)
+            LeonButton(
+              label: 'CONTINUE AS GUEST',
+              icon: Icons.bolt_rounded,
+              isOutlined: true,
+              onPressed: _completeAndNavigate,
+              width: double.infinity,
+            ),
+            const SizedBox(height: 16),
 
-          const SizedBox(height: 16),
-        ],
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }

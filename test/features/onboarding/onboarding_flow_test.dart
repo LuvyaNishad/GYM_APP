@@ -99,7 +99,7 @@ void main() {
         expect(buttons.length, greaterThanOrEqualTo(2));
         expect(buttons[0].height, equals(52.0));
         expect(buttons[1].height, equals(52.0));
-        expect(buttons[1].isOutlined, isTrue);
+        expect(buttons.last.isOutlined, isTrue);
 
         // Tap "CUSTOMIZE SETUP (2 MIN)" to go to Step 1 (01 / 04)
         await tester.tap(find.text('CUSTOMIZE SETUP (2 MIN)'));
@@ -220,10 +220,10 @@ void main() {
         final leonButtons = tester
             .widgetList<LeonButton>(find.byType(LeonButton))
             .toList();
-        expect(leonButtons.length, 2);
+        expect(leonButtons.length, 3);
         expect(leonButtons[0].height, equals(leonButtons[1].height));
         expect(leonButtons[0].height, equals(52.0));
-        expect(leonButtons[1].isOutlined, isTrue);
+        expect(leonButtons.last.isOutlined, isTrue);
       },
     );
 
