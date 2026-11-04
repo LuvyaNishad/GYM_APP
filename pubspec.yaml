@@ -2,7 +2,7 @@ name: leon
 description: "LEON — a fitness tracker with local workout storage."
 publish_to: "none"
 
-version: 1.0.0+2
+version: 1.0.0+3
 
 environment:
   # json_serializable 6.11+ requires ^3.8.0. Freezed 4.x / riverpod_generator

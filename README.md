@@ -70,7 +70,15 @@ flutter build apk --release --no-pub
 
 The APK is written to `build/app/outputs/flutter-apk/app-release.apk`. Install updates over the existing app; uninstalling clears local data. The earlier `com.example.leon` development install is a separate app: use LEON's JSON export/import to transfer its data to the release package.
 
-Account authentication and cloud sync are not connected yet. Current guest data is stored on the device; JSON backups provide recovery after uninstall or device loss. Connecting an account will require real authentication, owner isolation and sync before cloud recovery can be offered.
+## Accounts and cloud sync
+
+LEON supports Google sign-in, email/password accounts with email confirmation, and immediate guest use. Local data and pending changes are isolated by account. Cloud saves include workouts, routines, profile/preferences, measurements, custom exercises, favorites and dated habits/steps. Active drafts, live timers and hardware sensor baselines stay local. Conflicting edits are retained for review in Account → Cloud & Sync.
+
+Guest data remains on the device while offline. When connected, a guest can receive an anonymous cloud identity; link Google or export a JSON backup for recovery after uninstall. Recovery requires completed cloud saves. Signing in to an existing account restores its data before offering to import guest records.
+
+For a Supabase deployment, configure the project URL and publishable key in `lib/core/config/supabase_config.dart` and apply the SQL in `supabase/migrations` in order. The `cloud_records` table is the app's complete sync store; older normalized tables remain for compatibility. Client writes use the owner-checked `apply_cloud_changes` function with revisions and durable retry receipts.
+
+Enable email, Google, anonymous sign-ins and manual identity linking in Supabase Authentication. Create a Google **Web application** OAuth client with `https://<project-ref>.supabase.co/auth/v1/callback` as its authorized redirect URI, and enter its client ID and secret in Supabase's Google provider settings. The client secret belongs only in Supabase. Add `app.leon.fitness://login-callback/` to Supabase's allowed redirect URLs. While Google's consent screen is in Testing, add permitted Google accounts under Test users. Android and iOS callback schemes are included in the app projects.
 
 ## Repository hygiene
 
