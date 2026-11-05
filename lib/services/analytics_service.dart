@@ -1,4 +1,4 @@
-/// LEON Analytics Service (placeholder)
+/// AEON Analytics Service (placeholder)
 ///
 /// Computes derived metrics: radar chart data, volume trends, PRs, streaks.
 library;

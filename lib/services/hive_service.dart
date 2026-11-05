@@ -1,4 +1,4 @@
-/// LEON local persistence gateway.
+/// AEON local persistence gateway.
 ///
 /// Every model is stored as a JSON **string** keyed by id, encoded with the
 /// `toJson`/`fromJson` that Freezed already generates. That means:

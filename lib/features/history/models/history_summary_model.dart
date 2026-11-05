@@ -1,4 +1,4 @@
-/// Summary statistics and gamification data for LEON History.
+/// Summary statistics and gamification data for AEON History.
 library;
 
 class HistorySummaryModel {

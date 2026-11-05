@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../../workout_session/models/active_session_state.dart';
 import '../../../models/workout_model.dart';
 
-/// Complete catalog item for the LEON Exercise Library.
+/// Complete catalog item for the AEON Exercise Library.
 @immutable
 class ExerciseLibraryItem {
   const ExerciseLibraryItem({

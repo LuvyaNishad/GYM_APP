@@ -2,7 +2,7 @@ library;
 
 import '../../../state/app_providers.dart';
 
-/// Smart Workout Auto-Rotation Provider for LEON.
+/// Smart Workout Auto-Rotation Provider for AEON.
 ///
 /// Intelligently resolves today's workout day based on completed workout history:
 /// - If the lifter completed Pull Day yesterday, automatically queues Legs Day today.

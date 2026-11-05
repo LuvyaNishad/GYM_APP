@@ -1,4 +1,4 @@
-/// Body Measurements and Recomposition providers for LEON.
+/// Body Measurements and Recomposition providers for AEON.
 library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';

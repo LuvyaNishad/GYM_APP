@@ -1,4 +1,4 @@
-/// Edit Profile & Identity Bottom Sheet for LEON.
+/// Edit Profile & Identity Bottom Sheet for AEON.
 library;
 
 import 'package:flutter/material.dart';

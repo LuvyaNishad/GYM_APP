@@ -1,4 +1,4 @@
-/// Reusable minimal Bar Progress widgets for LEON Bento Cards.
+/// Reusable minimal Bar Progress widgets for AEON Bento Cards.
 ///
 /// Designed with Apple HIG contrast and typography standards.
 library;

@@ -1,4 +1,4 @@
-/// LEON Split Service
+/// AEON Split Service
 ///
 /// Persists training splits and resolves which day of a split "today" is.
 /// The day-resolution helpers are static and pure so the dashboard, the

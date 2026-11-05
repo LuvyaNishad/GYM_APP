@@ -1,4 +1,4 @@
-/// Log Body Measurement Bottom Sheet for LEON.
+/// Log Body Measurement Bottom Sheet for AEON.
 library;
 
 import 'package:flutter/material.dart';

@@ -1,4 +1,4 @@
-/// Model representing no-shame weekly workout consistency for LEON.
+/// Model representing no-shame weekly workout consistency for AEON.
 library;
 
 class WeekDayStatus {

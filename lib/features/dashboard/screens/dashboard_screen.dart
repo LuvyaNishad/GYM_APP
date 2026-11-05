@@ -45,7 +45,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final selectedCalendarDate = ref.watch(selectedCalendarDateProvider);
     final userName = (userProfile?.displayName.isNotEmpty ?? false)
         ? userProfile!.displayName
-        : 'Leon';
+        : 'Athlete';
 
     return Scaffold(
       backgroundColor: AppColors.background,

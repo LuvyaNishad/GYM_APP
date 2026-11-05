@@ -1,4 +1,4 @@
-/// Body measurement and recomposition model for LEON.
+/// Body measurement and recomposition model for AEON.
 library;
 
 class BodyMeasurementEntry {

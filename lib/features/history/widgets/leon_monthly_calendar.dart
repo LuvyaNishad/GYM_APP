@@ -1,4 +1,4 @@
-/// Minimal, high-performance Monthly & Collapsible Calendar for LEON History.
+/// Minimal, high-performance Monthly & Collapsible Calendar for AEON History.
 ///
 /// Features:
 /// - Protruding bottom notch tab with grab handle pill (RE4 / HUD aesthetic)

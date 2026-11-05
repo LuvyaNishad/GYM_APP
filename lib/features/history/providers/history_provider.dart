@@ -4,7 +4,7 @@ import '../../../core/providers/local_date_provider.dart';
 
 import '../../../core/utils/measurement_units.dart';
 
-/// History and analytics data providers for LEON.
+/// History and analytics data providers for AEON.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

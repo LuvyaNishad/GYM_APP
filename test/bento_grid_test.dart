@@ -21,20 +21,22 @@ void main() {
       (WidgetTester tester) async {
         DateTime? selectedDate;
         await tester.pumpWidget(
-          MaterialApp(
-            theme: AppTheme.dark,
-            home: Scaffold(
-              body: RetractableCalendarHeader(
-                userName: 'Leon',
-                initialExpanded: true,
-                onDateSelected: (d) => selectedDate = d,
+          ProviderScope(
+            child: MaterialApp(
+              theme: AppTheme.dark,
+              home: Scaffold(
+                body: RetractableCalendarHeader(
+                  userName: 'Leon',
+                  initialExpanded: true,
+                  onDateSelected: (d) => selectedDate = d,
+                ),
               ),
             ),
           ),
         );
 
         // Verify branding and greeting
-        expect(find.text('LEON'), findsOneWidget);
+        expect(find.text('AEON'), findsOneWidget);
         expect(find.textContaining('Leon'), findsOneWidget);
 
         // Verify account circle is removed, calendar month button is present
@@ -60,13 +62,15 @@ void main() {
         final loggedYesterday = today.subtract(const Duration(days: 1));
 
         await tester.pumpWidget(
-          MaterialApp(
-            theme: AppTheme.dark,
-            home: Scaffold(
-              body: RetractableCalendarHeader(
-                userName: 'Leon',
-                initialExpanded: true,
-                loggedWorkoutDates: {loggedYesterday},
+          ProviderScope(
+            child: MaterialApp(
+              theme: AppTheme.dark,
+              home: Scaffold(
+                body: RetractableCalendarHeader(
+                  userName: 'Leon',
+                  initialExpanded: true,
+                  loggedWorkoutDates: {loggedYesterday},
+                ),
               ),
             ),
           ),
@@ -111,14 +115,16 @@ void main() {
         final loggedDates = {mondayThisWeek};
 
         await tester.pumpWidget(
-          MaterialApp(
-            theme: AppTheme.dark,
-            home: Scaffold(
-              body: RetractableCalendarHeader(
-                userName: 'Leon',
-                initialExpanded: true,
-                selectedDate: today,
-                loggedWorkoutDates: loggedDates,
+          ProviderScope(
+            child: MaterialApp(
+              theme: AppTheme.dark,
+              home: Scaffold(
+                body: RetractableCalendarHeader(
+                  userName: 'Leon',
+                  initialExpanded: true,
+                  selectedDate: today,
+                  loggedWorkoutDates: loggedDates,
+                ),
               ),
             ),
           ),

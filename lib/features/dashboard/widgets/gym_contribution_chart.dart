@@ -1,4 +1,4 @@
-/// GitHub-style gym activity contribution heatmap chart for LEON.
+/// GitHub-style gym activity contribution heatmap chart for AEON.
 ///
 /// Displays a horizontally scrollable 7-row matrix representing days of the
 /// week (Sunday to Saturday) across past weeks/months. Completed workout days

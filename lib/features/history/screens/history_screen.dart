@@ -2,7 +2,7 @@ library;
 
 import '../../../core/utils/measurement_units.dart';
 
-/// Main History & Performance Screen for LEON.
+/// Main History & Performance Screen for AEON.
 ///
 /// Features:
 /// - Pinned Minimal Monthly Calendar at the very top (full bleed, no notch, matching homepage design)

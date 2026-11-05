@@ -1,4 +1,4 @@
-/// Reusable minimal Donut Progress Ring with percentage in center for LEON Bento Cards.
+/// Reusable minimal Donut Progress Ring with percentage in center for AEON Bento Cards.
 library;
 
 import 'dart:math' as math;

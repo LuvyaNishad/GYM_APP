@@ -2,7 +2,7 @@ library;
 
 import '../../../core/utils/measurement_units.dart';
 
-/// Progressive Overload Tab View for LEON History:
+/// Progressive Overload Tab View for AEON History:
 /// 1RM progression trajectory with fl_chart, volume trends, and PR trophy wall.
 
 import 'package:fl_chart/fl_chart.dart';

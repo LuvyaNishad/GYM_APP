@@ -1,4 +1,4 @@
-/// LEON PR (personal record) detection.
+/// AEON PR (personal record) detection.
 ///
 /// Pure logic over stored workouts — no UI, no network. A set can beat a
 /// previous best in three independent ways, so [PrResult] reports each

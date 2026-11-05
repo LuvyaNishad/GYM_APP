@@ -1,4 +1,4 @@
-/// Progressive Overload and Strength Progress models for LEON.
+/// Progressive Overload and Strength Progress models for AEON.
 library;
 
 class StrengthDataPoint {

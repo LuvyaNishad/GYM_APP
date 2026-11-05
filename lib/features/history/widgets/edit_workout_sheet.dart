@@ -1,4 +1,4 @@
-/// Historical Workout Log Editor Sheet for LEON.
+/// Historical Workout Log Editor Sheet for AEON.
 /// Allows correcting past workout session data (sets, reps, weights, warmup flags, and deletion).
 library;
 

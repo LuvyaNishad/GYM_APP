@@ -59,7 +59,7 @@ class _ReportSheetState extends ConsumerState<_ReportSheet> {
       );
       final files = ref.read(exportFileServiceProvider);
       final name =
-          'LEON-report-${month.year}-${month.month.toString().padLeft(2, '0')}.pdf';
+          'AEON-report-${month.year}-${month.month.toString().padLeft(2, '0')}.pdf';
       final result = share
           ? (await files.share(name, 'application/pdf', pdf!)
                 ? 'Share sheet opened.'

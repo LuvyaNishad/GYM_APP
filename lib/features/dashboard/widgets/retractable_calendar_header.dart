@@ -6,7 +6,7 @@ import '../../../shared/widgets/sync_status_indicator.dart';
 
 enum DayStatus { workedOut, missed, rest, future }
 
-/// Compact week header for the LEON Dashboard.
+/// Compact week header for the AEON Dashboard.
 ///
 /// Features:
 /// - Clean corner-to-corner greeting & branding header.
@@ -57,7 +57,7 @@ class _RetractableCalendarHeaderState extends State<RetractableCalendarHeader> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'LEON',
+          'AEON',
           style: AppTypography.monoSmall.copyWith(
             color: AppColors.platinum,
             letterSpacing: 2.5,

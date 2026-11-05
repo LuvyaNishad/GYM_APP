@@ -1,4 +1,4 @@
-/// Daily telemetry metrics model for the LEON dashboard bento grid.
+/// Daily telemetry metrics model for the AEON dashboard bento grid.
 ///
 /// Encapsulates daily health data: steps, hourly activity distribution,
 /// calorie burn/consumption, hydration intake, and goal milestones.

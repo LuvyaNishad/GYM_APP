@@ -83,9 +83,9 @@ class WorkoutNotificationService {
       '@mipmap/ic_launcher',
     );
     const darwinSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
     );
 
     const initSettings = InitializationSettings(
@@ -368,7 +368,7 @@ class WorkoutNotificationService {
     }
   });
 
-  /// Cancels all LEON workout notifications.
+  /// Cancels all AEON workout notifications.
   Future<void> cancelAll() => _enqueue(() async {
     if (!_isInitialized || kIsWeb) return;
     try {

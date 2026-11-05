@@ -862,7 +862,7 @@ void main() {
     );
   }
 
-  for (final page in [2, 3, 4, 5, 6]) {
+  for (final page in [1, 2, 3, 4, 5]) {
     testWidgets('Setup page $page fits large phone text with keyboard', (
       tester,
     ) async {
@@ -893,13 +893,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       final action = find.text(
-        page == 6
-            ? 'SAVE SETUP'
-            : page == 5
-            ? 'FINALIZE SETUP'
-            : 'CONTINUE',
+        page == 5
+            ? 'Save & continue'
+            : page == 4
+            ? 'See my plan'
+            : 'Continue',
       );
-      if (page == 6) {
+      if (page == 5) {
         await tester.scrollUntilVisible(
           action,
           250,

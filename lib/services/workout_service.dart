@@ -1,4 +1,4 @@
-/// LEON Workout Service
+/// AEON Workout Service
 ///
 /// All CRUD operations on workouts, exercises, and sets. Backed by the local
 /// Hive cache via [HiveService]; a Supabase sync layer will be added on top

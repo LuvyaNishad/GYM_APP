@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 
 /// An individual health metric display card for the Health Tracking screen.
 ///
-/// Uses glassmorphism styling consistent with LEON's design system.
+/// Uses glassmorphism styling consistent with AEON's design system.
 class HealthMetricCard extends StatelessWidget {
   const HealthMetricCard({
     super.key,

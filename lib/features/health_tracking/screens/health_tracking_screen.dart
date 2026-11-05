@@ -2,7 +2,7 @@ library;
 
 import '../../../core/utils/measurement_units.dart';
 
-/// Health Tracking & Body Recomposition Screen for LEON.
+/// Health Tracking & Body Recomposition Screen for AEON.
 ///
 /// Features:
 /// - Tab 0: Daily Wearable Metrics (Steps, Heart Rate, Sleep, Active Calories)
