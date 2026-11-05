@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-/// Immutable state tracking the comprehensive LEON Onboarding flow.
+/// Immutable state tracking the comprehensive AEON Onboarding flow.
 @immutable
 class OnboardingState {
   const OnboardingState({
@@ -42,25 +42,65 @@ class OnboardingState {
   final List<String> injuries;
   final bool isCompleted;
 
-  // 7 onboarding pages in total:
-  // 0: Splash, 1: Welcome, 2: Step 1 (Goal & Exp), 3: Step 2 (Biometrics), 4: Step 3 (Split & Schedule), 5: Step 4 (Injuries & Gear), 6: Ready
-  static const int totalPages = 7;
+  // Opening, four questions, and the actual routine preview.
+  static const int totalPages = 6;
 
   bool get isLastPage => currentPage == totalPages - 1;
 
-  /// Progress fraction for the top progress bar across the 4 survey steps (pages 2-5).
+  /// Progress across the four questionnaire steps.
   double get stepProgress {
-    if (currentPage <= 1) return 0.0;
-    if (currentPage >= 6) return 1.0;
-    return (currentPage - 1) / 4.0;
+    return (currentPage / 4.0).clamp(0.0, 1.0);
   }
 
   /// Step label in format "01 / 04" through "04 / 04"
   String get stepLabel {
-    if (currentPage < 2 || currentPage > 5) return '';
-    final stepNum = currentPage - 1;
+    if (currentPage < 1 || currentPage > 4) return '';
+    final stepNum = currentPage;
     return '0$stepNum / 04';
   }
+
+  Map<String, dynamic> toJson() => {
+    'page': currentPage,
+    'name': agentName,
+    'age': age,
+    'height': height,
+    'weight': weight,
+    'target': targetWeight,
+    'heightCm': isHeightCm,
+    'weightKg': isWeightKg,
+    'ageProvided': ageProvided,
+    'heightProvided': heightProvided,
+    'weightProvided': weightProvided,
+    'targetProvided': targetProvided,
+    'experience': experienceLevel,
+    'goal': primaryGoal,
+    'days': trainingDaysPerWeek,
+    'split': preferredSplit,
+    'equipment': equipment,
+    'injuries': injuries,
+  };
+
+  factory OnboardingState.fromJson(Map<String, dynamic> json) =>
+      OnboardingState(
+        currentPage: (json['page'] as int).clamp(0, totalPages - 1),
+        agentName: json['name'] as String,
+        age: json['age'] as int,
+        height: (json['height'] as num).toDouble(),
+        weight: (json['weight'] as num).toDouble(),
+        targetWeight: (json['target'] as num).toDouble(),
+        isHeightCm: json['heightCm'] as bool,
+        isWeightKg: json['weightKg'] as bool,
+        ageProvided: json['ageProvided'] as bool,
+        heightProvided: json['heightProvided'] as bool,
+        weightProvided: json['weightProvided'] as bool,
+        targetProvided: json['targetProvided'] as bool,
+        experienceLevel: json['experience'] as String,
+        primaryGoal: json['goal'] as String,
+        trainingDaysPerWeek: (json['days'] as int).clamp(1, 7),
+        preferredSplit: json['split'] as String,
+        equipment: List<String>.from(json['equipment'] as List),
+        injuries: List<String>.from(json['injuries'] as List),
+      );
 
   OnboardingState copyWith({
     int? currentPage,

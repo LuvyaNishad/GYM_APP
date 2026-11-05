@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 
-/// The 4 standard fitness goals supported across LEON.
+/// The 4 standard fitness goals supported across AEON.
 enum TrainingGoalType {
   buildMuscle,
   strength,

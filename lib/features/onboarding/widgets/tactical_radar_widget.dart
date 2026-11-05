@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 
-/// Animated tactical radar sweep widget used across LEON onboarding & synthesis.
+/// Animated tactical radar sweep widget used across AEON onboarding & synthesis.
 class TacticalRadarWidget extends StatefulWidget {
   const TacticalRadarWidget({
     super.key,

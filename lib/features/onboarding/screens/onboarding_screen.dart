@@ -1,85 +1,57 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/aeon_logo.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../shared/widgets/glass_card.dart';
-import '../../../shared/widgets/leon_button.dart';
-import '../providers/onboarding_provider.dart';
-import '../../../models/user_model.dart';
+import '../../../core/widgets/aeon_logo.dart';
+import '../../../core/widgets/entry_widgets.dart';
 import '../../../core/utils/measurement_units.dart';
+import '../../../models/user_model.dart';
+import '../../../shared/widgets/glass_card.dart';
+import '../../../shared/widgets/persistence_feedback.dart';
+import '../../authentication/providers/auth_provider.dart';
 import '../../workout_builder/models/programme_configuration.dart';
 import '../../workout_builder/providers/splits_provider.dart';
-import '../../../shared/widgets/persistence_feedback.dart';
+import '../providers/onboarding_provider.dart';
 import '../widgets/onboarding_top_bar.dart';
-import '../widgets/tactical_radar_widget.dart';
 
-/// Streamlined 7-Question, 4-Screen Compact Onboarding flow for LEON.
-///
-/// Compliant with Apple HIG & Research Standards:
-/// 1. Splash Screen: Atmospheric brand intro
-/// 2. Welcome Screen: Matched buttons (1-Tap "CONTINUE AS GUEST" + "CUSTOMIZE SETUP")
-/// 3. Step 01 / 04: Primary Training Goal & Experience Level (Questions 1 & 2)
-/// 4. Step 02 / 04: Body Biometrics (Height, Current Weight & Target Goal Weight) (Questions 3 & 4)
-/// 5. Step 03 / 04: Routine Split & Training Frequency (Questions 5 & 6)
-/// 6. Step 04 / 04: Physical Limitations / Injuries & Equipment Profile (Question 7 + Equipment)
-/// 7. Ready Screen: Split-aware routine preview + "START WORKOUT"
-///
-/// All question screens are strictly designed to fit at one glance without scrolling.
-/// Global "SKIP" in the top bar across all questionnaire steps.
+/// Opening, four focused setup steps, then the actual routine preview.
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
-
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  late final PageController _pageController;
   bool _saving = false;
   final _biometricsForm = GlobalKey<FormState>();
 
-  @override
-  void initState() {
-    super.initState();
-    final initialPage = ref.read(onboardingProvider).currentPage;
-    _pageController = PageController(initialPage: initialPage);
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  Widget _scrollableSurvey(Widget child) => SingleChildScrollView(child: child);
-
-  void _goToPage(int page) {
+  Future<void> _goToPage(int page) async {
+    if (_saving) return;
     FocusScope.of(context).unfocus();
-    ref.read(onboardingProvider.notifier).setPage(page);
-    _pageController.animateToPage(
-      page,
-      duration: AppConstants.animNormal,
-      curve: Curves.easeInOutCubic,
+    setState(() => _saving = true);
+    await persistWithFeedback(
+      context,
+      () => ref.read(onboardingProvider.notifier).saveProgress(page),
+      message:
+          'Could not save your progress. Your choices are still here. Try again.',
     );
+    if (mounted) setState(() => _saving = false);
   }
 
   void _nextPage() {
-    final current = ref.read(onboardingProvider).currentPage;
-    if (current < OnboardingState.totalPages - 1) {
-      _goToPage(current + 1);
+    final page = ref.read(onboardingProvider).currentPage;
+    if (page == 2 && !(_biometricsForm.currentState?.validate() ?? true)) {
+      return;
     }
+    if (page < OnboardingState.totalPages - 1) _goToPage(page + 1);
   }
 
   void _previousPage() {
-    final current = ref.read(onboardingProvider).currentPage;
-    if (current > 0) {
-      _goToPage(current - 1);
-    }
+    final page = ref.read(onboardingProvider).currentPage;
+    if (page > 0) _goToPage(page - 1);
   }
 
   Future<void> _completeAndNavigate() async {
@@ -94,7 +66,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (!mounted) return;
     setState(() => _saving = false);
     if (success) {
-      GoRouter.maybeOf(context)?.go(AppConstants.routeDashboard);
+      final auth = ref.read(authProvider);
+      final needsAccount =
+          ref.read(accountChoicePendingProvider) &&
+          !(auth.status == AuthStatus.authenticated && !auth.isAnonymous);
+      GoRouter.maybeOf(context)?.go(
+        needsAccount ? AppConstants.routeLogin : AppConstants.routeDashboard,
+      );
     }
   }
 
@@ -102,101 +80,458 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(onboardingProvider);
     final notifier = ref.read(onboardingProvider.notifier);
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      resizeToAvoidBottomInset: true,
-      body: Stack(
-        children: [
-          // Ambient Glow Background
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 320,
-              height: 320,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primary.withValues(alpha: 0.04),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -100,
-            left: -100,
-            child: Container(
-              width: 350,
-              height: 350,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primary.withValues(alpha: 0.03),
-              ),
-            ),
-          ),
-
-          SafeArea(
-            child: Column(
-              children: [
-                // Top bar shown on survey steps (Pages 2 to 5)
-                if (state.currentPage >= 2 && state.currentPage <= 5)
-                  OnboardingTopBar(
-                    stepLabel: state.stepLabel,
-                    progress: state.stepProgress,
-                    onBack: _previousPage,
-                    onSkip: _completeAndNavigate,
-                  ),
-
-                // Main Page View
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    onPageChanged: (page) {
-                      notifier.setPage(page);
-                    },
-                    children: [
-                      // Screen 0: Splash
-                      _buildSplash(context),
-
-                      // Screen 1: Welcome
-                      _buildWelcome(context, notifier),
-
-                      // Screen 2: Step 01 / 04: Goal & Experience
-                      _scrollableSurvey(
-                        _buildGoalAndExperienceStep(context, state, notifier),
-                      ),
-
-                      // Screen 3: Step 02 / 04: Biometrics (Height, Weight, Target)
-                      _buildBiometricsStep(context, state, notifier),
-
-                      // Screen 4: Step 03 / 04: Split & Schedule
-                      _scrollableSurvey(
-                        _buildSplitAndScheduleStep(context, state, notifier),
-                      ),
-
-                      // Screen 5: Step 04 / 04: Injuries & Equipment
-                      _scrollableSurvey(
-                        _buildInjuriesAndEquipmentStep(
-                          context,
-                          state,
-                          notifier,
-                        ),
-                      ),
-
-                      // Screen 6: Ready / Routine Overview
-                      _buildReadyStep(context, state, notifier),
-                    ],
-                  ),
-                ),
+    final page = state.currentPage;
+    final reduced =
+        MediaQuery.disableAnimationsOf(context) ||
+        MediaQuery.accessibleNavigationOf(context);
+    final content = switch (page) {
+      0 => _buildSplash(context),
+      1 => _goals(state, notifier),
+      2 => _buildBiometricsStep(context, state, notifier),
+      3 => _schedule(state, notifier),
+      4 => _equipment(state, notifier),
+      _ => _ready(state),
+    };
+    return PopScope(
+      canPop: page == 0 && !_saving,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _previousPage();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: const Alignment(1, -.8),
+              radius: 1.4,
+              colors: [
+                page == 0 ? AppColors.background : const Color(0xFF1C2735),
+                AppColors.background,
               ],
             ),
           ),
-        ],
+          child: SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: Column(
+                  children: [
+                    if (page > 0)
+                      OnboardingTopBar(
+                        stepLabel: page == 5 ? 'YOUR PLAN' : state.stepLabel,
+                        progress: state.stepProgress,
+                        onBack: _saving ? null : _previousPage,
+                        onSkip: page < 5 && !_saving
+                            ? () => _goToPage(5)
+                            : null,
+                      ),
+                    Expanded(
+                      child: AnimatedSwitcher(
+                        duration: reduced
+                            ? Duration.zero
+                            : const Duration(milliseconds: 280),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder: (child, animation) => FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: Tween(
+                              begin: const Offset(.035, 0),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          ),
+                        ),
+                        layoutBuilder: (current, previous) => Stack(
+                          alignment: Alignment.topCenter,
+                          fit: StackFit.expand,
+                          children: [...previous, if (current != null) current],
+                        ),
+                        child: AbsorbPointer(
+                          absorbing: _saving,
+                          child: KeyedSubtree(
+                            key: ValueKey(page),
+                            child: page == 0
+                                ? content
+                                : SingleChildScrollView(
+                                    key: PageStorageKey('setup-step-$page'),
+                                    padding: const EdgeInsets.fromLTRB(
+                                      24,
+                                      28,
+                                      24,
+                                      24,
+                                    ),
+                                    child: BackdropGroup(child: content),
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (page > 0)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+                        child: EntryButton(
+                          label: page == 5
+                              ? (state.isCompleted
+                                    ? 'Save setup'
+                                    : 'Save & continue')
+                              : page == 4
+                              ? 'See my plan'
+                              : 'Continue',
+                          busy: _saving,
+                          primary: true,
+                          icon: const Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 20,
+                          ),
+                          onPressed: page == 5
+                              ? _completeAndNavigate
+                              : _nextPage,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  // ── SCREEN 0: SPLASH ────────────────────────────────────────────────────────
+  Widget _heading(String title, String subtitle) => Padding(
+    padding: const EdgeInsets.only(bottom: 24),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(header: true, child: Text(title, style: EntryStyle.heading)),
+        const SizedBox(height: 12),
+        Text(subtitle, style: AppTypography.bodyMedium),
+      ],
+    ),
+  );
+
+  Widget _label(String title) => Padding(
+    padding: const EdgeInsets.only(top: 24, bottom: 12),
+    child: Text(
+      title,
+      style: AppTypography.labelSmall.copyWith(letterSpacing: 2),
+    ),
+  );
+
+  Widget _goals(OnboardingState state, OnboardingNotifier notifier) {
+    const goals = [
+      (
+        'BUILD MUSCLE',
+        'Build muscle',
+        'Size & definition',
+        Icons.fitness_center_rounded,
+      ),
+      ('STRENGTH', 'Get stronger', 'Lift with confidence', Icons.bolt_rounded),
+      (
+        'LOSE FAT',
+        'Lose fat',
+        'Train consistently',
+        Icons.local_fire_department_outlined,
+      ),
+      (
+        'ATHLETIC',
+        'Stay athletic',
+        'Move & feel better',
+        Icons.motion_photos_on_rounded,
+      ),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _heading(
+          'What moves you?',
+          'Choose your focus. We can adjust it as you grow.',
+        ),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final single =
+                MediaQuery.textScalerOf(context).scale(16) > 22 ||
+                constraints.maxWidth < 290;
+            return Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                for (final goal in goals)
+                  SizedBox(
+                    width: single
+                        ? constraints.maxWidth
+                        : (constraints.maxWidth - 12) / 2,
+                    child: _SetupChoice(
+                      title: goal.$2,
+                      description: goal.$3,
+                      icon: goal.$4,
+                      selected:
+                          state.primaryGoal == goal.$1 ||
+                          (goal.$1 == 'STRENGTH' &&
+                              state.primaryGoal == 'INCREASE STRENGTH'),
+                      onTap: () => notifier.setPrimaryGoal(goal.$1),
+                      spacious: true,
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+        _label('YOUR EXPERIENCE'),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final item in [
+              ('BEGINNER', 'New to lifting'),
+              ('INTERMEDIATE', 'Some experience'),
+              ('ADVANCED', 'Experienced'),
+            ])
+              _chip(
+                item.$2,
+                state.experienceLevel.toUpperCase() == item.$1,
+                () => notifier.setExperienceLevel(item.$1),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _schedule(
+    OnboardingState state,
+    OnboardingNotifier notifier,
+  ) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _heading(
+        'Make room for you.',
+        'Build a weekly rhythm that fits your life.',
+      ),
+      const Text('Training days per week', style: AppTypography.bodyLarge),
+      const SizedBox(height: 12),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          for (final day in [3, 4, 5, 6])
+            _chip(
+              '$day days',
+              state.trainingDaysPerWeek == day,
+              () => notifier.setTrainingDays(day),
+              numeric: true,
+            ),
+        ],
+      ),
+      _label('TRAINING SPLIT'),
+      for (final split in [
+        ('PPL', 'Push / Pull / Legs', 'A different muscle group each session.'),
+        (
+          'Upper/Lower',
+          'Upper / Lower',
+          'Alternate upper and lower body sessions.',
+        ),
+        ('Full Body', 'Full Body', 'Train across muscle groups each session.'),
+        (
+          'Arnold Split',
+          'Arnold Split',
+          'Chest & back, shoulders & arms, then legs.',
+        ),
+      ])
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: _SetupChoice(
+            title: split.$2,
+            description: split.$3,
+            selected:
+                resolveSplitId(state.preferredSplit) ==
+                resolveSplitId(split.$1),
+            onTap: () => notifier.setPreferredSplit(split.$1),
+          ),
+        ),
+    ],
+  );
+
+  Widget _equipment(
+    OnboardingState state,
+    OnboardingNotifier notifier,
+  ) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _heading(
+        'Your space. Your pace.',
+        'Your available equipment shapes the exercises in your plan.',
+      ),
+      const Text(
+        'What can you train with?',
+        style: AppTypography.headlineSmall,
+      ),
+      const SizedBox(height: 16),
+      Wrap(
+        spacing: 8,
+        runSpacing: 10,
+        children: [
+          for (final item in [
+            'Full Gym',
+            'Barbell',
+            'Dumbbells',
+            'Bench',
+            'Pull-up Bar',
+            'Bodyweight Only',
+          ])
+            _chip(
+              item,
+              state.equipment.contains(item),
+              () => notifier.toggleEquipment(item),
+            ),
+        ],
+      ),
+      _label('ANY AREAS TO BE MINDFUL OF?'),
+      const Text(
+        'Optional notes for your review. These do not automatically filter exercises.',
+        style: AppTypography.bodyMedium,
+      ),
+      const SizedBox(height: 16),
+      Wrap(
+        spacing: 8,
+        runSpacing: 10,
+        children: [
+          _chip(
+            'None',
+            state.injuries.isEmpty,
+            () => notifier.toggleInjury('NONE'),
+          ),
+          for (final item in [
+            'SHOULDERS',
+            'LOWER BACK',
+            'KNEES',
+            'WRISTS / ELBOWS',
+          ])
+            _chip(
+              item.toLowerCase(),
+              state.injuries.contains(item),
+              () => notifier.toggleInjury(item),
+            ),
+        ],
+      ),
+    ],
+  );
+
+  Widget _chip(
+    String title,
+    bool selected,
+    VoidCallback onTap, {
+    bool numeric = false,
+  }) => ChoiceChip(
+    label: Text(title),
+    selected: selected,
+    onSelected: (_) {
+      HapticFeedback.selectionClick();
+      onTap();
+    },
+    selectedColor: const Color(0xFF163740),
+    backgroundColor: const Color(0xFF1C2530),
+    checkmarkColor: EntryStyle.accent,
+    side: BorderSide(
+      color: selected ? EntryStyle.accent : const Color(0xFF46515F),
+    ),
+    labelStyle: (numeric ? AppTypography.monoSmall : AppTypography.bodyMedium)
+        .copyWith(
+          color: selected ? Colors.white : AppColors.textSecondary,
+          fontSize: 14,
+        ),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+    materialTapTargetSize: MaterialTapTargetSize.padded,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+  );
+
+  Widget _ready(OnboardingState state) {
+    final split = ref
+        .watch(splitsProvider)
+        .splits
+        .firstWhere(
+          (s) => s.id == resolveSplitId(state.preferredSplit),
+          orElse: () => fullBodySplit,
+        );
+    final plan = configureProgramme(
+      split,
+      UserModel(
+        id: 'preview',
+        email: '',
+        displayName: '',
+        createdAt: DateTime.now(),
+        trainingDaysPerWeek: state.trainingDaysPerWeek,
+        equipment: state.equipment,
+      ),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _heading(
+          'A starting point.\nMade for you.',
+          'Here is your routine. You can change it anytime.',
+        ),
+        GlassCard(
+          blur: true,
+          sharedBackdrop: true,
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.fitness_center_rounded,
+                color: EntryStyle.accent,
+                size: 28,
+              ),
+              const SizedBox(height: 18),
+              Text(plan.name, style: AppTypography.headlineLarge),
+              const SizedBox(height: 8),
+              Text(
+                '${state.trainingDaysPerWeek} training days per week',
+                style: AppTypography.bodyLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                state.equipment.isEmpty
+                    ? 'Bodyweight exercises'
+                    : state.equipment.join(' · '),
+                style: AppTypography.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+        _label('YOUR SESSIONS'),
+        for (final day in plan.workouts.where((d) => !d.isRestDay))
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: GlassCard(
+              blur: true,
+              sharedBackdrop: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(day.name, style: AppTypography.headlineSmall),
+                  const SizedBox(height: 8),
+                  Text(
+                    day.exercises.isEmpty
+                        ? 'No matching equipment. Add exercises in Routines.'
+                        : day.exercises.map((e) => e.exerciseName).join(' · '),
+                    style: AppTypography.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        if (state.injuries.isNotEmpty)
+          const Text(
+            'Injury notes are saved for your review. Exercises are not medically screened; edit the routine to suit your needs.',
+            style: AppTypography.bodySmall,
+          ),
+      ],
+    );
+  }
+
   Widget _buildSplash(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -289,351 +624,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  // ── SCREEN 1: WELCOME (MATCHED BUTTONS) ────────────────────────────────────
-  Widget _buildWelcome(BuildContext context, OnboardingNotifier notifier) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          children: [
-            // Top minimal accent bar
-            Container(
-              height: 2,
-              width: double.infinity,
-              color: const Color(0xFF1E2537),
-            ),
-            const SizedBox(height: 20),
-
-            // Radar Graphic
-            const TacticalRadarWidget(size: 200),
-            const SizedBox(height: 32),
-
-            // Titles
-            Text(
-              'WELCOME TO LEON',
-              textAlign: TextAlign.center,
-              style: AppTypography.headlineLarge.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 2.0,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Your intelligent fitness tracker.\nBuilt for performance & seamless workout logging.',
-              textAlign: TextAlign.center,
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Primary CTA: Guided setup (Matched pill shape & 52 height)
-            LeonButton(
-              label: 'GOOGLE OR EMAIL SIGN-IN',
-              icon: Icons.person_outline_rounded,
-              onPressed: () => context.push(AppConstants.routeLogin),
-              width: double.infinity,
-            ),
-            const SizedBox(height: 14),
-            LeonButton(
-              label: 'CUSTOMIZE SETUP (2 MIN)',
-              icon: Icons.tune_rounded,
-              onPressed: _nextPage,
-              width: double.infinity,
-            ),
-            const SizedBox(height: 14),
-
-            // Secondary CTA: Instant Guest Bypass (Exact same 52 height, padding & pill radius)
-            LeonButton(
-              label: 'CONTINUE AS GUEST',
-              icon: Icons.bolt_rounded,
-              isOutlined: true,
-              onPressed: _completeAndNavigate,
-              width: double.infinity,
-            ),
-            const SizedBox(height: 16),
-
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── SCREEN 2: STEP 01 / 04: GOAL & EXPERIENCE (QUESTIONS 1 & 2) ───────────
-  Widget _buildGoalAndExperienceStep(
-    BuildContext context,
-    OnboardingState state,
-    OnboardingNotifier notifier,
-  ) {
-    final objectives = [
-      {
-        'title': 'BUILD MUSCLE',
-        'sub': 'Hypertrophy',
-        'icon': Icons.fitness_center_rounded,
-      },
-      {'title': 'STRENGTH', 'sub': 'Maximal PRs', 'icon': Icons.bolt_rounded},
-      {
-        'title': 'LOSE FAT',
-        'sub': 'Caloric Deficit',
-        'icon': Icons.local_fire_department_rounded,
-      },
-      {'title': 'ATHLETIC', 'sub': 'Conditioning', 'icon': Icons.speed_rounded},
-    ];
-
-    final experienceLevels = [
-      {'level': 'BEGINNER', 'freq': '< 1 YR'},
-      {'level': 'INTERMEDIATE', 'freq': '1 - 3 YRS'},
-      {'level': 'ADVANCED', 'freq': '3+ YRS'},
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Step Header
-          Center(
-            child: Column(
-              children: [
-                Text(
-                  'GOAL & EXPERIENCE',
-                  style: AppTypography.headlineMedium.copyWith(
-                    letterSpacing: 2.0,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Select your fitness focus and lifting background.',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 12.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Question 1: Primary Goal (2x2 Grid)
-          Row(
-            children: [
-              const Icon(
-                Icons.track_changes_rounded,
-                size: 16,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'PRIMARY TRAINING GOAL',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.5,
-                    fontSize: 11.0,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: 1.5,
-            children: objectives.map((item) {
-              final isSelected =
-                  state.primaryGoal == item['title'] ||
-                  (item['title'] == 'STRENGTH' &&
-                      state.primaryGoal == 'INCREASE STRENGTH');
-              return InkWell(
-                onTap: () => notifier.setPrimaryGoal(item['title'] as String),
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: isSelected
-                        ? AppColors.primary.withValues(alpha: 0.12)
-                        : Colors.white.withValues(alpha: 0.03),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppColors.primary
-                          : Colors.white.withValues(alpha: 0.12),
-                      width: isSelected ? 1.5 : 1.0,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        item['icon'] as IconData,
-                        color: isSelected
-                            ? AppColors.primary
-                            : AppColors.textSecondary,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item['title'] as String,
-                              maxLines: 2,
-                              textAlign: TextAlign.center,
-                              style: AppTypography.headlineSmall.copyWith(
-                                color: isSelected
-                                    ? AppColors.primary
-                                    : AppColors.textPrimary,
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.4,
-                              ),
-                            ),
-                            Text(
-                              item['sub'] as String,
-                              maxLines: 1,
-                              softWrap: false,
-                              overflow: TextOverflow.fade,
-                              style: AppTypography.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
-                                fontSize: 11.0,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Question 2: Experience Tier (3 horizontal segments)
-          Row(
-            children: [
-              const Icon(
-                Icons.military_tech_rounded,
-                size: 16,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'EXPERIENCE TIER',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.5,
-                    fontSize: 11.0,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: experienceLevels.map((item) {
-              final isSelected = state.experienceLevel == item['level'];
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 3),
-                  child: InkWell(
-                    onTap: () =>
-                        notifier.setExperienceLevel(item['level'] as String),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 11,
-                        horizontal: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: isSelected
-                            ? AppColors.primary.withValues(alpha: 0.12)
-                            : Colors.white.withValues(alpha: 0.03),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.primary
-                              : Colors.white.withValues(alpha: 0.12),
-                          width: isSelected ? 1.5 : 1.0,
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 2),
-                            child: Text(
-                              item['level'] as String,
-                              maxLines: 2,
-                              textAlign: TextAlign.center,
-                              style: AppTypography.headlineSmall.copyWith(
-                                color: isSelected
-                                    ? AppColors.primary
-                                    : AppColors.textPrimary,
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.4,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            item['freq'] as String,
-                            maxLines: 1,
-                            softWrap: false,
-                            style: AppTypography.monoSmall.copyWith(
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.textSecondary,
-                              fontSize: 11.0,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Continue Button
-          LeonButton(
-            label: 'CONTINUE',
-            icon: Icons.arrow_forward_rounded,
-            width: double.infinity,
-            onPressed: _nextPage,
-          ),
-          const SizedBox(height: 8),
-        ],
-      ),
-    );
-  }
-
-  // ── SCREEN 3: STEP 02 / 04: BIOMETRICS & TARGET (QUESTIONS 3 & 4) ──────────
   Widget _buildBiometricsStep(
     BuildContext context,
     OnboardingState state,
@@ -653,7 +643,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       key: ValueKey('$key-${units.weightLabel}-${units.heightInputLabel}'),
       initialValue: value?.toStringAsFixed(1) ?? '',
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: InputDecoration(labelText: label, helperText: 'Optional'),
+      decoration: EntryStyle.input(label, helper: 'Optional'),
       autovalidateMode: AutovalidateMode.onUserInteraction,
       validator: (text) {
         if (text == null || text.isEmpty) return null;
@@ -680,32 +670,33 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       },
     );
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.zero,
       child: Form(
         key: _biometricsForm,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'BODY BIOMETRICS',
-              style: AppTypography.headlineMedium.copyWith(letterSpacing: 1.5),
-            ),
+            Text('Your starting point.', style: EntryStyle.heading),
             const SizedBox(height: 8),
             const Text(
               'Leave any field empty if you do not want to provide it.',
               style: AppTypography.bodySmall,
             ),
             const SizedBox(height: 16),
-            SegmentedButton<bool>(
-              segments: const [
-                ButtonSegment(value: true, label: Text('kg / cm')),
-                ButtonSegment(value: false, label: Text('lbs / ft-in')),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final metric in [true, false])
+                  _chip(
+                    metric ? 'kg / cm' : 'lbs / ft-in',
+                    state.isWeightKg == metric,
+                    () {
+                      notifier.setWeightUnit(metric);
+                      notifier.setHeightUnit(metric);
+                    },
+                  ),
               ],
-              selected: {state.isWeightKg},
-              onSelectionChanged: (values) {
-                notifier.setWeightUnit(values.first);
-                notifier.setHeightUnit(values.first);
-              },
             ),
             const SizedBox(height: 16),
             GlassCard(
@@ -715,9 +706,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   TextFormField(
                     initialValue: state.ageProvided ? '${state.age}' : '',
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Age (optional)',
-                      helperText: 'Used for calorie estimates',
+                    decoration: EntryStyle.input(
+                      'Age (optional)',
+                      helper: 'Used for calorie estimates',
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) return null;
@@ -733,6 +724,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       );
                     },
                   ),
+                  const SizedBox(height: 20),
                   input(
                     'Height (${units.heightInputLabel})',
                     'height',
@@ -742,6 +734,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     (value) => notifier.setHeight(units.heightToCm(value)),
                     units.heightFromCm(250),
                   ),
+                  const SizedBox(height: 20),
                   input(
                     'Current weight (${units.weightLabel})',
                     'weight',
@@ -751,6 +744,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     (value) => notifier.setWeight(units.weightToKg(value)),
                     units.weightFromKg(500),
                   ),
+                  const SizedBox(height: 20),
                   input(
                     'Goal weight (${units.weightLabel})',
                     'target',
@@ -764,581 +758,85 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            LeonButton(
-              label: 'CONTINUE',
-              onPressed: () {
-                if (_biometricsForm.currentState!.validate()) _nextPage();
-              },
-            ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildSplitAndScheduleStep(
-    BuildContext context,
-    OnboardingState state,
-    OnboardingNotifier notifier,
-  ) {
-    final splits = [
-      {
-        'id': 'PPL',
-        'title': 'PUSH / PULL / LEGS',
-        'desc': 'Push (Chest/Delts/Tri), Pull (Back/Bi), Legs',
-        'days': '3 - 6 D',
-      },
-      {
-        'id': 'Upper/Lower',
-        'title': 'UPPER / LOWER',
-        'desc': 'Alternating Upper and Lower body days',
-        'days': '4 D',
-      },
-      {
-        'id': 'Full Body',
-        'title': 'FULL BODY',
-        'desc': 'Total body compound stimulation per workout',
-        'days': '3 D',
-      },
-      {
-        'id': 'Arnold Split',
-        'title': 'ARNOLD SPLIT',
-        'desc': 'Chest/Back, Shoulders/Arms, Legs rotation',
-        'days': '5 - 6 D',
-      },
-    ];
+class _SetupChoice extends StatelessWidget {
+  const _SetupChoice({
+    required this.title,
+    required this.description,
+    required this.selected,
+    required this.onTap,
+    this.icon,
+    this.spacious = false,
+  });
+  final String title, description;
+  final bool selected, spacious;
+  final VoidCallback onTap;
+  final IconData? icon;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    selected: selected,
+    child: GlassCard(
+      blur: true,
+      sharedBackdrop: true,
+      borderRadius: 20,
+      padding: EdgeInsets.all(spacious ? 18 : 20),
+      backgroundColor: selected
+          ? const Color(0xFF16313B)
+          : const Color(0xFF202A36),
+      borderColor: selected ? EntryStyle.accent : const Color(0xFF667180),
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Step Header
-          Center(
-            child: Column(
+          if (spacious) ...[
+            Row(
               children: [
-                Text(
-                  'SPLIT & SCHEDULE',
-                  style: AppTypography.headlineMedium.copyWith(
-                    letterSpacing: 2.0,
-                    fontWeight: FontWeight.w700,
-                  ),
+                Icon(
+                  icon,
+                  size: 28,
+                  color: selected ? EntryStyle.accent : AppColors.platinum,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Select your weekly frequency and training split.',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 12.0,
-                  ),
+                const Spacer(),
+                Icon(
+                  selected ? Icons.check_circle_rounded : Icons.circle_outlined,
+                  size: 18,
+                  color: selected ? EntryStyle.accent : AppColors.platinum,
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 20),
-
-          // Question 5: Training Frequency
-          Wrap(
-            spacing: 16,
-            runSpacing: 8,
-            alignment: WrapAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.calendar_today_rounded,
-                    size: 16,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'DAYS PER WEEK',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.5,
-                      fontSize: 11.0,
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                '${state.trainingDaysPerWeek} Days Target',
-                style: AppTypography.monoSmall.copyWith(
-                  color: AppColors.textSecondary,
-                  fontSize: 11.0,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [3, 4, 5, 6].map((day) {
-              final isSelected = state.trainingDaysPerWeek == day;
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: InkWell(
-                    onTap: () => notifier.setTrainingDays(day),
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: isSelected
-                            ? AppColors.primary.withValues(alpha: 0.15)
-                            : Colors.white.withValues(alpha: 0.04),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.primary
-                              : Colors.white.withValues(alpha: 0.12),
-                          width: isSelected ? 1.5 : 1.0,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            '$day',
-                            style: AppTypography.headlineSmall.copyWith(
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.textPrimary,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text(
-                            'DAYS',
-                            style: AppTypography.labelSmall.copyWith(
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.textSecondary,
-                              fontSize: 11.0,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Question 6: Training Split
+            const SizedBox(height: 24),
+          ],
           Row(
             children: [
-              const Icon(
-                Icons.dashboard_customize_rounded,
-                size: 16,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'TRAINING SPLIT',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.5,
-                    fontSize: 11.0,
-                  ),
+                  title,
+                  style: AppTypography.headlineSmall.copyWith(fontSize: 15),
                 ),
               ),
+              if (!spacious && selected)
+                const Icon(
+                  Icons.check_rounded,
+                  color: EntryStyle.accent,
+                  size: 18,
+                ),
             ],
           ),
-          const SizedBox(height: 8),
-          ...splits.map((item) {
-            final isSelected =
-                resolveSplitId(state.preferredSplit) ==
-                resolveSplitId(item['id'] as String);
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: InkWell(
-                onTap: () => notifier.setPreferredSplit(item['id'] as String),
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: isSelected
-                        ? AppColors.primary.withValues(alpha: 0.10)
-                        : Colors.white.withValues(alpha: 0.03),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppColors.primary
-                          : Colors.white.withValues(alpha: 0.12),
-                      width: isSelected ? 1.5 : 1.0,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item['title'] as String,
-                              style: AppTypography.headlineSmall.copyWith(
-                                color: isSelected
-                                    ? AppColors.primary
-                                    : AppColors.textPrimary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              item['desc'] as String,
-                              style: AppTypography.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
-                                fontSize: 11.0,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        item['days'] as String,
-                        style: AppTypography.monoSmall.copyWith(
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
-                          fontSize: 11.0,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }),
-
-          const SizedBox(height: 20),
-
-          // Continue Button
-          LeonButton(
-            label: 'CONTINUE',
-            icon: Icons.arrow_forward_rounded,
-            width: double.infinity,
-            onPressed: _nextPage,
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
+          Text(description, style: AppTypography.bodySmall),
         ],
       ),
-    );
-  }
-
-  // ── SCREEN 5: STEP 04 / 04: INJURIES & EQUIPMENT (QUESTION 7 + GEAR) ───────
-  Widget _buildInjuriesAndEquipmentStep(
-    BuildContext context,
-    OnboardingState state,
-    OnboardingNotifier notifier,
-  ) {
-    final injuryChips = [
-      'ALL CLEAR / NONE',
-      'SHOULDERS',
-      'LOWER BACK',
-      'KNEES',
-      'WRISTS / ELBOWS',
-    ];
-
-    final equipmentChips = [
-      'Full Gym',
-      'Barbell & Rack',
-      'Dumbbells & Bench',
-      'Bodyweight Only',
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Step Header
-          Center(
-            child: Column(
-              children: [
-                Text(
-                  'INJURIES & EQUIPMENT',
-                  style: AppTypography.headlineMedium.copyWith(
-                    letterSpacing: 2.0,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Protect vulnerable areas and tailor routines to your gear.',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 12.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Question 7: Areas to protect / Injuries
-          Row(
-            children: [
-              const Icon(
-                Icons.health_and_safety_rounded,
-                size: 16,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'AREAS TO PROTECT (INJURIES / RESTRICTIONS)',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.5,
-                    fontSize: 11.0,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: injuryChips.map((injury) {
-              final isNone = injury == 'ALL CLEAR / NONE';
-              final isSelected = isNone
-                  ? state.injuries.isEmpty
-                  : state.injuries.contains(injury);
-
-              return InkWell(
-                onTap: () {
-                  if (isNone) {
-                    notifier.toggleInjury('NONE');
-                  } else {
-                    notifier.toggleInjury(injury);
-                  }
-                },
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: isSelected
-                        ? (isNone
-                              ? AppColors.primary.withValues(alpha: 0.15)
-                              : AppColors.secondary.withValues(alpha: 0.15))
-                        : Colors.white.withValues(alpha: 0.04),
-                    border: Border.all(
-                      color: isSelected
-                          ? (isNone ? AppColors.primary : AppColors.secondary)
-                          : Colors.white.withValues(alpha: 0.12),
-                      width: isSelected ? 1.5 : 1.0,
-                    ),
-                  ),
-                  child: Text(
-                    injury,
-                    style: AppTypography.labelSmall.copyWith(
-                      color: isSelected
-                          ? (isNone ? AppColors.primary : AppColors.secondary)
-                          : AppColors.textSecondary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 11.0,
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Equipment Profile
-          Row(
-            children: [
-              const Icon(
-                Icons.handyman_rounded,
-                size: 16,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'AVAILABLE EQUIPMENT',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.5,
-                    fontSize: 11.0,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: equipmentChips.map((gear) {
-              final isSelected = state.equipment.contains(gear);
-
-              return InkWell(
-                onTap: () => notifier.toggleEquipment(gear),
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: isSelected
-                        ? AppColors.primary.withValues(alpha: 0.15)
-                        : Colors.white.withValues(alpha: 0.04),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppColors.primary
-                          : Colors.white.withValues(alpha: 0.12),
-                      width: isSelected ? 1.5 : 1.0,
-                    ),
-                  ),
-                  child: Text(
-                    gear,
-                    style: AppTypography.labelSmall.copyWith(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.textSecondary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 11.0,
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Finalize Button
-          LeonButton(
-            label: 'FINALIZE SETUP',
-            icon: Icons.check_rounded,
-            width: double.infinity,
-            onPressed: _nextPage,
-          ),
-          const SizedBox(height: 8),
-        ],
-      ),
-    );
-  }
-
-  // ── SCREEN 6: READY / ROUTINE OVERVIEW ─────────────────────────────────────
-  Widget _buildReadyStep(
-    BuildContext context,
-    OnboardingState state,
-    OnboardingNotifier notifier,
-  ) {
-    final split = ref
-        .watch(splitsProvider)
-        .splits
-        .firstWhere(
-          (s) => s.id == resolveSplitId(state.preferredSplit),
-          orElse: () => fullBodySplit,
-        );
-    final plan = configureProgramme(
-      split,
-      UserModel(
-        id: 'preview',
-        email: '',
-        displayName: '',
-        createdAt: DateTime.now(),
-        trainingDaysPerWeek: state.trainingDaysPerWeek,
-        equipment: state.equipment,
-      ),
-    );
-    final units = MeasurementUnits(
-      weightUnit: state.isWeightKg ? 'kg' : 'lbs',
-      heightUnit: state.isHeightCm ? 'cm' : 'ft',
-    );
-    return ListView(
-      padding: const EdgeInsets.all(24),
-      children: [
-        Text(
-          'WORKOUT PLAN READY',
-          style: AppTypography.headlineMedium.copyWith(letterSpacing: 1.5),
-        ),
-        const SizedBox(height: 12),
-        GlassCard(
-          blur: true,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(plan.name, style: AppTypography.headlineSmall),
-              Text(
-                '${state.trainingDaysPerWeek} training days per week. Workouts rotate in the order below.',
-                style: AppTypography.bodyMedium,
-              ),
-              Text(
-                'Goal: ${state.primaryGoal}',
-                style: AppTypography.bodySmall,
-              ),
-              Text(
-                state.targetProvided
-                    ? 'Target: ${units.weight(state.targetWeight)}'
-                    : 'Target weight: Not set',
-                style: AppTypography.bodySmall,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Injury notes are saved for your review. Exercises are not medically screened; edit the routine to suit your needs.',
-                style: AppTypography.bodySmall,
-              ),
-            ],
-          ),
-        ),
-        for (final day in plan.workouts)
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: GlassCard(
-              blur: true,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(day.name, style: AppTypography.headlineSmall),
-                  Text(
-                    day.exercises.isEmpty
-                        ? 'No matching equipment. Add exercises in Routines.'
-                        : day.exercises.map((e) => e.exerciseName).join(', '),
-                    style: AppTypography.bodySmall,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        const SizedBox(height: 24),
-        LeonButton(
-          label: 'SAVE SETUP',
-          isLoading: _saving,
-          onPressed: _completeAndNavigate,
-        ),
-      ],
-    );
-  }
+    ),
+  );
 }

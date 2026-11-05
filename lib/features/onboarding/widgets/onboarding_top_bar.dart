@@ -1,123 +1,82 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/widgets/entry_widgets.dart';
 
-/// Standard tactical top bar for LEON onboarding steps.
 class OnboardingTopBar extends StatelessWidget {
   const OnboardingTopBar({
     super.key,
     required this.stepLabel,
     required this.progress,
-    required this.onBack,
+    this.onBack,
     this.onSkip,
   });
-
   final String stepLabel;
   final double progress;
-  final VoidCallback onBack;
-  final VoidCallback? onSkip;
+  final VoidCallback? onBack, onSkip;
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+    child: Column(
       children: [
-        // Navigation & Step Header
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Circular Glass Back Button
-              InkWell(
-                onTap: onBack,
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.04),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.15),
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: AppColors.textPrimary,
-                    size: 18,
-                  ),
+        Row(
+          children: [
+            IconButton(
+              tooltip: 'Back',
+              onPressed: onBack,
+              icon: const Icon(Icons.arrow_back_rounded, size: 22),
+            ),
+            Expanded(
+              child: Text(
+                stepLabel,
+                textAlign: TextAlign.center,
+                style: AppTypography.monoSmall.copyWith(
+                  fontSize: 11,
+                  letterSpacing: 1.5,
                 ),
               ),
-
-              // Step indicator
-              if (stepLabel.isNotEmpty)
-                Text(
-                  stepLabel,
-                  style: AppTypography.labelSmall.copyWith(
-                    fontFamily: AppTypography.fontMono,
-                    color: AppColors.textSecondary,
-                    letterSpacing: 2.0,
-                    fontWeight: FontWeight.w600,
-                  ),
-                )
-              else
-                const SizedBox(width: 40),
-
-              // Optional Skip button
-              if (onSkip != null)
-                TextButton(
-                  onPressed: onSkip,
-                  style: TextButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    foregroundColor: AppColors.textSecondary,
-                  ),
-                  child: Text(
-                    'SKIP',
-                    style: AppTypography.labelSmall.copyWith(
-                      letterSpacing: 1.5,
-                      fontWeight: FontWeight.w600,
+            ),
+            if (onSkip != null)
+              TextButton(
+                onPressed: onSkip,
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.textSecondary,
+                  minimumSize: const Size(48, 48),
+                ),
+                child: const Text('Skip', style: AppTypography.bodyMedium),
+              )
+            else
+              const SizedBox(width: 64),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
+            children: [
+              for (var i = 0; i < 4; i++)
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: i < 3 ? 6 : 0),
+                    child: AnimatedContainer(
+                      duration: MediaQuery.disableAnimationsOf(context)
+                          ? Duration.zero
+                          : const Duration(milliseconds: 220),
+                      height: 3,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(3),
+                        color: progress * 4 > i
+                            ? EntryStyle.accent
+                            : const Color(0xFF3B4655),
+                      ),
                     ),
                   ),
-                )
-              else
-                const SizedBox(width: 40),
+                ),
             ],
           ),
         ),
-
-        const SizedBox(height: 8),
-
-        // Glowing Cyan Progress Bar
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Container(
-            height: 2,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E2537),
-              borderRadius: BorderRadius.circular(1),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: progress.clamp(0.0, 1.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(1),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: AppColors.primary,
-                      blurRadius: 8,
-                      spreadRadius: 1,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
       ],
-    );
-  }
+    ),
+  );
 }

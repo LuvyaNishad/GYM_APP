@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
@@ -24,11 +26,63 @@ final onboardingCompleteProvider = Provider<bool>((ref) {
       false;
 });
 
-/// Manages the step-by-step progression through the 16-screen onboarding flow.
+/// Local entry state is excluded from cloud and backup preferences.
+final accountChoicePendingProvider = Provider<bool>(
+  (ref) =>
+      ref
+          .watch(hiveServiceProvider)
+          .getSetting<bool>(
+            AppConstants.settingAccountChoicePending,
+            fallback: false,
+          ) ??
+      false,
+);
+
+/// Saves the questionnaire independently of the finished training profile.
 class OnboardingNotifier extends Notifier<OnboardingState> {
+  Future<void> _pendingDraft = Future.value();
+
+  Future<void> _persist(OnboardingState draft) {
+    final hive = ref.read(hiveServiceProvider);
+    final json = jsonEncode(draft.toJson());
+    _pendingDraft = _pendingDraft
+        .catchError((Object _) {})
+        .then(
+          (_) => hive.putSettingChecked(AppConstants.settingSetupDraft, json),
+        );
+    // Navigation awaits the write and presents retry feedback on failure.
+    unawaited(_pendingDraft.catchError((Object _) {}));
+    return _pendingDraft;
+  }
+
+  void _update(OnboardingState next) {
+    state = next;
+    if (!next.isCompleted) _persist(next);
+  }
+
+  Future<void> saveProgress(int page) async {
+    final next = state.copyWith(currentPage: page);
+    await _persist(next);
+    if (ref.mounted) state = next;
+  }
+
   @override
   OnboardingState build() {
     ref.keepAlive();
+    if (!ref.read(onboardingCompleteProvider)) {
+      final raw = ref
+          .read(hiveServiceProvider)
+          .getSetting<String>(AppConstants.settingSetupDraft);
+      if (raw != null) {
+        try {
+          return OnboardingState.fromJson(
+            jsonDecode(raw) as Map<String, dynamic>,
+          );
+        } catch (_) {
+          /* Recover a malformed draft from the saved profile. */
+        }
+      }
+    }
     final user = ref.read(userProfileProvider);
     return OnboardingState(
       isCompleted: ref.read(onboardingCompleteProvider),
@@ -56,86 +110,92 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
 
   void setPage(int page) {
     if (page >= 0 && page < OnboardingState.totalPages) {
-      state = state.copyWith(currentPage: page);
+      _update(state.copyWith(currentPage: page));
     }
   }
 
   void nextPage() {
     if (!state.isLastPage) {
-      state = state.copyWith(currentPage: state.currentPage + 1);
+      _update(state.copyWith(currentPage: state.currentPage + 1));
     }
   }
 
   void previousPage() {
     if (state.currentPage > 0) {
-      state = state.copyWith(currentPage: state.currentPage - 1);
+      _update(state.copyWith(currentPage: state.currentPage - 1));
     }
   }
 
   void setAgentName(String name) {
-    state = state.copyWith(agentName: name);
+    _update(state.copyWith(agentName: name));
   }
 
   void setAge(int? age) {
-    state = state.copyWith(age: age, ageProvided: age != null);
+    _update(state.copyWith(age: age, ageProvided: age != null));
   }
 
   void clearBiometric(String field) {
-    state = state.copyWith(
-      heightProvided: field == 'height' ? false : null,
-      weightProvided: field == 'weight' ? false : null,
-      targetProvided: field == 'target' ? false : null,
+    _update(
+      state.copyWith(
+        heightProvided: field == 'height' ? false : null,
+        weightProvided: field == 'weight' ? false : null,
+        targetProvided: field == 'target' ? false : null,
+      ),
     );
   }
 
   void setHeight(double height, {bool? isCm}) {
-    state = state.copyWith(
-      height: height,
-      heightProvided: true,
-      isHeightCm: isCm ?? state.isHeightCm,
+    _update(
+      state.copyWith(
+        height: height,
+        heightProvided: true,
+        isHeightCm: isCm ?? state.isHeightCm,
+      ),
     );
   }
 
   void setHeightUnit(bool isCm) {
-    state = state.copyWith(isHeightCm: isCm);
+    _update(state.copyWith(isHeightCm: isCm));
   }
 
   void setWeight(double weight, {bool? isKg}) {
-    state = state.copyWith(
-      weight: weight,
-      weightProvided: true,
-      isWeightKg: isKg ?? state.isWeightKg,
+    _update(
+      state.copyWith(
+        weight: weight,
+        weightProvided: true,
+        isWeightKg: isKg ?? state.isWeightKg,
+      ),
     );
   }
 
   void setWeightUnit(bool isKg) {
-    state = state.copyWith(isWeightKg: isKg);
+    _update(state.copyWith(isWeightKg: isKg));
   }
 
   void setTargetWeight(double weight) {
-    state = state.copyWith(targetWeight: weight, targetProvided: true);
+    _update(state.copyWith(targetWeight: weight, targetProvided: true));
   }
 
   void setExperienceLevel(String level) {
-    state = state.copyWith(experienceLevel: level);
+    _update(state.copyWith(experienceLevel: level));
   }
 
   void setPrimaryGoal(String goal) {
-    state = state.copyWith(primaryGoal: goal);
+    _update(state.copyWith(primaryGoal: goal));
   }
 
   void setTrainingDays(int days) {
-    state = state.copyWith(trainingDaysPerWeek: days);
+    _update(state.copyWith(trainingDaysPerWeek: days));
   }
 
   void setPreferredSplit(String split) {
-    state = state.copyWith(preferredSplit: resolveSplitId(split));
+    _update(state.copyWith(preferredSplit: resolveSplitId(split)));
   }
 
   void toggleEquipment(String item) {
     final list = List<String>.from(state.equipment);
     if (item == 'Bodyweight Only') {
-      state = state.copyWith(equipment: const ['Bodyweight Only']);
+      _update(state.copyWith(equipment: const ['Bodyweight Only']));
       return;
     }
     list.remove('Bodyweight Only');
@@ -144,12 +204,12 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     } else {
       list.add(item);
     }
-    state = state.copyWith(equipment: list);
+    _update(state.copyWith(equipment: list));
   }
 
   void toggleInjury(String item) {
     if (item == 'NONE') {
-      state = state.copyWith(injuries: const []);
+      _update(state.copyWith(injuries: const []));
       return;
     }
     final list = List<String>.from(state.injuries);
@@ -158,11 +218,19 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     } else {
       list.add(item);
     }
-    state = state.copyWith(injuries: list);
+    _update(state.copyWith(injuries: list));
   }
 
   /// Mark onboarding as completed and persist user profile.
   Future<void> complete() async {
+    await _pendingDraft.catchError((Object _) {});
+    if (!ref.read(onboardingCompleteProvider)) {
+      // Persist first so restart after profile saving still opens account choice.
+      await ref
+          .read(hiveServiceProvider)
+          .putSettingChecked(AppConstants.settingAccountChoicePending, true);
+      ref.invalidate(accountChoicePendingProvider);
+    }
     await ref
         .read(accountProfileProvider.notifier)
         .applySetup(
@@ -180,16 +248,20 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
           weightUnit: state.isWeightKg ? 'kg' : 'lbs',
           heightUnit: state.isHeightCm ? 'cm' : 'ft',
         );
-    state = state.copyWith(isCompleted: true);
+    _update(state.copyWith(isCompleted: true));
   }
 
   Future<void> updatePrimaryGoal(String goal) async {
     await ref.read(accountProfileProvider.notifier).updatePrimaryGoal(goal);
-    state = state.copyWith(primaryGoal: goal);
+    _update(state.copyWith(primaryGoal: goal));
   }
 
   /// Replay only resets the draft; saved data and completion remain intact.
   Future<void> reset() async {
+    await _pendingDraft.catchError((Object _) {});
+    await ref
+        .read(hiveServiceProvider)
+        .deleteSettingChecked(AppConstants.settingSetupDraft);
     ref.invalidateSelf();
   }
 }

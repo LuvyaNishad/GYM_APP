@@ -12,7 +12,7 @@ class _FakeHiveService extends HiveService {
 }
 
 void main() {
-  testWidgets('LEON Onboarding Screen renders correctly', (WidgetTester tester) async {
+  testWidgets('AEON Onboarding Screen renders correctly', (WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
