@@ -1,4 +1,4 @@
-# LEON
+# AEON
 
 A Flutter fitness tracker with local workout storage, editable training routines, and workout history.
 
@@ -68,11 +68,11 @@ Paths are relative to the `android` directory. Keystores and signing properties 
 flutter build apk --release --no-pub
 ```
 
-The APK is written to `build/app/outputs/flutter-apk/app-release.apk`. Install updates over the existing app; uninstalling clears local data. The earlier `com.example.leon` development install is a separate app: use LEON's JSON export/import to transfer its data to the release package.
+The APK is written to `build/app/outputs/flutter-apk/app-release.apk`. Install updates over the existing app; uninstalling clears local data. The earlier `com.example.leon` development install is a separate app: use AEON's JSON export/import to transfer its data to the release package.
 
 ## Accounts and cloud sync
 
-LEON supports Google sign-in, email/password accounts with email confirmation, and immediate guest use. Local data and pending changes are isolated by account. Cloud saves include workouts, routines, profile/preferences, measurements, custom exercises, favorites and dated habits/steps. Active drafts, live timers and hardware sensor baselines stay local. Conflicting edits are retained for review in Account → Cloud & Sync.
+AEON supports Google sign-in, email/password accounts with email confirmation, and immediate guest use. Local data and pending changes are isolated by account. Cloud saves include workouts, routines, profile/preferences, measurements, custom exercises, favorites and dated habits/steps. Active drafts, live timers and hardware sensor baselines stay local. Conflicting edits are retained for review in Account → Cloud & Sync.
 
 Guest data remains on the device while offline. When connected, a guest can receive an anonymous cloud identity; link Google or export a JSON backup for recovery after uninstall. Recovery requires completed cloud saves. Signing in to an existing account restores its data before offering to import guest records.
 

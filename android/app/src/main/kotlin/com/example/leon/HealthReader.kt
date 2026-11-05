@@ -174,7 +174,7 @@ class HealthPrivacyActivity: Activity() {
         super.onCreate(savedInstanceState)
         val text = TextView(this).apply {
             textSize = 16f; setTextColor(0xFFE2E8F0.toInt()); setPadding(40, 48, 40, 48)
-            text = "Health data privacy\n\nLEON reads only the metrics you choose: steps, heart rate, sleep and active calories. Reads happen while using the phone app.\n\nHealth data stays on this device and is not sent to a server, included in backups, or used for advertising. Imported values can fill Home and Recovery; manual sleep and calorie entries take precedence. Step sources are never added together.\n\nTurn each import off in Health & Measurements, or revoke access in Health Connect settings. Turning import off immediately removes imported values from the app.\n\nNo health records are written or deleted."
+            text = "Health data privacy\n\nAEON reads only the metrics you choose: steps, heart rate, sleep and active calories. Reads happen while using the phone app.\n\nHealth data stays on this device and is not sent to a server, included in backups, or used for advertising. Imported values can fill Home and Recovery; manual sleep and calorie entries take precedence. Step sources are never added together.\n\nTurn each import off in Health & Measurements, or revoke access in Health Connect settings. Turning import off immediately removes imported values from the app.\n\nNo health records are written or deleted."
         }
         val scroll = ScrollView(this).apply { setBackgroundColor(0xFF161A23.toInt()); addView(text) }
         setContentView(scroll)

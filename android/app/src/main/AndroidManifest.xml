@@ -14,7 +14,7 @@
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
     <uses-permission android:name="com.oplus.healthservice.permission.STEP_PROVIDER"/>
     <application
-        android:label="LEON"
+        android:label="AEON"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round">
@@ -52,7 +52,7 @@
             android:value="false" />
         <activity
             android:name="com.example.leon.MainActivity"
-            android:label="LEON"
+            android:label="AEON"
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
