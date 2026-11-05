@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 
-/// LEON Liquid Glass Container & Painter
+/// AEON Liquid Glass Container & Painter
 ///
 /// Implements 21st.dev-inspired multi-layered optical refraction and liquid
 /// glassmorphism for Flutter:

@@ -5,7 +5,7 @@ import '../../core/theme/app_typography.dart';
 import '../../core/theme/raised_button_surface.dart';
 import 'immediate_press_feedback.dart';
 
-/// LEON primary button.
+/// AEON primary button.
 ///
 /// Primary buttons are opaque; cards use glass. Theme accent, a pill shape,
 /// and the shared shallow bevel with a close contact shadow.

@@ -1,9 +1,9 @@
-/// LEON — app-wide constants.
+/// AEON — app-wide constants.
 abstract final class AppConstants {
   AppConstants._();
 
   // ── App Meta ──────────────────────────────────────────────────────────────
-  static const String appName = 'LEON';
+  static const String appName = 'AEON';
   static const String appVersion = '1.0.0';
 
   // ── Route names (mirrors AppRouter path constants) ────────────────────────
@@ -44,12 +44,14 @@ abstract final class AppConstants {
   static const String hiveBoxCustomExercises = 'custom_exercises';
 
   /// Key the single on-device profile is stored under in [hiveBoxUser].
-  /// LEON is local-first and guest-first, so there is exactly one local
+  /// AEON is local-first and guest-first, so there is exactly one local
   /// profile whether or not it is backed by a Supabase account.
   static const String hiveKeyLocalProfile = 'local';
 
   // ── Settings Keys (primitives in the settings box) ────────────────────────
   static const String settingOnboardingComplete = 'onboarding_complete';
+  static const String settingSetupDraft = 'setup_draft_v2';
+  static const String settingAccountChoicePending = 'account_choice_pending_v1';
   static const String settingWeightUnit = 'weight_unit';
   static const String settingActiveSplitId = 'active_split_id';
   static const String settingTrainingSchedules = 'training_schedules_v1';

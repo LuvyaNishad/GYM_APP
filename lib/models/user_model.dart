@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
-/// LEON user profile data model.
+/// AEON user profile data model.
 ///
 /// Uses Freezed for immutability and JsonSerializable for serialisation.
 @freezed

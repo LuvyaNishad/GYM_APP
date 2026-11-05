@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/authentication/screens/login_screen.dart';
+import '../../features/authentication/providers/auth_provider.dart';
 import '../../features/authentication/screens/signup_screen.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
 import '../../features/workout_builder/screens/workout_builder_screen.dart';
@@ -28,20 +29,26 @@ import '../constants/app_constants.dart';
 /// The app's [GoRouter], with its start location resolved from persisted state.
 ///
 /// If onboarding has not been completed, routes directly to [AppConstants.routeOnboarding].
-/// Once completed, routes directly to [AppConstants.routeDashboard].
+/// New setup resumes at account choice until the user signs in or selects guest.
+/// Existing completed installs keep their Home entry.
 final routerProvider = Provider<GoRouter>((ref) {
   ref.keepAlive();
-  final isComplete = ref.watch(onboardingCompleteProvider);
+  // Resolve once per owner workspace; do not dispose a live router on save.
+  final isComplete = ref.read(onboardingCompleteProvider);
+  final auth = ref.read(authProvider);
+  final needsAccount =
+      ref.read(accountChoicePendingProvider) &&
+      !(auth.status == AuthStatus.authenticated && !auth.isAnonymous);
   final router = AppRouter.build(
     initialLocation: isComplete
-        ? AppConstants.routeDashboard
+        ? (needsAccount ? AppConstants.routeLogin : AppConstants.routeDashboard)
         : AppConstants.routeOnboarding,
   );
   ref.onDispose(router.dispose);
   return router;
 });
 
-/// Central [GoRouter] configuration for LEON.
+/// Central [GoRouter] configuration for AEON.
 ///
 /// All routes are declared here. Feature teams should NOT create their own
 /// routers; add named sub-routes to the appropriate [GoRoute] instead.

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 
 /// Custom painter for the tactical notched card header with a protruding
-/// center notch tab and horizontal grab handle pill (inspired by Leon/RE4 HUD).
+/// center notch tab and horizontal grab handle pill.
 class NotchedHeaderPainter extends CustomPainter {
   const NotchedHeaderPainter({
     required this.backgroundColor,

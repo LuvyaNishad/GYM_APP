@@ -19,7 +19,7 @@ import 'state/app_providers.dart';
 import 'core/widgets/workspace_app.dart';
 import 'services/sync_service.dart';
 
-/// LEON — Operational Fitness OS
+/// AEON — Operational Fitness OS
 /// Entry point.
 ///
 /// The launch logo draws immediately. Data-dependent screens mount only after
@@ -56,7 +56,7 @@ class LeonApp extends ConsumerWidget {
     final ready = ref.watch(appBootstrappedProvider);
 
     return MaterialApp.router(
-      title: 'LEON',
+      title: 'AEON',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       routerConfig: ref.watch(routerProvider),
@@ -84,7 +84,7 @@ class _WorkoutLifecycleObserverState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Request notification permissions for Android 13+ and iOS on startup
+    // Initialize quietly; notification permission belongs to workout use.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ref.read(syncServiceProvider.notifier).start();
@@ -92,7 +92,6 @@ class _WorkoutLifecycleObserverState
       notifications.updateAppLifecycleState(
         WidgetsBinding.instance.lifecycleState ?? AppLifecycleState.resumed,
       );
-      notifications.requestPermissions();
       ref.read(restTimerProvider);
       ref
           .read(nativeRestServiceProvider)
@@ -163,7 +162,20 @@ class _WorkoutLifecycleObserverState
   }
 
   @override
-  Widget build(BuildContext context) => widget.child;
+  Widget build(BuildContext context) {
+    ref.listen(activeSessionProvider.select((session) => session.isActive), (
+      previous,
+      active,
+    ) {
+      if (previous == false && active) {
+        ref
+            .read(workoutNotificationServiceProvider)
+            .requestPermissions()
+            .catchError((Object _) => false);
+      }
+    });
+    return widget.child;
+  }
 }
 
 /// Minimal splash shown while bootstrap is still in flight.
@@ -200,7 +212,7 @@ class BootstrapFailureApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'LEON',
+      title: 'AEON',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       home: Scaffold(
@@ -224,7 +236,7 @@ class BootstrapFailureApp extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'LEON could not open its local database, so nothing can be '
+                  'AEON could not open its local database, so nothing can be '
                   'logged or read. Restart the app; if this persists, '
                   'reinstalling will reset local storage.',
                   style: Theme.of(context).textTheme.bodyMedium,

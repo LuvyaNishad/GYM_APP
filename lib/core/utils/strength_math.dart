@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-/// Scientific strength and 1RM calculation utilities for LEON.
+/// Scientific strength and 1RM calculation utilities for AEON.
 ///
 /// Implements standard evidence-based equations from exercise physiology:
 /// - Epley Equation: 1RM = weight * (1 + reps / 30)

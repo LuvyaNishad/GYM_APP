@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'exercise_model.freezed.dart';
 part 'exercise_model.g.dart';
 
-/// A catalogued exercise in the LEON exercise library.
+/// A catalogued exercise in the AEON exercise library.
 ///
 /// Uses Freezed for immutability and JsonSerializable for serialisation.
 @freezed

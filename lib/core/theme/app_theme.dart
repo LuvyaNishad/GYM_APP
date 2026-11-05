@@ -4,7 +4,7 @@ import 'app_colors.dart';
 import 'app_typography.dart';
 import 'raised_button_surface.dart';
 
-/// LEON global [ThemeData].
+/// AEON global [ThemeData].
 /// Pre-configured for Material 3 with the Cyber-Slate palette.
 final class AppTheme {
   AppTheme._();
@@ -104,7 +104,7 @@ final class AppTheme {
       ),
 
       // ── Bottom Nav ────────────────────────────────────────────────────────
-      // Intentionally unthemed: LEON's bottom navigation is the custom
+      // Intentionally unthemed: AEON's bottom navigation is the custom
       // floating GlassNavPill, not a Material BottomNavigationBar.
 
       // ── Input ─────────────────────────────────────────────────────────────

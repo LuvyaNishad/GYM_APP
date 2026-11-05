@@ -1,4 +1,4 @@
-/// LEON — global Riverpod providers.
+/// AEON — global Riverpod providers.
 ///
 /// Feature-specific providers live inside each feature's own `providers/`
 /// directory. This file is for truly cross-cutting state (auth user, theme, etc.)
@@ -110,7 +110,7 @@ final activeSplitProvider = NotifierProvider<ActiveSplit, SplitModel?>(
 /// Drives weight-unit toggle, profile screen display, and questionnaire data.
 /// Null = no profile stored yet (fresh install, pre-onboarding).
 ///
-/// LEON is guest-first, so there is one local profile keyed by
+/// AEON is guest-first, so there is one local profile keyed by
 /// [AppConstants.hiveKeyLocalProfile] whether or not it's backed by an account.
 class UserProfile extends Notifier<UserModel?> {
   @override

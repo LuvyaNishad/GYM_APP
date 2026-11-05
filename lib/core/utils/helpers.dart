@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Miscellaneous helper utilities used across the LEON codebase.
+/// Miscellaneous helper utilities used across the AEON codebase.
 abstract final class AppHelpers {
   AppHelpers._();
 
@@ -31,7 +31,7 @@ abstract final class AppHelpers {
   /// Clamps a double RPE value to the 1–10 range.
   static double clampRpe(double rpe) => rpe.clamp(1.0, 10.0);
 
-  /// Shows a LEON-styled snackbar.
+  /// Shows a AEON-styled snackbar.
   static void showSnack(
     BuildContext context,
     String message, {

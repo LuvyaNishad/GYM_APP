@@ -42,7 +42,7 @@ class _AppStartupState extends State<AppStartup> {
       widget.onReady();
       setState(() => _ready = true);
     } catch (error, stack) {
-      debugPrint('LEON bootstrap failed: $error\n$stack');
+      debugPrint('AEON bootstrap failed: $error\n$stack');
       if (mounted) setState(() => _error = error);
     }
   }
@@ -154,7 +154,7 @@ class _LaunchLogoState extends State<LaunchLogo> with TickerProviderStateMixin {
             child: AnimatedBuilder(
               animation: _sweep,
               child: Semantics(
-                label: 'LEON logo',
+                label: 'AEON logo',
                 image: true,
                 child: Image.asset(
                   'assets/images/aeon_logo_static.png',
