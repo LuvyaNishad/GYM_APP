@@ -1,4 +1,7 @@
 import 'dart:async';
+import '../../../core/constants/app_constants.dart';
+import '../../../services/hive_service.dart';
+import '../../onboarding/providers/onboarding_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/auth_service.dart';
 import '../../workout_session/providers/active_session_provider.dart';
@@ -137,7 +140,12 @@ class AuthNotifier extends Notifier<AuthState> {
   });
 
   /// Guest navigation works immediately offline. Provisioning happens separately.
-  Future<void> signInAsGuest() async {}
+  Future<void> signInAsGuest() => _run(() async {
+    await ref
+        .read(hiveServiceProvider)
+        .putSettingChecked(AppConstants.settingAccountChoicePending, false);
+    ref.invalidate(accountChoicePendingProvider);
+  });
   Future<void> signOut() => _run(() async => _auth.signOut());
 
   String _format(Object error) {
