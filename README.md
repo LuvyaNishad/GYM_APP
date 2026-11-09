@@ -2,6 +2,18 @@
 
 A Flutter fitness tracker with local workout storage, editable training routines, and workout history.
 
+## Install on Android
+
+[Download the AEON APK from Google Drive](https://drive.google.com/drive/folders/1oIU20RgoM0odSArk2hkDBsWQ1SW4T5SZ?usp=sharing)
+
+The ARM64 APK supports most modern Android phones running Android 8.0 or later. You do not need Flutter or Android Studio to install it.
+
+1. Open the download folder on your phone and download the APK with the highest build number. Filenames include the version and Android build number, for example `AEON-1.0.0-build2005-arm64.apk`.
+2. Open the downloaded APK. If Android prompts you, allow **Install unknown apps** for the browser or Files app you used to open it.
+3. Tap **Install**, then open **AEON**.
+
+To update, download a newer build and install it over the existing app. Keep AEON installed during the update to preserve local workouts and settings; uninstalling clears local app data.
+
 ## Features
 
 - Routine creation, exercise reordering, and training split selection.
