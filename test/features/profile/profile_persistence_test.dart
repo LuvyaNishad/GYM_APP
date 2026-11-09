@@ -16,6 +16,104 @@ import 'package:leon/state/app_providers.dart';
 import '../../helpers/memory_hive_service.dart';
 
 void main() {
+  testWidgets(
+    'Biometrics preserves exact values through unit toggles and saves edited imperial values',
+    (tester) async {
+      final hive = MemoryHiveService();
+      await hive.put(
+        'user',
+        AppConstants.hiveKeyLocalProfile,
+        const UserModel(
+          id: 'existing',
+          email: '',
+          displayName: 'Alex',
+          preferredSplit: 'PPL',
+          heightCm: 180.123,
+          currentWeight: 80.123,
+          targetWeight: 75.234,
+          weightUnit: 'lbs',
+          heightUnit: 'ft',
+        ).toJson(),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          hiveServiceProvider.overrideWithValue(hive),
+          localDateProvider.overrideWith((ref) => DateTime(2026, 11, 6)),
+        ],
+      );
+      addTearDown(container.dispose);
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: AppTheme.dark,
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () => showEditBiometricsSheet(
+                    context,
+                    container.read(accountProfileProvider),
+                  ),
+                  child: const Text('Open'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      Future<void> open() async {
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
+      }
+
+      Future<void> save() async {
+        final button = find.widgetWithText(ElevatedButton, 'Update Biometrics');
+        await tester.ensureVisible(button);
+        await tester.tap(button);
+        await tester.pumpAndSettle();
+      }
+
+      await open();
+      for (final label in ['kg', 'lbs', 'kg', 'lbs']) {
+        await tester.ensureVisible(find.text(label));
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+      }
+      for (final label in ['cm', 'ft / in']) {
+        await tester.ensureVisible(find.text(label));
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+      }
+      await save();
+      var saved = container.read(userProfileProvider)!;
+      expect(saved.currentWeight, 80.123);
+      expect(saved.targetWeight, 75.234);
+      expect(saved.heightCm, 180.123);
+      await open();
+      await tester.enterText(find.byType(TextField).at(1), '200');
+      await save();
+      saved = container.read(userProfileProvider)!;
+      expect(saved.currentWeight, closeTo(200 / 2.2046226218, 1e-9));
+      expect(saved.targetWeight, 75.234);
+      expect(saved.heightCm, 180.123);
+      await open();
+      for (final field in find.byType(TextField).evaluate().toList()) {
+        await tester.enterText(find.byWidget(field.widget), '');
+      }
+      await save();
+      saved = container.read(userProfileProvider)!;
+      expect(saved.currentWeight, isNull);
+      expect(saved.targetWeight, isNull);
+      expect(saved.heightCm, isNull);
+      expect(saved.age, isNull);
+      expect(saved.preferredSplit, 'PPL');
+      expect(tester.takeException(), isNull);
+    },
+  );
   for (final biometrics in [false, true]) {
     testWidgets(
       '${biometrics ? 'Biometrics' : 'Profile'} waits for persistence and retains failed edits for retry',
@@ -41,6 +139,7 @@ void main() {
             email: '',
             displayName: '',
             preferredSplit: 'custom_split_id',
+            experienceLevel: 'Experienced',
           ).toJson(),
         );
         final original = container.read(accountProfileProvider);
@@ -119,6 +218,7 @@ void main() {
         expect(find.byType(TextField), findsNothing);
         final saved = container.read(accountProfileProvider);
         expect(saved.preferredSplit, 'custom_split_id');
+        expect(saved.experienceLevel, 'Experienced');
         if (biometrics) {
           expect(saved.heightCm, 182);
         } else {

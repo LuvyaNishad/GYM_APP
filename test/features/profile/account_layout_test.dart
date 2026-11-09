@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:leon/core/theme/app_theme.dart';
@@ -13,8 +14,16 @@ Future<ProviderContainer> mountAccount(
   WidgetTester tester, {
   double width = 390,
   double scale = 1,
+  bool reducedMotion = false,
   MemoryHiveService? storage,
 }) async {
+  for (final family in ['Outfit', 'JetBrainsMono']) {
+    final loader = FontLoader(family)
+      ..addFont(rootBundle.load('assets/fonts/$family-Regular.ttf'))
+      ..addFont(rootBundle.load('assets/fonts/$family-Medium.ttf'))
+      ..addFont(rootBundle.load('assets/fonts/$family-Bold.ttf'));
+    await loader.load();
+  }
   tester.view.physicalSize = Size(width, 844);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
@@ -44,9 +53,10 @@ Future<ProviderContainer> mountAccount(
       child: MaterialApp(
         theme: AppTheme.dark,
         builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: TextScaler.linear(scale)),
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(scale),
+            disableAnimations: reducedMotion,
+          ),
           child: child!,
         ),
         home: const ProfileScreen(),
@@ -67,6 +77,12 @@ Future<void> reveal(WidgetTester tester, String title) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> openSection(WidgetTester tester, String title) async {
+  await reveal(tester, title);
+  await tester.tap(find.text(title));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   for (final layout in [(320.0, 2.0), (390.0, 1.0), (800.0, 1.3)]) {
     testWidgets(
@@ -76,14 +92,20 @@ void main() {
           tester,
           width: layout.$1,
           scale: layout.$2,
+          reducedMotion: layout.$2 == 2,
         );
         final before = container.read(accountProfileProvider);
         expect(tester.takeException(), isNull);
+        expect(find.text('Weight unit'), findsNothing);
+        await openSection(tester, 'TRAINING PREFERENCES');
         await reveal(tester, 'Training details');
         await tester.tap(find.text('Training details'));
         await tester.pumpAndSettle();
         await reveal(tester, 'Injury notes');
         expect(tester.takeException(), isNull);
+        await openSection(tester, 'TRAINING PREFERENCES');
+        expect(find.text('Injury notes'), findsNothing);
+        await openSection(tester, 'APP SETTINGS');
         await reveal(tester, 'Weight unit');
         await tester.tap(find.text('Weight unit'));
         await tester.pumpAndSettle();
@@ -93,6 +115,7 @@ void main() {
         // Dismiss the choice without changing a preference.
         await tester.tapAt(const Offset(4, 4));
         await tester.pumpAndSettle();
+        await openSection(tester, 'SETUP & PREFERENCES');
         await reveal(tester, 'Reset preferences');
         await tester.tap(find.text('Reset preferences'));
         await tester.pumpAndSettle();
@@ -106,6 +129,14 @@ void main() {
         await tester.tap(find.text('Cancel'));
         await tester.pumpAndSettle();
         expect(container.read(accountProfileProvider), same(before));
+        tester
+            .state<ScrollableState>(find.byType(Scrollable).first)
+            .position
+            .jumpTo(0);
+        await tester.pumpAndSettle();
+        await openSection(tester, 'TRAINING PREFERENCES');
+        await reveal(tester, 'Injury notes');
+        expect(find.text('Injury notes'), findsOneWidget);
         expect(tester.takeException(), isNull);
       },
     );
@@ -116,6 +147,7 @@ void main() {
     (tester) async {
       final storage = MemoryHiveService();
       final container = await mountAccount(tester, storage: storage);
+      await openSection(tester, 'TRAINING PREFERENCES');
       await reveal(tester, 'Default rest timer');
       await tester.tap(find.text('Default rest timer'));
       await tester.pumpAndSettle();
@@ -136,6 +168,7 @@ void main() {
       expect(find.textContaining('Could not save'), findsOneWidget);
       storage.failDocuments = false;
       await tester.pump(const Duration(seconds: 6));
+      await openSection(tester, 'APP SETTINGS');
 
       for (final choice in [
         ('Weight unit', 'Pounds (lbs)'),

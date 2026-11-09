@@ -10,6 +10,8 @@ import 'package:leon/features/profile/providers/profile_provider.dart';
 import 'package:leon/features/profile/services/pdf_report_service.dart';
 import 'package:leon/features/profile/screens/profile_screen.dart';
 import 'package:leon/core/theme/app_theme.dart';
+import 'package:leon/features/authentication/providers/auth_provider.dart';
+import 'package:leon/core/providers/local_date_provider.dart';
 
 void main() {
   group('AccountProfile Model & Biometrics Computation Tests', () {
@@ -125,6 +127,88 @@ void main() {
   });
 
   group('ProfileScreen Widget Tests', () {
+    for (final layout in [(390.0, 1.0), (320.0, 2.0)]) {
+      testWidgets(
+        'Identity follows sign-in changes with a blank saved email at ${layout.$1}px/${layout.$2}x',
+        (tester) async {
+          tester.view.physicalSize = Size(layout.$1, 844);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          final container = ProviderContainer(
+            overrides: [
+              hiveServiceProvider.overrideWithValue(MemoryHiveService()),
+              authProvider.overrideWith(_IdentityAuth.new),
+              localDateProvider.overrideWith((ref) => DateTime(2026, 11, 6)),
+            ],
+          );
+          addTearDown(container.dispose);
+          await tester.pumpWidget(
+            UncontrolledProviderScope(
+              container: container,
+              child: MaterialApp(
+                theme: AppTheme.dark,
+                builder: (context, child) => MediaQuery(
+                  data: MediaQuery.of(
+                    context,
+                  ).copyWith(textScaler: TextScaler.linear(layout.$2)),
+                  child: child!,
+                ),
+                home: const ProfileScreen(),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          final auth = container.read(authProvider.notifier) as _IdentityAuth;
+          expect(find.text('Local profile'), findsOneWidget);
+          expect(container.read(accountProfileProvider).email, isEmpty);
+          auth.set(
+            const AuthState(
+              status: AuthStatus.authenticated,
+              userId: 'signed-in-account',
+              email: 'alexandra.morgan.rodriguez@example.com',
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(
+            find.text('alexandra.morgan.rodriguez@example.com'),
+            findsOneWidget,
+          );
+          expect(find.text('Local profile'), findsNothing);
+          expect(tester.takeException(), isNull);
+          auth.set(
+            const AuthState(
+              status: AuthStatus.authenticated,
+              userId: 'account-without-email',
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(find.text('Cloud account'), findsOneWidget);
+          auth.set(
+            const AuthState(
+              status: AuthStatus.authenticated,
+              userId: 'anonymous-account',
+              isAnonymous: true,
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(find.text('Guest profile'), findsOneWidget);
+          auth.set(const AuthState(status: AuthStatus.unauthenticated));
+          await tester.pumpAndSettle();
+          expect(find.text('Local profile'), findsOneWidget);
+          expect(
+            find.text('alexandra.morgan.rodriguez@example.com'),
+            findsNothing,
+          );
+          auth.set(const AuthState());
+          await tester.pumpAndSettle();
+          expect(find.text('Checking account…'), findsOneWidget);
+          expect(container.read(accountProfileProvider).email, isEmpty);
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+
     testWidgets('Renders Account screen components and actions', (
       tester,
     ) async {
@@ -154,11 +238,21 @@ void main() {
 
       // Verify Physical Biometrics & Goal delta
       expect(find.text('BIOMETRICS & GOALS'), findsOneWidget);
+      expect(find.text('HEIGHT'), findsNothing);
+      await tester.tap(find.text('BIOMETRICS & GOALS'));
+      await tester.pumpAndSettle();
       expect(find.text('HEIGHT'), findsOneWidget);
       expect(find.text('CURRENT'), findsOneWidget);
       expect(find.text('GOAL'), findsOneWidget);
 
       // Verify Training Preferences
+      await tester.scrollUntilVisible(
+        find.text('TRAINING PREFERENCES'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text('TRAINING PREFERENCES'));
+      await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
         find.text('Default rest timer'),
         300,
@@ -171,4 +265,11 @@ void main() {
       expect(find.text('Export Monthly PDF Report'), findsNothing);
     });
   });
+}
+
+class _IdentityAuth extends AuthNotifier {
+  @override
+  AuthState build() => const AuthState(status: AuthStatus.unauthenticated);
+
+  void set(AuthState next) => state = next;
 }

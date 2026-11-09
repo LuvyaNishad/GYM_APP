@@ -12,6 +12,7 @@ import 'package:leon/features/onboarding/providers/onboarding_provider.dart';
 import 'package:leon/features/onboarding/screens/onboarding_screen.dart';
 import 'package:leon/services/backup_service.dart';
 import 'package:leon/services/hive_service.dart';
+import 'package:leon/models/user_model.dart';
 import '../../helpers/memory_hive_service.dart';
 
 ProviderContainer containerFor(MemoryHiveService hive) => ProviderContainer(
@@ -97,6 +98,18 @@ void main() {
     () async {
       final hive = MemoryHiveService();
       hive.settings[AppConstants.settingOnboardingComplete] = true;
+      await hive.put(
+        AppConstants.hiveBoxUser,
+        AppConstants.hiveKeyLocalProfile,
+        const UserModel(
+          id: 'existing',
+          email: '',
+          displayName: 'Existing lifter',
+          onboardingComplete: false,
+          preferredSplit: 'split_ppl',
+          trainingDaysPerWeek: 5,
+        ).toJson(),
+      );
       final container = containerFor(hive);
       addTearDown(container.dispose);
       final router = container.read(routerProvider);

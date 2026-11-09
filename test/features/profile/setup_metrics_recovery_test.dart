@@ -108,6 +108,67 @@ class _InputSession extends ActiveSessionNotifier {
 }
 
 void main() {
+  for (final splitId in [null, 'PPL', 'deleted_custom_split']) {
+    test(
+      'Account settings preserve the plan with saved split $splitId',
+      () async {
+        final hive = MemoryHiveService();
+        await seedUser(
+          hive,
+          user.copyWith(
+            preferredSplit: splitId,
+            trainingDaysPerWeek: 4,
+            trainingSchedules: 'saved-plan',
+            onboardingComplete: true,
+            currentWeight: 80,
+            targetWeight: 75,
+            heightCm: 180,
+          ),
+        );
+        final container = containerFor(hive);
+        addTearDown(container.dispose);
+        final account = container.read(accountProfileProvider.notifier);
+        await account.updateUnits(weightUnit: 'lbs');
+        await account.updateUnits(heightUnit: 'ft');
+        await account.updatePreferences(
+          defaultRestSeconds: 120,
+          barbellTareKg: 15,
+        );
+        await account.setAlertMode(false, true);
+        await account.updateIdentity(displayName: 'Updated lifter');
+        await account.updatePreferences(experienceLevel: 'Advanced');
+        await account.updatePrimaryGoal('STRENGTH');
+        final saved = container.read(userProfileProvider)!;
+        expect(saved.weightUnit, 'lbs');
+        expect(saved.heightUnit, 'ft');
+        expect(saved.currentWeight, 80);
+        expect(saved.targetWeight, 75);
+        expect(saved.heightCm, 180);
+        expect(saved.startingWeightKg, isNull);
+        expect(saved.goalDirection, isNull);
+        expect(saved.defaultRestSeconds, 120);
+        expect(saved.barbellTareKg, 15);
+        expect(saved.audioCuesEnabled, isFalse);
+        expect(saved.hapticFeedbackEnabled, isTrue);
+        expect(saved.displayName, 'Updated lifter');
+        expect(saved.experienceLevel, 'Advanced');
+        expect(saved.primaryGoal, 'STRENGTH');
+        expect(saved.preferredSplit, splitId);
+        expect(saved.trainingSchedules, 'saved-plan');
+        expect(saved.onboardingComplete, isTrue);
+        final resumed = containerFor(hive);
+        addTearDown(resumed.dispose);
+        expect(resumed.read(accountProfileProvider).weightUnit, 'lbs');
+        await account.resetToDefaults();
+        expect(container.read(accountProfileProvider).weightUnit, 'kg');
+        expect(
+          container.read(userProfileProvider)!.trainingSchedules,
+          'saved-plan',
+        );
+      },
+    );
+  }
+
   test(
     'Actual Hive restart retains setup, preferences, schedules and recovery check-in',
     () async {

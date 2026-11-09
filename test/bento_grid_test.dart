@@ -169,13 +169,13 @@ void main() {
 
       // Verify activity header and day labels
       expect(find.text('WORKOUT ACTIVITY'), findsOneWidget);
-      expect(find.textContaining('SESSIONS LOGGED'), findsOneWidget);
+      expect(find.text('1 gym day in the last 12 weeks'), findsOneWidget);
       expect(find.text('Mon'), findsOneWidget);
       expect(find.text('Wed'), findsOneWidget);
       expect(find.text('Fri'), findsOneWidget);
-      expect(find.text('Rest'), findsOneWidget);
-      expect(find.text('Gym'), findsOneWidget);
-      expect(find.text('Today'), findsOneWidget);
+      expect(find.text('No workout'), findsOneWidget);
+      expect(find.text('Gym day'), findsOneWidget);
+      expect(find.text('Today'), findsNothing);
     });
 
     testWidgets('StepsBentoCard renders minimal step count and triggers tap', (
