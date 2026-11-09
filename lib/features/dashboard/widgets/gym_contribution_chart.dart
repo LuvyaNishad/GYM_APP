@@ -1,42 +1,24 @@
-/// GitHub-style gym activity contribution heatmap chart for AEON.
-///
-/// Displays a horizontally scrollable 7-row matrix representing days of the
-/// week (Sunday to Saturday) across past weeks/months. Completed workout days
-/// are highlighted in vibrant green (#00E676), today is highlighted in
-/// golden yellow (#FFB300), and rest days are dark slate tiles.
-///
-/// Follows Apple HIG standards:
-/// - Typography floor: >= 11.0 pt on all month, weekday, and stat labels
-/// - WCAG AA contrast threshold: >= 4.5:1 on all secondary texts
-/// - Touch targets with accessible hit testing and fluid momentum scrolling
-library;
-
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 
-/// Horizontally scrollable gym activity contribution graph.
+/// Completed workout days, displayed as a GitHub-style weekly grid.
 class GymContributionChart extends StatefulWidget {
   const GymContributionChart({
     super.key,
     required this.loggedWorkoutDates,
+    this.today,
     this.selectedDate,
     this.onDateSelected,
-    this.weeksCount = 26,
-  });
+    this.weeksCount = 52,
+  }) : assert(weeksCount > 0);
 
-  /// Set of dates on which a gym session was completed.
   final Set<DateTime> loggedWorkoutDates;
-
-  /// Currently selected date.
+  final DateTime? today;
   final DateTime? selectedDate;
-
-  /// Callback when a day cell is tapped.
   final ValueChanged<DateTime>? onDateSelected;
-
-  /// Total number of weeks to display in the chart (default 26 = ~6 months).
   final int weeksCount;
 
   @override
@@ -44,23 +26,19 @@ class GymContributionChart extends StatefulWidget {
 }
 
 class _GymContributionChartState extends State<GymContributionChart> {
-  late final ScrollController _scrollController;
-  DateTime? _inspectedDate;
+  final _scrollController = ScrollController();
+  static const _cellSize = 13.0;
+  static const _gap = 3.5;
+  static const _stride = _cellSize + _gap;
 
-  static const Color _todayAccent = AppColors.amber;
-  static const Color _loggedAccent = AppColors.platinum;
-  static const Color _emptyCellBg = AppColors.charcoal;
-  static const Color _emptyCellBorder = AppColors.steel;
-  static const double _cellSize = 13.0;
-  static const double _cellGap = 3.5;
+  DateTime _day(DateTime date) {
+    final local = date.toLocal();
+    return DateTime(local.year, local.month, local.day);
+  }
 
   @override
   void initState() {
     super.initState();
-    _inspectedDate = widget.selectedDate ?? DateTime.now();
-    _scrollController = ScrollController();
-
-    // Auto-scroll to current week on initial render
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
@@ -74,204 +52,205 @@ class _GymContributionChartState extends State<GymContributionChart> {
     super.dispose();
   }
 
-  String _monthAbbr(int month) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return months[month - 1];
-  }
-
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    // Sunday-based start of current week
-    final currentWeekStart = today.subtract(Duration(days: now.weekday % 7));
-
-    // Build the grid columns (each column is a week from Sunday to Saturday)
-    final weeks = List.generate(widget.weeksCount, (index) {
-      final weekOffset = widget.weeksCount - 1 - index;
-      final weekStart = currentWeekStart.subtract(
-        Duration(days: weekOffset * 7),
-      );
-      return List.generate(7, (dayIndex) {
-        return weekStart.add(Duration(days: dayIndex));
-      });
-    });
-
-    // Total logged workouts count within the visible range
-    final totalLoggedCount = widget.loggedWorkoutDates.where((d) {
-      final earliest = weeks.first.first;
-      return !d.isBefore(earliest) && !d.isAfter(today);
-    }).length;
-
-    final inspected = _inspectedDate ?? today;
-    final isInspectedToday = _isSameDay(inspected, today);
-    final isInspectedLogged = widget.loggedWorkoutDates.any(
-      (d) => _isSameDay(d, inspected),
+    final today = _day(widget.today ?? DateTime.now());
+    final currentSunday = DateTime(
+      today.year,
+      today.month,
+      today.day - today.weekday % 7,
     );
+    final firstDay = DateTime(
+      currentSunday.year,
+      currentSunday.month,
+      currentSunday.day - (widget.weeksCount - 1) * 7,
+    );
+    final logged = widget.loggedWorkoutDates
+        .map(_day)
+        .where((day) => !day.isBefore(firstDay) && !day.isAfter(today))
+        .toSet();
+    final weeks = List.generate(
+      widget.weeksCount,
+      (week) => List.generate(
+        7,
+        (day) => DateTime(
+          firstDay.year,
+          firstDay.month,
+          firstDay.day + week * 7 + day,
+        ),
+      ),
+    );
+    final textScaler = MediaQuery.textScalerOf(context);
+    final rowHeight = math.max(_stride, textScaler.scale(11) + _gap);
+    final monthHeight = textScaler.scale(11) + 6;
+    final caption = AppTypography.bodySmall.copyWith(
+      fontSize: 11,
+      color: AppColors.textSecondary,
+    );
+    final localizations = MaterialLocalizations.of(context);
 
     return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── Header Bar: Title & Session Counter Badge ─────────────────────────
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'WORKOUT ACTIVITY',
-              style: TextStyle(
-                fontFamily: AppTypography.fontDisplay,
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.2,
-                color:
-                    AppColors.textMuted, // Apple HIG contrast compliant (> 5:1)
-              ),
+        Semantics(
+          header: true,
+          child: Text(
+            'WORKOUT ACTIVITY',
+            style: AppTypography.headlineSmall.copyWith(
+              fontSize: 12,
+              letterSpacing: 1.5,
+              color: AppColors.textSecondary,
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: _loggedAccent.withValues(alpha: 0.14),
-                border: Border.all(
-                  color: _loggedAccent.withValues(alpha: 0.35),
-                  width: 1.0,
-                ),
-              ),
-              child: Text(
-                '$totalLoggedCount SESSIONS LOGGED',
-                style: const TextStyle(
-                  fontFamily: AppTypography.fontMono,
-                  fontSize: 11.0,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
-                  color: _loggedAccent,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
-        const SizedBox(height: 10),
-
-        // ── Main Graph Container: Day Labels + Horizontal Scroll Grid ─────────
+        const SizedBox(height: 8),
+        Text(
+          '${logged.length} gym ${logged.length == 1 ? 'day' : 'days'} in the last ${widget.weeksCount} weeks',
+          style: AppTypography.monoSmall.copyWith(fontSize: 13),
+        ),
+        const SizedBox(height: 16),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Left Axis: Day Labels (Mon, Wed, Fri) aligned to 7-row grid
-            Padding(
-              padding: const EdgeInsets.only(top: 20, right: 6),
-              child: SizedBox(
-                width: 26,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: _cellSize + _cellGap), // Sun (empty)
+            SizedBox(
+              width: textScaler.scale(26) + 6,
+              child: Column(
+                children: [
+                  SizedBox(height: monthHeight + _gap),
+                  for (var day = 0; day < 7; day++)
                     SizedBox(
-                      height: _cellSize + _cellGap,
-                      child: const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Mon',
-                          style: TextStyle(
-                            fontFamily: AppTypography.fontBody,
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textMuted,
-                            height: 1.0,
-                          ),
-                        ),
+                      height: rowHeight,
+                      child: Align(
+                        alignment: Alignment.topLeft,
+                        child: day == 1 || day == 3 || day == 5
+                            ? Text(
+                                ['', 'Mon', '', 'Wed', '', 'Fri', ''][day],
+                                style: caption,
+                              )
+                            : null,
                       ),
                     ),
-                    SizedBox(height: _cellSize + _cellGap), // Tue (empty)
-                    SizedBox(
-                      height: _cellSize + _cellGap,
-                      child: const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Wed',
-                          style: TextStyle(
-                            fontFamily: AppTypography.fontBody,
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textMuted,
-                            height: 1.0,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: _cellSize + _cellGap), // Thu (empty)
-                    SizedBox(
-                      height: _cellSize + _cellGap,
-                      child: const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Fri',
-                          style: TextStyle(
-                            fontFamily: AppTypography.fontBody,
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textMuted,
-                            height: 1.0,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: _cellSize), // Sat (empty)
-                  ],
-                ),
+                ],
               ),
             ),
-
-            // Horizontally Scrollable Heatmap Weeks Matrix
             Expanded(
               child: SingleChildScrollView(
+                key: const PageStorageKey('gym-attendance-grid'),
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Month labels row along the top
                     Row(
                       children: [
-                        for (int w = 0; w < weeks.length; w++)
-                          _buildMonthHeader(w, weeks),
+                        for (var week = 0; week < weeks.length; week++)
+                          SizedBox(
+                            width: _stride,
+                            height: monthHeight,
+                            child: weeks[week].first.day <= 7
+                                ? OverflowBox(
+                                    alignment: Alignment.centerLeft,
+                                    minWidth: 0,
+                                    maxWidth: 64,
+                                    child: Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        [
+                                          'Jan',
+                                          'Feb',
+                                          'Mar',
+                                          'Apr',
+                                          'May',
+                                          'Jun',
+                                          'Jul',
+                                          'Aug',
+                                          'Sep',
+                                          'Oct',
+                                          'Nov',
+                                          'Dec',
+                                        ][weeks[week].first.month - 1],
+                                        style: caption,
+                                      ),
+                                    ),
+                                  )
+                                : null,
+                          ),
+                        SizedBox(width: textScaler.scale(22)),
                       ],
                     ),
-                    const SizedBox(height: 4),
-
-                    // 7 rows of week cells
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (final week in weeks)
-                          Padding(
-                            padding: const EdgeInsets.only(right: _cellGap),
-                            child: Column(
+                    const SizedBox(height: _gap),
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTapUp: widget.onDateSelected == null
+                          ? null
+                          : (details) {
+                              final week = (details.localPosition.dx / _stride)
+                                  .floor();
+                              final day = (details.localPosition.dy / rowHeight)
+                                  .floor();
+                              if (week >= 0 &&
+                                  week < weeks.length &&
+                                  day >= 0 &&
+                                  day < 7) {
+                                final date = weeks[week][day];
+                                if (!date.isAfter(today)) {
+                                  widget.onDateSelected!(date);
+                                }
+                              }
+                            },
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (final week in weeks)
+                            Column(
                               children: [
                                 for (final date in week)
-                                  _buildDayCell(date: date, today: today),
+                                  SizedBox(
+                                    width: _stride,
+                                    height: rowHeight,
+                                    child: Align(
+                                      alignment: Alignment.topLeft,
+                                      child: Semantics(
+                                        label:
+                                            '${localizations.formatFullDate(date)}: ${date.isAfter(today)
+                                                ? 'Future date'
+                                                : logged.contains(date)
+                                                ? 'Workout logged'
+                                                : 'No workout logged'}',
+                                        child: Container(
+                                          key: ValueKey(
+                                            'gym-day-${date.toIso8601String()}',
+                                          ),
+                                          width: _cellSize,
+                                          height: _cellSize,
+                                          decoration: BoxDecoration(
+                                            color: logged.contains(date)
+                                                ? AppColors.primary
+                                                : AppColors.surfaceSecondary,
+                                            borderRadius: BorderRadius.circular(
+                                              3,
+                                            ),
+                                            border: Border.all(
+                                              color:
+                                                  widget.selectedDate != null &&
+                                                      _day(
+                                                            widget
+                                                                .selectedDate!,
+                                                          ) ==
+                                                          date
+                                                  ? AppColors.textPrimary
+                                                  : AppColors.subtleBorder,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                               ],
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -279,178 +258,33 @@ class _GymContributionChartState extends State<GymContributionChart> {
             ),
           ],
         ),
-
-        const SizedBox(height: 10),
-
-        // ── Bottom Inspection HUD & Legend Row ────────────────────────────────
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 16,
+          runSpacing: 8,
           children: [
-            // Selected Day Inspection Readout
-            Expanded(
-              child: Row(
-                children: [
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isInspectedToday
-                          ? _todayAccent
-                          : (isInspectedLogged
-                                ? _loggedAccent
-                                : AppColors.steel),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      isInspectedToday
-                          ? 'Today (${_monthAbbr(inspected.month)} ${inspected.day}) · Workout Scheduled'
-                          : (isInspectedLogged
-                                ? '${_monthAbbr(inspected.month)} ${inspected.day} · Gym Session Completed'
-                                : '${_monthAbbr(inspected.month)} ${inspected.day} · Rest & Recovery Day'),
-                      style: const TextStyle(
-                        fontFamily: AppTypography.fontMono,
-                        fontSize: 11.0,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFE2E8F0),
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Legend indicators
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildLegendItem('Rest', _emptyCellBg),
-                const SizedBox(width: 8),
-                _buildLegendItem('Gym', _loggedAccent),
-                const SizedBox(width: 8),
-                _buildLegendItem('Today', _todayAccent),
-              ],
-            ),
+            _legend('No workout', AppColors.surfaceSecondary, caption),
+            _legend('Gym day', AppColors.primary, caption),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildMonthHeader(int weekIndex, List<List<DateTime>> weeks) {
-    final firstDayOfWeek = weeks[weekIndex].first;
-    final isFirstWeekOfMonth = firstDayOfWeek.day <= 7 || weekIndex == 0;
-
-    return SizedBox(
-      width: _cellSize + _cellGap,
-      height: 16,
-      child: isFirstWeekOfMonth
-          ? OverflowBox(
-              alignment: Alignment.centerLeft,
-              maxWidth: 40,
-              child: Text(
-                _monthAbbr(firstDayOfWeek.month),
-                style: const TextStyle(
-                  fontFamily: AppTypography.fontBody,
-                  fontSize: 11.0,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textMuted,
-                  height: 1.0,
-                ),
-              ),
-            )
-          : const SizedBox.shrink(),
-    );
-  }
-
-  Widget _buildDayCell({required DateTime date, required DateTime today}) {
-    final isToday = _isSameDay(date, today);
-    final isFuture = date.isAfter(today);
-    final isLogged = widget.loggedWorkoutDates.any((d) => _isSameDay(d, date));
-    final isSelected =
-        _inspectedDate != null && _isSameDay(date, _inspectedDate!);
-
-    Color bgColor;
-    Border? border;
-
-    if (isFuture) {
-      bgColor = Colors.white.withValues(alpha: 0.04);
-      border = Border.all(
-        color: Colors.white.withValues(alpha: 0.06),
-        width: 1.0,
-      );
-    } else if (isToday) {
-      bgColor = _todayAccent;
-      if (isSelected) {
-        border = Border.all(color: Colors.white, width: 1.5);
-      }
-    } else if (isLogged) {
-      bgColor = _loggedAccent;
-      if (isSelected) {
-        border = Border.all(color: Colors.white, width: 1.5);
-      }
-    } else {
-      bgColor = _emptyCellBg;
-      border = Border.all(
-        color: isSelected
-            ? Colors.white.withValues(alpha: 0.8)
-            : _emptyCellBorder,
-        width: isSelected ? 1.5 : 1.0,
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: _cellGap),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          HapticFeedback.selectionClick();
-          setState(() => _inspectedDate = date);
-          widget.onDateSelected?.call(date);
-        },
-        child: Container(
-          width: _cellSize,
-          height: _cellSize,
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(3.0),
-            border: border,
-          ),
+  Widget _legend(String label, Color color, TextStyle style) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Container(
+        width: 10,
+        height: 10,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(2),
+          border: Border.all(color: AppColors.subtleBorder),
         ),
       ),
-    );
-  }
-
-  Widget _buildLegendItem(String label, Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 9,
-          height: 9,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(2.0),
-            border: color == _emptyCellBg
-                ? Border.all(color: _emptyCellBorder, width: 0.8)
-                : null,
-          ),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: AppTypography.fontBody,
-            fontSize: 11.0,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textMuted,
-          ),
-        ),
-      ],
-    );
-  }
+      const SizedBox(width: 6),
+      Text(label, style: style),
+    ],
+  );
 }

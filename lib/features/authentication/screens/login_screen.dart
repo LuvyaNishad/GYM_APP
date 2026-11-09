@@ -20,7 +20,11 @@ class LoginScreen extends ConsumerStatefulWidget {
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen>
+    with SingleTickerProviderStateMixin {
+  static const _transitionDuration = Duration(milliseconds: 600);
+  static const _transitionCurve = Curves.easeInOutCubic;
+  late final AnimationController _transition;
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
@@ -34,10 +38,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void initState() {
     super.initState();
     _emailMode = widget.createAccount;
+    _transition =
+        AnimationController(
+          vsync: this,
+          duration: _transitionDuration,
+          value: _emailMode ? 1 : 0,
+        )..addStatusListener((status) {
+          if (status == AnimationStatus.completed ||
+              status == AnimationStatus.dismissed) {
+            setState(() {});
+          }
+        });
   }
 
   @override
   void dispose() {
+    _transition.dispose();
     for (final controller in [_email, _password, _name, _confirm]) {
       controller.dispose();
     }
@@ -98,15 +114,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _back() {
     if (_emailMode && !widget.createAccount) {
       FocusScope.of(context).unfocus();
-      setState(() {
-        _emailMode = false;
-        _localError = null;
-      });
+      _setEmailMode(false);
     } else if (Navigator.canPop(context)) {
       context.pop();
     } else {
       context.go(AppConstants.routeLogin);
     }
+  }
+
+  bool get _reduceMotion =>
+      MediaQuery.disableAnimationsOf(context) ||
+      MediaQuery.accessibleNavigationOf(context);
+
+  void _setEmailMode(bool emailMode) {
+    setState(() {
+      _emailMode = emailMode;
+      _localError = null;
+      if (_reduceMotion) {
+        _transition.value = emailMode ? 1 : 0;
+      } else if (emailMode) {
+        _transition.forward();
+      } else {
+        _transition.reverse();
+      }
+    });
   }
 
   @override
@@ -131,21 +162,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         .firstOrNull;
     final keyboard = MediaQuery.viewInsetsOf(context).bottom > 0;
     final small = MediaQuery.sizeOf(context).height < 740;
-    final artHeight = keyboard
-        ? 0.0
-        : _emailMode
-        ? 105.0
-        : small
-        ? 220.0
-        : 290.0;
+    final duration = _reduceMotion ? Duration.zero : _transitionDuration;
     final error = _localError ?? auth.error;
-    final heading = widget.createAccount
-        ? 'A stronger start.'
-        : _emailMode
-        ? 'Welcome back.'
-        : firstUse
-        ? 'Your plan is ready.'
-        : 'Make every rep count.';
+    final choiceContent = _content(
+      emailMode: false,
+      firstUse: firstUse,
+      auth: auth,
+      error: error,
+      summary: split != null && user?.trainingDaysPerWeek != null
+          ? '${split.name} · ${user!.trainingDaysPerWeek} days / week'
+          : null,
+    );
+    final emailContent = _content(
+      emailMode: true,
+      firstUse: firstUse,
+      auth: auth,
+      error: error,
+    );
 
     return PopScope(
       canPop: !_emailMode || widget.createAccount,
@@ -176,14 +209,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       Row(
                         children: [
-                          if (_emailMode || Navigator.canPop(context))
-                            IconButton(
+                          AnimatedBuilder(
+                            animation: _transition,
+                            child: IconButton(
                               tooltip: 'Back',
                               onPressed: auth.isLoading ? null : _back,
                               icon: const Icon(Icons.arrow_back_rounded),
                               padding: EdgeInsets.zero,
                               alignment: Alignment.centerLeft,
                             ),
+                            builder: (context, child) => ClipRect(
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                widthFactor: Navigator.canPop(context)
+                                    ? 1
+                                    : _transitionCurve.transform(
+                                        _transition.value,
+                                      ),
+                                child: IgnorePointer(
+                                  ignoring:
+                                      !_emailMode && !Navigator.canPop(context),
+                                  child: ExcludeSemantics(
+                                    excluding:
+                                        !_emailMode &&
+                                        !Navigator.canPop(context),
+                                    child: child,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                           const AeonLogo(size: 30, showGlow: false),
                           const SizedBox(width: 10),
                           Text(
@@ -194,159 +249,97 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                           const Spacer(),
-                          if (!_emailMode)
-                            const Icon(
+                          AnimatedOpacity(
+                            duration: duration,
+                            curve: _transitionCurve,
+                            opacity: _emailMode ? 0 : 1,
+                            child: const Icon(
                               Icons.fitness_center_rounded,
                               size: 18,
                               color: AppColors.platinum,
                             ),
+                          ),
                         ],
                       ),
-                      AnimatedContainer(
-                        duration:
-                            MediaQuery.disableAnimationsOf(context) ||
-                                MediaQuery.accessibleNavigationOf(context) ||
-                                keyboard
-                            ? Duration.zero
-                            : const Duration(milliseconds: 400),
-                        curve: Curves.easeInOutCubic,
-                        height: artHeight,
-                        child: artHeight == 0
-                            ? null
-                            : TickerMode(
-                                enabled: !_emailMode,
-                                child: const WeightPlateArt(),
+                      if (!keyboard)
+                        LayoutBuilder(
+                          builder: (context, constraints) => AnimatedBuilder(
+                            animation: _transition,
+                            child: TickerMode(
+                              // Freeze the detailed painting in both directions
+                              // so its cached layer can be scaled during the morph.
+                              enabled: !_emailMode && !_transition.isAnimating,
+                              child: const SizedBox(
+                                width: 400,
+                                height: 310,
+                                child: WeightPlateArt(),
                               ),
-                      ),
-                      if (keyboard) const SizedBox(height: 20),
-                      if (!_emailMode) ...[
-                        Text(
-                          firstUse
-                              ? 'BUILT AROUND YOU'
-                              : 'PROGRESS, AT YOUR PACE',
-                          style: AppTypography.labelSmall.copyWith(
-                            letterSpacing: 2,
-                            color: AppColors.platinum,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      Semantics(
-                        header: true,
-                        child: Text(heading, style: EntryStyle.heading),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        widget.createAccount
-                            ? 'Create an account to save your training and progress.'
-                            : _emailMode
-                            ? 'Log in to pick up where you left off.'
-                            : 'Save your workouts and keep them synced.',
-                        style: AppTypography.bodyLarge.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      if (!_emailMode &&
-                          firstUse &&
-                          split != null &&
-                          user?.trainingDaysPerWeek != null) ...[
-                        const SizedBox(height: 20),
-                        Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: const BoxDecoration(
-                            border: Border(
-                              top: BorderSide(color: Color(0xFF35404E)),
-                              bottom: BorderSide(color: Color(0xFF35404E)),
                             ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.check_rounded,
-                                color: EntryStyle.accent,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  '${split.name} · ${user!.trainingDaysPerWeek} days / week',
-                                  style: AppTypography.bodyMedium,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      if (error != null) EntryNotice(error, error: true),
-                      if (auth.message != null) EntryNotice(auth.message!),
-                      if (_emailMode)
-                        _form(auth)
-                      else ...[
-                        EntryButton(
-                          label: 'Continue with Google',
-                          busy: auth.isLoading,
-                          icon: Image.asset(
-                            'assets/images/google_g.png',
-                            width: 20,
-                            height: 20,
-                            excludeFromSemantics: true,
-                          ),
-                          onPressed: () => _attempt(
-                            () => ref
-                                .read(authProvider.notifier)
-                                .signInWithGoogle(),
-                          ),
-                        ),
-                        if (auth.isAnonymous)
-                          TextButton(
-                            onPressed: auth.isLoading
-                                ? null
-                                : () => _attempt(
-                                    () => ref
-                                        .read(authProvider.notifier)
-                                        .signInWithGoogle(
-                                          useExistingAccount: true,
-                                        ),
+                            builder: (context, child) {
+                              final progress = _transitionCurve.transform(
+                                _transition.value,
+                              );
+                              final expandedHeight = small ? 220.0 : 290.0;
+                              final height =
+                                  expandedHeight +
+                                  (105 - expandedHeight) * progress;
+                              final expandedScale = (expandedHeight / 310)
+                                  .clamp(0.0, constraints.maxWidth / 400);
+                              final compactScale = (105 / 310).clamp(
+                                0.0,
+                                constraints.maxWidth / 400,
+                              );
+                              final scale =
+                                  expandedScale +
+                                  (compactScale - expandedScale) * progress;
+                              return SizedBox(
+                                key: const ValueKey('login-art-space'),
+                                height: height,
+                                child: OverflowBox(
+                                  minWidth: 400,
+                                  maxWidth: 400,
+                                  minHeight: 310,
+                                  maxHeight: 310,
+                                  child: Transform.scale(
+                                    key: const ValueKey('login-art-scale'),
+                                    scale: scale,
+                                    child: child,
                                   ),
-                            child: const Text(
-                              'Use an existing Google account',
-                              style: AppTypography.bodyMedium,
-                            ),
+                                ),
+                              );
+                            },
                           ),
-                        const SizedBox(height: 12),
-                        EntryButton(
-                          label: 'Continue with email',
-                          primary: true,
-                          icon: const Icon(
-                            Icons.alternate_email_rounded,
-                            size: 20,
+                        ),
+                      if (keyboard) const SizedBox(height: 20),
+                      if (_reduceMotion)
+                        _emailMode ? emailContent : choiceContent
+                      else
+                        AnimatedCrossFade(
+                          duration: duration,
+                          reverseDuration: duration,
+                          sizeCurve: _transitionCurve,
+                          firstCurve: const Interval(
+                            0,
+                            .45,
+                            curve: Curves.easeInOut,
                           ),
-                          onPressed: auth.isLoading
-                              ? null
-                              : () => setState(() {
-                                  _emailMode = true;
-                                  _localError = null;
-                                }),
-                        ),
-                      ],
-                      const SizedBox(height: 12),
-                      TextButton(
-                        onPressed: auth.isLoading ? null : _guest,
-                        style: TextButton.styleFrom(
-                          minimumSize: const Size(48, 48),
-                          foregroundColor: AppColors.textSecondary,
-                        ),
-                        child: const Text(
-                          'Continue as guest',
-                          style: AppTypography.bodyMedium,
-                        ),
-                      ),
-                      if (!_emailMode)
-                        const Text(
-                          'You can connect an account later.',
-                          textAlign: TextAlign.center,
-                          style: AppTypography.bodySmall,
+                          secondCurve: const Interval(
+                            .45,
+                            1,
+                            curve: Curves.easeInOut,
+                          ),
+                          alignment: Alignment.topCenter,
+                          crossFadeState: _emailMode
+                              ? CrossFadeState.showSecond
+                              : CrossFadeState.showFirst,
+                          firstChild: _pane(
+                            emailMode: false,
+                            child: choiceContent,
+                          ),
+                          secondChild: _pane(
+                            emailMode: true,
+                            child: emailContent,
+                          ),
                         ),
                     ],
                   ),
@@ -356,6 +349,148 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _pane({required bool emailMode, required Widget child}) {
+    final inactive = emailMode != _emailMode;
+    return Offstage(
+      offstage: inactive && !_transition.isAnimating,
+      child: IgnorePointer(
+        ignoring: inactive,
+        child: ExcludeFocus(
+          excluding: inactive,
+          child: ExcludeSemantics(excluding: inactive, child: child),
+        ),
+      ),
+    );
+  }
+
+  Widget _content({
+    required bool emailMode,
+    required bool firstUse,
+    required AuthState auth,
+    String? error,
+    String? summary,
+  }) {
+    final heading = widget.createAccount
+        ? 'A stronger start.'
+        : emailMode
+        ? 'Welcome back.'
+        : firstUse
+        ? 'Your plan is ready.'
+        : 'Make every rep count.';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!emailMode) ...[
+          Text(
+            firstUse ? 'BUILT AROUND YOU' : 'PROGRESS, AT YOUR PACE',
+            style: AppTypography.labelSmall.copyWith(
+              letterSpacing: 2,
+              color: AppColors.platinum,
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        Semantics(
+          header: true,
+          child: Text(heading, style: EntryStyle.heading),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          widget.createAccount
+              ? 'Create an account to save your training and progress.'
+              : emailMode
+              ? 'Log in to pick up where you left off.'
+              : 'Save your workouts and keep them synced.',
+          style: AppTypography.bodyLarge.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
+        if (!emailMode && firstUse && summary != null) ...[
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            decoration: const BoxDecoration(
+              border: Border(
+                top: BorderSide(color: Color(0xFF35404E)),
+                bottom: BorderSide(color: Color(0xFF35404E)),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.check_rounded,
+                  color: EntryStyle.accent,
+                  size: 18,
+                ),
+                const SizedBox(width: 10),
+                Expanded(child: Text(summary, style: AppTypography.bodyMedium)),
+              ],
+            ),
+          ),
+        ],
+        const SizedBox(height: 24),
+        if (error != null) EntryNotice(error, error: true),
+        if (auth.message != null) EntryNotice(auth.message!),
+        if (emailMode)
+          _form(auth)
+        else ...[
+          EntryButton(
+            label: 'Continue with Google',
+            busy: auth.isLoading,
+            icon: Image.asset(
+              'assets/images/google_g.png',
+              width: 20,
+              height: 20,
+              excludeFromSemantics: true,
+            ),
+            onPressed: () => _attempt(
+              () => ref.read(authProvider.notifier).signInWithGoogle(),
+            ),
+          ),
+          if (auth.isAnonymous)
+            TextButton(
+              onPressed: auth.isLoading
+                  ? null
+                  : () => _attempt(
+                      () => ref
+                          .read(authProvider.notifier)
+                          .signInWithGoogle(useExistingAccount: true),
+                    ),
+              child: const Text(
+                'Use an existing Google account',
+                style: AppTypography.bodyMedium,
+              ),
+            ),
+          const SizedBox(height: 12),
+          EntryButton(
+            label: 'Continue with email',
+            primary: true,
+            icon: const Icon(Icons.alternate_email_rounded, size: 20),
+            onPressed: auth.isLoading ? null : () => _setEmailMode(true),
+          ),
+        ],
+        const SizedBox(height: 12),
+        TextButton(
+          onPressed: auth.isLoading ? null : _guest,
+          style: TextButton.styleFrom(
+            minimumSize: const Size(48, 48),
+            foregroundColor: AppColors.textSecondary,
+          ),
+          child: const Text(
+            'Continue as guest',
+            style: AppTypography.bodyMedium,
+          ),
+        ),
+        if (!emailMode)
+          const Text(
+            'You can connect an account later.',
+            textAlign: TextAlign.center,
+            style: AppTypography.bodySmall,
+          ),
+      ],
     );
   }
 

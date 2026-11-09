@@ -59,7 +59,12 @@ class _WeightPlateArtState extends State<WeightPlateArt>
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
     child: RepaintBoundary(
-      child: CustomPaint(painter: _PlatePainter(_motion), size: Size.infinite),
+      child: CustomPaint(
+        painter: _PlatePainter(_motion),
+        size: Size.infinite,
+        isComplex: true,
+        willChange: _motion.isAnimating,
+      ),
     ),
   );
 }
@@ -164,27 +169,25 @@ class _PlatePainter extends CustomPainter {
     final bounds = Rect.fromCircle(center: Offset.zero, radius: radius);
     final hole = radius * .205;
     final ring = _ring(radius, hole);
+    final sidePaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0xFF454E5D),
+          Color(0xFF111721),
+          Color(0xFF7E8796),
+          Color(0xFF202833),
+          Color(0xFF10161F),
+        ],
+        stops: [0, .32, .55, .77, 1],
+      ).createShader(bounds);
 
     // Stacked annular slices make an actual open bore, including the sidewall.
     for (var z = depth.toInt(); z > 0; z--) {
       canvas.save();
       canvas.translate(0, z.toDouble());
-      canvas.drawPath(
-        ring,
-        Paint()
-          ..shader = const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF454E5D),
-              Color(0xFF111721),
-              Color(0xFF7E8796),
-              Color(0xFF202833),
-              Color(0xFF10161F),
-            ],
-            stops: [0, .32, .55, .77, 1],
-          ).createShader(bounds),
-      );
+      canvas.drawPath(ring, sidePaint);
       canvas.restore();
     }
     canvas.drawPath(

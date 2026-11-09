@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/app_sheet.dart';
 import '../../../shared/widgets/glass_card.dart';
+import '../../../shared/widgets/persistence_feedback.dart';
 import '../../history/providers/history_provider.dart';
 import '../../workout_builder/models/training_schedule.dart';
 import '../../workout_builder/models/workout_sequence.dart';
@@ -45,10 +46,9 @@ class _TrainingPauseSheetState extends ConsumerState<_TrainingPauseSheet> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _busy = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not save your schedule. Please try again.'),
-        ),
+      showAppFeedback(
+        context,
+        'Could not save your schedule. Please try again.',
       );
     }
   }
