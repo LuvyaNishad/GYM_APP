@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -50,35 +51,46 @@ class AccountSection extends StatelessWidget {
   final Widget? action;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Row(
-          children: [
-            Expanded(
-              child: Semantics(
-                header: true,
-                child: Text(title, style: AccountType.section),
+  Widget build(BuildContext context) => AccountSurface(
+    child: Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        key: PageStorageKey('account-section-$title'),
+        maintainState: true,
+        minTileHeight: 56,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+        iconColor: AppColors.textSecondary,
+        collapsedIconColor: AppColors.textSecondary,
+        shape: const Border(),
+        collapsedShape: const Border(),
+        expansionAnimationStyle:
+            MediaQuery.disableAnimationsOf(context) ||
+                MediaQuery.accessibleNavigationOf(context)
+            ? AnimationStyle.noAnimation
+            : const AnimationStyle(
+                duration: Duration(milliseconds: 200),
+                curve: Curves.easeInOutCubic,
+                reverseCurve: Curves.easeInOutCubic,
               ),
+        title: Semantics(
+          header: true,
+          child: Text(title, style: AccountType.section),
+        ),
+        children: [
+          const AccountDivider(),
+          if (action != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Align(alignment: Alignment.centerRight, child: action!),
             ),
-            if (action != null) action!,
+          for (var i = 0; i < children.length; i++) ...[
+            if (i > 0) const AccountDivider(),
+            children[i],
           ],
-        ),
+        ],
       ),
-      AccountSurface(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (var i = 0; i < children.length; i++) ...[
-              if (i > 0) const AccountDivider(),
-              children[i],
-            ],
-          ],
-        ),
-      ),
-    ],
+    ),
   );
 }
 
@@ -204,7 +216,7 @@ class AccountRow extends StatelessWidget {
 }
 
 /// Uses Flutter's menu semantics, focus, dismissal and selected-item feedback.
-class AccountChoiceRow<T> extends StatelessWidget {
+class AccountChoiceRow<T> extends StatefulWidget {
   const AccountChoiceRow({
     super.key,
     required this.title,
@@ -220,35 +232,61 @@ class AccountChoiceRow<T> extends StatelessWidget {
   final T value;
   final String label;
   final Map<T, String> choices;
-  final ValueChanged<T> onSelected;
+  final FutureOr<void> Function(T) onSelected;
   final String? subtitle;
   final IconData? icon;
   final bool numeric;
 
   @override
+  State<AccountChoiceRow<T>> createState() => _AccountChoiceRowState<T>();
+}
+
+class _AccountChoiceRowState<T> extends State<AccountChoiceRow<T>> {
+  bool _pending = false;
+
+  Future<void> _select(T value) async {
+    if (_pending || value == widget.value) return;
+    setState(() => _pending = true);
+    try {
+      await widget.onSelected(value);
+    } finally {
+      if (mounted) setState(() => _pending = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) => PopupMenuButton<T>(
-    tooltip: 'Change $title',
-    initialValue: value,
-    onSelected: onSelected,
+    enabled: !_pending,
+    tooltip: _pending ? 'Saving ${widget.title}' : 'Change ${widget.title}',
+    initialValue: widget.value,
+    onSelected: _select,
     itemBuilder: (context) => [
-      for (final choice in choices.entries)
+      for (final choice in widget.choices.entries)
         CheckedPopupMenuItem<T>(
           value: choice.key,
-          checked: choice.key == value,
+          checked: choice.key == widget.value,
           child: Text(choice.value, style: AccountType.row),
         ),
     ],
     child: AccountRow(
-      title: title,
-      subtitle: subtitle,
-      value: label,
-      icon: icon,
-      numeric: numeric,
-      accessory: const Icon(
-        Icons.unfold_more_rounded,
-        size: 20,
-        color: AppColors.textMuted,
-      ),
+      title: widget.title,
+      subtitle: widget.subtitle,
+      value: widget.label,
+      icon: widget.icon,
+      numeric: widget.numeric,
+      accessory: _pending
+          ? SizedBox.square(
+              dimension: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                semanticsLabel: 'Saving ${widget.title}',
+              ),
+            )
+          : const Icon(
+              Icons.unfold_more_rounded,
+              size: 20,
+              color: AppColors.textMuted,
+            ),
     ),
   );
 }

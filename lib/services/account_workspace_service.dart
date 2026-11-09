@@ -3,6 +3,7 @@ import 'cloud_sync_engine.dart';
 import 'hive_service.dart';
 import 'supabase_service.dart';
 import 'sync_service.dart';
+import 'avatar_service.dart';
 
 /// Session identity selects storage; record contents never select an owner.
 class AccountWorkspaceService {
@@ -44,7 +45,14 @@ class AccountWorkspaceService {
   Future<BackupPreview?> prepare(HiveService hive) async {
     final engine = CloudSyncEngine(
       hive,
-      transport ?? SupabaseCloudTransport(supabase),
+      transport ??
+          SupabaseCloudTransport(
+            supabase,
+            avatars: AvatarService(
+              hive,
+              transport: SupabaseAvatarTransport(supabase),
+            ),
+          ),
     );
     await engine.synchronize();
     if (supabase.currentUserId != hive.ownerUserId) {

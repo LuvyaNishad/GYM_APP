@@ -14,6 +14,9 @@ import '../features/exercise_library/models/exercise_library_item.dart';
 import '../features/dashboard/providers/habit_log_provider.dart';
 import 'hive_service.dart';
 import 'daily_steps_platform.dart';
+import 'avatar_service.dart';
+import '../features/profile/models/avatar_reference.dart';
+import 'supabase_service.dart';
 
 enum RestoreMode { keepExisting, useBackup, replaceAll }
 
@@ -89,8 +92,9 @@ class BackupPreview {
 }
 
 class BackupService {
-  const BackupService(this.hive);
+  const BackupService(this.hive, {this.avatars});
   final HiveService hive;
+  final AvatarService? avatars;
   static const version = 2;
   static const maxBytes = 50 * 1024 * 1024;
 
@@ -109,6 +113,7 @@ class BackupService {
   // Portable user data only. Hardware step baselines, auth, active timers and
   // caches cannot safely be moved between installations.
   static const settingsKeys = {
+    AvatarReference.imagesKey,
     'onboarding_complete',
     'weight_unit',
     'active_split_id',
@@ -127,7 +132,38 @@ class BackupService {
     'step_record_date',
   };
 
+  // Photos travel through private Storage, never through cloud-record JSON.
+  static final cloudSettingsKeys = settingsKeys.difference({
+    AvatarReference.imagesKey,
+  });
+
   Future<Uint8List> export({DateTime? now}) async {
+    // A backup must carry photo bytes, including on a newly synced device.
+    final media =
+        avatars ??
+        AvatarService(
+          hive,
+          transport: SupabaseAvatarTransport(SupabaseService()),
+        );
+    final users = (hive.snapshot()['documents'] as Map)['user'] as Map;
+    final pictureIds = <String>{};
+    for (final raw in users.values) {
+      if (raw is! Map) continue;
+      final id = AvatarReference.photoId(raw['avatar_url'] as String?);
+      if (id != null) pictureIds.add(id);
+    }
+    for (final id in pictureIds) {
+      if (media.cached(id) != null) continue;
+      try {
+        if (await media.load(id) == null || media.cached(id) == null) {
+          throw StateError('Picture is unavailable.');
+        }
+      } catch (_) {
+        throw StateError(
+          'Download your profile picture while connected before creating a backup.',
+        );
+      }
+    }
     final snapshot = await hive.flushedSnapshot();
     final settings = snapshot['settings'] as Map;
     final portable = <String, dynamic>{
@@ -223,6 +259,18 @@ class BackupService {
               entry.key: entry.value,
       },
     };
+    // Immutable photo IDs can be merged independently of profile conflicts.
+    if (mode != RestoreMode.replaceAll) {
+      final localImages =
+          (current['settings'] as Map)[AvatarReference.imagesKey] as Map? ?? {};
+      final incomingImages =
+          preview.settings[AvatarReference.imagesKey] as Map? ?? {};
+      if (localImages.isNotEmpty || incomingImages.isNotEmpty) {
+        final images = {...localImages, ...incomingImages};
+        validateAvatarCache(images);
+        (replacement['settings'] as Map)[AvatarReference.imagesKey] = images;
+      }
+    }
     // Rebind the phone sensor on this installation. Preserve dated totals.
     for (final key in [
       'step_boot_base',
@@ -439,6 +487,9 @@ class BackupService {
     final settings = _map(data['settings'], 'settings');
     if (settings.keys.any((key) => !settingsKeys.contains(key))) {
       throw const FormatException('Backup contains unsupported settings.');
+    }
+    if (settings.containsKey(AvatarReference.imagesKey)) {
+      validateAvatarCache(settings[AvatarReference.imagesKey]);
     }
     if (settings['plate_preferences_v1'] != null) {
       final plates = _map(

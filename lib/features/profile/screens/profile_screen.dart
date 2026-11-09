@@ -4,11 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/providers/local_date_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/persistence_feedback.dart';
 import '../../dashboard/providers/workout_rotation_provider.dart';
+import '../../dashboard/widgets/gym_contribution_chart.dart';
 import '../../dashboard/widgets/training_pause_sheet.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import '../../onboarding/widgets/goal_selector_sheet.dart';
@@ -21,12 +23,15 @@ import '../providers/profile_provider.dart';
 import '../widgets/account_section.dart';
 import '../widgets/edit_biometrics_dialog.dart';
 import '../widgets/edit_profile_dialog.dart';
+import '../widgets/profile_avatar.dart';
+import '../widgets/avatar_editor_sheet.dart';
 import '../widgets/export_data_dialog.dart';
 import '../widgets/report_preview_dialog.dart';
 import '../../authentication/providers/auth_provider.dart';
 import '../../../services/sync_service.dart';
 import '../../../shared/widgets/sync_status_indicator.dart';
 import '../../authentication/screens/sync_conflicts_screen.dart';
+import '../../history/providers/history_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -71,15 +76,17 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 24),
                         _IdentityCard(profile: profile),
+                        const SizedBox(height: 12),
+                        const _GymAttendanceCard(),
                         const SizedBox(height: 24),
                         _BiometricsCard(profile: profile),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 12),
                         const _HealthCard(),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 12),
                         _TrainingPreferencesCard(profile: profile),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 12),
                         _AppSettingsCard(profile: profile),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 12),
                         AccountSection(
                           title: 'DATA & REPORTS',
                           children: [
@@ -98,9 +105,9 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 12),
                         const _CloudAccountCard(),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 12),
                         const _AccountActionsCard(),
                       ],
                     ),
@@ -115,23 +122,88 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-class _IdentityCard extends StatelessWidget {
+class _GymAttendanceCard extends ConsumerWidget {
+  const _GymAttendanceCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => AccountSurface(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: GymContributionChart(
+        today: ref.watch(localDateProvider),
+        loggedWorkoutDates: ref
+            .watch(historyWorkoutsProvider)
+            .map((workout) => workout.date)
+            .toSet(),
+      ),
+    ),
+  );
+}
+
+class _IdentityCard extends ConsumerWidget {
   const _IdentityCard({required this.profile});
   final AccountProfile profile;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authProvider);
+    final accountLabel = switch (auth.status) {
+      AuthStatus.unknown => 'Checking account…',
+      AuthStatus.unauthenticated => 'Local profile',
+      AuthStatus.authenticated when auth.isAnonymous => 'Guest profile',
+      AuthStatus.authenticated =>
+        auth.email?.trim().isNotEmpty == true
+            ? auth.email!.trim()
+            : 'Cloud account',
+    };
     final name = profile.displayName.isEmpty ? 'Guest' : profile.displayName;
     final joined = MaterialLocalizations.of(
       context,
     ).formatMonthYear(profile.memberSince);
-    final avatar = ExcludeSemantics(
-      child: CircleAvatar(
-        radius: 24,
-        backgroundColor: AppColors.surfaceSecondary,
-        child: Text(
-          name.characters.first.toUpperCase(),
-          style: AppTypography.headlineMedium,
+    final avatar = Semantics(
+      button: true,
+      label: 'Change profile picture',
+      child: Tooltip(
+        message: 'Change profile picture',
+        child: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () => showAvatarEditor(context),
+            child: SizedBox.square(
+              dimension: 64,
+              child: Stack(
+                children: [
+                  ProfileAvatar(
+                    reference: profile.avatarUrl,
+                    name: name,
+                    size: 60,
+                  ),
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.cardBackground,
+                          width: 2,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt_rounded,
+                        size: 12,
+                        color: AppColors.onPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -150,10 +222,7 @@ class _IdentityCard extends StatelessWidget {
       children: [
         Text(name, style: AppTypography.headlineLarge),
         const SizedBox(height: 4),
-        Text(
-          profile.email.isEmpty ? 'Local profile' : profile.email,
-          style: AccountType.detail,
-        ),
+        Text(accountLabel, style: AccountType.detail),
         const SizedBox(height: 4),
         Text('Profile since $joined', style: AccountType.detail),
       ],
@@ -536,7 +605,7 @@ class _AppSettingsCard extends ConsumerWidget {
           choices: const {'kg': 'Kilograms (kg)', 'lbs': 'Pounds (lbs)'},
           onSelected: (unit) => persistWithFeedback(
             context,
-            () => notifier.updateBiometrics(weightUnit: unit),
+            () => notifier.updateUnits(weightUnit: unit),
           ),
         ),
         AccountChoiceRow<String>(
@@ -550,7 +619,7 @@ class _AppSettingsCard extends ConsumerWidget {
           },
           onSelected: (unit) => persistWithFeedback(
             context,
-            () => notifier.updateBiometrics(heightUnit: unit),
+            () => notifier.updateUnits(heightUnit: unit),
           ),
         ),
         AccountChoiceRow<WorkoutAlertMode>(
@@ -584,8 +653,12 @@ class _AlertPermissions extends ConsumerStatefulWidget {
 
 class _AlertPermissionsState extends ConsumerState<_AlertPermissions> {
   String? message;
+  bool _pending = false;
 
   Future<void> request(bool exact) async {
+    if (_pending) return;
+    setState(() => _pending = true);
+    var unavailable = false;
     try {
       if (exact) {
         await ref.read(nativeRestServiceProvider).requestExactAlarms();
@@ -599,6 +672,7 @@ class _AlertPermissionsState extends ConsumerState<_AlertPermissions> {
         final allowed = await ref
             .read(workoutNotificationServiceProvider)
             .requestPermissions();
+        unavailable = !allowed;
         if (mounted) {
           setState(
             () => message = allowed
@@ -607,10 +681,18 @@ class _AlertPermissionsState extends ConsumerState<_AlertPermissions> {
           );
         }
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() => message = 'Could not change alert permission: $e');
+      if (mounted && message != null) {
+        showAppFeedback(context, message!, isError: unavailable);
       }
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => message = 'Could not open permission settings. Try again.',
+        );
+        showAppFeedback(context, message!);
+      }
+    } finally {
+      if (mounted) setState(() => _pending = false);
     }
   }
 
@@ -622,7 +704,7 @@ class _AlertPermissionsState extends ConsumerState<_AlertPermissions> {
         icon: Icons.notifications_outlined,
         title: 'Workout notifications',
         subtitle: 'Allow rest alerts outside the app',
-        onTap: () => request(false),
+        onTap: _pending ? null : () => request(false),
       ),
       if (Theme.of(context).platform == TargetPlatform.android) ...[
         const AccountDivider(),
@@ -630,7 +712,7 @@ class _AlertPermissionsState extends ConsumerState<_AlertPermissions> {
           icon: Icons.alarm_on_outlined,
           title: 'Precise rest alarms',
           subtitle: 'Manage Android permission for timely alerts',
-          onTap: () => request(true),
+          onTap: _pending ? null : () => request(true),
         ),
       ],
       if (message != null)
@@ -647,6 +729,27 @@ class _AlertPermissionsState extends ConsumerState<_AlertPermissions> {
 
 class _CloudAccountCard extends ConsumerWidget {
   const _CloudAccountCard();
+
+  Future<void> _sync(BuildContext context, WidgetRef ref) async {
+    await ref.read(syncServiceProvider.notifier).syncAll();
+    if (!context.mounted) return;
+    final sync = ref.read(syncServiceProvider);
+    final message = switch (sync.status) {
+      SyncStatus.synced => 'Cloud sync is up to date.',
+      SyncStatus.local => 'Sign in to sync. Your data is saved on this device.',
+      SyncStatus.offline =>
+        'You’re offline. Saved changes will sync when connected.',
+      SyncStatus.conflict => 'Review the sync conflicts to finish syncing.',
+      SyncStatus.error =>
+        sync.errorMessage ?? 'Cloud sync could not finish. Try again.',
+      _ => '${sync.pendingCount} changes are waiting to sync.',
+    };
+    showAppFeedback(
+      context,
+      message,
+      isError: sync.status != SyncStatus.synced,
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -665,20 +768,22 @@ class _CloudAccountCard extends ConsumerWidget {
             title: 'Account',
             subtitle: authState.email,
             accessory: TextButton(
-              onPressed: () async {
-                final confirmed = await const _AccountActionsCard()._confirm(
-                  context,
-                  title: 'Sign out?',
-                  content:
-                      '${sync.pendingCount} changes are waiting for cloud sync. Your account data and unsynced changes stay in this account’s local workspace. Sign in again to access them.',
-                  action: 'Sign out',
-                );
-                if (!confirmed || !context.mounted) return;
-                await persistWithFeedback(
-                  context,
-                  () => ref.read(authProvider.notifier).signOut(),
-                );
-              },
+              onPressed: authState.isLoading
+                  ? null
+                  : () async {
+                      final confirmed = await const _AccountActionsCard()._confirm(
+                        context,
+                        title: 'Sign out?',
+                        content:
+                            '${sync.pendingCount} changes are waiting for cloud sync. Your account data and unsynced changes stay in this account’s local workspace. Sign in again to access them.',
+                        action: 'Sign out',
+                      );
+                      if (!confirmed || !context.mounted) return;
+                      await persistWithFeedback(
+                        context,
+                        () => ref.read(authProvider.notifier).signOut(),
+                      );
+                    },
               child: const Text('Sign out'),
             ),
           ),
@@ -688,7 +793,9 @@ class _CloudAccountCard extends ConsumerWidget {
             subtitle:
                 sync.errorMessage ??
                 '${sync.pendingCount} pending changes · uploads and downloads',
-            onTap: () => ref.read(syncServiceProvider.notifier).syncAll(),
+            onTap: sync.status == SyncStatus.syncing
+                ? null
+                : () => _sync(context, ref),
           ),
         ] else ...[
           AccountRow(
@@ -705,7 +812,9 @@ class _CloudAccountCard extends ConsumerWidget {
             subtitle: authState.isAnonymous
                 ? 'Guest cloud saves need a linked account for recovery after reinstall'
                 : 'Guest data is saved on this device until connected',
-            onTap: () => ref.read(syncServiceProvider.notifier).syncAll(),
+            onTap: sync.status == SyncStatus.syncing
+                ? null
+                : () => _sync(context, ref),
           ),
         ],
         if (sync.conflicts.isNotEmpty)
@@ -771,13 +880,10 @@ class _AccountActionsCard extends ConsumerWidget {
             () => ref.read(accountProfileProvider.notifier).resetToDefaults(),
           );
           if (success && context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Preferences restored to defaults.',
-                  style: AccountType.detail,
-                ),
-              ),
+            showAppFeedback(
+              context,
+              'Preferences restored to defaults.',
+              isError: false,
             );
           }
         },

@@ -7,6 +7,7 @@ import 'cloud_sync_engine.dart';
 import 'hive_service.dart';
 import 'pedometer_service.dart';
 import 'supabase_service.dart';
+import 'avatar_service.dart';
 
 enum SyncStatus {
   idle,
@@ -48,8 +49,9 @@ class SyncState {
 }
 
 class SupabaseCloudTransport extends CloudTransport {
-  SupabaseCloudTransport(this.supabase);
+  SupabaseCloudTransport(this.supabase, {this.avatars});
   final SupabaseService supabase;
+  final AvatarService? avatars;
   @override
   String? get currentUserId => supabase.currentUserId;
   void _check(String owner) {
@@ -76,6 +78,8 @@ class SupabaseCloudTransport extends CloudTransport {
   @override
   Future<List<JsonMap>> push(String owner, List<JsonMap> changes) async {
     _check(owner);
+    await avatars?.uploadReferences(changes);
+    _check(owner);
     final result = await supabase.client
         .rpc(
           'apply_cloud_changes',
@@ -90,7 +94,10 @@ class SupabaseCloudTransport extends CloudTransport {
 }
 
 final cloudTransportProvider = Provider<CloudTransport>(
-  (ref) => SupabaseCloudTransport(ref.read(supabaseServiceProvider)),
+  (ref) => SupabaseCloudTransport(
+    ref.read(supabaseServiceProvider),
+    avatars: ref.watch(avatarServiceProvider),
+  ),
 );
 final syncServiceProvider = NotifierProvider<SyncService, SyncState>(
   SyncService.new,

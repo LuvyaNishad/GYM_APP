@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
 import '../models/account_profile_model.dart';
 import '../providers/profile_provider.dart';
 import '../../workout_builder/providers/splits_provider.dart';
@@ -38,6 +36,7 @@ class _EditProfileSheet extends ConsumerStatefulWidget {
 }
 
 class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
+  final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _emailController;
   late String _selectedSplit;
@@ -59,7 +58,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                   widget.profile.experienceLevel.toLowerCase(),
             )
             .firstOrNull ??
-        'Not set';
+        widget.profile.experienceLevel;
   }
 
   @override
@@ -76,7 +75,13 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
 
-    if (name.isEmpty) return;
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      showAppFeedback(
+        context,
+        'Check your name and contact email before saving.',
+      );
+      return;
+    }
 
     setState(() => _isSaving = true);
     final success = await persistWithFeedback(
@@ -97,23 +102,8 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
     if (!success) return;
 
     HapticFeedback.lightImpact();
-    final messenger = ScaffoldMessenger.of(context);
+    showAppFeedback(context, 'Profile saved.', isError: false);
     Navigator.of(context).pop();
-
-    messenger.showSnackBar(
-      const SnackBar(
-        backgroundColor: AppColors.charcoal,
-        content: Text(
-          'Profile updated successfully!',
-          style: TextStyle(
-            fontFamily: AppTypography.fontBody,
-            fontSize: 13.0,
-            color: AppColors.pureWhite,
-          ),
-        ),
-        duration: Duration(seconds: 2),
-      ),
-    );
   }
 
   @override
@@ -126,81 +116,98 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
     ];
     return PersistenceForm(
       pending: _isSaving,
-      child: AppSheet(
-        title: 'Edit Profile',
-        busy: _isSaving,
-        children: [
-          TextField(
-            controller: _nameController,
-            style: AccountType.row,
-            textCapitalization: TextCapitalization.words,
-            textInputAction: TextInputAction.next,
-            decoration: const InputDecoration(
-              labelText: 'Full name',
-              hintText: 'Enter name',
+      child: Form(
+        key: _formKey,
+        child: AppSheet(
+          title: 'Edit Profile',
+          busy: _isSaving,
+          children: [
+            TextFormField(
+              controller: _nameController,
+              style: AccountType.row,
+              textCapitalization: TextCapitalization.words,
+              textInputAction: TextInputAction.next,
+              validator: (value) =>
+                  value?.trim().isEmpty != false ? 'Enter your name.' : null,
+              decoration: const InputDecoration(
+                labelText: 'Full name',
+                hintText: 'Enter name',
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _emailController,
-            style: AccountType.row,
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.done,
-            decoration: const InputDecoration(
-              labelText: 'Email address',
-              hintText: 'Optional',
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _emailController,
+              style: AccountType.row,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => _save(),
+              validator: (value) {
+                final email = value?.trim() ?? '';
+                return email.isEmpty ||
+                        RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)
+                    ? null
+                    : 'Enter a valid email or leave it empty.';
+              },
+              decoration: const InputDecoration(
+                labelText: 'Contact email',
+                hintText: 'Optional',
+                helperText: 'Saved with your fitness profile.',
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            initialValue: _selectedSplit,
-            isExpanded: true,
-            isDense: false,
-            itemHeight: null,
-            style: AccountType.row,
-            decoration: const InputDecoration(labelText: 'Training split'),
-            items: [
-              for (final split in availableSplits)
-                DropdownMenuItem(
-                  value: split,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Text(splitNames[split] ?? 'Saved split ($split)'),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedSplit,
+              isExpanded: true,
+              isDense: false,
+              itemHeight: null,
+              style: AccountType.row,
+              decoration: const InputDecoration(labelText: 'Training split'),
+              items: [
+                for (final split in availableSplits)
+                  DropdownMenuItem(
+                    value: split,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(splitNames[split] ?? 'Saved split ($split)'),
+                    ),
                   ),
-                ),
-            ],
-            onChanged: (value) {
-              if (value != null) setState(() => _selectedSplit = value);
-            },
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            initialValue: _selectedLevel,
-            isExpanded: true,
-            isDense: false,
-            itemHeight: null,
-            style: AccountType.row,
-            decoration: const InputDecoration(labelText: 'Experience level'),
-            items: [
-              for (final level in _levels)
-                DropdownMenuItem(
-                  value: level,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Text(level),
+              ],
+              onChanged: (value) {
+                if (value != null) setState(() => _selectedSplit = value);
+              },
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedLevel,
+              isExpanded: true,
+              isDense: false,
+              itemHeight: null,
+              style: AccountType.row,
+              decoration: const InputDecoration(labelText: 'Experience level'),
+              items: [
+                for (final level in [
+                  ..._levels,
+                  if (!_levels.contains(_selectedLevel)) _selectedLevel,
+                ])
+                  DropdownMenuItem(
+                    value: level,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(level),
+                    ),
                   ),
-                ),
-            ],
-            onChanged: (value) {
-              if (value != null) setState(() => _selectedLevel = value);
-            },
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _isSaving ? null : _save,
-            child: const Text('Save Changes'),
-          ),
-        ],
+              ],
+              onChanged: (value) {
+                if (value != null) setState(() => _selectedLevel = value);
+              },
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _isSaving ? null : _save,
+              child: const Text('Save Changes'),
+            ),
+          ],
+        ),
       ),
     );
   }

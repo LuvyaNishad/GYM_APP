@@ -180,8 +180,11 @@ class AccountProfileNotifier extends Notifier<AccountProfile> {
                       current?.onboardingComplete ??
                       false,
                 );
-        if (user.preferredSplit != resolveSplitId(state.preferredSplit) ||
-            user.trainingDaysPerWeek != state.trainingDaysPerWeek ||
+        // Display defaults and old split aliases are not a requested plan edit.
+        // Units, alerts and identity changes must not rebuild or validate a plan.
+        if (resolveSplitId(updated.preferredSplit) !=
+                resolveSplitId(before.preferredSplit) ||
+            updated.trainingDaysPerWeek != before.trainingDaysPerWeek ||
             onboardingComplete == true) {
           final splits = ref.read(splitsProvider);
           final selected = splits.splits
@@ -339,6 +342,10 @@ class AccountProfileNotifier extends Notifier<AccountProfile> {
       defaultRestSeconds: defaultRestSeconds,
       barbellTareKg: barbellTareKg,
     ),
+  );
+  Future<void> updateUnits({String? weightUnit, String? heightUnit}) => _change(
+    (current) =>
+        current.copyWith(weightUnit: weightUnit, heightUnit: heightUnit),
   );
   Future<void> updatePrimaryGoal(String goal) =>
       _change((current) => current.copyWith(primaryGoal: goal));

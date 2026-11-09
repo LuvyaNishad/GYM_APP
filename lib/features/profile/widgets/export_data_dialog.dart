@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/glass_card.dart';
+import '../../../shared/widgets/persistence_feedback.dart';
 import '../../../services/backup_service.dart';
 import '../../../services/export_file_service.dart';
 import '../../../services/hive_service.dart';
@@ -15,6 +16,8 @@ void showExportDataSheet(BuildContext context, [AccountProfile? profile]) {
     context: context,
     useRootNavigator: true,
     isScrollControlled: true,
+    isDismissible: false,
+    enableDrag: false,
     backgroundColor: AppColors.surface,
     builder: (_) => const _ExportDataSheet(),
   );
@@ -32,15 +35,20 @@ class _ExportDataSheetState extends ConsumerState<_ExportDataSheet> {
   BackupPreview? preview;
   RestoreMode mode = RestoreMode.keepExisting;
   Future<void> run(Future<void> Function() action) async {
+    if (busy) return;
     setState(() {
       busy = true;
       message = null;
     });
     try {
       await action();
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
-        setState(() => message = 'Could not complete this action: $e');
+        setState(
+          () => message =
+              'Could not complete this action. Try again or choose a valid AEON backup.',
+        );
+        showAppFeedback(context, message!);
       }
     } finally {
       if (mounted) setState(() => busy = false);
@@ -75,11 +83,19 @@ class _ExportDataSheetState extends ConsumerState<_ExportDataSheet> {
         : ((await files.save(name, mime, bytes)) == null
               ? 'Save cancelled.'
               : 'File saved to your selected destination.');
-    if (mounted) setState(() => message = result);
+    if (mounted) {
+      setState(() => message = result);
+      showAppFeedback(context, result, isError: false);
+    }
   });
   Future<void> pick() => run(() async {
     final bytes = await ref.read(exportFileServiceProvider).pickBackup();
-    if (bytes == null) return;
+    if (bytes == null) {
+      if (mounted) {
+        showAppFeedback(context, 'File selection cancelled.', isError: false);
+      }
+      return;
+    }
     final value = await ref.read(backupServiceProvider).preview(bytes);
     if (mounted) {
       setState(() {
@@ -88,18 +104,46 @@ class _ExportDataSheetState extends ConsumerState<_ExportDataSheet> {
       });
     }
   });
-  Future<void> restore() => run(() async {
-    await ref.read(backupServiceProvider).restore(preview!, mode);
-    // Rebuild every storage-dependent provider from the restored store.
-    ref.invalidate(hiveServiceProvider);
-    ref.invalidate(pedometerServiceProvider);
-    if (mounted) {
-      setState(() {
-        preview = null;
-        message = 'Backup restored on this device.';
-      });
+  Future<void> restore() async {
+    if (busy || preview == null) return;
+    if (mode == RestoreMode.replaceAll) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        useRootNavigator: true,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Replace saved data?'),
+          content: const Text(
+            'This replaces your current workouts, routines, measurements and backed-up preferences with the selected backup.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Replace data'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
     }
-  });
+    await run(() async {
+      await ref.read(backupServiceProvider).restore(preview!, mode);
+      // Rebuild every storage-dependent provider from the restored store.
+      ref.invalidate(hiveServiceProvider);
+      ref.invalidate(pedometerServiceProvider);
+      if (mounted) {
+        setState(() {
+          preview = null;
+          message = 'Backup restored on this device.';
+        });
+        showAppFeedback(context, message!, isError: false);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) => PopScope(
     canPop: !busy,
@@ -125,6 +169,7 @@ class _ExportDataSheetState extends ConsumerState<_ExportDataSheet> {
                     ),
                   ),
                   IconButton(
+                    tooltip: 'Close',
                     onPressed: busy ? null : () => Navigator.pop(context),
                     icon: const Icon(Icons.close),
                   ),
@@ -176,9 +221,15 @@ class _ExportDataSheetState extends ConsumerState<_ExportDataSheet> {
                           child: Text(change),
                         ),
                       const SizedBox(height: 12),
-                      DropdownButton<RestoreMode>(
+                      DropdownButtonFormField<RestoreMode>(
+                        key: ValueKey(preview),
                         isExpanded: true,
-                        value: mode,
+                        isDense: false,
+                        itemHeight: null,
+                        initialValue: mode,
+                        decoration: const InputDecoration(
+                          labelText: 'Restore behavior',
+                        ),
                         onChanged: busy
                             ? null
                             : (v) => setState(() => mode = v!),

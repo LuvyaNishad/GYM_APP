@@ -126,6 +126,18 @@ class UserProfile extends Notifier<UserModel?> {
 
   Future<void> _writes = Future.value();
 
+  /// Atomic profile/media changes share the same queue as form edits, so a
+  /// pending form cannot publish an older avatar after a picture has saved.
+  Future<void> persistSnapshot(Future<void> Function(HiveService) save) {
+    final hive = ref.read(hiveServiceProvider);
+    final result = _writes.catchError((Object _) {}).then((_) async {
+      await save(hive);
+      if (ref.mounted) state = readLocalProfile(hive);
+    });
+    _writes = result;
+    return result;
+  }
+
   /// All profile consumers share one persistence queue and read the latest value.
   Future<void> transform(
     UserModel? Function(UserModel? current) change, {
@@ -146,7 +158,10 @@ class UserProfile extends Notifier<UserModel?> {
           AppConstants.hiveBoxUser,
           [
             MapEntry(AppConstants.hiveKeyLocalProfile, updated.toJson()),
-            MapEntry('account_profile_data', accountMirror),
+            MapEntry('account_profile_data', {
+              ...accountMirror,
+              'avatar_url': updated.avatarUrl,
+            }),
           ],
           keyOf: (entry) => entry.key,
           toJson: (entry) => entry.value,

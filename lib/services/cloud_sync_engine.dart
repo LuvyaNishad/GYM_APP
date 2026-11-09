@@ -74,7 +74,7 @@ class CloudSyncEngine {
       }
     }
     final settings = snapshot['settings'] as Map;
-    for (final name in BackupService.settingsKeys) {
+    for (final name in BackupService.cloudSettingsKeys) {
       if (settings.containsKey(name)) {
         result[key('settings', name)] = {'value': settings[name]};
       }
@@ -319,7 +319,7 @@ class CloudSyncEngine {
         (record['sequence'] as int) < 0 ||
         (record['data'] != null && record['data'] is! Map) ||
         (collection == 'settings' &&
-            !BackupService.settingsKeys.contains(id))) {
+            !BackupService.cloudSettingsKeys.contains(id))) {
       throw const FormatException('Unsupported cloud record.');
     }
   }

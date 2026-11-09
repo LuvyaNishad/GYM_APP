@@ -6,6 +6,7 @@ import '../../../core/utils/measurement_units.dart';
 import '../../../services/export_file_service.dart';
 import '../../../services/hive_service.dart';
 import '../../../shared/widgets/glass_card.dart';
+import '../../../shared/widgets/persistence_feedback.dart';
 import '../models/account_profile_model.dart';
 import '../services/pdf_report_service.dart';
 import '../services/training_report_data.dart';
@@ -15,6 +16,8 @@ void showReportPreviewSheet(BuildContext context, [AccountProfile? profile]) =>
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
       backgroundColor: AppColors.surface,
       builder: (_) => const _ReportSheet(),
     );
@@ -48,6 +51,7 @@ class _ReportSheetState extends ConsumerState<_ReportSheet> {
     load();
   });
   Future<void> export(TrainingReportData report, bool share) async {
+    if (busy) return;
     setState(() {
       busy = true;
       message = null;
@@ -67,9 +71,15 @@ class _ReportSheetState extends ConsumerState<_ReportSheet> {
           : (await files.save(name, 'application/pdf', pdf!) == null
                 ? 'Save cancelled.'
                 : 'PDF saved to your selected destination.');
-      if (mounted) setState(() => message = result);
-    } catch (e) {
-      if (mounted) setState(() => message = 'Could not export the report: $e');
+      if (mounted) {
+        setState(() => message = result);
+        showAppFeedback(context, result, isError: false);
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => message = 'Could not export the report. Try again.');
+        showAppFeedback(context, message!);
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -86,14 +96,25 @@ class _ReportSheetState extends ConsumerState<_ReportSheet> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'MONTHLY REPORT',
-                style: TextStyle(
-                  fontFamily: 'Outfit',
-                  fontSize: 20,
-                  letterSpacing: 1.5,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'MONTHLY REPORT',
+                      style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontSize: 20,
+                        letterSpacing: 1.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Close',
+                    onPressed: busy ? null : () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
               ),
               Row(
                 children: [
@@ -126,7 +147,17 @@ class _ReportSheetState extends ConsumerState<_ReportSheet> {
                 future: data,
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    return Text('Could not read saved data: ${snapshot.error}');
+                    return Column(
+                      children: [
+                        const Text(
+                          'Could not read saved report data. Try again.',
+                        ),
+                        TextButton(
+                          onPressed: () => setState(load),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    );
                   }
                   if (!snapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());

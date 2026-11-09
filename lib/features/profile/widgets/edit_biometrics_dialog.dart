@@ -28,6 +28,8 @@ class _BiometricsEditorState extends ConsumerState<_BiometricsEditor> {
   late final TextEditingController _height, _weight, _target, _age;
   late MeasurementUnits _units;
   late String? _sex;
+  final _canonicalValues = <TextEditingController, double?>{};
+  final _displayedValues = <TextEditingController, String>{};
   bool _pending = false;
   @override
   void initState() {
@@ -51,6 +53,14 @@ class _BiometricsEditorState extends ConsumerState<_BiometricsEditor> {
           : _units.weightFromKg(p.targetWeightKg!).toStringAsFixed(1),
     );
     _age = TextEditingController(text: p.age?.toString() ?? '');
+    _canonicalValues.addAll({
+      _height: p.heightCm,
+      _weight: p.currentWeightKg,
+      _target: p.targetWeightKg,
+    });
+    for (final field in _canonicalValues.keys) {
+      _displayedValues[field] = field.text;
+    }
   }
 
   @override
@@ -63,21 +73,36 @@ class _BiometricsEditorState extends ConsumerState<_BiometricsEditor> {
   }
 
   void _changeUnits(MeasurementUnits next) {
-    for (final field in [_weight, _target]) {
-      final value = double.tryParse(field.text);
-      if (value != null) {
-        field.text = next
-            .weightFromKg(_units.weightToKg(value))
-            .toStringAsFixed(1);
+    for (final field in _canonicalValues.keys) {
+      final entered = double.tryParse(field.text.trim());
+      if (field.text.trim().isNotEmpty &&
+          (entered == null || !entered.isFinite || entered <= 0)) {
+        continue;
       }
-    }
-    final height = double.tryParse(_height.text);
-    if (height != null) {
-      _height.text = next
-          .heightFromCm(_units.heightToCm(height))
-          .toStringAsFixed(1);
+      final canonical = _value(field);
+      _canonicalValues[field] = canonical;
+      field.text = canonical == null
+          ? ''
+          : (field == _height
+                    ? next.heightFromCm(canonical)
+                    : next.weightFromKg(canonical))
+                .toStringAsFixed(1);
+      _displayedValues[field] = field.text;
     }
     setState(() => _units = next);
+  }
+
+  // Formatting an existing measurement must not round the stored measurement.
+  double? _value(TextEditingController field) {
+    if (field.text == _displayedValues[field]) return _canonicalValues[field];
+    if (field.text.trim().isEmpty) return null;
+    final entered = double.tryParse(field.text.trim());
+    if (entered == null || !entered.isFinite || entered <= 0) {
+      throw const FormatException();
+    }
+    return field == _height
+        ? _units.heightToCm(entered)
+        : _units.weightToKg(entered);
   }
 
   Future<void> _save() async {
@@ -86,18 +111,10 @@ class _BiometricsEditorState extends ConsumerState<_BiometricsEditor> {
     final saved = await persistWithFeedback(
       context,
       () async {
-        double? number(TextEditingController field) {
-          if (field.text.trim().isEmpty) return null;
-          final value = double.tryParse(field.text);
-          if (value == null || !value.isFinite || value <= 0) {
-            throw const FormatException();
-          }
-          return value;
-        }
-
-        final h = number(_height), w = number(_weight), t = number(_target);
-        final age = _age.text.trim().isEmpty ? null : int.tryParse(_age.text);
-        if (_age.text.isNotEmpty && (age == null || age < 13 || age > 120)) {
+        final h = _value(_height), w = _value(_weight), t = _value(_target);
+        final ageText = _age.text.trim();
+        final age = ageText.isEmpty ? null : int.tryParse(ageText);
+        if (ageText.isNotEmpty && (age == null || age < 13 || age > 120)) {
           throw const FormatException();
         }
         await ref
@@ -105,9 +122,9 @@ class _BiometricsEditorState extends ConsumerState<_BiometricsEditor> {
             .updateBiometrics(
               age: age,
               sex: _sex,
-              heightCm: h == null ? null : _units.heightToCm(h),
-              currentWeightKg: w == null ? null : _units.weightToKg(w),
-              targetWeightKg: t == null ? null : _units.weightToKg(t),
+              heightCm: h,
+              currentWeightKg: w,
+              targetWeightKg: t,
               weightUnit: _units.weightLabel,
               heightUnit: _units.heightUnit,
               replace: true,

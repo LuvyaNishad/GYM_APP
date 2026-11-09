@@ -14,6 +14,42 @@ UserModel? readLocalProfile(HiveService hive) {
     'account_profile_data',
     (json) => json,
   );
+  return _decodeLocalProfile(
+    stored: stored,
+    account: account,
+    setupCompleted:
+        hive.getSetting<bool>(AppConstants.settingOnboardingComplete) == true,
+    primaryGoal: hive.getSetting<String>(AppConstants.settingPrimaryGoal),
+    plates: hive.getSetting<Map>('plate_preferences_v1'),
+  );
+}
+
+/// Avatar writes resolve the same compatible profile from their atomic snapshot.
+UserModel? readProfileSnapshot(Map<String, dynamic> snapshot) {
+  final users = (snapshot['documents'] as Map)[AppConstants.hiveBoxUser] as Map;
+  final settings = snapshot['settings'] as Map;
+  return _decodeLocalProfile(
+    stored: users[AppConstants.hiveKeyLocalProfile] == null
+        ? null
+        : Map<String, dynamic>.from(
+            users[AppConstants.hiveKeyLocalProfile] as Map,
+          ),
+    account: users['account_profile_data'] == null
+        ? null
+        : Map<String, dynamic>.from(users['account_profile_data'] as Map),
+    setupCompleted: settings[AppConstants.settingOnboardingComplete] == true,
+    primaryGoal: settings[AppConstants.settingPrimaryGoal] as String?,
+    plates: settings['plate_preferences_v1'] as Map?,
+  );
+}
+
+UserModel? _decodeLocalProfile({
+  required Map<String, dynamic>? stored,
+  required Map<String, dynamic>? account,
+  required bool setupCompleted,
+  required String? primaryGoal,
+  required Map? plates,
+}) {
   if (stored == null && account == null) return null;
   final json = <String, dynamic>{...?stored};
   const fields = {
@@ -58,14 +94,11 @@ UserModel? readLocalProfile(HiveService hive) {
   if (['leon@fitness.os', 'athlete@leon.fit'].contains(json['email'])) {
     json['email'] = '';
   }
-  json['onboarding_complete'] ??= hive.getSetting<bool>(
-    AppConstants.settingOnboardingComplete,
-    fallback: false,
-  );
-  json['primary_goal'] ??=
-      hive.getSetting<String>(AppConstants.settingPrimaryGoal) ??
-      'BUILD MUSCLE';
-  final plates = hive.getSetting<Map>('plate_preferences_v1');
+  // Completion is durable: replaying setup only changes the questionnaire draft.
+  // Older avatar saves could materialize false over this existing completed flag.
+  if (setupCompleted) json['onboarding_complete'] = true;
+  json['onboarding_complete'] ??= false;
+  json['primary_goal'] ??= primaryGoal ?? 'BUILD MUSCLE';
   if (plates != null) {
     json['available_plates'] ??= plates['plates'];
     if (stored?['barbell_tare_kg'] == null && plates['bar'] != null) {
