@@ -44,6 +44,20 @@ class HiveService {
   static String? get pendingGuestSource =>
       Hive.box<String>(_workspaceRegistryName).get('pending_guest_source');
 
+  static String? get pendingRecoveryOwner =>
+      Hive.box<String>(_workspaceRegistryName).get('password_recovery_owner');
+
+  static Future<void> setPendingRecoveryOwner(String? userId) async {
+    if (userId != null) accountWorkspaceId(userId);
+    final registry = Hive.box<String>(_workspaceRegistryName);
+    if (userId == null) {
+      await registry.delete('password_recovery_owner');
+    } else {
+      await registry.put('password_recovery_owner', userId);
+    }
+    await registry.flush();
+  }
+
   static Future<void> stageGuestSource(String id) async {
     _validateWorkspace(id);
     final registry = Hive.box<String>(_workspaceRegistryName);

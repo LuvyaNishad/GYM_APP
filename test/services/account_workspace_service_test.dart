@@ -7,6 +7,10 @@ import 'package:leon/services/backup_service.dart';
 import 'package:leon/services/cloud_sync_engine.dart';
 import 'package:leon/services/hive_service.dart';
 import 'package:leon/services/supabase_service.dart';
+import 'package:leon/core/constants/app_constants.dart';
+import 'package:leon/core/router/app_router.dart';
+import 'package:leon/models/user_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'cloud_sync_engine_test.dart' show FakeCloud, owner, save, workout;
 
 class SessionStub extends SupabaseService {
@@ -44,6 +48,61 @@ void main() {
     await HiveService.close();
     await directory.delete(recursive: true);
   });
+  test(
+    'fresh early sign-in restores the saved profile and opens Home without setup or empty import',
+    () async {
+      final original = await HiveService.openWorkspace(
+        HiveService.accountWorkspaceId(owner),
+      );
+      await original.put(
+        AppConstants.hiveBoxUser,
+        AppConstants.hiveKeyLocalProfile,
+        const UserModel(
+          id: owner,
+          email: 'lifter@example.invalid',
+          displayName: 'Returning lifter',
+          onboardingComplete: true,
+          preferredSplit: 'split_ppl',
+          trainingDaysPerWeek: 5,
+        ).toJson(),
+      );
+      await save(original, 80);
+      await CloudSyncEngine(original, cloud).synchronize();
+      await HiveService.close();
+      await HiveService.init(storagePath: '${directory.path}/fresh-return');
+      await HiveService.stageGuestSource('guest');
+      session.user = identity(owner);
+      final restored = await service.selectSession();
+      expect(await service.prepare(restored), isNull);
+      expect(service.needsEntry(restored), isFalse);
+      expect(restored.readAll('workouts', (j) => j), [record(80)]);
+      final providers = ProviderContainer(
+        overrides: [hiveServiceProvider.overrideWithValue(restored)],
+      );
+      expect(
+        providers.read(routerProvider).routeInformationProvider.value.uri.path,
+        AppConstants.routeDashboard,
+      );
+      providers.dispose();
+    },
+  );
+
+  test(
+    'recovery marker survives reopen outside portable workout data',
+    () async {
+      await HiveService.setPendingRecoveryOwner(owner);
+      final snapshot = const HiveService().snapshot();
+      expect(
+        (snapshot['settings'] as Map).containsKey('password_recovery_owner'),
+        isFalse,
+      );
+      await HiveService.close();
+      await HiveService.init(storagePath: directory.path);
+      expect(HiveService.pendingRecoveryOwner, owner);
+      await HiveService.setPendingRecoveryOwner(null);
+      expect(HiveService.pendingRecoveryOwner, isNull);
+    },
+  );
   test(
     'guest data is retained and requires explicit import after account restore',
     () async {

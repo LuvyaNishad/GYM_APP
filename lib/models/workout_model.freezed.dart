@@ -617,7 +617,8 @@ as bool,
 /// @nodoc
 mixin _$WorkoutSet {
 
- int get reps; double get weightKg; double? get weightKgRight; int? get repsRight; double get rpe; bool get isWarmup; bool get isPr;
+ int get reps; double get weightKg; double? get weightKgRight; int? get repsRight; double get rpe; bool get isWarmup; bool get isPr;/// Retains drop/failure classification; older records default to normal.
+ String get setType;
 /// Create a copy of WorkoutSet
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -630,16 +631,16 @@ $WorkoutSetCopyWith<WorkoutSet> get copyWith => _$WorkoutSetCopyWithImpl<Workout
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkoutSet&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.weightKgRight, weightKgRight) || other.weightKgRight == weightKgRight)&&(identical(other.repsRight, repsRight) || other.repsRight == repsRight)&&(identical(other.rpe, rpe) || other.rpe == rpe)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.isPr, isPr) || other.isPr == isPr));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkoutSet&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.weightKgRight, weightKgRight) || other.weightKgRight == weightKgRight)&&(identical(other.repsRight, repsRight) || other.repsRight == repsRight)&&(identical(other.rpe, rpe) || other.rpe == rpe)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.isPr, isPr) || other.isPr == isPr)&&(identical(other.setType, setType) || other.setType == setType));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,reps,weightKg,weightKgRight,repsRight,rpe,isWarmup,isPr);
+int get hashCode => Object.hash(runtimeType,reps,weightKg,weightKgRight,repsRight,rpe,isWarmup,isPr,setType);
 
 @override
 String toString() {
-  return 'WorkoutSet(reps: $reps, weightKg: $weightKg, weightKgRight: $weightKgRight, repsRight: $repsRight, rpe: $rpe, isWarmup: $isWarmup, isPr: $isPr)';
+  return 'WorkoutSet(reps: $reps, weightKg: $weightKg, weightKgRight: $weightKgRight, repsRight: $repsRight, rpe: $rpe, isWarmup: $isWarmup, isPr: $isPr, setType: $setType)';
 }
 
 
@@ -650,7 +651,7 @@ abstract mixin class $WorkoutSetCopyWith<$Res>  {
   factory $WorkoutSetCopyWith(WorkoutSet value, $Res Function(WorkoutSet) _then) = _$WorkoutSetCopyWithImpl;
 @useResult
 $Res call({
- int reps, double weightKg, double? weightKgRight, int? repsRight, double rpe, bool isWarmup, bool isPr
+ int reps, double weightKg, double? weightKgRight, int? repsRight, double rpe, bool isWarmup, bool isPr, String setType
 });
 
 
@@ -667,7 +668,7 @@ class _$WorkoutSetCopyWithImpl<$Res>
 
 /// Create a copy of WorkoutSet
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? reps = null,Object? weightKg = null,Object? weightKgRight = freezed,Object? repsRight = freezed,Object? rpe = null,Object? isWarmup = null,Object? isPr = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? reps = null,Object? weightKg = null,Object? weightKgRight = freezed,Object? repsRight = freezed,Object? rpe = null,Object? isWarmup = null,Object? isPr = null,Object? setType = null,}) {
   return _then(_self.copyWith(
 reps: null == reps ? _self.reps : reps // ignore: cast_nullable_to_non_nullable
 as int,weightKg: null == weightKg ? _self.weightKg : weightKg // ignore: cast_nullable_to_non_nullable
@@ -676,7 +677,8 @@ as double?,repsRight: freezed == repsRight ? _self.repsRight : repsRight // igno
 as int?,rpe: null == rpe ? _self.rpe : rpe // ignore: cast_nullable_to_non_nullable
 as double,isWarmup: null == isWarmup ? _self.isWarmup : isWarmup // ignore: cast_nullable_to_non_nullable
 as bool,isPr: null == isPr ? _self.isPr : isPr // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,setType: null == setType ? _self.setType : setType // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 
@@ -761,10 +763,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int reps,  double weightKg,  double? weightKgRight,  int? repsRight,  double rpe,  bool isWarmup,  bool isPr)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int reps,  double weightKg,  double? weightKgRight,  int? repsRight,  double rpe,  bool isWarmup,  bool isPr,  String setType)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WorkoutSet() when $default != null:
-return $default(_that.reps,_that.weightKg,_that.weightKgRight,_that.repsRight,_that.rpe,_that.isWarmup,_that.isPr);case _:
+return $default(_that.reps,_that.weightKg,_that.weightKgRight,_that.repsRight,_that.rpe,_that.isWarmup,_that.isPr,_that.setType);case _:
   return orElse();
 
 }
@@ -782,10 +784,10 @@ return $default(_that.reps,_that.weightKg,_that.weightKgRight,_that.repsRight,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int reps,  double weightKg,  double? weightKgRight,  int? repsRight,  double rpe,  bool isWarmup,  bool isPr)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int reps,  double weightKg,  double? weightKgRight,  int? repsRight,  double rpe,  bool isWarmup,  bool isPr,  String setType)  $default,) {final _that = this;
 switch (_that) {
 case _WorkoutSet():
-return $default(_that.reps,_that.weightKg,_that.weightKgRight,_that.repsRight,_that.rpe,_that.isWarmup,_that.isPr);case _:
+return $default(_that.reps,_that.weightKg,_that.weightKgRight,_that.repsRight,_that.rpe,_that.isWarmup,_that.isPr,_that.setType);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -802,10 +804,10 @@ return $default(_that.reps,_that.weightKg,_that.weightKgRight,_that.repsRight,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int reps,  double weightKg,  double? weightKgRight,  int? repsRight,  double rpe,  bool isWarmup,  bool isPr)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int reps,  double weightKg,  double? weightKgRight,  int? repsRight,  double rpe,  bool isWarmup,  bool isPr,  String setType)?  $default,) {final _that = this;
 switch (_that) {
 case _WorkoutSet() when $default != null:
-return $default(_that.reps,_that.weightKg,_that.weightKgRight,_that.repsRight,_that.rpe,_that.isWarmup,_that.isPr);case _:
+return $default(_that.reps,_that.weightKg,_that.weightKgRight,_that.repsRight,_that.rpe,_that.isWarmup,_that.isPr,_that.setType);case _:
   return null;
 
 }
@@ -817,7 +819,7 @@ return $default(_that.reps,_that.weightKg,_that.weightKgRight,_that.repsRight,_t
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class _WorkoutSet implements WorkoutSet {
-  const _WorkoutSet({required this.reps, required this.weightKg, this.weightKgRight, this.repsRight, this.rpe = 0.0, this.isWarmup = false, this.isPr = false});
+  const _WorkoutSet({required this.reps, required this.weightKg, this.weightKgRight, this.repsRight, this.rpe = 0.0, this.isWarmup = false, this.isPr = false, this.setType = 'normal'});
   factory _WorkoutSet.fromJson(Map<String, dynamic> json) => _$WorkoutSetFromJson(json);
 
 @override final  int reps;
@@ -827,6 +829,8 @@ class _WorkoutSet implements WorkoutSet {
 @override@JsonKey() final  double rpe;
 @override@JsonKey() final  bool isWarmup;
 @override@JsonKey() final  bool isPr;
+/// Retains drop/failure classification; older records default to normal.
+@override@JsonKey() final  String setType;
 
 /// Create a copy of WorkoutSet
 /// with the given fields replaced by the non-null parameter values.
@@ -841,16 +845,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkoutSet&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.weightKgRight, weightKgRight) || other.weightKgRight == weightKgRight)&&(identical(other.repsRight, repsRight) || other.repsRight == repsRight)&&(identical(other.rpe, rpe) || other.rpe == rpe)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.isPr, isPr) || other.isPr == isPr));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkoutSet&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.weightKg, weightKg) || other.weightKg == weightKg)&&(identical(other.weightKgRight, weightKgRight) || other.weightKgRight == weightKgRight)&&(identical(other.repsRight, repsRight) || other.repsRight == repsRight)&&(identical(other.rpe, rpe) || other.rpe == rpe)&&(identical(other.isWarmup, isWarmup) || other.isWarmup == isWarmup)&&(identical(other.isPr, isPr) || other.isPr == isPr)&&(identical(other.setType, setType) || other.setType == setType));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,reps,weightKg,weightKgRight,repsRight,rpe,isWarmup,isPr);
+int get hashCode => Object.hash(runtimeType,reps,weightKg,weightKgRight,repsRight,rpe,isWarmup,isPr,setType);
 
 @override
 String toString() {
-  return 'WorkoutSet(reps: $reps, weightKg: $weightKg, weightKgRight: $weightKgRight, repsRight: $repsRight, rpe: $rpe, isWarmup: $isWarmup, isPr: $isPr)';
+  return 'WorkoutSet(reps: $reps, weightKg: $weightKg, weightKgRight: $weightKgRight, repsRight: $repsRight, rpe: $rpe, isWarmup: $isWarmup, isPr: $isPr, setType: $setType)';
 }
 
 
@@ -861,7 +865,7 @@ abstract mixin class _$WorkoutSetCopyWith<$Res> implements $WorkoutSetCopyWith<$
   factory _$WorkoutSetCopyWith(_WorkoutSet value, $Res Function(_WorkoutSet) _then) = __$WorkoutSetCopyWithImpl;
 @override @useResult
 $Res call({
- int reps, double weightKg, double? weightKgRight, int? repsRight, double rpe, bool isWarmup, bool isPr
+ int reps, double weightKg, double? weightKgRight, int? repsRight, double rpe, bool isWarmup, bool isPr, String setType
 });
 
 
@@ -878,7 +882,7 @@ class __$WorkoutSetCopyWithImpl<$Res>
 
 /// Create a copy of WorkoutSet
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? reps = null,Object? weightKg = null,Object? weightKgRight = freezed,Object? repsRight = freezed,Object? rpe = null,Object? isWarmup = null,Object? isPr = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? reps = null,Object? weightKg = null,Object? weightKgRight = freezed,Object? repsRight = freezed,Object? rpe = null,Object? isWarmup = null,Object? isPr = null,Object? setType = null,}) {
   return _then(_WorkoutSet(
 reps: null == reps ? _self.reps : reps // ignore: cast_nullable_to_non_nullable
 as int,weightKg: null == weightKg ? _self.weightKg : weightKg // ignore: cast_nullable_to_non_nullable
@@ -887,7 +891,8 @@ as double?,repsRight: freezed == repsRight ? _self.repsRight : repsRight // igno
 as int?,rpe: null == rpe ? _self.rpe : rpe // ignore: cast_nullable_to_non_nullable
 as double,isWarmup: null == isWarmup ? _self.isWarmup : isWarmup // ignore: cast_nullable_to_non_nullable
 as bool,isPr: null == isPr ? _self.isPr : isPr // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,setType: null == setType ? _self.setType : setType // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

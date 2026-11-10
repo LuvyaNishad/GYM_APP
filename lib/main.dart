@@ -18,6 +18,7 @@ import 'services/supabase_service.dart';
 import 'state/app_providers.dart';
 import 'core/widgets/workspace_app.dart';
 import 'services/sync_service.dart';
+import 'features/authentication/screens/password_reset_screen.dart';
 
 /// AEON — Operational Fitness OS
 /// Entry point.
@@ -40,7 +41,7 @@ Future<void> main() async {
         onReady: () =>
             container.read(appBootstrappedProvider.notifier).markReady(),
         failureBuilder: (error) => BootstrapFailureApp(error: error),
-        child: const WorkspaceApp(child: LeonApp()),
+        child: const AuthLinkGate(child: WorkspaceApp(child: LeonApp())),
       ),
     ),
   );

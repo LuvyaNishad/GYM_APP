@@ -8,7 +8,7 @@ A Flutter fitness tracker with local workout storage, editable training routines
 
 The ARM64 APK supports most modern Android phones running Android 8.0 or later. You do not need Flutter or Android Studio to install it.
 
-1. Open the download folder on your phone and download the APK with the highest build number. Filenames include the version and Android build number, for example `AEON-1.0.0-build2005-arm64.apk`.
+1. Open the download folder on your phone and download the APK with the highest build number. Filenames include the version and Android build number, for example `AEON-1.0.0-build2006-arm64.apk`.
 2. Open the downloaded APK. If Android prompts you, allow **Install unknown apps** for the browser or Files app you used to open it.
 3. Tap **Install**, then open **AEON**.
 

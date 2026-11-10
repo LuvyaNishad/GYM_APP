@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/config/supabase_config.dart';
+import 'auth_link_service.dart';
 
 /// Provider exposing the SupabaseService singleton.
 final supabaseServiceProvider = Provider<SupabaseService>((ref) {
@@ -14,6 +15,7 @@ class SupabaseService {
   SupabaseService();
 
   static bool _initialized = false;
+  static final authLinks = AuthLinkService();
 
   /// Initializes the Supabase client with AEON configuration.
   /// Fails gracefully if offline or storage unavailable.
@@ -24,8 +26,16 @@ class SupabaseService {
         url: SupabaseConfig.url,
         publishableKey: SupabaseConfig.publishableKey,
         debug: false,
+        authOptions: FlutterAuthClientOptions(
+          detectSessionInUriPredicate: (uri) {
+            authLinks.bind(Supabase.instance.client);
+            return authLinks.inspectCallback(uri);
+          },
+        ),
       );
       _initialized = true;
+      authLinks.bind(Supabase.instance.client);
+      await authLinks.restore();
       debugPrint(
         '[SupabaseService] Client initialized; cloud saves are verified separately.',
       );

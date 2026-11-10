@@ -66,6 +66,12 @@ class AccountWorkspaceService {
     final guest = await HiveService.openWorkspace(source);
     final bytes = await BackupService(guest).export();
     final preview = await BackupService(hive).preview(bytes);
+    // An early sign-in on a fresh install has no guest records to review.
+    if (preview.documents.values.every((box) => (box as Map).isEmpty) &&
+        preview.settings.isEmpty) {
+      await finish(hive, preview, null);
+      return null;
+    }
     // A newly provisioned anonymous identity is this guest's own workspace.
     if (supabase.currentUser?.isAnonymous == true) {
       await finish(hive, preview, RestoreMode.keepExisting);

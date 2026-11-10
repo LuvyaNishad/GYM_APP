@@ -76,6 +76,9 @@ abstract class WorkoutSet with _$WorkoutSet {
     @Default(0.0) double rpe,
     @Default(false) bool isWarmup,
     @Default(false) bool isPr,
+
+    /// Retains drop/failure classification; older records default to normal.
+    @Default('normal') String setType,
   }) = _WorkoutSet;
 
   factory WorkoutSet.fromJson(Map<String, dynamic> json) =>
