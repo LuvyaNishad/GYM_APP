@@ -74,6 +74,23 @@ class AuthService {
     return await _client.auth.signInAnonymously();
   }
 
+  Future<void> requestPasswordReset(String email) async {
+    await prepareSignIn();
+    await _client.auth.resetPasswordForEmail(
+      email.trim(),
+      redirectTo: callbackUrl,
+    );
+  }
+
+  Future<void> resendConfirmation(String email) async {
+    await prepareSignIn();
+    await _client.auth.resend(
+      type: OtpType.signup,
+      email: email.trim(),
+      emailRedirectTo: callbackUrl,
+    );
+  }
+
   /// Sign out the current user.
   Future<void> signOut() async {
     await HiveService.clearGuestSource();

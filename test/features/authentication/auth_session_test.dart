@@ -14,6 +14,17 @@ class FakeAuth extends AuthService {
   sb.Session? session;
   bool confirmationRequired = true;
   int calls = 0;
+  Completer<void>? emailGate;
+  Object? emailFailure;
+  @override
+  Future<void> requestPasswordReset(String email) async {
+    calls++;
+    await emailGate?.future;
+    if (emailFailure != null) throw emailFailure!;
+  }
+
+  @override
+  Future<void> resendConfirmation(String email) => requestPasswordReset(email);
   final user = sb.User(
     id: '11111111-1111-4111-8111-111111111111',
     appMetadata: {},
@@ -76,6 +87,49 @@ void main() {
     container.dispose();
     await auth.events.close();
   });
+  test(
+    'email sends guard pending duplicates and share a resend cooldown',
+    () async {
+      auth.emailGate = Completer<void>();
+      final notifier = container.read(authProvider.notifier);
+      final first = notifier.requestPasswordReset('test@example.invalid');
+      await notifier.requestPasswordReset('test@example.invalid');
+      expect(auth.calls, 1);
+      auth.emailGate!.complete();
+      await first;
+      expect(container.read(authProvider).emailCooldown, 60);
+      expect(container.read(authProvider).message, contains('If this email'));
+      await expectLater(
+        notifier.resendConfirmation('test@example.invalid'),
+        throwsStateError,
+      );
+      expect(auth.calls, 1);
+    },
+  );
+  test(
+    'email failures retain retry and rate limits have useful feedback',
+    () async {
+      auth.emailFailure = const sb.AuthException(
+        'rate limited',
+        statusCode: '429',
+      );
+      final notifier = container.read(authProvider.notifier);
+      await expectLater(
+        notifier.resendConfirmation('test@example.invalid'),
+        throwsA(isA<sb.AuthException>()),
+      );
+      expect(container.read(authProvider).error, contains('Wait a minute'));
+      expect(container.read(authProvider).isLoading, isFalse);
+      expect(container.read(authProvider).emailCooldown, 0);
+      auth.emailFailure = null;
+      await notifier.resendConfirmation('test@example.invalid');
+      expect(auth.calls, 2);
+      expect(
+        container.read(authProvider).message,
+        contains('needs confirmation'),
+      );
+    },
+  );
   test(
     'unconfirmed signup stays unauthenticated with persistent confirmation guidance',
     () async {

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../../../core/constants/app_constants.dart';
 import '../../../services/hive_service.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
@@ -17,10 +18,12 @@ class AuthState {
     this.message,
     this.isLoading = false,
     this.isAnonymous = false,
+    this.emailCooldown = 0,
   });
   final AuthStatus status;
   final String? userId, email, error, message;
   final bool isLoading, isAnonymous;
+  final int emailCooldown;
   AuthState copyWith({
     AuthStatus? status,
     String? userId,
@@ -29,6 +32,7 @@ class AuthState {
     String? message,
     bool? isLoading,
     bool? isAnonymous,
+    int? emailCooldown,
   }) => AuthState(
     status: status ?? this.status,
     userId: userId ?? this.userId,
@@ -37,10 +41,13 @@ class AuthState {
     message: message,
     isLoading: isLoading ?? this.isLoading,
     isAnonymous: isAnonymous ?? this.isAnonymous,
+    emailCooldown: emailCooldown ?? this.emailCooldown,
   );
 }
 
 class AuthNotifier extends Notifier<AuthState> {
+  bool _busy = false;
+  Timer? _emailTimer;
   AuthService get _auth => ref.read(authServiceProvider);
   AuthState _current() => AuthState(
     status: _auth.isAuthenticated
@@ -55,7 +62,12 @@ class AuthNotifier extends Notifier<AuthState> {
     final service = ref.watch(authServiceProvider);
     final subscription = service.changes.listen(
       (_) {
-        if (ref.mounted) state = _current();
+        if (ref.mounted) {
+          state = _current().copyWith(
+            isLoading: _busy,
+            emailCooldown: state.emailCooldown,
+          );
+        }
       },
       onError: (Object _) {
         if (ref.mounted) {
@@ -68,6 +80,7 @@ class AuthNotifier extends Notifier<AuthState> {
       },
     );
     ref.onDispose(() => unawaited(subscription.cancel()));
+    ref.onDispose(() => _emailTimer?.cancel());
     return _current();
   }
 
@@ -81,11 +94,15 @@ class AuthNotifier extends Notifier<AuthState> {
     await ref.read(activeSessionProvider.notifier).flushPendingChanges();
   }
 
-  Future<void> _run(Future<void> Function() action) async {
-    if (state.isLoading) return;
+  Future<void> _run(
+    Future<void> Function() action, {
+    bool settleDraft = true,
+  }) async {
+    if (_busy) return;
+    _busy = true;
     state = state.copyWith(isLoading: true);
     try {
-      await _settleDraft();
+      if (settleDraft) await _settleDraft();
       await action();
       if (ref.mounted) {
         state = state.copyWith(isLoading: false, message: state.message);
@@ -95,8 +112,52 @@ class AuthNotifier extends Notifier<AuthState> {
         state = state.copyWith(isLoading: false, error: _format(error));
       }
       rethrow;
+    } finally {
+      _busy = false;
     }
   }
+
+  Future<void> _sendEmail(
+    Future<void> Function() send,
+    String message,
+  ) => _run(() async {
+    if (state.emailCooldown > 0) {
+      throw StateError(
+        'Please wait ${state.emailCooldown} seconds before requesting another email.',
+      );
+    }
+    await send();
+    if (!ref.mounted) return;
+    state = state.copyWith(
+      message: message,
+      emailCooldown: 60,
+      isLoading: true,
+    );
+    _emailTimer?.cancel();
+    _emailTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!ref.mounted) {
+        timer.cancel();
+        return;
+      }
+      final remaining = (state.emailCooldown - 1).clamp(0, 60);
+      state = state.copyWith(
+        emailCooldown: remaining,
+        message: state.message,
+        error: state.error,
+      );
+      if (remaining == 0) timer.cancel();
+    });
+  }, settleDraft: false);
+
+  Future<void> requestPasswordReset(String email) => _sendEmail(
+    () => _auth.requestPasswordReset(email),
+    'If this email can receive a password reset, a link is on its way. Open the newest email on this device. Check your spam folder too.',
+  );
+
+  Future<void> resendConfirmation(String email) => _sendEmail(
+    () => _auth.resendConfirmation(email),
+    'If this account needs confirmation, a new email is on its way. Open the newest email on this device, or sign in if you already confirmed it.',
+  );
 
   Future<void> signIn(String email, String password) => _run(() async {
     final response = await _auth.signInWithEmail(email, password);
@@ -150,6 +211,13 @@ class AuthNotifier extends Notifier<AuthState> {
 
   String _format(Object error) {
     if (error is StateError) return error.message;
+    if (error is sb.AuthException) {
+      if (error.statusCode == '429' ||
+          error.code == 'over_email_send_rate_limit' ||
+          error.code == 'over_request_rate_limit') {
+        return 'Too many requests. Wait a minute before trying again.';
+      }
+    }
     final text = error.toString();
     if (text.contains('Invalid login credentials')) {
       return 'Incorrect email or password.';
@@ -160,7 +228,7 @@ class AuthNotifier extends Notifier<AuthState> {
     if (text.contains('identity_already_exists')) {
       return 'Google is already linked to another account. Choose Sign in to an existing account.';
     }
-    return 'Sign-in could not finish. Check your connection and try again.';
+    return 'Could not complete this request. Check your connection and try again.';
   }
 }
 

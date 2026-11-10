@@ -12,6 +12,7 @@ import '../../onboarding/providers/onboarding_provider.dart';
 import '../../workout_builder/providers/splits_provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/weight_plate_art.dart';
+import 'auth_email_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key, this.createAccount = false});
@@ -89,6 +90,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   Future<void> _guest() => _attempt(() async {
+    if (!ref.read(onboardingCompleteProvider)) {
+      context.go(AppConstants.routeOnboarding);
+      return;
+    }
     await ref.read(authProvider.notifier).signInAsGuest();
     if (mounted) context.go(AppConstants.routeDashboard);
   });
@@ -181,7 +186,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     );
 
     return PopScope(
-      canPop: !_emailMode || widget.createAccount,
+      canPop: !auth.isLoading && (!_emailMode || widget.createAccount),
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop && !auth.isLoading) _back();
       },
@@ -447,7 +452,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               excludeFromSemantics: true,
             ),
             onPressed: () => _attempt(
-              () => ref.read(authProvider.notifier).signInWithGoogle(),
+              () => ref
+                  .read(authProvider.notifier)
+                  .signInWithGoogle(
+                    useExistingAccount: !ref.read(onboardingCompleteProvider),
+                  ),
             ),
           ),
           if (auth.isAnonymous)
@@ -586,11 +595,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             ),
           ],
           const SizedBox(height: 24),
+          if (!widget.createAccount)
+            TextButton(
+              onPressed: auth.isLoading
+                  ? null
+                  : () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) =>
+                            AuthEmailScreen(initialEmail: _email.text),
+                      ),
+                    ),
+              child: const Text('Forgot password?'),
+            ),
           EntryButton(
             label: widget.createAccount ? 'Create account' : 'Log in',
             primary: true,
             busy: auth.isLoading,
             onPressed: _submit,
+          ),
+          TextButton(
+            onPressed: auth.isLoading
+                ? null
+                : () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => AuthEmailScreen(
+                        confirmation: true,
+                        initialEmail: _email.text,
+                      ),
+                    ),
+                  ),
+            child: const Text('Resend confirmation email'),
           ),
           const SizedBox(height: 12),
           TextButton(
