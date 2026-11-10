@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:leon/core/constants/app_constants.dart';
+import 'package:leon/core/providers/local_date_provider.dart';
 import 'package:leon/core/theme/app_theme.dart';
 import 'package:leon/features/exercise_library/models/exercise_library_item.dart';
 import 'package:leon/features/exercise_library/widgets/add_to_routine_dialog.dart';
@@ -70,6 +71,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         hiveServiceProvider.overrideWithValue(hive),
+        localDateProvider.overrideWithValue(DateTime(2026, 11, 9)),
         splitsProvider.overrideWith(() => TestSplits(routine)),
       ],
     );

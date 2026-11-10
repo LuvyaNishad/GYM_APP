@@ -27,6 +27,22 @@ enum ActiveSetType {
   failure,
 }
 
+/// Warmups and drops have their own labels; only working sets advance the count.
+List<ActiveSetState> renumberActiveSets(List<ActiveSetState> sets) {
+  var working = 0;
+  var warmup = 0;
+  return [
+    for (final set in sets)
+      set.copyWith(
+        setNumber: set.isWarmup
+            ? ++warmup
+            : set.isDropSet
+            ? (working == 0 ? 1 : working)
+            : ++working,
+      ),
+  ];
+}
+
 /// A single set in an active workout session.
 @immutable
 class ActiveSetState {
@@ -51,6 +67,8 @@ class ActiveSetState {
     this.isRightCompleted = false,
     this.previousWeightKgRight,
     this.previousRepsRight,
+    this.weightEdited = false,
+    this.rightWeightEdited = false,
   }) : setType =
            setType ?? (isWarmup ? ActiveSetType.warmup : ActiveSetType.normal);
 
@@ -65,6 +83,10 @@ class ActiveSetState {
   final bool isCompleted;
   final ActiveSetType setType;
   final bool isPr;
+
+  /// Distinguish a suggested load from an explicit edit, including after restart.
+  final bool weightEdited;
+  final bool rightWeightEdited;
 
   /// Unilateral properties for independent Left/Right logging
   final double? weightKgRight;
@@ -124,6 +146,8 @@ class ActiveSetState {
     double? previousWeightKgRight,
     int? previousRepsRight,
     bool clearRightSide = false,
+    bool? weightEdited,
+    bool? rightWeightEdited,
   }) {
     ActiveSetType resolvedType = setType ?? this.setType;
     if (isWarmup != null) {
@@ -156,6 +180,8 @@ class ActiveSetState {
       previousWeightKgRight:
           previousWeightKgRight ?? this.previousWeightKgRight,
       previousRepsRight: previousRepsRight ?? this.previousRepsRight,
+      weightEdited: weightEdited ?? this.weightEdited,
+      rightWeightEdited: rightWeightEdited ?? this.rightWeightEdited,
     );
   }
 
@@ -182,10 +208,12 @@ class ActiveSetState {
           previousRir == other.previousRir &&
           previousRpe == other.previousRpe &&
           previousWeightKgRight == other.previousWeightKgRight &&
-          previousRepsRight == other.previousRepsRight;
+          previousRepsRight == other.previousRepsRight &&
+          weightEdited == other.weightEdited &&
+          rightWeightEdited == other.rightWeightEdited;
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     setNumber,
     weightKg,
     reps,
@@ -205,7 +233,9 @@ class ActiveSetState {
     previousRpe,
     previousWeightKgRight,
     previousRepsRight,
-  );
+    weightEdited,
+    rightWeightEdited,
+  ]);
 
   Map<String, dynamic> toJson() => {
     'setNumber': setNumber,
@@ -228,6 +258,8 @@ class ActiveSetState {
     'isRightCompleted': isRightCompleted,
     'previousWeightKgRight': previousWeightKgRight,
     'previousRepsRight': previousRepsRight,
+    'weightEdited': weightEdited,
+    'rightWeightEdited': rightWeightEdited,
   };
 
   factory ActiveSetState.fromJson(Map<String, dynamic> json) {
@@ -265,6 +297,12 @@ class ActiveSetState {
       previousWeightKgRight: (json['previousWeightKgRight'] as num?)
           ?.toDouble(),
       previousRepsRight: json['previousRepsRight'] as int?,
+      // Older drafts cannot distinguish edits from defaults; preserve their loads.
+      weightEdited:
+          json['weightEdited'] as bool? ?? json.containsKey('weightKg'),
+      rightWeightEdited:
+          json['rightWeightEdited'] as bool? ??
+          json.containsKey('weightKgRight'),
     );
   }
 }
@@ -408,8 +446,11 @@ class WorkoutSetTarget {
   final ActiveExerciseState exercise;
   final ActiveSetState set;
 
-  String get setLabel =>
-      set.isWarmup ? 'Warm-up ${set.setNumber}' : 'Set ${set.setNumber}';
+  String get setLabel => set.isWarmup
+      ? 'Warm-up ${set.setNumber}'
+      : set.isDropSet
+      ? 'Drop set after Set ${set.setNumber}'
+      : 'Set ${set.setNumber}';
 }
 
 /// Full state of an in-progress workout session.

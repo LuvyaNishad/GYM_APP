@@ -182,6 +182,11 @@ class _EditWorkoutSheetState extends ConsumerState<EditWorkoutSheet> {
                     ? null
                     : reps(set.rightRepsController!),
                 isWarmup: set.isWarmup,
+                setType: set.isWarmup
+                    ? 'warmup'
+                    : (set.original.setType == 'warmup'
+                          ? 'normal'
+                          : set.original.setType),
               ),
             );
           }

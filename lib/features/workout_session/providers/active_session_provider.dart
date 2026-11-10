@@ -2,6 +2,7 @@ import 'dart:async';
 import '../services/workout_cue_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/providers/local_date_provider.dart';
 import '../../../models/workout_model.dart';
 import '../../../services/hive_service.dart';
 import '../../../services/workout_service.dart';
@@ -36,8 +37,14 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
           .read(hiveServiceProvider)
           .getSetting<Map>(AppConstants.settingActiveSessionData);
       if (savedData != null) {
-        final restored = ActiveSessionState.fromJson(
+        final restoredRaw = ActiveSessionState.fromJson(
           Map<String, dynamic>.from(savedData),
+        );
+        final restored = restoredRaw.copyWith(
+          exercises: [
+            for (final exercise in restoredRaw.exercises)
+              exercise.copyWith(sets: renumberActiveSets(exercise.sets)),
+          ],
         );
         if (restored.isActive) {
           if (!restored.isPaused) {
@@ -180,14 +187,33 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     List<ActiveExerciseState> exercises, {
     bool usePreviousLoads = true,
   }) {
-    final history = ref.read(historyWorkoutsProvider);
+    final today = ref.read(localDateProvider);
+    final history =
+        ref
+            .read(historyWorkoutsProvider)
+            .where(
+              (workout) => !DateTime(
+                workout.date.year,
+                workout.date.month,
+                workout.date.day,
+              ).isAfter(today),
+            )
+            .toList()
+          ..sort((a, b) => b.date.compareTo(a.date));
     return exercises.map((exercise) {
       WorkoutExercise? previous;
       for (final workout in history) {
         for (final candidate in workout.exercises) {
-          if (candidate.exerciseId == exercise.exerciseId ||
-              candidate.exerciseName.toLowerCase() ==
-                  exercise.name.toLowerCase()) {
+          if (!candidate.isWarmup &&
+              candidate.sets.any(
+                (s) =>
+                    !s.isWarmup &&
+                    s.setType != 'dropSet' &&
+                    (s.reps > 0 || (s.repsRight ?? 0) > 0),
+              ) &&
+              (candidate.exerciseId == exercise.exerciseId ||
+                  candidate.exerciseName.toLowerCase() ==
+                      exercise.name.toLowerCase())) {
             previous = candidate;
             break;
           }
@@ -195,40 +221,52 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         if (previous != null) break;
       }
       final priorSets =
-          previous?.sets.where((s) => !s.isWarmup).toList() ?? <WorkoutSet>[];
+          previous?.sets
+              .where(
+                (s) => !s.isWarmup && (s.reps > 0 || (s.repsRight ?? 0) > 0),
+              )
+              .toList() ??
+          <WorkoutSet>[];
+      final priorWorking = priorSets
+          .where((s) => s.setType != 'dropSet')
+          .toList();
       var workingIndex = 0;
       return exercise.copyWith(
-        sets: List.generate(exercise.sets.length, (index) {
-          final set = exercise.sets[index];
-          final prior = !set.isWarmup && workingIndex < priorSets.length
-              ? priorSets[workingIndex]
-              : null;
-          if (!set.isWarmup) workingIndex++;
-          final hasEffort = prior != null && prior.rpe >= 6 && prior.rpe <= 10;
-          return ActiveSetState.fromJson({
-            ...set.toJson(),
-            'previousWeightKg': prior?.weightKg,
-            'previousReps': prior?.reps,
-            'previousRpe': hasEffort ? prior.rpe : null,
-            'previousRir': hasEffort ? rirFromRpe(prior.rpe) : null,
-            'previousWeightKgRight': exercise.isUnilateral
-                ? prior?.weightKgRight
-                : null,
-            'previousRepsRight': exercise.isUnilateral
-                ? prior?.repsRight
-                : null,
-            if (usePreviousLoads && prior != null) 'weightKg': prior.weightKg,
-            if (usePreviousLoads && prior != null) 'reps': prior.reps,
-            if (usePreviousLoads &&
-                exercise.isUnilateral &&
-                prior?.weightKgRight != null)
-              'weightKgRight': prior!.weightKgRight,
-            if (usePreviousLoads &&
-                exercise.isUnilateral &&
-                prior?.repsRight != null)
-              'repsRight': prior!.repsRight,
-          });
-        }),
+        sets: renumberActiveSets(
+          List.generate(exercise.sets.length, (index) {
+            final set = exercise.sets[index];
+            final prior =
+                !set.isWarmup && !set.isDropSet && priorWorking.isNotEmpty
+                ? priorWorking[workingIndex.clamp(0, priorWorking.length - 1)]
+                : null;
+            if (!set.isWarmup && !set.isDropSet) workingIndex++;
+            final hasEffort =
+                prior != null && prior.rpe >= 6 && prior.rpe <= 10;
+            return ActiveSetState.fromJson({
+              ...set.toJson(),
+              'previousWeightKg': prior?.weightKg,
+              'previousReps': prior?.reps,
+              'previousRpe': hasEffort ? prior.rpe : null,
+              'previousRir': hasEffort ? rirFromRpe(prior.rpe) : null,
+              'previousWeightKgRight': exercise.isUnilateral
+                  ? prior?.weightKgRight
+                  : null,
+              'previousRepsRight': exercise.isUnilateral
+                  ? prior?.repsRight
+                  : null,
+              if (usePreviousLoads && prior != null) 'weightKg': prior.weightKg,
+              if (usePreviousLoads && prior != null) 'reps': prior.reps,
+              if (usePreviousLoads &&
+                  exercise.isUnilateral &&
+                  prior?.weightKgRight != null)
+                'weightKgRight': prior!.weightKgRight,
+              if (usePreviousLoads &&
+                  exercise.isUnilateral &&
+                  prior?.repsRight != null)
+                'repsRight': prior!.repsRight,
+            });
+          }),
+        ),
       );
     }).toList();
   }
@@ -570,13 +608,40 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
           : (rir != null || rpe != null || currentSet.effortLogged),
       isWarmup: isWarmup,
       setType: setType,
+      weightEdited: weightKg != null ? true : null,
+      rightWeightEdited: weightKgRight != null ? true : null,
     );
 
     final updatedSets = List<ActiveSetState>.from(exercise.sets);
     updatedSets[setIndex] = updatedSet;
 
+    if (!currentSet.isCompleted &&
+        !currentSet.isWarmup &&
+        !currentSet.isDropSet &&
+        !updatedSet.isWarmup &&
+        !updatedSet.isDropSet) {
+      for (var i = setIndex + 1; i < updatedSets.length; i++) {
+        final next = updatedSets[i];
+        if (next.isCompleted || next.isWarmup || next.isDropSet) continue;
+        updatedSets[i] = next.copyWith(
+          weightKg:
+              weightKg != null && !next.weightEdited && !next.isLeftCompleted
+              ? weightKg
+              : null,
+          weightKgRight:
+              weightKgRight != null &&
+                  !next.rightWeightEdited &&
+                  !next.isRightCompleted
+              ? weightKgRight
+              : null,
+        );
+      }
+    }
+
     final updatedExercises = List<ActiveExerciseState>.from(state.exercises);
-    updatedExercises[exIndex] = exercise.copyWith(sets: updatedSets);
+    updatedExercises[exIndex] = exercise.copyWith(
+      sets: renumberActiveSets(updatedSets),
+    );
 
     state = state.copyWith(exercises: updatedExercises);
     _persistActiveSession();
@@ -590,12 +655,13 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     if (exIndex == -1) return;
 
     final exercise = state.exercises[exIndex];
-    final lastSet = exercise.sets.isNotEmpty ? exercise.sets.last : null;
+    final workingSets = exercise.sets.where((s) => !s.isWarmup && !s.isDropSet);
+    final lastSet = workingSets.lastOrNull;
     final newSetNumber = exercise.sets.length + 1;
 
     final newSet = ActiveSetState(
       setNumber: newSetNumber,
-      weightKg: lastSet?.weightKg ?? 20.0,
+      weightKg: lastSet?.weightKg ?? 0,
       reps: lastSet?.reps ?? 10,
       rir: lastSet?.rir ?? 2.0,
       rpe: lastSet?.rpe ?? 8.0,
@@ -603,7 +669,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       previousReps: lastSet?.previousReps,
       weightKgRight:
           lastSet?.weightKgRight ??
-          (exercise.isUnilateral ? (lastSet?.weightKg ?? 20.0) : null),
+          (exercise.isUnilateral ? (lastSet?.weightKg ?? 0) : null),
       repsRight:
           lastSet?.repsRight ??
           (exercise.isUnilateral ? (lastSet?.reps ?? 10) : null),
@@ -611,7 +677,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
       previousRepsRight: lastSet?.previousRepsRight,
     );
 
-    final updatedSets = [...exercise.sets, newSet];
+    final updatedSets = renumberActiveSets([...exercise.sets, newSet]);
     final updatedExercises = List<ActiveExerciseState>.from(state.exercises);
     updatedExercises[exIndex] = exercise.copyWith(sets: updatedSets);
 
@@ -629,13 +695,11 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
     final exercise = state.exercises[exIndex];
     if (exercise.sets.length <= 1) return; // Keep at least one set
 
+    if (setIndex < 0 || setIndex >= exercise.sets.length) return;
     final updatedSets = List<ActiveSetState>.from(exercise.sets)
       ..removeAt(setIndex);
     // Renumber remaining sets
-    final renumberedSets = [
-      for (int i = 0; i < updatedSets.length; i++)
-        updatedSets[i].copyWith(setNumber: i + 1),
-    ];
+    final renumberedSets = renumberActiveSets(updatedSets);
 
     final updatedExercises = List<ActiveExerciseState>.from(state.exercises);
     updatedExercises[exIndex] = exercise.copyWith(sets: renumberedSets);
@@ -680,7 +744,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         exercise.sets[i].copyWith(setNumber: warmups.length + i + 1),
     ];
 
-    final updatedSets = [...warmups, ...renumberedWorking];
+    final updatedSets = renumberActiveSets([...warmups, ...renumberedWorking]);
     final updatedExercises = List<ActiveExerciseState>.from(state.exercises);
     updatedExercises[exIndex] = exercise.copyWith(sets: updatedSets);
 
@@ -720,7 +784,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
         exercise.sets[i].copyWith(setNumber: i + 2),
     ];
 
-    final updatedSets = [warmupSet, ...renumberedWorking];
+    final updatedSets = renumberActiveSets([warmupSet, ...renumberedWorking]);
     final updatedExercises = List<ActiveExerciseState>.from(state.exercises);
     updatedExercises[exIndex] = exercise.copyWith(sets: updatedSets);
 
@@ -826,6 +890,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
             isLeftCompleted: false,
             isRightCompleted: false,
             isWarmup: remaining[i].isWarmup,
+            setType: remaining[i].setType,
             effortLogged: false,
           ),
       ],
@@ -977,6 +1042,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState> {
                   rpe: s.effortLogged ? s.rpe : 0,
                   isWarmup: s.isWarmup,
                   isPr: s.isPr,
+                  setType: s.setType.name,
                   weightKgRight: ex.isUnilateral
                       ? s.weightKgRight ?? s.weightKg
                       : null,

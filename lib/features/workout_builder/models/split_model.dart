@@ -38,18 +38,18 @@ class PlannedExercise {
 
   /// Converts this planned exercise into active session state with pre-populated sets.
   ActiveExerciseState toActiveExerciseState({int defaultRestSeconds = 90}) {
+    final targetReps =
+        int.tryParse(RegExp(r'\d+').firstMatch(repRange)?.group(0) ?? '') ?? 10;
     final sets = List.generate(
       targetSets,
       (index) => ActiveSetState(
         setNumber: index + 1,
         weightKg: targetWeightKg,
-        reps: int.tryParse(repRange.split('–').first.trim()) ?? 10,
+        reps: targetReps,
         rir: targetRir,
         rpe: 10.0 - targetRir,
         weightKgRight: isUnilateral ? targetWeightKg : null,
-        repsRight: isUnilateral
-            ? (int.tryParse(repRange.split('–').first.trim()) ?? 10)
-            : null,
+        repsRight: isUnilateral ? targetReps : null,
       ),
     );
 

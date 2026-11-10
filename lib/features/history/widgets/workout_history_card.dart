@@ -238,7 +238,12 @@ class _WorkoutHistoryCardState extends ConsumerState<WorkoutHistoryCard>
             weightKgRight: s.weightKgRight,
             repsRight: s.repsRight,
             isCompleted: false,
-            setType: s.isWarmup ? ActiveSetType.warmup : ActiveSetType.normal,
+            setType: s.isWarmup
+                ? ActiveSetType.warmup
+                : ActiveSetType.values.firstWhere(
+                    (type) => type.name == s.setType,
+                    orElse: () => ActiveSetType.normal,
+                  ),
           );
         }).toList(),
       );
