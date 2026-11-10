@@ -142,9 +142,14 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   }
 
   Future<void> _handleFinishWorkout() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    final notifier = ref.read(activeSessionProvider.notifier);
+    final wasPaused = ref.read(activeSessionProvider).isPaused;
+    if (!wasPaused) notifier.togglePause();
     final session = ref.read(activeSessionProvider);
     final saved = await showModalBottomSheet<bool>(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       isDismissible: false,
@@ -155,6 +160,12 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
             ref.read(activeSessionProvider.notifier).saveSession(),
       ),
     );
+    if (saved != true &&
+        mounted &&
+        !wasPaused &&
+        ref.read(activeSessionProvider).isActive) {
+      notifier.togglePause();
+    }
     if (saved == true && mounted) Navigator.of(context).maybePop();
   }
 

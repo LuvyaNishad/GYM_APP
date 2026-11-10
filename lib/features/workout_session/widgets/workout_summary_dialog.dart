@@ -1,7 +1,7 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/utils/measurement_units.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/utils/measurement_units.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/glass_card.dart';
@@ -16,6 +16,7 @@ class WorkoutSummaryDialog extends ConsumerStatefulWidget {
   });
   final ActiveSessionState session;
   final FutureOr<void> Function() onConfirmedSave;
+
   @override
   ConsumerState<WorkoutSummaryDialog> createState() =>
       _WorkoutSummaryDialogState();
@@ -24,6 +25,7 @@ class WorkoutSummaryDialog extends ConsumerStatefulWidget {
 class _WorkoutSummaryDialogState extends ConsumerState<WorkoutSummaryDialog> {
   bool _saving = false;
   String? _error;
+
   Future<void> _save() async {
     if (_saving) return;
     setState(() {
@@ -48,19 +50,24 @@ class _WorkoutSummaryDialogState extends ConsumerState<WorkoutSummaryDialog> {
   Widget build(BuildContext context) {
     final session = widget.session;
     final remaining = session.totalSetCount - session.completedSetCount;
+    final units = ref.watch(measurementUnitsProvider);
     return PopScope(
       canPop: !_saving,
       child: SafeArea(
-        child: Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.sizeOf(context).height * .88,
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.viewInsetsOf(context).bottom,
           ),
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-          decoration: const BoxDecoration(
-            color: AppColors.onyx,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: SingleChildScrollView(
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.sizeOf(context).height * .88,
+              maxWidth: 640,
+            ),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+            decoration: const BoxDecoration(
+              color: AppColors.onyx,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -76,80 +83,128 @@ class _WorkoutSummaryDialogState extends ConsumerState<WorkoutSummaryDialog> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text(
-                  'WORKOUT RECAP',
-                  style: AppTypography.headlineSmall.copyWith(
-                    letterSpacing: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(session.splitName, style: AppTypography.bodyMedium),
-                const SizedBox(height: 20),
-                Wrap(
-                  spacing: 24,
-                  runSpacing: 12,
-                  children: [
-                    _metric(
-                      'DURATION',
-                      '${session.elapsedSeconds ~/ 60}m ${session.elapsedSeconds % 60}s',
-                    ),
-                    _metric(
-                      'VOLUME',
-                      ref
-                          .watch(measurementUnitsProvider)
-                          .weight(session.totalVolumeKg, decimals: 0),
-                    ),
-                    _metric('LOGGED', '${session.completedSetCount} sets'),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  remaining > 0
-                      ? '${session.completedSetCount} sets logged · $remaining remaining. Only completed sets will be saved.'
-                      : 'All ${session.completedSetCount} sets logged. Ready to save.',
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.platinum,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                GlassCard(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      for (final ex in session.exercises)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(ex.name, style: AppTypography.bodyMedium),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${ex.completedSetsCount}/${ex.totalSetsCount} sets',
-                                style: AppTypography.monoSmall.copyWith(
-                                  color: AppColors.platinum,
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'WORKOUT RECAP',
+                          style: AppTypography.headlineSmall.copyWith(
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          session.splitName,
+                          style: AppTypography.bodyMedium,
+                        ),
+                        const SizedBox(height: 20),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final columns =
+                                constraints.maxWidth >= 300 &&
+                                    MediaQuery.textScalerOf(context).scale(14) <
+                                        22
+                                ? 3
+                                : 1;
+                            final width =
+                                (constraints.maxWidth - (columns - 1) * 8) /
+                                columns;
+                            return Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                SizedBox(
+                                  width: width,
+                                  child: _metric(
+                                    'DURATION',
+                                    '${session.elapsedSeconds ~/ 60}m ${session.elapsedSeconds % 60}s',
+                                  ),
                                 ),
-                              ),
+                                SizedBox(
+                                  width: width,
+                                  child: _metric(
+                                    'VOLUME',
+                                    units.weight(
+                                      session.totalVolumeKg,
+                                      decimals: 0,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: width,
+                                  child: _metric(
+                                    'LOGGED',
+                                    '${session.completedSetCount} sets',
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          remaining > 0
+                              ? '${session.completedSetCount} sets logged · $remaining remaining. Only completed sets will be saved.'
+                              : 'All ${session.completedSetCount} sets logged. Ready to save.',
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.platinum,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        GlassCard(
+                          blur: true,
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              for (
+                                var i = 0;
+                                i < session.exercises.length;
+                                i++
+                              ) ...[
+                                if (i > 0)
+                                  const Divider(
+                                    height: 24,
+                                    color: AppColors.steel,
+                                  ),
+                                Text(
+                                  session.exercises[i].name,
+                                  style: AppTypography.bodyMedium,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  '${session.exercises[i].completedSetsCount}/${session.exercises[i].totalSetsCount} sets',
+                                  style: AppTypography.monoSmall.copyWith(
+                                    color: AppColors.platinum,
+                                  ),
+                                ),
+                              ],
+                              if (session.exercises.isEmpty)
+                                Text(
+                                  'No exercises added yet.',
+                                  style: AppTypography.bodyMedium,
+                                ),
                             ],
                           ),
                         ),
-                      if (session.exercises.isEmpty)
-                        const Text('No exercises added yet.'),
-                    ],
+                        const SizedBox(height: 16),
+                      ],
+                    ),
                   ),
                 ),
                 if (_error != null)
                   Padding(
-                    padding: const EdgeInsets.only(top: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Text(
                       _error!,
-                      style: const TextStyle(
+                      style: AppTypography.bodySmall.copyWith(
                         color: AppColors.warning,
-                        fontSize: 13,
                       ),
                     ),
                   ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 8),
                 FilledButton(
                   onPressed: _saving || session.completedSetCount == 0
                       ? null
@@ -184,15 +239,19 @@ class _WorkoutSummaryDialogState extends ConsumerState<WorkoutSummaryDialog> {
     );
   }
 
-  Widget _metric(String label, String value) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        label,
-        style: AppTypography.monoSmall.copyWith(color: AppColors.platinum),
-      ),
-      const SizedBox(height: 6),
-      Text(value, style: AppTypography.monoMedium),
-    ],
+  Widget _metric(String label, String value) => GlassCard(
+    blur: true,
+    padding: const EdgeInsets.all(12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTypography.monoSmall.copyWith(color: AppColors.platinum),
+        ),
+        const SizedBox(height: 6),
+        Text(value, style: AppTypography.monoMedium),
+      ],
+    ),
   );
 }
