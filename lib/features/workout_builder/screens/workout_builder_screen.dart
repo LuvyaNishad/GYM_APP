@@ -50,7 +50,10 @@ class WorkoutBuilderScreen extends ConsumerWidget {
               TextButton(
                 onPressed: () => showModalBottomSheet<void>(
                   context: context,
+                  useRootNavigator: true,
                   isScrollControlled: true,
+                  isDismissible: false,
+                  enableDrag: false,
                   backgroundColor: Colors.transparent,
                   builder: (_) => SwitchSplitBottomSheet(
                     splits: state.splits,

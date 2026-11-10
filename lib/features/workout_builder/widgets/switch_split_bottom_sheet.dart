@@ -1,10 +1,10 @@
-import '../../../shared/widgets/persistence_feedback.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../shared/widgets/persistence_feedback.dart';
 import '../models/split_model.dart';
 
-/// Bottom sheet modal to switch active training splits with impact preview.
+/// Root-overlay picker with a fixed, reachable default-routine action.
 class SwitchSplitBottomSheet extends StatefulWidget {
   const SwitchSplitBottomSheet({
     super.key,
@@ -12,286 +12,184 @@ class SwitchSplitBottomSheet extends StatefulWidget {
     required this.activeSplitId,
     required this.onSplitSelected,
   });
-
   final List<TrainingSplitModel> splits;
   final String activeSplitId;
   final Future<void> Function(String) onSplitSelected;
-
   @override
   State<SwitchSplitBottomSheet> createState() => _SwitchSplitBottomSheetState();
 }
 
 class _SwitchSplitBottomSheetState extends State<SwitchSplitBottomSheet> {
-  late String _selectedSplitId;
+  late String _selectedSplitId = widget.activeSplitId;
   bool _saving = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _selectedSplitId = widget.activeSplitId;
+  Future<void> _confirm() async {
+    if (_saving || _selectedSplitId == widget.activeSplitId) return;
+    setState(() => _saving = true);
+    final success = await persistWithFeedback(
+      context,
+      () => widget.onSplitSelected(_selectedSplitId),
+      message:
+          'Could not change your default routine. Your selection is still here; try again.',
+    );
+    if (!mounted) return;
+    setState(() => _saving = false);
+    if (success) Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentSplit = widget.splits.firstWhere(
-      (s) => s.id == widget.activeSplitId,
+    final selected = widget.splits.firstWhere(
+      (split) => split.id == _selectedSplitId,
     );
-    final targetSplit = widget.splits.firstWhere(
-      (s) => s.id == _selectedSplitId,
-    );
-    final isDifferent = _selectedSplitId != widget.activeSplitId;
-
-    return SafeArea(
-      top: false,
-      child: Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.85,
-        ),
-        decoration: const BoxDecoration(
-          color: AppColors.onyx,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(top: BorderSide(color: AppColors.steel, width: 1.5)),
-        ),
-        padding: EdgeInsets.fromLTRB(
-          20,
-          12,
-          20,
-          MediaQuery.of(context).viewInsets.bottom + 20,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Tactile Notch
-              Center(
-                child: Container(
-                  width: 38,
-                  height: 4.5,
-                  decoration: BoxDecoration(
-                    color: AppColors.steel,
-                    borderRadius: BorderRadius.circular(2.5),
-                  ),
-                ),
+    final custom = widget.splits.where((split) => split.isCustom);
+    final templates = widget.splits.where((split) => !split.isCustom);
+    return PopScope(
+      canPop: !_saving,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.viewInsetsOf(context).bottom,
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.sizeOf(context).height * .88,
+              maxWidth: 640,
+            ),
+            child: Material(
+              color: AppColors.onyx,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
               ),
-              const SizedBox(height: 16),
-
-              // Header
-              Row(
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'SWITCH TRAINING SPLIT',
-                    style: AppTypography.headlineSmall.copyWith(
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
-                      color: AppColors.pureWhite,
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.close,
-                      size: 20,
-                      color: AppColors.platinum,
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-              Text(
-                'Select your active program to update weekly rotation & tracking.',
-                style: AppTypography.bodySmall.copyWith(
-                  fontSize: 12.0,
-                  color: AppColors.platinum,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Split Options List
-              for (final split in widget.splits) ...[
-                InkWell(
-                  onTap: () => setState(() => _selectedSplitId = split.id),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _selectedSplitId == split.id
-                          ? AppColors.charcoal
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: _selectedSplitId == split.id
-                            ? AppColors.pureWhite
-                            : AppColors.steel.withValues(alpha: 0.6),
-                      ),
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 8, 0),
                     child: Row(
                       children: [
-                        // Radio indicator
-                        Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: _selectedSplitId == split.id
-                                  ? AppColors.pureWhite
-                                  : AppColors.steel,
-                              width: 2.0,
+                        Expanded(
+                          child: Text(
+                            'DEFAULT ROUTINE',
+                            style: AppTypography.headlineSmall.copyWith(
+                              letterSpacing: 1.5,
                             ),
                           ),
-                          child: _selectedSplitId == split.id
-                              ? Center(
-                                  child: Container(
-                                    width: 10,
-                                    height: 10,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.pureWhite,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                )
-                              : null,
                         ),
-                        const SizedBox(width: 12),
-
-                        // Split Details
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      split.name,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: AppTypography.titleLarge.copyWith(
-                                        fontSize: 14.0,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.pureWhite,
-                                      ),
-                                    ),
-                                  ),
-                                  if (split.id == widget.activeSplitId) ...[
-                                    const SizedBox(width: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.steel,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        'ACTIVE',
-                                        style: AppTypography.bodySmall.copyWith(
-                                          fontSize: 11.0,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.pureWhite,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '${split.daysPerWeek} days/wk · ${split.totalWeeklySets} sets/wk',
-                                style: AppTypography.monoSmall.copyWith(
-                                  fontSize: 11.0,
-                                  color: AppColors.platinum,
-                                ),
-                              ),
-                            ],
+                        IconButton(
+                          tooltip: 'Close',
+                          onPressed: _saving
+                              ? null
+                              : () => Navigator.pop(context),
+                          icon: const Icon(Icons.close_rounded),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 4),
+                          Text(
+                            'Choose the routine used by Home and Start Workout. An unfinished workout stays available to resume.',
+                            style: AppTypography.bodyMedium,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Selected: ${selected.name}',
+                            style: AppTypography.bodyMedium,
+                          ),
+                          const SizedBox(height: 16),
+                          if (custom.isNotEmpty) ...[
+                            _section('YOUR ROUTINES'),
+                            for (final split in custom) _option(split),
+                            const SizedBox(height: 12),
+                          ],
+                          _section('TRAINING TEMPLATES'),
+                          for (final split in templates) _option(split),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        FilledButton(
+                          onPressed:
+                              _saving ||
+                                  _selectedSplitId == widget.activeSplitId
+                              ? null
+                              : _confirm,
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size.fromHeight(52),
+                          ),
+                          child: Text(
+                            _saving ? 'SAVING…' : 'USE AS DEFAULT',
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-              ],
-
-              // Volume Impact Preview if changing split
-              if (isDifferent) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.charcoal,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.steel),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.info_outline,
-                        size: 18,
-                        color: AppColors.pureWhite,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Shift: ${targetSplit.daysPerWeek - currentSplit.daysPerWeek >= 0 ? '+' : ''}${targetSplit.daysPerWeek - currentSplit.daysPerWeek} days/wk (${targetSplit.totalWeeklySets - currentSplit.totalWeeklySets >= 0 ? '+' : ''}${targetSplit.totalWeeklySets - currentSplit.totalWeeklySets} sets/wk volume)',
-                          style: AppTypography.monoSmall.copyWith(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.pureWhite,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 20),
-
-              // Confirm Button
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _saving
-                      ? null
-                      : () async {
-                          setState(() => _saving = true);
-                          final success = await persistWithFeedback(
-                            context,
-                            () => widget.onSplitSelected(_selectedSplitId),
-                          );
-                          if (!context.mounted) return;
-                          setState(() => _saving = false);
-                          if (success) Navigator.of(context).pop();
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.pureWhite,
-                    foregroundColor: AppColors.onyx,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    'CONFIRM ACTIVE SPLIT',
-                    style: AppTypography.bodySmall.copyWith(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.8,
-                      color: AppColors.onyx,
-                    ),
-                  ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _section(String text) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(
+      text,
+      style: AppTypography.monoSmall.copyWith(letterSpacing: 1.5),
+    ),
+  );
+
+  Widget _option(TrainingSplitModel split) {
+    final selected = split.id == _selectedSplitId;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: selected ? AppColors.charcoal : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: ListTile(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: selected ? AppColors.primary : AppColors.steel,
+            ),
+          ),
+          selected: selected,
+          enabled: !_saving,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 8,
+          ),
+          title: Text(split.name, style: AppTypography.bodyLarge),
+          subtitle: Text(
+            '${split.daysPerWeek} days per week${split.id == widget.activeSplitId ? ' · Current default' : ''}',
+            style: AppTypography.bodySmall,
+          ),
+          trailing: Icon(
+            selected
+                ? Icons.radio_button_checked
+                : Icons.radio_button_unchecked,
+            color: selected ? AppColors.primary : AppColors.platinum,
+          ),
+          onTap: _saving
+              ? null
+              : () => setState(() => _selectedSplitId = split.id),
         ),
       ),
     );

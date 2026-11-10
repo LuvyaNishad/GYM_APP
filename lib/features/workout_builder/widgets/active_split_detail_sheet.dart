@@ -9,6 +9,7 @@ import 'muscle_balance_card.dart';
 void showActiveSplitDetailSheet(BuildContext context) =>
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => const _ActivePlanDetails(),
