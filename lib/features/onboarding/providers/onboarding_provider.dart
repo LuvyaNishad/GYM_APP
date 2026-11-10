@@ -41,6 +41,7 @@ final accountChoicePendingProvider = Provider<bool>(
 /// Saves the questionnaire independently of the finished training profile.
 class OnboardingNotifier extends Notifier<OnboardingState> {
   Future<void> _pendingDraft = Future.value();
+  int _progressRevision = 0;
 
   Future<void> _persist(OnboardingState draft) {
     final hive = ref.read(hiveServiceProvider);
@@ -50,20 +51,33 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
         .then(
           (_) => hive.putSettingChecked(AppConstants.settingSetupDraft, json),
         );
-    // Navigation awaits the write and presents retry feedback on failure.
+    // Writes stay ordered without restoring a stale UI snapshot on completion.
     unawaited(_pendingDraft.catchError((Object _) {}));
     return _pendingDraft;
   }
 
   void _update(OnboardingState next) {
+    if (next.currentPage != state.currentPage) _progressRevision++;
     state = next;
     if (!next.isCompleted) _persist(next);
   }
 
   Future<void> saveProgress(int page) async {
+    if (page < 0 || page >= OnboardingState.totalPages) return;
+    final previousPage = state.currentPage;
+    final revision = ++_progressRevision;
     final next = state.copyWith(currentPage: page);
-    await _persist(next);
-    if (ref.mounted) state = next;
+    // Show the question immediately, even while disk/cloud reconciliation is busy.
+    state = next;
+    try {
+      await _persist(next);
+    } catch (_) {
+      if (ref.mounted && revision == _progressRevision) {
+        // Keep newer answers and allow retry from the previous step.
+        state = state.copyWith(currentPage: previousPage);
+      }
+      rethrow;
+    }
   }
 
   @override
@@ -83,6 +97,10 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
         }
       }
     }
+    return _fromSavedProfile();
+  }
+
+  OnboardingState _fromSavedProfile() {
     final user = ref.read(userProfileProvider);
     return OnboardingState(
       isCompleted: ref.read(onboardingCompleteProvider),
@@ -258,11 +276,14 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
 
   /// Replay only resets the draft; saved data and completion remain intact.
   Future<void> reset() async {
+    _progressRevision++;
     await _pendingDraft.catchError((Object _) {});
     await ref
         .read(hiveServiceProvider)
         .deleteSettingChecked(AppConstants.settingSetupDraft);
-    ref.invalidateSelf();
+    // Replay has its own editable state; the saved completion flag stays true.
+    // Returning users enter the questions directly, without the first-use gate.
+    state = _fromSavedProfile().copyWith(currentPage: 1, isCompleted: false);
   }
 }
 

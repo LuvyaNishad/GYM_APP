@@ -7,6 +7,9 @@ String resolveSplitId(String value) => switch (value) {
   'Upper/Lower' || 'Upper / Lower' => 'split_upper_lower',
   'Full Body' => 'split_full_body',
   'Arnold Split' => 'split_arnold',
+  'Bro Split' ||
+  'Body Part Split' ||
+  '5-Day Bro Split (Body Part)' => 'split_bro_split',
   _ => value,
 };
 

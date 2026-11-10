@@ -28,16 +28,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _saving = false;
   final _biometricsForm = GlobalKey<FormState>();
 
+  Duration get _pageTransitionDuration =>
+      MediaQuery.disableAnimationsOf(context) ||
+          MediaQuery.accessibleNavigationOf(context)
+      ? Duration.zero
+      : const Duration(milliseconds: 280);
+
   Future<void> _goToPage(int page) async {
     if (_saving) return;
     FocusScope.of(context).unfocus();
     setState(() => _saving = true);
+    // A tap on the outgoing screen must not activate the incoming Continue.
+    final transition = Future<void>.delayed(_pageTransitionDuration);
     await persistWithFeedback(
       context,
       () => ref.read(onboardingProvider.notifier).saveProgress(page),
       message:
           'Could not save your progress. Your choices are still here. Try again.',
     );
+    await transition;
     if (mounted) setState(() => _saving = false);
   }
 
@@ -51,6 +60,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _previousPage() {
     final page = ref.read(onboardingProvider).currentPage;
+    if (page == 1 && ref.read(onboardingCompleteProvider)) {
+      GoRouter.maybeOf(context)?.go(AppConstants.routeProfile);
+      return;
+    }
     if (page > 0) _goToPage(page - 1);
   }
 
@@ -81,9 +94,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final state = ref.watch(onboardingProvider);
     final notifier = ref.read(onboardingProvider.notifier);
     final page = state.currentPage;
-    final reduced =
-        MediaQuery.disableAnimationsOf(context) ||
-        MediaQuery.accessibleNavigationOf(context);
     final content = switch (page) {
       0 => _buildSplash(context),
       1 => _goals(state, notifier),
@@ -99,58 +109,65 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        body: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: const Alignment(1, -.8),
-              radius: 1.4,
-              colors: [
-                page == 0 ? AppColors.background : const Color(0xFF1C2735),
-                AppColors.background,
-              ],
+        body: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: page == 0 && !_saving ? () => _goToPage(1) : null,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: const Alignment(1, -.8),
+                radius: 1.4,
+                colors: [
+                  page == 0 ? AppColors.background : const Color(0xFF1C2735),
+                  AppColors.background,
+                ],
+              ),
             ),
-          ),
-          child: SafeArea(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 560),
-                child: Column(
-                  children: [
-                    if (page > 0)
-                      OnboardingTopBar(
-                        stepLabel: page == 5 ? 'YOUR PLAN' : state.stepLabel,
-                        progress: state.stepProgress,
-                        onBack: _saving ? null : _previousPage,
-                        onSkip: page < 5 && !_saving
-                            ? () => _goToPage(5)
-                            : null,
-                      ),
-                    Expanded(
-                      child: AnimatedSwitcher(
-                        duration: reduced
-                            ? Duration.zero
-                            : const Duration(milliseconds: 280),
-                        switchInCurve: Curves.easeOutCubic,
-                        switchOutCurve: Curves.easeInCubic,
-                        transitionBuilder: (child, animation) => FadeTransition(
-                          opacity: animation,
-                          child: SlideTransition(
-                            position: Tween(
-                              begin: const Offset(.035, 0),
-                              end: Offset.zero,
-                            ).animate(animation),
-                            child: child,
+            child: SafeArea(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: Column(
+                    children: [
+                      if (page > 0)
+                        OnboardingTopBar(
+                          stepLabel: page == 5 ? 'YOUR PLAN' : state.stepLabel,
+                          progress: state.stepProgress,
+                          onBack: _saving ? null : _previousPage,
+                          onSkip: page < 5 && !_saving
+                              ? () => _goToPage(5)
+                              : null,
+                        ),
+                      Expanded(
+                        child: AnimatedSwitcher(
+                          duration: _pageTransitionDuration,
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.easeInCubic,
+                          transitionBuilder: (child, animation) =>
+                              FadeTransition(
+                                opacity: animation,
+                                child: SlideTransition(
+                                  position: Tween(
+                                    begin: const Offset(.035, 0),
+                                    end: Offset.zero,
+                                  ).animate(animation),
+                                  child: child,
+                                ),
+                              ),
+                          layoutBuilder: (current, previous) => Stack(
+                            alignment: Alignment.topCenter,
+                            fit: StackFit.expand,
+                            children: [
+                              for (final outgoing in previous)
+                                IgnorePointer(
+                                  child: ExcludeSemantics(child: outgoing),
+                                ),
+                              if (current != null) current,
+                            ],
                           ),
-                        ),
-                        layoutBuilder: (current, previous) => Stack(
-                          alignment: Alignment.topCenter,
-                          fit: StackFit.expand,
-                          children: [...previous, if (current != null) current],
-                        ),
-                        child: AbsorbPointer(
-                          absorbing: _saving,
-                          child: KeyedSubtree(
+                          child: AbsorbPointer(
                             key: ValueKey(page),
+                            absorbing: _saving,
                             child: page == 0
                                 ? content
                                 : SingleChildScrollView(
@@ -166,30 +183,46 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           ),
                         ),
                       ),
-                    ),
-                    if (page > 0)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
-                        child: EntryButton(
-                          label: page == 5
-                              ? (state.isCompleted
-                                    ? 'Save setup'
-                                    : 'Save & continue')
-                              : page == 4
-                              ? 'See my plan'
-                              : 'Continue',
-                          busy: _saving,
-                          primary: true,
-                          icon: const Icon(
-                            Icons.arrow_forward_rounded,
-                            size: 20,
+                      if (!ref.watch(onboardingCompleteProvider))
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: TextButton(
+                            onPressed: _saving
+                                ? null
+                                : () {
+                                    FocusScope.of(context).unfocus();
+                                    context.push(AppConstants.routeLogin);
+                                  },
+                            child: const Text(
+                              'Already have an account? Sign in',
+                              textAlign: TextAlign.center,
+                            ),
                           ),
-                          onPressed: page == 5
-                              ? _completeAndNavigate
-                              : _nextPage,
                         ),
-                      ),
-                  ],
+                      if (page > 0)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+                          child: EntryButton(
+                            label: page == 5
+                                ? (ref.watch(onboardingCompleteProvider)
+                                      ? 'Save setup'
+                                      : 'Save & continue')
+                                : page == 4
+                                ? 'See my plan'
+                                : 'Continue',
+                            busy: _saving,
+                            primary: true,
+                            icon: const Icon(
+                              Icons.arrow_forward_rounded,
+                              size: 20,
+                            ),
+                            onPressed: page == 5
+                                ? _completeAndNavigate
+                                : _nextPage,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -325,6 +358,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ],
       ),
       _label('TRAINING SPLIT'),
+      for (final routine in ref.watch(splitsProvider).customSplits)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: _SetupChoice(
+            title: routine.name,
+            description:
+                'Keep the exercises and workout days in your saved routine.',
+            selected: state.preferredSplit == routine.id,
+            onTap: () => notifier.setPreferredSplit(routine.id),
+          ),
+        ),
       for (final split in [
         ('PPL', 'Push / Pull / Legs', 'A different muscle group each session.'),
         (
@@ -333,6 +377,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           'Alternate upper and lower body sessions.',
         ),
         ('Full Body', 'Full Body', 'Train across muscle groups each session.'),
+        ('Bro Split', 'Bro Split', 'Focus on one body part each session.'),
         (
           'Arnold Split',
           'Arnold Split',
@@ -533,93 +578,89 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _buildSplash(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: _nextPage,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Atmospheric Glow & Logo
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.15),
-                    blurRadius: 90,
-                    spreadRadius: 20,
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const AeonLogo(size: 110, showGlow: true),
-                  const SizedBox(height: 12),
-                  Text(
-                    'A E O N',
-                    style: AppTypography.displayLarge.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 8.0,
-                      fontSize: 32,
-                      shadows: [
-                        const Shadow(color: AppColors.primary, blurRadius: 20),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Atmospheric Glow & Logo
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  blurRadius: 90,
+                  spreadRadius: 20,
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              'PREMIUM FITNESS OS',
-              style: AppTypography.labelSmall.copyWith(
-                color: AppColors.textSecondary,
-                letterSpacing: 3.5,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 56),
-
-            // Pulsing Ring Indicator
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.primary, width: 2.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.6),
-                    blurRadius: 16,
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const AeonLogo(size: 110, showGlow: true),
+                const SizedBox(height: 12),
+                Text(
+                  'A E O N',
+                  style: AppTypography.displayLarge.copyWith(
                     color: AppColors.primary,
-                    shape: BoxShape.circle,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 8.0,
+                    fontSize: 32,
+                    shadows: [
+                      const Shadow(color: AppColors.primary, blurRadius: 20),
+                    ],
                   ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'PREMIUM FITNESS OS',
+            style: AppTypography.labelSmall.copyWith(
+              color: AppColors.textSecondary,
+              letterSpacing: 3.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 56),
+
+          // Pulsing Ring Indicator
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.primary, width: 2.0),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.6),
+                  blurRadius: 16,
+                ),
+              ],
+            ),
+            child: Center(
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'TAP ANYWHERE TO ENTER',
-              style: AppTypography.labelSmall.copyWith(
-                color: AppColors.textSecondary,
-                letterSpacing: 2.0,
-                fontSize: 11.0,
-              ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'TAP ANYWHERE TO ENTER',
+            style: AppTypography.labelSmall.copyWith(
+              color: AppColors.textSecondary,
+              letterSpacing: 2.0,
+              fontSize: 11.0,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
