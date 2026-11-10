@@ -18,6 +18,32 @@ class RoutineLibraryScreen extends ConsumerStatefulWidget {
 class _RoutineLibraryScreenState extends ConsumerState<RoutineLibraryScreen> {
   bool _mine = false;
   String? _expanded;
+  bool _savingDefault = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _mine = ref.read(splitsProvider).customSplits.isNotEmpty;
+  }
+
+  Future<void> _useAsDefault(TrainingSplitModel split) async {
+    if (_savingDefault) return;
+    setState(() => _savingDefault = true);
+    final success = await persistWithFeedback(
+      context,
+      () => ref.read(splitsProvider.notifier).switchActiveSplit(split.id),
+    );
+    if (!mounted) return;
+    setState(() => _savingDefault = false);
+    if (success) {
+      showAppFeedback(
+        context,
+        '${split.name} is your default routine.',
+        isError: false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(splitsProvider);
@@ -118,7 +144,7 @@ class _RoutineLibraryScreenState extends ConsumerState<RoutineLibraryScreen> {
                         Text(split.name, style: AppTypography.headlineSmall),
                         const SizedBox(height: 6),
                         Text(
-                          '${split.daysPerWeek} days/week · ${split.totalWorkouts} workouts${activeId == split.id ? ' · Active' : ''}',
+                          '${split.daysPerWeek} days/week · ${split.totalWorkouts} workouts',
                           style: AppTypography.bodySmall,
                         ),
                       ],
@@ -134,6 +160,23 @@ class _RoutineLibraryScreenState extends ConsumerState<RoutineLibraryScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 12),
+          if (activeId == split.id)
+            Text(
+              'CURRENT DEFAULT',
+              style: AppTypography.labelSmall.copyWith(
+                color: AppColors.primary,
+              ),
+            )
+          else
+            FilledButton.icon(
+              onPressed: _savingDefault ? null : () => _useAsDefault(split),
+              icon: const Icon(Icons.check_circle_outline_rounded),
+              label: const Text('USE AS DEFAULT'),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+              ),
+            ),
           if (expanded) ...[
             const SizedBox(height: 14),
             Text(split.description, style: AppTypography.bodyMedium),
@@ -156,22 +199,6 @@ class _RoutineLibraryScreenState extends ConsumerState<RoutineLibraryScreen> {
                       showCreateRoutineSheet(context, initialSplit: split),
                   child: Text(split.isCustom ? 'EDIT' : 'CUSTOMIZE'),
                 ),
-                if (activeId != split.id)
-                  FilledButton(
-                    onPressed: () async {
-                      final success = await persistWithFeedback(
-                        context,
-                        () => ref
-                            .read(splitsProvider.notifier)
-                            .switchActiveSplit(split.id),
-                      );
-                      if (!success || !mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${split.name} is now active.')),
-                      );
-                    },
-                    child: const Text('MAKE ACTIVE'),
-                  ),
                 if (split.isCustom)
                   TextButton(
                     onPressed: () => _delete(split),
@@ -210,11 +237,7 @@ class _RoutineLibraryScreenState extends ConsumerState<RoutineLibraryScreen> {
       await ref.read(splitsProvider.notifier).deleteCustomSplit(split.id);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not delete the routine. Try again.'),
-          ),
-        );
+        showAppFeedback(context, 'Could not delete the routine. Try again.');
       }
     }
   }

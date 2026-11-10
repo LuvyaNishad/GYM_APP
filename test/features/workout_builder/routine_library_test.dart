@@ -186,10 +186,11 @@ void main() {
         expect(find.text('CREATE ROUTINE'), findsWidgets);
         expect(find.text('Routine name'), findsOneWidget);
         expect(find.text('Weekly training target'), findsOneWidget);
-        expect(find.text('SAVE ROUTINE'), findsOneWidget);
+        expect(find.text('Use as my default routine'), findsOneWidget);
+        expect(find.text('SAVE & USE ROUTINE'), findsOneWidget);
 
         // Save custom routine
-        await tester.tap(find.text('SAVE ROUTINE'));
+        await tester.tap(find.text('SAVE & USE ROUTINE'));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
 

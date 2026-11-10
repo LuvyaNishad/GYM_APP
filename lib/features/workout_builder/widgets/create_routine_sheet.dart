@@ -37,6 +37,7 @@ class CreateRoutineSheet extends ConsumerStatefulWidget {
 }
 
 class _CreateRoutineSheetState extends ConsumerState<CreateRoutineSheet> {
+  late bool _makeDefault;
   late final _provider =
       NotifierProvider.autoDispose<RoutineDraftNotifier, TrainingSplitModel>(
         () => RoutineDraftNotifier(widget.initialSplit),
@@ -48,6 +49,10 @@ class _CreateRoutineSheetState extends ConsumerState<CreateRoutineSheet> {
   void initState() {
     super.initState();
     final draft = ref.read(_provider);
+    _makeDefault =
+        widget.initialSplit == null ||
+        (widget.initialSplit!.isCustom &&
+            widget.initialSplit!.id == ref.read(splitsProvider).activeSplitId);
     _name = TextEditingController(text: draft.name);
     _expanded = widget.initialDayId ?? draft.workouts.first.id;
   }
@@ -79,34 +84,24 @@ class _CreateRoutineSheetState extends ConsumerState<CreateRoutineSheet> {
     try {
       await ref.read(splitsProvider.notifier).saveCustomSplit(split);
       if (!mounted) return;
-      final notifier = ref.read(splitsProvider.notifier);
-      final messenger = ScaffoldMessenger.of(context);
-      var activating = false;
-      Navigator.pop(context);
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text('Saved ${split.name}'),
-          action: SnackBarAction(
-            label: 'Make active',
-            onPressed: () async {
-              if (activating) return;
-              activating = true;
-              await persistWithFeedback(
-                messenger.context,
-                () => notifier.switchActiveSplit(split.id),
-                message:
-                    'Could not activate the routine. It is saved in your library; try again from Workouts.',
-              );
-              activating = false;
-            },
-          ),
-        ),
+      if (_makeDefault) {
+        await ref.read(splitsProvider.notifier).switchActiveSplit(split.id);
+        if (!mounted) return;
+      }
+      showAppFeedback(
+        context,
+        _makeDefault
+            ? '${split.name} is your default routine.'
+            : 'Saved ${split.name}',
+        isError: false,
       );
+      Navigator.pop(context);
     } catch (_) {
       if (mounted) {
         setState(() {
           _saving = false;
-          _error = 'Could not save. Your draft is still here. Try again.';
+          _error =
+              'Could not finish saving your routine. Your draft is still here; try again.';
         });
       }
     }
@@ -142,6 +137,18 @@ class _CreateRoutineSheetState extends ConsumerState<CreateRoutineSheet> {
               decoration: const InputDecoration(labelText: 'Routine name'),
             ),
             const SizedBox(height: 12),
+            CheckboxListTile(
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              title: const Text('Use as my default routine'),
+              subtitle: const Text(
+                'Home and Start Workout will use this routine.',
+              ),
+              value: _makeDefault,
+              onChanged: _saving
+                  ? null
+                  : (value) => setState(() => _makeDefault = value ?? false),
+            ),
             Text('Weekly training target', style: AppTypography.headlineSmall),
             const SizedBox(height: 8),
             Text(
@@ -211,11 +218,19 @@ class _CreateRoutineSheetState extends ConsumerState<CreateRoutineSheet> {
                   style: FilledButton.styleFrom(
                     minimumSize: const Size.fromHeight(52),
                   ),
-                  child: Text(_saving ? 'SAVING…' : 'SAVE ROUTINE'),
+                  child: Text(
+                    _saving
+                        ? 'SAVING…'
+                        : _makeDefault
+                        ? 'SAVE & USE ROUTINE'
+                        : 'SAVE ROUTINE',
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Saved to your library. Make it active when you are ready.',
+                  _makeDefault
+                      ? 'Saved to your library and used for your next workout.'
+                      : 'Saved to your library. Choose Use as default when you are ready.',
                   textAlign: TextAlign.center,
                   style: AppTypography.bodySmall,
                 ),

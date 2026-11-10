@@ -118,6 +118,8 @@ void main() {
   ) async {
     await open(tester);
     final initial = container.read(splitsProvider).activeSplitId;
+    await tester.tap(find.text('Use as my default routine'));
+    await tester.pump();
     await tester.tap(find.text('SAVE ROUTINE'));
     await tester.pumpAndSettle();
     final saved = container.read(splitsProvider).customSplits.single;
@@ -126,15 +128,17 @@ void main() {
     expect(container.read(splitsProvider).activeSplitId, initial);
   });
 
-  testWidgets('Make active is a separate explicit action after saving', (
+  testWidgets('Default option saves and activates the routine explicitly', (
     tester,
   ) async {
     await open(tester);
-    await tester.tap(find.text('SAVE ROUTINE'));
+    expect(
+      tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
+      isTrue,
+    );
+    await tester.tap(find.text('SAVE & USE ROUTINE'));
     await tester.pumpAndSettle();
     final saved = container.read(splitsProvider).customSplits.single;
-    await tester.tap(find.text('Make active'));
-    await tester.pumpAndSettle();
     expect(container.read(splitsProvider).activeSplitId, saved.id);
   });
 }
