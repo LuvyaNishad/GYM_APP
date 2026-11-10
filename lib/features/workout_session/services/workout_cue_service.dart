@@ -23,6 +23,7 @@ class WorkoutCueService {
     WorkoutCue cue, {
     required bool sound,
     required bool vibrate,
+    double intensity = 1,
   }) async {
     if (!sound && !vibrate) return;
     if (!supported) return;
@@ -31,6 +32,7 @@ class WorkoutCueService {
         'cue': cue.name,
         'sound': sound,
         'vibrate': vibrate,
+        'intensity': intensity.isFinite ? intensity.clamp(0.0, 1.0) : 1.0,
       });
     } on MissingPluginException {
       return;
@@ -59,6 +61,7 @@ Future<void> playWorkoutCue(
   WorkoutCue cue, {
   bool sound = true,
   bool vibrate = true,
+  double intensity = 1,
 }) {
   final profile = ref.read(userProfileProvider);
   return ref
@@ -67,6 +70,7 @@ Future<void> playWorkoutCue(
         cue,
         sound: sound && (profile?.audioCuesEnabled ?? true),
         vibrate: vibrate && (profile?.hapticFeedbackEnabled ?? true),
+        intensity: intensity,
       );
 }
 

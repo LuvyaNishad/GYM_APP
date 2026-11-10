@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:leon/features/workout_session/models/active_session_state.dart';
 import 'package:leon/features/workout_session/providers/active_session_provider.dart';
@@ -50,13 +51,16 @@ class FakeNativeRest extends NativeRestService {
 
 class FakeCues extends WorkoutCueService {
   final calls = <(WorkoutCue, bool, bool)>[];
+  final intensities = <double>[];
   @override
   Future<void> play(
     WorkoutCue cue, {
     required bool sound,
     required bool vibrate,
+    double intensity = 1,
   }) async {
     calls.add((cue, sound, vibrate));
+    intensities.add(intensity);
   }
 }
 
@@ -97,6 +101,76 @@ void main() {
       );
   Future<void> drain() =>
       container.read(restTimerProvider.notifier).flushNativeChanges();
+
+  test(
+    'last five seconds ramp once per second; extending, pausing and skipping suppress stale cues',
+    () async {
+      start();
+      final notifier = container.read(restTimerProvider.notifier);
+      notifier.startTimer(durationSeconds: 90);
+      await drain();
+      expect(cues.calls, isEmpty);
+      for (var remaining = 5; remaining > 0; remaining--) {
+        native.timer!['deadline'] = DateTime.now()
+            .add(Duration(seconds: remaining))
+            .millisecondsSinceEpoch;
+        notifier.resyncWithWallClock();
+        await drain();
+        notifier.resyncWithWallClock();
+        await drain();
+      }
+      expect(cues.calls, List.filled(5, (WorkoutCue.countdown, true, true)));
+      expect(cues.intensities, [.18, .32, .5, .72, 1]);
+      notifier.addSeconds(30);
+      await drain();
+      notifier.resyncWithWallClock();
+      await drain();
+      expect(cues.calls.length, 5);
+      notifier.pause();
+      await drain();
+      notifier.resyncWithWallClock();
+      await drain();
+      expect(cues.calls.length, 5);
+      notifier.skip();
+      await drain();
+      notifier.resyncWithWallClock();
+      await drain();
+      expect(cues.calls.length, 5);
+    },
+  );
+
+  test(
+    'countdown respects current vibration-only preferences and does not play in background',
+    () async {
+      start();
+      await container
+          .read(userProfileProvider.notifier)
+          .load(
+            const UserModel(
+              id: 'guest',
+              email: '',
+              displayName: '',
+              audioCuesEnabled: false,
+              hapticFeedbackEnabled: true,
+            ),
+          );
+      final notifier = container.read(restTimerProvider.notifier);
+      notifier.startTimer(durationSeconds: 5);
+      await drain();
+      expect(cues.calls.single, (WorkoutCue.countdown, false, true));
+      container
+          .read(workoutNotificationServiceProvider)
+          .updateAppLifecycleState(AppLifecycleState.paused);
+      native.timer!['deadline'] = DateTime.now()
+          .add(const Duration(seconds: 2))
+          .millisecondsSinceEpoch;
+      notifier.resyncWithWallClock();
+      await drain();
+      expect(cues.calls.length, 1);
+      notifier.skip();
+      await drain();
+    },
+  );
 
   test(
     'native rest survives provider/process recreation with the same session',

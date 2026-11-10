@@ -17,6 +17,33 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
   AppLifecycleListener? _lifecycleListener;
   String? _workoutId;
   String? _timerId;
+  DateTime? _countdownDeadline;
+  int _lastCountdownSecond = 6;
+
+  void _playCountdown(int remaining) {
+    if (_countdownDeadline != state.targetEndTime) {
+      _countdownDeadline = state.targetEndTime;
+      _lastCountdownSecond = 6;
+    }
+    if (remaining < 1 ||
+        remaining > 5 ||
+        remaining >= _lastCountdownSecond ||
+        !state.isRunning ||
+        _notifications.isAppInBackground) {
+      return;
+    }
+    _lastCountdownSecond = remaining;
+    // Five short pulses rise gently toward the distinct rest-complete chime.
+    const levels = [1.0, .72, .5, .32, .18];
+    unawaited(
+      playWorkoutCue(
+        ref,
+        WorkoutCue.countdown,
+        intensity: levels[remaining - 1],
+      ),
+    );
+  }
+
   Future<void> _nativeWrites = Future.value();
   NativeRestService get _native => ref.read(nativeRestServiceProvider);
   void _nativeTask(Future<void> Function() task) {
@@ -217,6 +244,7 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
 
     _startLiveActivity();
     _startTicker();
+    _playCountdown(state.remainingSeconds);
   }
 
   void _startLiveActivity() {
@@ -303,6 +331,7 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
     if (state.targetEndTime == null) {
       if (state.remainingSeconds > 1) {
         state = state.copyWith(remainingSeconds: state.remainingSeconds - 1);
+        _playCountdown(state.remainingSeconds);
       } else {
         _completeRest();
       }
@@ -313,6 +342,7 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
 
     if (remaining > 0) {
       state = state.copyWith(remainingSeconds: remaining);
+      _playCountdown(remaining);
 
       // Periodically update Live Activity
       if (state.setNumber != null) {
@@ -390,6 +420,7 @@ class RestTimerNotifier extends Notifier<RestTimerState> {
         _completeRest();
       } else {
         state = state.copyWith(remainingSeconds: remaining);
+        _playCountdown(remaining);
         if (!_native.supported) _showCountdown();
       }
     }

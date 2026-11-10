@@ -17,6 +17,7 @@ class WorkoutCues(private val context: Context, private val interrupted: () -> U
     private val sounds = mutableMapOf<String,Int>()
     private val loaded = mutableSetOf<Int>()
     private var pending: Pair<String,Long>? = null
+    private var pendingIntensity = 1f
     private val releaseFocus = Runnable { abandonFocus() }
     private val focus = AudioManager.OnAudioFocusChangeListener { change ->
         if (change < 0) {stop();interrupted()}
@@ -32,7 +33,7 @@ class WorkoutCues(private val context: Context, private val interrupted: () -> U
             if (status == 0) {
                 loaded.add(id)
                 pending?.takeIf { sounds[it.first] == id && System.currentTimeMillis()-it.second < 300 }
-                    ?.let { playSound(it.first) }
+                    ?.let { playSound(it.first, pendingIntensity) }
             }
         }
         for (name in listOf("countdown","complete","metronome","bell")) {
@@ -50,11 +51,15 @@ class WorkoutCues(private val context: Context, private val interrupted: () -> U
                     result.success(null); return
                 }
                 val cue = call.argument<String>("cue") ?: "metronome"
-                if (call.argument<Boolean>("sound") == true) playSound(cue)
+                val requestedIntensity = call.argument<Number>("intensity")?.toFloat() ?: 1f
+                val intensity = if (requestedIntensity.isFinite()) requestedIntensity.coerceIn(0f,1f) else 1f
+                if (call.argument<Boolean>("sound") == true) playSound(cue,intensity)
                 if (call.argument<Boolean>("vibrate") == true) {
                     val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                     val duration = if (cue == "complete" || cue == "bell") 150L else 25L
-                    if (Build.VERSION.SDK_INT >= 26) vibrator.vibrate(VibrationEffect.createOneShot(duration,VibrationEffect.DEFAULT_AMPLITUDE))
+                    if (cue == "complete") vibrator.vibrate(VibrationEffect.createWaveform(
+                        longArrayOf(0,120,80,180), intArrayOf(0,170,0,255), -1))
+                    else if (Build.VERSION.SDK_INT >= 26) vibrator.vibrate(VibrationEffect.createOneShot(duration,(32+223*intensity).toInt().coerceIn(1,255)))
                     else vibrator.vibrate(duration)
                 }
                 result.success(null)
@@ -63,14 +68,14 @@ class WorkoutCues(private val context: Context, private val interrupted: () -> U
             else -> result.notImplemented()
         }
     }
-    private fun playSound(name: String) {
+    private fun playSound(name: String, intensity: Float = 1f) {
         val id = sounds[name] ?: return
-        if (!loaded.contains(id)) {pending = name to System.currentTimeMillis();return}
+        if (!loaded.contains(id)) {pending = name to System.currentTimeMillis();pendingIntensity=intensity;return}
         val granted = if (Build.VERSION.SDK_INT >= 26) manager.requestAudioFocus(request!!)
             else manager.requestAudioFocus(focus,AudioManager.STREAM_MUSIC,AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
         if (granted != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
         pending = null
-        pool.play(id, .65f, .65f,1,0,1f)
+        pool.play(id, .65f * intensity, .65f * intensity,1,0,1f)
         handler.removeCallbacks(releaseFocus)
         handler.postDelayed(releaseFocus,if (name == "complete") 1000 else 700)
     }

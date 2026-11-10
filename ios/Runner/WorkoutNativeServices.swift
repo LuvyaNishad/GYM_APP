@@ -106,6 +106,8 @@ final class WorkoutNativeServices: NSObject, UIDocumentPickerDelegate, AVAudioPl
     if call.method == "stop" {stopAudio();result(nil);return}
     guard call.method == "play",let args=call.arguments as? [String:Any] else {result(FlutterMethodNotImplemented);return}
     guard visible else {result(nil);return}
+    let requestedIntensity = (args["intensity"] as? NSNumber)?.doubleValue ?? 1
+    let intensity = requestedIntensity.isFinite ? min(1,max(0,requestedIntensity)) : 1
     do {
       if args["sound"] as? Bool == true {
         let session=AVAudioSession.sharedInstance()
@@ -114,7 +116,7 @@ final class WorkoutNativeServices: NSObject, UIDocumentPickerDelegate, AVAudioPl
         let name=args["cue"] as? String ?? "metronome"
         let key=FlutterDartProject.lookupKey(forAsset:"assets/audio/\(name).wav")
         guard let path=Bundle.main.path(forResource:key,ofType:nil) else {throw NSError(domain:"Cue asset missing",code:1)}
-        let player=try AVAudioPlayer(contentsOf:URL(fileURLWithPath:path));player.volume=0.65;player.delegate=self
+        let player=try AVAudioPlayer(contentsOf:URL(fileURLWithPath:path));player.volume=Float(0.65 * intensity);player.delegate=self
         players=players.filter {$0.isPlaying};players.append(player);player.play()
         focusRelease?.cancel()
         let release=DispatchWorkItem {[weak self] in self?.stopAudio()};focusRelease=release
@@ -122,7 +124,7 @@ final class WorkoutNativeServices: NSObject, UIDocumentPickerDelegate, AVAudioPl
       }
       if args["vibrate"] as? Bool == true {
         if args["cue"] as? String == "complete" {UINotificationFeedbackGenerator().notificationOccurred(.success)}
-        else {UIImpactFeedbackGenerator(style:.light).impactOccurred()}
+        else {UIImpactFeedbackGenerator(style:.light).impactOccurred(intensity:CGFloat(intensity))}
       }
       result(nil)
     } catch {result(FlutterError(code:"cue_error",message:error.localizedDescription,details:nil))}
