@@ -637,24 +637,9 @@ class _BilateralSetRowWidgetState
     _weightFocusNode = FocusNode();
     _repsFocusNode = FocusNode();
 
-    // Auto-fill initial values from last session if unassigned
-    final initialWeight = widget.set.weightKg > 0
-        ? widget.set.weightKg
-        : (widget.set.previousWeightKg ?? 20.0);
-    final initialReps = widget.set.reps > 0
-        ? widget.set.reps
-        : (widget.set.previousReps ?? 10);
-
-    if (widget.set.weightKg <= 0 && widget.set.previousWeightKg != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        widget.notifier.updateSetValues(
-          exerciseId: widget.exerciseId,
-          setIndex: widget.setIndex,
-          weightKg: initialWeight,
-          reps: initialReps,
-        );
-      });
-    }
+    // Defaults belong to the provider; zero is a valid bodyweight/unloaded set.
+    final initialWeight = widget.set.weightKg;
+    final initialReps = widget.set.reps;
 
     _weightController = TextEditingController(
       text: _formatWeight(initialWeight),
@@ -681,23 +666,22 @@ class _BilateralSetRowWidgetState
   }
 
   String _formatWeight(double w) {
-    w = widget.units.weightFromKg(w);
-    if (w >= 10 && w % 1 == 0) {
-      return '${w.toInt()}';
-    }
-    return w.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
+    final text = widget.units.weightInput(w);
+    return text.contains('.')
+        ? text.replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '')
+        : text;
   }
 
   @override
   void didUpdateWidget(covariant _BilateralSetRowWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!_weightFocusNode.hasFocus && widget.set.weightKg > 0) {
+    if (!_weightFocusNode.hasFocus) {
       final formatted = _formatWeight(widget.set.weightKg);
       if (_weightController.text != formatted) {
         _weightController.text = formatted;
       }
     }
-    if (!_repsFocusNode.hasFocus && widget.set.reps > 0) {
+    if (!_repsFocusNode.hasFocus) {
       final formattedReps = '${widget.set.reps}';
       if (_repsController.text != formattedReps) {
         _repsController.text = formattedReps;
@@ -1064,21 +1048,10 @@ class _UnilateralSetRowWidgetState
     _rightWeightFocus = FocusNode();
     _rightRepsFocus = FocusNode();
 
-    final leftW = widget.set.weightKg > 0
-        ? widget.set.weightKg
-        : (widget.set.previousWeightKg ?? 20.0);
-    final leftR = widget.set.reps > 0
-        ? widget.set.reps
-        : (widget.set.previousReps ?? 10);
-
-    final rightW = (widget.set.weightKgRight ?? widget.set.weightKg) > 0
-        ? (widget.set.weightKgRight ?? widget.set.weightKg)
-        : (widget.set.previousWeightKgRight ??
-              widget.set.previousWeightKg ??
-              leftW);
-    final rightR = (widget.set.repsRight ?? widget.set.reps) > 0
-        ? (widget.set.repsRight ?? widget.set.reps)
-        : (widget.set.previousRepsRight ?? widget.set.previousReps ?? leftR);
+    final leftW = widget.set.weightKg;
+    final leftR = widget.set.reps;
+    final rightW = widget.set.weightKgRight ?? leftW;
+    final rightR = widget.set.repsRight ?? leftR;
 
     _leftWeightController = TextEditingController(text: _formatWeight(leftW));
     _leftRepsController = TextEditingController(text: '$leftR');
@@ -1120,31 +1093,30 @@ class _UnilateralSetRowWidgetState
   }
 
   String _formatWeight(double w) {
-    w = widget.units.weightFromKg(w);
-    if (w >= 10 && w % 1 == 0) {
-      return '${w.toInt()}';
-    }
-    return w.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
+    final text = widget.units.weightInput(w);
+    return text.contains('.')
+        ? text.replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '')
+        : text;
   }
 
   @override
   void didUpdateWidget(covariant _UnilateralSetRowWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!_leftWeightFocus.hasFocus && widget.set.weightKg > 0) {
+    if (!_leftWeightFocus.hasFocus) {
       final f = _formatWeight(widget.set.weightKg);
       if (_leftWeightController.text != f) _leftWeightController.text = f;
     }
-    if (!_leftRepsFocus.hasFocus && widget.set.reps > 0) {
+    if (!_leftRepsFocus.hasFocus) {
       final f = '${widget.set.reps}';
       if (_leftRepsController.text != f) _leftRepsController.text = f;
     }
     final rW = widget.set.weightKgRight ?? widget.set.weightKg;
-    if (!_rightWeightFocus.hasFocus && rW > 0) {
+    if (!_rightWeightFocus.hasFocus) {
       final f = _formatWeight(rW);
       if (_rightWeightController.text != f) _rightWeightController.text = f;
     }
     final rR = widget.set.repsRight ?? widget.set.reps;
-    if (!_rightRepsFocus.hasFocus && rR > 0) {
+    if (!_rightRepsFocus.hasFocus) {
       final f = '$rR';
       if (_rightRepsController.text != f) _rightRepsController.text = f;
     }
